@@ -14,7 +14,7 @@ export const ThinkGardenLogo: React.FC<{ className?: string; imgClassName?: stri
     <div className={`flex items-center gap-2.5 ${className}`}>
       {!imgError ? (
         <img
-          src="/TGCCLOGO.png"
+          src={`${import.meta.env.BASE_URL}TGCCLOGO.png`}
           alt="Think Green Platform"
           className={imgClassName}
           onError={() => setImgError(true)}
@@ -65,7 +65,7 @@ export const SoccerBallBadge: React.FC<{ className?: string; imgClassName?: stri
       <div className="w-full h-full rounded-full bg-white shadow-md flex items-center justify-center p-1 border-2 border-white/80 overflow-hidden">
         {!imgError ? (
           <img
-            src="/bola.png"
+            src={`${import.meta.env.BASE_URL}bola.png`}
             alt="Soccer Ball"
             className={imgClassName}
             onError={() => setImgError(true)}

@@ -56,7 +56,7 @@ export const LoginPage: React.FC = () => {
         playsInline
         className="absolute inset-0 w-full h-full object-cover object-center pointer-events-none z-0"
       >
-        <source src="/login.mp4" type="video/mp4" />
+        <source src={`${import.meta.env.BASE_URL}login.mp4`} type="video/mp4" />
       </video>
 
       {/* 

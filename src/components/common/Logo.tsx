@@ -31,7 +31,7 @@ export const Logo: React.FC<LogoProps> = ({
       <div className={`relative flex-shrink-0 ${icon} drop-shadow-sm flex items-center justify-center`}>
         {!imgError ? (
           <img
-            src="/TGCCLOGO.png"
+            src={`${import.meta.env.BASE_URL}TGCCLOGO.png`}
             alt="Think Green Platform"
             className="w-full h-full object-contain"
             onError={() => setImgError(true)}
