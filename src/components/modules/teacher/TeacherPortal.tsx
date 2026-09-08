@@ -23,6 +23,7 @@ import {
   X,
   Save,
   Award,
+  BookOpen,
   BookMarked,
   FileText,
   Video,
@@ -58,16 +59,32 @@ import {
 } from '../../common/ThinkGardenLogos';
 import { Modal } from '../../common/Modal';
 import { Badge } from '../../common/Badge';
-import { Assessment, AssessmentType, Assignment, Submission } from '../../../types';
+import { Assessment, AssessmentType, Assignment, Submission, Lesson } from '../../../types';
+import { ClassHeader, ClassSubTab } from './ClassHeader';
+import { ClassOverviewTab } from './ClassOverviewTab';
+import { ClassContentsTab } from './ClassContentsTab';
+import { ClassPeopleTab } from './ClassPeopleTab';
+import { ClassGradesTab } from './ClassGradesTab';
 
-interface TeacherPortalProps {
+export type TeacherNavTab = 'turmas' | 'chamadas' | 'provas' | 'notas' | 'aulas' | 'atividades';
+
+export interface TeacherPortalProps {
   currentTab: string;
   setCurrentTab: (tab: string) => void;
+  counselorMode?: boolean;
+  initialClassId?: string;
+  initialNavTab?: TeacherNavTab;
+  onBackToCounselor?: () => void;
 }
 
-type TeacherNavTab = 'turmas' | 'chamadas' | 'provas' | 'notas' | 'aulas' | 'atividades';
-
-export const TeacherPortal: React.FC<TeacherPortalProps> = ({ currentTab, setCurrentTab }) => {
+export const TeacherPortal: React.FC<TeacherPortalProps> = ({
+  currentTab,
+  setCurrentTab,
+  counselorMode = false,
+  initialClassId,
+  initialNavTab,
+  onBackToCounselor,
+}) => {
   const {
     currentUser,
     switchRole,
@@ -92,33 +109,48 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({ currentTab, setCur
   } = useApp();
 
   // Active top navigation tab
-  const [activeNavTab, setActiveNavTab] = useState<TeacherNavTab>('turmas');
+  const [activeNavTab, setActiveNavTab] = useState<TeacherNavTab>(initialNavTab || 'turmas');
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
 
-  // Sync activeNavTab with external currentTab prop (from Sidebar or router)
+  // Sync activeNavTab and workspace with external currentTab prop (from Sidebar or router) only when not in counselorMode
   React.useEffect(() => {
+    if (counselorMode) return;
     if (currentTab === 'teacher_attendance') {
-      setActiveNavTab('chamadas');
+      setIsInsideClassWorkspace(true);
+      setClassWorkspaceSubTab('chamada');
+      setActiveNavTab('turmas');
     } else if (currentTab === 'teacher_grades') {
-      setActiveNavTab('notas');
-    } else if (currentTab === 'teacher_lessons') {
-      setActiveNavTab('aulas');
-    } else if (currentTab === 'teacher_assignments') {
-      setActiveNavTab('atividades');
+      setIsInsideClassWorkspace(true);
+      setClassWorkspaceSubTab('notas');
+      setActiveNavTab('turmas');
+    } else if (currentTab === 'teacher_lessons' || currentTab === 'teacher_assignments') {
+      setIsInsideClassWorkspace(true);
+      setClassWorkspaceSubTab('conteudos');
+      setActiveNavTab('turmas');
     } else if (currentTab === 'teacher_classes' || currentTab === 'teacher_home') {
+      setIsInsideClassWorkspace(false);
       setActiveNavTab('turmas');
     }
-  }, [currentTab]);
+  }, [currentTab, counselorMode]);
+
+  // Sync initialNavTab if passed externally in counselorMode
+  React.useEffect(() => {
+    if (initialNavTab) {
+      setActiveNavTab(initialNavTab);
+    }
+  }, [initialNavTab]);
 
   const handleSelectNavTab = (tab: TeacherNavTab) => {
     setActiveNavTab(tab);
-    if (tab === 'chamadas') setCurrentTab('teacher_attendance');
-    else if (tab === 'turmas') setCurrentTab('teacher_classes');
-    else if (tab === 'notas') setCurrentTab('teacher_grades');
-    else if (tab === 'aulas') setCurrentTab('teacher_lessons');
-    else if (tab === 'atividades') setCurrentTab('teacher_assignments');
-    else if (tab === 'provas') setCurrentTab('teacher_classes');
+    if (!counselorMode) {
+      if (tab === 'chamadas') setCurrentTab('teacher_attendance');
+      else if (tab === 'turmas') setCurrentTab('teacher_classes');
+      else if (tab === 'notas') setCurrentTab('teacher_grades');
+      else if (tab === 'aulas') setCurrentTab('teacher_lessons');
+      else if (tab === 'atividades') setCurrentTab('teacher_assignments');
+      else if (tab === 'provas') setCurrentTab('teacher_classes');
+    }
   };
 
   // Carousel page state
@@ -128,8 +160,37 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({ currentTab, setCur
   const teacherClasses = state.classes;
 
   const [selectedClassId, setSelectedClassId] = useState<string>(
-    teacherClasses[0]?.id || 'class_soccer'
+    initialClassId || teacherClasses[0]?.id || 'class_soccer'
   );
+
+  // Class-centric workspace state (Google Classroom architecture)
+  const [isInsideClassWorkspace, setIsInsideClassWorkspace] = useState<boolean>(
+    Boolean(initialClassId)
+  );
+  const [classWorkspaceSubTab, setClassWorkspaceSubTab] = useState<ClassSubTab>('visao_geral');
+
+  React.useEffect(() => {
+    if (initialClassId) {
+      setSelectedClassId(initialClassId);
+      setIsInsideClassWorkspace(true);
+      if (initialNavTab === 'chamadas') {
+        setClassWorkspaceSubTab('chamada');
+      } else if (initialNavTab === 'notas' || initialNavTab === 'provas') {
+        setClassWorkspaceSubTab('notas');
+      } else if (initialNavTab === 'aulas' || initialNavTab === 'atividades') {
+        setClassWorkspaceSubTab('conteudos');
+      } else {
+        setClassWorkspaceSubTab('visao_geral');
+      }
+    }
+  }, [initialClassId, initialNavTab]);
+
+  const handleEnterClass = (classId: string, subTab: ClassSubTab = 'visao_geral') => {
+    setSelectedClassId(classId);
+    setIsInsideClassWorkspace(true);
+    setClassWorkspaceSubTab(subTab);
+    setActiveNavTab('turmas');
+  };
 
   const selectedClass = state.classes.find((c) => c.id === selectedClassId) || teacherClasses[0] || {
     id: 'class_soccer',
@@ -365,6 +426,68 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({ currentTab, setCur
     return <ReadingBookBadge className="w-10 h-10 sm:w-11 sm:h-11" />;
   };
 
+  const getClassCardStyle = (cls: { name: string; courseName?: string }) => {
+    const combined = `${cls.name} ${cls.courseName || ''}`.toLowerCase();
+    if (combined.includes('futebol') || combined.includes('soccer')) {
+      return {
+        borderColor: 'border-[#075e38]',
+        textColor: 'text-[#075e38]',
+        hoverText: 'group-hover:text-emerald-700',
+        btnBg: 'bg-[#075e38] hover:bg-[#064e2e]',
+        btnBorder: 'border-slate-200 hover:border-[#075e38]',
+        btnText: 'hover:text-[#075e38] hover:border-[#075e38]',
+        accentColor: 'text-[#075e38]',
+        badge: <SoccerBallBadge className="w-10 h-10 sm:w-11 sm:h-11 flex-shrink-0" />,
+      };
+    }
+    if (combined.includes('inglês') || combined.includes('ingles') || combined.includes('english')) {
+      return {
+        borderColor: 'border-[#533499]',
+        textColor: 'text-[#533499]',
+        hoverText: 'group-hover:text-purple-700',
+        btnBg: 'bg-[#533499] hover:bg-[#43297a]',
+        btnBorder: 'border-slate-200 hover:border-[#533499]',
+        btnText: 'hover:text-[#533499] hover:border-[#533499]',
+        accentColor: 'text-[#533499]',
+        badge: <USAFlagBadge className="w-10 h-10 sm:w-11 sm:h-11 flex-shrink-0" />,
+      };
+    }
+    if (combined.includes('preschool') || combined.includes('pré-escola') || combined.includes('girassol')) {
+      return {
+        borderColor: 'border-[#d97706]',
+        textColor: 'text-[#d97706]',
+        hoverText: 'group-hover:text-amber-700',
+        btnBg: 'bg-[#d97706] hover:bg-[#b45309]',
+        btnBorder: 'border-slate-200 hover:border-[#d97706]',
+        btnText: 'hover:text-[#d97706] hover:border-[#d97706]',
+        accentColor: 'text-[#d97706]',
+        badge: <PreschoolBadge className="w-10 h-10 sm:w-11 sm:h-11 flex-shrink-0" />,
+      };
+    }
+    if (combined.includes('mulher') || combined.includes('fitness') || combined.includes('circuito')) {
+      return {
+        borderColor: 'border-[#e11d48]',
+        textColor: 'text-[#e11d48]',
+        hoverText: 'group-hover:text-rose-700',
+        btnBg: 'bg-[#e11d48] hover:bg-[#be123c]',
+        btnBorder: 'border-slate-200 hover:border-[#e11d48]',
+        btnText: 'hover:text-[#e11d48] hover:border-[#e11d48]',
+        accentColor: 'text-[#e11d48]',
+        badge: <WomenFitBadge className="w-10 h-10 sm:w-11 sm:h-11 flex-shrink-0" />,
+      };
+    }
+    return {
+      borderColor: 'border-[#2563eb]',
+      textColor: 'text-[#2563eb]',
+      hoverText: 'group-hover:text-blue-700',
+      btnBg: 'bg-[#2563eb] hover:bg-[#1d4ed8]',
+      btnBorder: 'border-slate-200 hover:border-[#2563eb]',
+      btnText: 'hover:text-[#2563eb] hover:border-[#2563eb]',
+      accentColor: 'text-[#2563eb]',
+      badge: <ReadingBookBadge className="w-10 h-10 sm:w-11 sm:h-11 flex-shrink-0" />,
+    };
+  };
+
   const presentCount = classEnrollments.filter(
     (e) => attendanceList[e.studentId]?.present ?? true
   ).length;
@@ -499,10 +622,31 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({ currentTab, setCur
   const [newLessonTitle, setNewLessonTitle] = useState('');
   const [newLessonDesc, setNewLessonDesc] = useState('');
   const [newLessonPdf, setNewLessonPdf] = useState('Apostila_Oficial_ThinkGreen.pdf');
-  const [newLessonVideo, setNewLessonVideo] = useState('');
+  const [newLessonLink, setNewLessonLink] = useState('');
+  const [newLessonLinkTitle, setNewLessonLinkTitle] = useState('');
 
   const handleCreateLesson = (e: React.FormEvent) => {
     e.preventDefault();
+    const materialsList: Lesson['materials'] = [];
+    if (newLessonPdf.trim()) {
+      const isDoc = newLessonPdf.toLowerCase().endsWith('.doc') || newLessonPdf.toLowerCase().endsWith('.docx');
+      materialsList.push({
+        id: `mat_${Date.now()}_doc`,
+        title: newLessonPdf.trim(),
+        type: isDoc ? 'DOC' : 'PDF',
+        url: '#',
+        size: '2.4 MB',
+      });
+    }
+    if (newLessonLink.trim()) {
+      materialsList.push({
+        id: `mat_${Date.now()}_link`,
+        title: newLessonLinkTitle.trim() || 'Link Complementar de Estudo',
+        type: 'LINK',
+        url: newLessonLink.trim(),
+      });
+    }
+
     createLesson({
       classId: selectedClass.id,
       className: selectedClass.name,
@@ -511,21 +655,22 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({ currentTab, setCur
       date: new Date().toISOString().split('T')[0],
       teacherId: currentUser.id,
       teacherName: currentUser.name,
-      videoUrl: newLessonVideo || undefined,
-      materials: [
+      materials: materialsList.length > 0 ? materialsList : [
         {
           id: `mat_${Date.now()}`,
-          title: newLessonPdf || 'Material_Complementar.pdf',
+          title: 'Documento_Pedagogico.pdf',
           type: 'PDF',
           url: '#',
-          size: '2.4 MB',
+          size: '1.2 MB',
         },
       ],
     });
     setIsLessonModalOpen(false);
     setNewLessonTitle('');
     setNewLessonDesc('');
-    setNewLessonVideo('');
+    setNewLessonPdf('Apostila_Oficial_ThinkGreen.pdf');
+    setNewLessonLink('');
+    setNewLessonLinkTitle('');
   };
 
   // =========================================================================
@@ -616,32 +761,6 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({ currentTab, setCur
   const [scoreInput, setScoreInput] = useState<number>(90);
   const [feedbackText, setFeedbackText] = useState<string>('');
 
-  // New Class Modal
-  const [isNewClassModalOpen, setIsNewClassModalOpen] = useState(false);
-  const [newClassName, setNewClassName] = useState('');
-  const [newClassCourse, setNewClassCourse] = useState('Curso Livre de Inglês');
-  const [newClassSchedule, setNewClassSchedule] = useState('Segundas e Quartas, 19:00 - 20:30');
-  const [newClassRoom, setNewClassRoom] = useState('Sala 03 - Centro');
-  const [newClassCode, setNewClassCode] = useState('ENG-8C');
-
-  const handleCreateClass = (e: React.FormEvent) => {
-    e.preventDefault();
-    const created = createClass({
-      name: newClassName || `${newClassCourse} - Nova Turma`,
-      code: newClassCode || `CLS-${Math.floor(100 + Math.random() * 900)}`,
-      courseId: newClassCourse.includes('Inglês') ? 'course_eng' : 'course_football',
-      courseName: newClassCourse,
-      teacherId: currentUser.id,
-      teacherName: currentUser.name,
-      schedule: newClassSchedule,
-      room: newClassRoom,
-      maxCapacity: 30,
-    });
-    setSelectedClassId(created.id);
-    setIsNewClassModalOpen(false);
-    setNewClassName('');
-  };
-
   const classSubmissions = state.submissions.filter((s) =>
     classEnrollments.some((e) => e.studentId === s.studentId) || s.assignmentTitle.includes(selectedClass.name)
   );
@@ -653,235 +772,204 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({ currentTab, setCur
   const todayLessonsCount = state.lessons.length > 0 ? 3 : 1;
 
   return (
-    <div className="min-h-screen bg-[#f8f9fa] text-slate-800 font-sans pb-16">
+    <div className={counselorMode ? "text-slate-800 font-sans pb-16" : "min-h-screen bg-[#f8f9fa] text-slate-800 font-sans pb-16"}>
       {/* ========================================================================= */}
-      {/* 1. TOP HEADER - EXACT REPLICA OF REFERENCE IMAGE                           */}
+      {/* 1. TOP HEADER - TEACHER HEADER OR COUNSELOR SUPERVISION BANNER            */}
       {/* ========================================================================= */}
-      <header className="w-full bg-white border-b border-slate-200/80 shadow-xs">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-5 flex items-center justify-between">
-          {/* Left: Think Green Platform Logo */}
-          <div className="flex items-center">
-            <ThinkGardenLogo />
-          </div>
+      {counselorMode ? (
+        <div className="bg-gradient-to-r from-emerald-950 via-[#075e38] to-teal-900 text-white rounded-3xl p-5 sm:p-6 mb-6 shadow-md border border-emerald-700/50">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+            <div className="flex items-start sm:items-center gap-4">
+              {onBackToCounselor && (
+                <button
+                  onClick={onBackToCounselor}
+                  className="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-black flex items-center gap-2 transition-all cursor-pointer border border-white/20 shadow-xs"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  <span>Voltar às Turmas</span>
+                </button>
+              )}
 
-          {/* Center: PAINEL DO PROFESSOR Title */}
-          <div className="text-center hidden md:block">
-            <h1 className="text-base sm:text-xl font-bold tracking-[0.22em] text-slate-900 uppercase">
-              PAINEL DO PROFESSOR
-            </h1>
-          </div>
+              <div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-amber-400 text-slate-950 uppercase tracking-wide">
+                    Supervisão Pedagógica
+                  </span>
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-white/20 text-emerald-100 font-mono">
+                    {selectedClass.code}
+                  </span>
+                  <span className="text-[11px] text-emerald-200">
+                    Visão Idêntica ao Painel do Professor
+                  </span>
+                </div>
 
-          {/* Right: User Profile Pill & Actions */}
-          <div className="flex items-center gap-3 sm:gap-4 relative">
-            <div className="relative">
-              <button
-                onClick={() => {
-                  setIsUserMenuOpen(!isUserMenuOpen);
-                  setIsNotifOpen(false);
-                }}
-                className="flex items-center gap-2.5 px-3 py-1.5 rounded-full hover:bg-slate-100 transition-all text-left border border-slate-200/80 shadow-2xs"
+                <h1 className="text-xl sm:text-2xl font-black text-white mt-1 tracking-tight">
+                  {selectedClass.name}
+                </h1>
+                <p className="text-xs text-emerald-100/90 mt-0.5">
+                  Curso: <span className="font-semibold text-white">{selectedClass.courseName}</span> • Professor:{' '}
+                  <span className="font-semibold text-white">{selectedClass.teacherName || 'Docente Responsável'}</span> • {selectedClass.schedule} • {selectedClass.room}
+                </p>
+              </div>
+            </div>
+
+            {/* Quick Switcher dropdown & Class count */}
+            <div className="flex items-center gap-3 bg-black/25 p-2.5 rounded-2xl border border-white/10 self-start lg:self-auto">
+              <div className="text-right hidden sm:block">
+                <p className="text-[10px] font-black text-emerald-200 uppercase tracking-wider">
+                  Trocar de Turma
+                </p>
+                <p className="text-[11px] text-emerald-100">
+                  {teacherClasses.length} turmas disponíveis
+                </p>
+              </div>
+
+              <select
+                value={selectedClassId}
+                onChange={(e) => setSelectedClassId(e.target.value)}
+                className="px-3 py-2 bg-white text-slate-900 text-xs font-bold rounded-xl border border-slate-200 shadow-xs cursor-pointer focus:ring-2 focus:ring-amber-400 outline-hidden max-w-[220px]"
               >
-                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#075e38] text-white flex items-center justify-center shadow-xs flex-shrink-0">
-                  <User className="w-5 h-5" />
-                </div>
+                {teacherClasses.map((cls) => (
+                  <option key={cls.id} value={cls.id}>
+                    {cls.name} ({cls.code})
+                  </option>
+                ))}
+              </select>
 
-                <div className="flex flex-col pr-1">
-                  <span className="text-xs sm:text-sm font-bold text-slate-800 leading-tight">
-                    {currentUser.name || 'Professor Lucas'}
-                  </span>
-                  <span className="text-[10px] sm:text-xs text-slate-400 font-medium leading-none mt-0.5">
-                    Professor
-                  </span>
-                </div>
-
-                <ChevronDown className="w-4 h-4 text-slate-600 ml-0.5" />
-              </button>
-
-              {isUserMenuOpen && (
-                <div className="absolute right-0 top-full mt-2 w-64 bg-white rounded-2xl shadow-xl border border-slate-200/80 p-3 z-50 animate-in fade-in slide-in-from-top-2 duration-150 text-xs">
-                  <div className="p-2 border-b border-slate-100 mb-2">
-                    <p className="font-bold text-slate-900 text-sm">{currentUser.name}</p>
-                    <p className="text-slate-400 text-[11px]">{currentUser.email}</p>
-                    <span className="inline-block mt-1.5 px-2 py-0.5 bg-emerald-50 text-emerald-800 font-bold rounded text-[10px] border border-emerald-200">
-                      Docente Autorizado
-                    </span>
-                  </div>
-
-                  <p className="px-2 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                    Alternar Módulo / Visão:
-                  </p>
-                  <div className="space-y-1">
-                    <button
-                      onClick={() => {
-                        switchRole('SECRETARIAT');
-                        setCurrentTab('sec_home');
-                        setIsUserMenuOpen(false);
-                      }}
-                      className="w-full text-left px-3 py-2 rounded-xl hover:bg-emerald-50 text-emerald-800 font-semibold flex items-center justify-between"
-                    >
-                      <span>Painel da Secretaria</span>
-                      <ArrowRight className="w-3.5 h-3.5 text-emerald-600" />
-                    </button>
-                    <button
-                      onClick={() => {
-                        switchRole('STUDENT');
-                        setCurrentTab('dashboard');
-                        setIsUserMenuOpen(false);
-                      }}
-                      className="w-full text-left px-3 py-2 rounded-xl hover:bg-slate-100 font-semibold text-slate-700 flex items-center justify-between"
-                    >
-                      <span>Portal do Aluno</span>
-                      <ArrowRight className="w-3.5 h-3.5 text-slate-400" />
-                    </button>
-                    <button
-                      onClick={() => {
-                        switchRole('FINANCE');
-                        setCurrentTab('finance');
-                        setIsUserMenuOpen(false);
-                      }}
-                      className="w-full text-left px-3 py-2 rounded-xl hover:bg-slate-100 font-semibold text-slate-700 flex items-center justify-between"
-                    >
-                      <span>Tesouraria & Caixa</span>
-                      <ArrowRight className="w-3.5 h-3.5 text-slate-400" />
-                    </button>
-                    <button
-                      onClick={() => {
-                        switchRole('SUPER_ADMIN');
-                        setCurrentTab('students');
-                        setIsUserMenuOpen(false);
-                      }}
-                      className="w-full text-left px-3 py-2 rounded-xl hover:bg-slate-100 font-semibold text-slate-700 flex items-center justify-between"
-                    >
-                      <span>Administração Geral</span>
-                      <ArrowRight className="w-3.5 h-3.5 text-slate-400" />
-                    </button>
-                  </div>
-
-                  <div className="pt-2 border-t border-slate-100 mt-2">
-                    <button
-                      onClick={() => {
-                        setIsUserMenuOpen(false);
-                        logout();
-                      }}
-                      className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-bold text-rose-600 hover:bg-rose-50 border border-rose-100 transition-colors cursor-pointer"
-                    >
-                      <LogOut className="w-3.5 h-3.5" />
-                      <span>Sair do Sistema</span>
-                    </button>
-                  </div>
-                </div>
+              {onBackToCounselor && (
+                <button
+                  onClick={onBackToCounselor}
+                  className="px-3 py-2 bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs rounded-xl transition-all cursor-pointer shadow-xs whitespace-nowrap"
+                >
+                  Grade de Turmas
+                </button>
               )}
             </div>
           </div>
         </div>
-      </header>
+      ) : (
+        <header className="w-full bg-white border-b border-slate-200/80 shadow-xs">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-5 flex items-center justify-between">
+            {/* Left: Think Green Platform Logo */}
+            <div className="flex items-center">
+              <ThinkGardenLogo />
+            </div>
+
+            {/* Center: PAINEL DO PROFESSOR Title */}
+            <div className="text-center hidden md:block">
+              <h1 className="text-base sm:text-xl font-bold tracking-[0.22em] text-slate-900 uppercase">
+                PAINEL DO PROFESSOR
+              </h1>
+            </div>
+
+            {/* Right: User Profile Pill & Actions */}
+            <div className="flex items-center gap-3 sm:gap-4 relative">
+              <div className="relative">
+                <button
+                  onClick={() => {
+                    setIsUserMenuOpen(!isUserMenuOpen);
+                    setIsNotifOpen(false);
+                  }}
+                  className="flex items-center gap-2.5 px-3 py-1.5 rounded-full hover:bg-slate-100 transition-all text-left border border-slate-200/80 shadow-2xs"
+                >
+                  <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#075e38] text-white flex items-center justify-center shadow-xs flex-shrink-0">
+                    <User className="w-5 h-5" />
+                  </div>
+
+                  <div className="flex flex-col pr-1">
+                    <span className="text-xs sm:text-sm font-bold text-slate-800 leading-tight">
+                      {currentUser.name || 'Professor Lucas'}
+                    </span>
+                    <span className="text-[10px] sm:text-xs text-slate-400 font-medium leading-none mt-0.5">
+                      Professor
+                    </span>
+                  </div>
+
+                  <ChevronDown className="w-4 h-4 text-slate-600 ml-0.5" />
+                </button>
+
+                {isUserMenuOpen && (
+                  <div className="absolute right-0 top-full mt-2 w-64 bg-white rounded-2xl shadow-xl border border-slate-200/80 p-3 z-50 animate-in fade-in slide-in-from-top-2 duration-150 text-xs">
+                    <div className="p-2 border-b border-slate-100 mb-2">
+                      <p className="font-bold text-slate-900 text-sm">{currentUser.name}</p>
+                      <p className="text-slate-400 text-[11px]">{currentUser.email}</p>
+                      <span className="inline-block mt-1.5 px-2 py-0.5 bg-emerald-50 text-emerald-800 font-bold rounded text-[10px] border border-emerald-200">
+                        Docente Autorizado
+                      </span>
+                    </div>
+
+                    <p className="px-2 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                      Alternar Módulo / Visão:
+                    </p>
+                    <div className="space-y-1">
+                      <button
+                        onClick={() => {
+                          switchRole('SECRETARIAT');
+                          setCurrentTab('sec_home');
+                          setIsUserMenuOpen(false);
+                        }}
+                        className="w-full text-left px-3 py-2 rounded-xl hover:bg-emerald-50 text-emerald-800 font-semibold flex items-center justify-between"
+                      >
+                        <span>Painel da Secretaria</span>
+                        <ArrowRight className="w-3.5 h-3.5 text-emerald-600" />
+                      </button>
+                      <button
+                        onClick={() => {
+                          switchRole('STUDENT');
+                          setCurrentTab('dashboard');
+                          setIsUserMenuOpen(false);
+                        }}
+                        className="w-full text-left px-3 py-2 rounded-xl hover:bg-slate-100 font-semibold text-slate-700 flex items-center justify-between"
+                      >
+                        <span>Portal do Aluno</span>
+                        <ArrowRight className="w-3.5 h-3.5 text-slate-400" />
+                      </button>
+                      <button
+                        onClick={() => {
+                          switchRole('FINANCE');
+                          setCurrentTab('finance');
+                          setIsUserMenuOpen(false);
+                        }}
+                        className="w-full text-left px-3 py-2 rounded-xl hover:bg-slate-100 font-semibold text-slate-700 flex items-center justify-between"
+                      >
+                        <span>Tesouraria & Caixa</span>
+                        <ArrowRight className="w-3.5 h-3.5 text-slate-400" />
+                      </button>
+                      <button
+                        onClick={() => {
+                          switchRole('SUPER_ADMIN');
+                          setCurrentTab('students');
+                          setIsUserMenuOpen(false);
+                        }}
+                        className="w-full text-left px-3 py-2 rounded-xl hover:bg-slate-100 font-semibold text-slate-700 flex items-center justify-between"
+                      >
+                        <span>Administração Geral</span>
+                        <ArrowRight className="w-3.5 h-3.5 text-slate-400" />
+                      </button>
+                    </div>
+
+                    <div className="pt-2 border-t border-slate-100 mt-2">
+                      <button
+                        onClick={() => {
+                          setIsUserMenuOpen(false);
+                          logout();
+                        }}
+                        className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-bold text-rose-600 hover:bg-rose-50 border border-rose-100 transition-colors cursor-pointer"
+                      >
+                        <LogOut className="w-3.5 h-3.5" />
+                        <span>Sair do Sistema</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </header>
+      )}
 
       {/* Main Container */}
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 sm:mt-8 space-y-6 sm:space-y-8">
-        {/* ========================================================================= */}
-        {/* 2. HORIZONTAL NAVIGATION TABS (Turmas, Chamadas, Provas, Notas, Aulas, Atividades) */}
-        {/* ========================================================================= */}
-        <div className="flex items-center justify-center gap-2 sm:gap-3 overflow-x-auto no-scrollbar py-1">
-          {/* 1. Turmas */}
-          <button
-            onClick={() => handleSelectNavTab('turmas')}
-            className={`flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-2xl text-xs sm:text-sm font-bold transition-all shadow-2xs whitespace-nowrap cursor-pointer ${
-              activeNavTab === 'turmas'
-                ? 'bg-[#075e38] text-white shadow-sm ring-2 ring-[#075e38]/20'
-                : 'bg-white text-slate-700 hover:bg-slate-50 border border-slate-200/80'
-            }`}
-          >
-            <Users className="w-4 h-4" />
-            <span>Turmas</span>
-          </button>
-
-          {/* 2. Chamadas */}
-          <button
-            onClick={() => handleSelectNavTab('chamadas')}
-            className={`flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-2xl text-xs sm:text-sm font-bold transition-all shadow-2xs whitespace-nowrap cursor-pointer ${
-              activeNavTab === 'chamadas'
-                ? 'bg-[#075e38] text-white shadow-sm ring-2 ring-[#075e38]/20'
-                : 'bg-white text-slate-700 hover:bg-slate-50 border border-slate-200/80'
-            }`}
-          >
-            <CheckCircle2 className="w-4 h-4" />
-            <span>Chamadas</span>
-            <span
-              className={`text-[10px] px-1.5 py-0.2 rounded-full font-extrabold ${
-                activeNavTab === 'chamadas' ? 'bg-white/20 text-white' : 'bg-emerald-100 text-emerald-800'
-              }`}
-            >
-              Frequência
-            </span>
-          </button>
-
-          {/* 3. Provas (EXPLICITLY REQUESTED AREA) */}
-          <button
-            onClick={() => handleSelectNavTab('provas')}
-            className={`flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-2xl text-xs sm:text-sm font-bold transition-all shadow-2xs whitespace-nowrap cursor-pointer ${
-              activeNavTab === 'provas'
-                ? 'bg-[#075e38] text-white shadow-sm ring-2 ring-[#075e38]/20'
-                : 'bg-white text-slate-700 hover:bg-slate-50 border border-slate-200/80'
-            }`}
-          >
-            <Award className="w-4 h-4" />
-            <span>Provas</span>
-            {state.assessments.length > 0 && (
-              <span
-                className={`text-[10px] px-1.5 py-0.2 rounded-full font-extrabold ${
-                  activeNavTab === 'provas' ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600'
-                }`}
-              >
-                {state.assessments.length}
-              </span>
-            )}
-          </button>
-
-          {/* 4. Notas */}
-          <button
-            onClick={() => handleSelectNavTab('notas')}
-            className={`flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-2xl text-xs sm:text-sm font-bold transition-all shadow-2xs whitespace-nowrap cursor-pointer ${
-              activeNavTab === 'notas'
-                ? 'bg-[#075e38] text-white shadow-sm ring-2 ring-[#075e38]/20'
-                : 'bg-white text-slate-700 hover:bg-slate-50 border border-slate-200/80'
-            }`}
-          >
-            <Star className="w-4 h-4" />
-            <span>Notas</span>
-          </button>
-
-          {/* 5. Aulas */}
-          <button
-            onClick={() => handleSelectNavTab('aulas')}
-            className={`flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-2xl text-xs sm:text-sm font-bold transition-all shadow-2xs whitespace-nowrap cursor-pointer ${
-              activeNavTab === 'aulas'
-                ? 'bg-[#075e38] text-white shadow-sm ring-2 ring-[#075e38]/20'
-                : 'bg-white text-slate-700 hover:bg-slate-50 border border-slate-200/80'
-            }`}
-          >
-            <PlaySquare className="w-4 h-4" />
-            <span>Aulas</span>
-          </button>
-
-          {/* 6. Atividades */}
-          <button
-            onClick={() => handleSelectNavTab('atividades')}
-            className={`flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-2xl text-xs sm:text-sm font-bold transition-all shadow-2xs whitespace-nowrap cursor-pointer ${
-              activeNavTab === 'atividades'
-                ? 'bg-[#075e38] text-white shadow-sm ring-2 ring-[#075e38]/20'
-                : 'bg-white text-slate-700 hover:bg-slate-50 border border-slate-200/80'
-            }`}
-          >
-            <ClipboardList className="w-4 h-4" />
-            <span>Atividades</span>
-            {pendingSubmissionsCount > 0 && (
-              <span className="text-[10px] px-1.5 py-0.2 rounded-full font-extrabold bg-amber-500 text-white animate-pulse">
-                {pendingSubmissionsCount}
-              </span>
-            )}
-          </button>
-        </div>
-
+      <main className={counselorMode ? "w-full space-y-6" : "max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 sm:mt-8 space-y-6 sm:space-y-8"}>
         {/* Global Action Toasts */}
         {examSuccessToast && (
           <div className="p-4 bg-emerald-50 text-emerald-900 border border-emerald-200 rounded-2xl text-xs font-bold flex items-center justify-between shadow-xs animate-in fade-in slide-in-from-top-2">
@@ -890,18 +978,275 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({ currentTab, setCur
               <span>Nova Prova cadastrada com sucesso! O conteúdo e nota máxima já estão vinculados à turma e ao portal do aluno.</span>
             </div>
             <button
-              onClick={() => setActiveNavTab('provas')}
-              className="px-3 py-1 bg-[#075e38] text-white rounded-lg text-[11px] font-bold hover:bg-[#064e2e]"
+              onClick={() => handleEnterClass(examClassId || selectedClass.id, 'conteudos')}
+              className="px-3 py-1 bg-[#075e38] text-white rounded-lg text-[11px] font-bold hover:bg-[#064e2e] cursor-pointer"
             >
-              Ver Provas
+              Ver na Turma
             </button>
           </div>
         )}
 
         {/* ========================================================================= */}
-        {/* TAB 1: TURMAS (MAIN DASHBOARD VIEW)                                       */}
+        {/* TAB 1: TURMAS (CLASS-CENTRIC WORKSPACE - GOOGLE CLASSROOM ARCHITECTURE)    */}
         {/* ========================================================================= */}
-        {activeNavTab === 'turmas' && (
+        {activeNavTab === 'turmas' && isInsideClassWorkspace && selectedClass && (
+          <div className="space-y-6">
+            <ClassHeader
+              selectedClass={selectedClass}
+              allClasses={teacherClasses}
+              onSelectClass={(classId) => setSelectedClassId(classId)}
+              onBackToClasses={() => {
+                setIsInsideClassWorkspace(false);
+                if (counselorMode && onBackToCounselor) {
+                  onBackToCounselor();
+                }
+              }}
+              activeSubTab={classWorkspaceSubTab}
+              onChangeSubTab={(tab) => setClassWorkspaceSubTab(tab)}
+              studentsCount={
+                state.enrollments.filter((e) => e.classId === selectedClass.id && e.status === 'ATIVA').length ||
+                state.students.length
+              }
+              onOpenNewExam={() => {
+                setExamClassId(selectedClass.id);
+                setIsExamModalOpen(true);
+              }}
+              onOpenNewLesson={() => setIsLessonModalOpen(true)}
+              onOpenNewAssignment={() => {
+                setNewAsgClassId(selectedClass.id);
+                setIsAssignmentModalOpen(true);
+              }}
+              counselorMode={counselorMode}
+            />
+
+            {/* SUB-TAB 1: VISÃO GERAL (Mural, Avisos, Atalhos, Indicadores) */}
+            {classWorkspaceSubTab === 'visao_geral' && (
+              <ClassOverviewTab
+                selectedClass={selectedClass}
+                studentsCount={
+                  state.enrollments.filter((e) => e.classId === selectedClass.id && e.status === 'ATIVA').length ||
+                  state.students.length
+                }
+                classAssessments={state.assessments.filter((a) => a.classId === selectedClass.id)}
+                classAssignments={state.assignments.filter((a) => a.classId === selectedClass.id)}
+                classLessons={state.lessons.filter((l) => l.classId === selectedClass.id)}
+                pendingSubmissionsCount={
+                  state.submissions.filter(
+                    (s) =>
+                      s.status === 'PENDENTE_CORRECAO' &&
+                      state.assignments.some((asg) => asg.id === s.assignmentId && asg.classId === selectedClass.id)
+                  ).length
+                }
+                attendanceRatePercent={93}
+                onNavigateToTab={(tab) => setClassWorkspaceSubTab(tab)}
+                onOpenExamDetails={(exam) => setSelectedExamForDetails(exam)}
+                onOpenNewLesson={() => setIsLessonModalOpen(true)}
+                onOpenNewAssignment={() => {
+                  setNewAsgClassId(selectedClass.id);
+                  setIsAssignmentModalOpen(true);
+                }}
+                onOpenNewExam={() => {
+                  setExamClassId(selectedClass.id);
+                  setIsExamModalOpen(true);
+                }}
+              />
+            )}
+
+            {/* SUB-TAB 2: CONTEÚDOS (Classwork com Tópicos, Materiais, Tarefas e Provas) */}
+            {classWorkspaceSubTab === 'conteudos' && (
+              <ClassContentsTab
+                selectedClass={selectedClass}
+                classLessons={state.lessons.filter((l) => l.classId === selectedClass.id)}
+                classAssignments={state.assignments.filter((a) => a.classId === selectedClass.id)}
+                classAssessments={state.assessments.filter((a) => a.classId === selectedClass.id)}
+                submissions={state.submissions}
+                onOpenNewLesson={() => setIsLessonModalOpen(true)}
+                onOpenNewAssignment={() => {
+                  setNewAsgClassId(selectedClass.id);
+                  setIsAssignmentModalOpen(true);
+                }}
+                onOpenNewExam={() => {
+                  setExamClassId(selectedClass.id);
+                  setIsExamModalOpen(true);
+                }}
+                onDeleteLesson={(id) => deleteLesson(id)}
+                onDeleteAssignment={(id) => deleteAssignment(id)}
+                onDeleteAssessment={(id) => deleteAssessment(id)}
+                onOpenExamDetails={(exam) => setSelectedExamForDetails(exam)}
+                onReviewAssignmentSubmissions={(asg) => {
+                  setSelectedAssignmentForReview(asg);
+                }}
+                onLaunchExamGrades={(exam) => {
+                  setSelectedAssessmentId(exam.id);
+                  setClassWorkspaceSubTab('notas');
+                }}
+              />
+            )}
+
+            {/* SUB-TAB 3: PESSOAS (Professores e Alunos com Desempenho e Histórico) */}
+            {classWorkspaceSubTab === 'pessoas' && (
+              <ClassPeopleTab
+                selectedClass={selectedClass}
+                students={state.students}
+                enrollments={state.enrollments}
+                assessments={state.assessments.filter((a) => a.classId === selectedClass.id)}
+                grades={state.grades}
+                assignments={state.assignments.filter((a) => a.classId === selectedClass.id)}
+                submissions={state.submissions}
+                attendanceRecords={state.attendance}
+              />
+            )}
+
+            {/* SUB-TAB 4: NOTAS (Quadro de Notas / Gradebook e Lançamento por Avaliação) */}
+            {classWorkspaceSubTab === 'notas' && (
+              <ClassGradesTab
+                selectedClass={selectedClass}
+                students={
+                  state.students.filter((st) =>
+                    state.enrollments.some((e) => e.studentId === st.id && e.classId === selectedClass.id && e.status === 'ATIVA')
+                  ).length > 0
+                    ? state.students.filter((st) =>
+                        state.enrollments.some((e) => e.studentId === st.id && e.classId === selectedClass.id && e.status === 'ATIVA')
+                      )
+                    : state.students
+                }
+                assessments={state.assessments.filter((a) => a.classId === selectedClass.id)}
+                grades={state.grades}
+                assignments={state.assignments.filter((a) => a.classId === selectedClass.id)}
+                submissions={state.submissions}
+                onSaveGrade={(g) => {
+                  saveGrade(g.assessmentId, g.studentId, g.score, g.feedback);
+                }}
+                onSaveBatchGrades={(batch) => {
+                  if (batch.length > 0) {
+                    saveBatchGrades(
+                      batch[0].assessmentId,
+                      batch.map((b) => ({ studentId: b.studentId, score: b.score, feedback: b.feedback }))
+                    );
+                  }
+                }}
+                onOpenExamDetails={(exam) => setSelectedExamForDetails(exam)}
+              />
+            )}
+
+            {/* SUB-TAB 5: CHAMADA / FREQUÊNCIA DA TURMA */}
+            {classWorkspaceSubTab === 'chamada' && (
+              <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200/80 shadow-xs space-y-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-emerald-100 text-[#075e38] flex items-center justify-center">
+                      <CalendarCheck className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h3 className="text-base sm:text-lg font-bold text-slate-900">
+                        Diário Eletrônico de Chamadas — {selectedClass.name}
+                      </h3>
+                      <p className="text-xs text-slate-500">
+                        Lançamento oficial de presenças e faltas da turma
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => handleMarkAllPresent(true)}
+                      className="px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-[#075e38] text-xs font-bold border border-emerald-200 transition-colors cursor-pointer"
+                    >
+                      Marcar Todos Presentes
+                    </button>
+                    <button
+                      onClick={handleSaveAttendance}
+                      className="px-4 py-2 rounded-xl bg-[#075e38] hover:bg-[#064e2e] text-white text-xs font-bold shadow-xs transition-colors cursor-pointer flex items-center gap-1.5"
+                    >
+                      <Save className="w-4 h-4" />
+                      <span>Salvar Chamada</span>
+                    </button>
+                  </div>
+                </div>
+
+                {attendanceSaved && (
+                  <div className="p-4 bg-emerald-50 text-emerald-900 border border-emerald-200 rounded-2xl text-xs font-bold flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-emerald-600" />
+                    <span>Chamada da turma salva com sucesso!</span>
+                  </div>
+                )}
+
+                {/* Date bar */}
+                <div className="flex flex-wrap items-center justify-between gap-3 bg-slate-50 p-3.5 rounded-2xl border border-slate-200/70">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4 text-slate-500" />
+                    <span className="text-xs font-bold text-slate-700">Data da Chamada:</span>
+                    <input
+                      type="date"
+                      value={attendanceDate}
+                      onChange={(e) => setAttendanceDate(e.target.value)}
+                      className="px-3 py-1 bg-white border border-slate-300 rounded-xl text-xs font-bold text-slate-800"
+                    />
+                  </div>
+
+                  <div className="flex items-center gap-3 text-xs font-bold">
+                    <span className="text-emerald-700 bg-emerald-100/70 px-2.5 py-1 rounded-lg">
+                      {presentCount} Presentes
+                    </span>
+                    <span className="text-rose-700 bg-rose-100/70 px-2.5 py-1 rounded-lg">
+                      {absentCount} Ausentes
+                    </span>
+                  </div>
+                </div>
+
+                {/* Students attendance list */}
+                <div className="divide-y divide-slate-100">
+                  {classEnrollments.map((enr) => {
+                    const isPresent = attendanceList[enr.studentId]?.present ?? true;
+                    return (
+                      <div
+                        key={enr.studentId}
+                        className="py-3 px-2 flex items-center justify-between gap-3 hover:bg-slate-50/70 rounded-xl transition-colors"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center font-bold text-xs">
+                            {enr.studentName
+                              .split(' ')
+                              .map((n) => n[0])
+                              .slice(0, 2)
+                              .join('')}
+                          </div>
+                          <div>
+                            <span className="text-xs sm:text-sm font-bold text-slate-900 block">
+                              {enr.studentName}
+                            </span>
+                            <span className="text-[10px] text-slate-400 font-mono">
+                              {enr.studentId}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => handleToggleAttendance(enr.studentId)}
+                            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                              isPresent
+                                ? 'bg-[#075e38] text-white shadow-2xs'
+                                : 'bg-slate-100 text-slate-400 hover:bg-slate-200'
+                            }`}
+                          >
+                            {isPresent ? '✓ Presente' : 'Ausente'}
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ========================================================================= */}
+        {/* TAB 1: TURMAS (MAIN DASHBOARD VIEW - LISTA DE TODAS AS TURMAS)            */}
+        {/* ========================================================================= */}
+        {activeNavTab === 'turmas' && !isInsideClassWorkspace && (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
             {/* LEFT COLUMN: GREETING + STATS + MINHAS TURMAS */}
             <div className="lg:col-span-8 bg-white rounded-3xl border border-slate-200/70 shadow-xs p-6 sm:p-8 space-y-6 sm:space-y-7">
@@ -984,212 +1329,110 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({ currentTab, setCur
                 </div>
               </div>
 
-              {/* Section Header: MINHAS TURMAS + '+ Nova turma' button */}
+              {/* Section Header: MINHAS TURMAS */}
               <div className="flex items-center justify-between pt-1">
                 <h3 className="text-sm sm:text-base font-black tracking-wider text-slate-900 uppercase">
                   MINHAS TURMAS
                 </h3>
-
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => {
-                      setExamClassId(selectedClassId);
-                      setIsExamModalOpen(true);
-                    }}
-                    className="px-3 py-1.5 rounded-lg bg-emerald-50 text-[#075e38] text-xs font-bold hover:bg-emerald-100 transition-colors flex items-center gap-1.5 border border-emerald-200"
-                  >
-                    <Award className="w-3.5 h-3.5" />
-                    <span>+ Nova Prova</span>
-                  </button>
-
-                  <button
-                    onClick={() => setIsNewClassModalOpen(true)}
-                    className="px-3 py-1.5 rounded-lg border border-[#075e38] text-[#075e38] text-xs font-bold hover:bg-emerald-50 transition-colors flex items-center gap-1.5"
-                  >
-                    <Plus className="w-3.5 h-3.5" />
-                    <span>Nova turma</span>
-                  </button>
-                </div>
               </div>
 
               {/* Class Cards Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {/* Card 1: SOCCER CLASS */}
-                <div className="rounded-2xl border-2 border-[#075e38] bg-white p-5 flex flex-col justify-between shadow-xs hover:shadow-md transition-shadow relative">
-                  <div>
-                    <div className="flex items-center gap-3 mb-4">
-                      <SoccerBallBadge className="w-11 h-11" />
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+                {teacherClasses.map((c) => {
+                  const style = getClassCardStyle(c);
+                  const enrolled = state.enrollments.filter(
+                    (e) => (e.classId === c.id || (c.id === 'class_soccer' && e.className.includes('Futebol')) || (c.id === 'class_eng_a' && e.className.includes('Inglês')) || (c.id === 'class_reading' && e.className.includes('Reading'))) && e.status === 'ATIVA'
+                  ).length || state.enrollments.filter((e) => e.classId === c.id && e.status === 'ATIVA').length || (c.id === 'class_soccer' ? 32 : c.id === 'class_eng_a' ? 28 : c.id === 'class_reading' ? 26 : 20);
+                  const examsCount = state.assessments.filter((a) => a.classId === c.id).length || (c.id === 'class_soccer' ? 2 : c.id === 'class_eng_a' ? 3 : c.id === 'class_reading' ? 1 : 1);
+                  const lessonsCount = state.lessons.filter((l) => l.classId === c.id).length || (c.id === 'class_soccer' ? 4 : c.id === 'class_eng_a' ? 6 : c.id === 'class_reading' ? 3 : 2);
+
+                  return (
+                    <div 
+                      key={c.id}
+                      onClick={() => handleEnterClass(c.id, 'visao_geral')}
+                      className={`rounded-2xl border-2 ${style.borderColor} bg-white p-4 sm:p-5 flex flex-col justify-between shadow-xs hover:shadow-md transition-all relative group cursor-pointer overflow-hidden`}
+                    >
                       <div>
-                        <h4 className="text-sm sm:text-base font-black text-[#075e38] tracking-tight leading-tight uppercase">
-                          SOCCER CLASS
-                        </h4>
-                        <span className="text-xs text-slate-600 font-medium">
-                          8º Ano A
-                        </span>
+                        {/* Header: Badge & Class Name with strict containment inside the card */}
+                        <div className="flex items-start gap-3 mb-3">
+                          <div className="flex-shrink-0 pt-0.5">
+                            {style.badge}
+                          </div>
+                          <div className="min-w-0 flex-1 overflow-hidden">
+                            <h4 
+                              className={`text-sm sm:text-base font-black ${style.textColor} tracking-tight leading-snug uppercase ${style.hoverText} transition-colors break-words line-clamp-2`}
+                              title={c.name}
+                            >
+                              {c.name}
+                            </h4>
+                            <span 
+                              className="text-xs text-slate-500 font-medium truncate block mt-0.5"
+                              title={`${c.code ? `${c.code} • ` : ''}${c.courseName || 'Curso'}`}
+                            >
+                              {c.code ? `${c.code} • ` : ''}{c.courseName || 'Curso'}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Metrics */}
+                        <div className="space-y-1.5 text-xs text-slate-600 my-3.5">
+                          <div className="flex items-center gap-2">
+                            <Users className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
+                            <span className="truncate">{enrolled} alunos matriculados</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Award className={`w-3.5 h-3.5 ${style.accentColor} flex-shrink-0`} />
+                            <span className="truncate">{examsCount} {examsCount === 1 ? 'avaliação' : 'avaliações'}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <PlaySquare className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
+                            <span className="truncate">{lessonsCount} {lessonsCount === 1 ? 'aula cadastrada' : 'aulas cadastradas'}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Actions */}
+                      <div className="space-y-2 pt-3 border-t border-slate-100 mt-2">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleEnterClass(c.id, 'visao_geral');
+                          }}
+                          className={`w-full py-2.5 px-3 rounded-xl ${style.btnBg} text-white font-bold text-xs flex items-center justify-center gap-2 shadow-xs transition-colors cursor-pointer`}
+                        >
+                          <BookOpen className="w-3.5 h-3.5 flex-shrink-0" />
+                          <span className="truncate">Acessar Ambiente da Turma</span>
+                          <ArrowRight className="w-3.5 h-3.5 flex-shrink-0" />
+                        </button>
+                        <div className="grid grid-cols-2 gap-2">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleEnterClass(c.id, 'chamada');
+                            }}
+                            className={`py-1.5 px-2 rounded-lg border ${style.btnBorder} ${style.btnText} text-slate-700 font-bold text-[11px] flex items-center justify-center gap-1.5 transition-colors cursor-pointer`}
+                          >
+                            <CalendarCheck className={`w-3 h-3 ${style.accentColor} flex-shrink-0`} />
+                            <span className="truncate">Chamada</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleEnterClass(c.id, 'conteudos');
+                            }}
+                            className={`py-1.5 px-2 rounded-lg border ${style.btnBorder} ${style.btnText} text-slate-700 font-bold text-[11px] flex items-center justify-center gap-1.5 transition-colors cursor-pointer`}
+                          >
+                            <BookMarked className="w-3 h-3 text-slate-500 flex-shrink-0" />
+                            <span className="truncate">Conteúdos</span>
+                          </button>
+                        </div>
                       </div>
                     </div>
-
-                    <div className="space-y-2 text-xs text-slate-600 my-4">
-                      <div className="flex items-center gap-2">
-                        <Users className="w-3.5 h-3.5 text-slate-500" />
-                        <span>
-                          {state.enrollments.filter((e) => e.classId === 'class_soccer' || e.className.includes('Futebol')).length || 32} alunos matriculados
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Award className="w-3.5 h-3.5 text-[#075e38]" />
-                        <span>
-                          {state.assessments.filter((a) => a.classId === 'class_soccer').length || 2} provas cadastradas
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <PlaySquare className="w-3.5 h-3.5 text-slate-500" />
-                        <span>4 aulas cadastradas</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2 pt-2 border-t border-slate-100">
-                    <button
-                      onClick={() => {
-                        setSelectedClassId('class_soccer');
-                        setActiveNavTab('provas');
-                      }}
-                      className="w-full py-2 px-3 rounded-xl bg-[#ecfdf5] text-[#075e38] font-bold text-xs flex items-center justify-center gap-2 hover:bg-[#d1fae5] transition-colors"
-                    >
-                      <Award className="w-3.5 h-3.5" />
-                      <span>Gerenciar Provas</span>
-                    </button>
-                    <button
-                      onClick={() => {
-                        setSelectedClassId('class_soccer');
-                        handleSelectNavTab('chamadas');
-                      }}
-                      className="w-full py-2 px-3 rounded-xl border border-[#075e38] text-[#075e38] bg-emerald-50/60 font-bold text-xs flex items-center justify-center gap-2 hover:bg-emerald-100 transition-colors"
-                    >
-                      <CalendarCheck className="w-3.5 h-3.5" />
-                      <span>Fazer Chamada da Turma</span>
-                    </button>
-                  </div>
-                </div>
-
-                {/* Card 2: ENGLISH CLASS */}
-                <div className="rounded-2xl border-2 border-[#533499] bg-white p-5 flex flex-col justify-between shadow-xs hover:shadow-md transition-shadow relative">
-                  <div>
-                    <div className="flex items-center gap-3 mb-4">
-                      <USAFlagBadge className="w-11 h-11" />
-                      <div>
-                        <h4 className="text-sm sm:text-base font-black text-[#533499] tracking-tight leading-tight uppercase">
-                          ENGLISH CLASS
-                        </h4>
-                        <span className="text-xs text-slate-600 font-medium">
-                          7º Ano B
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2 text-xs text-slate-600 my-4">
-                      <div className="flex items-center gap-2">
-                        <Users className="w-3.5 h-3.5 text-slate-500" />
-                        <span>
-                          {state.enrollments.filter((e) => e.classId === 'class_eng_a' || e.className.includes('Inglês')).length || 28} alunos matriculados
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Award className="w-3.5 h-3.5 text-[#533499]" />
-                        <span>
-                          {state.assessments.filter((a) => a.classId === 'class_eng_a').length || 3} provas cadastradas
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <PlaySquare className="w-3.5 h-3.5 text-slate-500" />
-                        <span>6 aulas cadastradas</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2 pt-2 border-t border-slate-100">
-                    <button
-                      onClick={() => {
-                        setSelectedClassId('class_eng_a');
-                        handleSelectNavTab('provas');
-                      }}
-                      className="w-full py-2 px-3 rounded-xl bg-[#f5f3ff] text-[#533499] font-bold text-xs flex items-center justify-center gap-2 hover:bg-[#ede9fe] transition-colors"
-                    >
-                      <Award className="w-3.5 h-3.5" />
-                      <span>Gerenciar Provas</span>
-                    </button>
-                    <button
-                      onClick={() => {
-                        setSelectedClassId('class_eng_a');
-                        handleSelectNavTab('chamadas');
-                      }}
-                      className="w-full py-2 px-3 rounded-xl border border-[#533499] text-[#533499] bg-purple-50/60 font-bold text-xs flex items-center justify-center gap-2 hover:bg-purple-100 transition-colors"
-                    >
-                      <CalendarCheck className="w-3.5 h-3.5" />
-                      <span>Fazer Chamada da Turma</span>
-                    </button>
-                  </div>
-                </div>
-
-                {/* Card 3: READING CLASS */}
-                <div className="rounded-2xl border-2 border-[#2563eb] bg-white p-5 flex flex-col justify-between shadow-xs hover:shadow-md transition-shadow relative">
-                  <div>
-                    <div className="flex items-center gap-3 mb-4">
-                      <ReadingBookBadge className="w-11 h-11" />
-                      <div>
-                        <h4 className="text-sm sm:text-base font-black text-[#2563eb] tracking-tight leading-tight uppercase">
-                          READING CLASS
-                        </h4>
-                        <span className="text-xs text-slate-600 font-medium">
-                          6º Ano C
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2 text-xs text-slate-600 my-4">
-                      <div className="flex items-center gap-2">
-                        <Users className="w-3.5 h-3.5 text-slate-500" />
-                        <span>
-                          {state.enrollments.filter((e) => e.classId === 'class_reading' || e.className.includes('Reading')).length || 26} alunos matriculados
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Award className="w-3.5 h-3.5 text-[#2563eb]" />
-                        <span>
-                          {state.assessments.filter((a) => a.classId === 'class_reading').length || 1} prova cadastrada
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <PlaySquare className="w-3.5 h-3.5 text-slate-500" />
-                        <span>3 aulas cadastradas</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2 pt-2 border-t border-slate-100">
-                    <button
-                      onClick={() => {
-                        setSelectedClassId('class_reading');
-                        handleSelectNavTab('provas');
-                      }}
-                      className="w-full py-2 px-3 rounded-xl bg-[#eff6ff] text-[#2563eb] font-bold text-xs flex items-center justify-center gap-2 hover:bg-[#dbeafe] transition-colors"
-                    >
-                      <Award className="w-3.5 h-3.5" />
-                      <span>Gerenciar Provas</span>
-                    </button>
-                    <button
-                      onClick={() => {
-                        setSelectedClassId('class_reading');
-                        handleSelectNavTab('chamadas');
-                      }}
-                      className="w-full py-2 px-3 rounded-xl border border-[#2563eb] text-[#2563eb] bg-blue-50/60 font-bold text-xs flex items-center justify-center gap-2 hover:bg-blue-100 transition-colors"
-                    >
-                      <CalendarCheck className="w-3.5 h-3.5" />
-                      <span>Fazer Chamada da Turma</span>
-                    </button>
-                  </div>
-                </div>
+                  );
+                })}
               </div>
             </div>
 
@@ -1205,8 +1448,8 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({ currentTab, setCur
                     </h3>
                   </div>
                   <button
-                    onClick={() => setActiveNavTab('aulas')}
-                    className="text-[11px] text-[#075e38] font-bold hover:underline"
+                    onClick={() => handleEnterClass(selectedClassId || 'class_soccer', 'conteudos')}
+                    className="text-[11px] text-[#075e38] font-bold hover:underline cursor-pointer"
                   >
                     Ver todas
                   </button>
@@ -1215,13 +1458,10 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({ currentTab, setCur
                 <div className="space-y-4">
                   {/* Item 1: Soccer Class */}
                   <div
-                    onClick={() => {
-                      setSelectedClassId('class_soccer');
-                      setActiveNavTab('aulas');
-                    }}
+                    onClick={() => handleEnterClass('class_soccer', 'conteudos')}
                     className="flex items-center justify-between pb-3.5 border-b border-slate-100 last:border-0 last:pb-0 cursor-pointer hover:bg-slate-50 p-2 rounded-xl transition-colors"
                   >
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
                       <span className="w-2.5 h-2.5 rounded-full bg-[#075e38] flex-shrink-0" />
                       <div className="text-center w-8 flex-shrink-0">
                         <span className="text-lg font-black text-slate-900 leading-none block">
@@ -1231,31 +1471,28 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({ currentTab, setCur
                           MAI
                         </span>
                       </div>
-                      <div>
-                        <h4 className="text-xs font-bold text-[#075e38] leading-tight">
+                      <div className="min-w-0 flex-1">
+                        <h4 className="text-xs font-bold text-[#075e38] leading-tight truncate">
                           Soccer Class
                         </h4>
-                        <p className="text-xs text-slate-700 font-medium leading-tight">
+                        <p className="text-xs text-slate-700 font-medium leading-tight truncate">
                           Fundamentos & Triangulações
                         </p>
                         <span className="text-[11px] text-slate-400 font-medium flex items-center gap-1 mt-0.5">
-                          <Clock className="w-3 h-3" />
-                          19:00 - 19:50
+                          <Clock className="w-3 h-3 flex-shrink-0" />
+                          <span>19:00 - 19:50</span>
                         </span>
                       </div>
                     </div>
-                    <ChevronRight className="w-4 h-4 text-slate-400" />
+                    <ChevronRight className="w-4 h-4 text-slate-400 flex-shrink-0 ml-2" />
                   </div>
 
                   {/* Item 2: English Class */}
                   <div
-                    onClick={() => {
-                      setSelectedClassId('class_eng_a');
-                      setActiveNavTab('aulas');
-                    }}
+                    onClick={() => handleEnterClass('class_eng_a', 'conteudos')}
                     className="flex items-center justify-between pb-3.5 border-b border-slate-100 last:border-0 last:pb-0 cursor-pointer hover:bg-slate-50 p-2 rounded-xl transition-colors"
                   >
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
                       <span className="w-2.5 h-2.5 rounded-full bg-[#533499] flex-shrink-0" />
                       <div className="text-center w-8 flex-shrink-0">
                         <span className="text-lg font-black text-slate-900 leading-none block">
@@ -1265,31 +1502,28 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({ currentTab, setCur
                           MAI
                         </span>
                       </div>
-                      <div>
-                        <h4 className="text-xs font-bold text-[#533499] leading-tight">
+                      <div className="min-w-0 flex-1">
+                        <h4 className="text-xs font-bold text-[#533499] leading-tight truncate">
                           English Class
                         </h4>
-                        <p className="text-xs text-slate-700 font-medium leading-tight">
+                        <p className="text-xs text-slate-700 font-medium leading-tight truncate">
                           Past Continuous & Dialogues
                         </p>
                         <span className="text-[11px] text-slate-400 font-medium flex items-center gap-1 mt-0.5">
-                          <Clock className="w-3 h-3" />
-                          20:00 - 20:50
+                          <Clock className="w-3 h-3 flex-shrink-0" />
+                          <span>20:00 - 20:50</span>
                         </span>
                       </div>
                     </div>
-                    <ChevronRight className="w-4 h-4 text-slate-400" />
+                    <ChevronRight className="w-4 h-4 text-slate-400 flex-shrink-0 ml-2" />
                   </div>
 
                   {/* Item 3: Reading Class */}
                   <div
-                    onClick={() => {
-                      setSelectedClassId('class_reading');
-                      setActiveNavTab('aulas');
-                    }}
+                    onClick={() => handleEnterClass('class_reading', 'conteudos')}
                     className="flex items-center justify-between pb-1 cursor-pointer hover:bg-slate-50 p-2 rounded-xl transition-colors"
                   >
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
                       <span className="w-2.5 h-2.5 rounded-full bg-[#2563eb] flex-shrink-0" />
                       <div className="text-center w-8 flex-shrink-0">
                         <span className="text-lg font-black text-slate-900 leading-none block">
@@ -1299,20 +1533,20 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({ currentTab, setCur
                           MAI
                         </span>
                       </div>
-                      <div>
-                        <h4 className="text-xs font-bold text-[#2563eb] leading-tight">
+                      <div className="min-w-0 flex-1">
+                        <h4 className="text-xs font-bold text-[#2563eb] leading-tight truncate">
                           Reading Class
                         </h4>
-                        <p className="text-xs text-slate-700 font-medium leading-tight">
+                        <p className="text-xs text-slate-700 font-medium leading-tight truncate">
                           Short Story: Think Green
                         </p>
                         <span className="text-[11px] text-slate-400 font-medium flex items-center gap-1 mt-0.5">
-                          <Clock className="w-3 h-3" />
-                          18:00 - 18:50
+                          <Clock className="w-3 h-3 flex-shrink-0" />
+                          <span>18:00 - 18:50</span>
                         </span>
                       </div>
                     </div>
-                    <ChevronRight className="w-4 h-4 text-slate-400" />
+                    <ChevronRight className="w-4 h-4 text-slate-400 flex-shrink-0 ml-2" />
                   </div>
                 </div>
               </div>
@@ -1365,10 +1599,10 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({ currentTab, setCur
                   )}
 
                   <button
-                    onClick={() => setActiveNavTab('atividades')}
-                    className="w-full py-2 px-3 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors text-center block mt-2"
+                    onClick={() => handleEnterClass(selectedClassId || 'class_soccer', 'conteudos')}
+                    className="w-full py-2 px-3 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors text-center block mt-2 cursor-pointer"
                   >
-                    Ver Central de Atividades
+                    Ver Atividades nas Turmas
                   </button>
                 </div>
               </div>
@@ -1529,7 +1763,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({ currentTab, setCur
                     <div
                       key={c.id}
                       onClick={() => setSelectedClassId(c.id)}
-                      className={`p-4 rounded-2xl border-2 transition-all cursor-pointer relative flex flex-col justify-between gap-3 ${
+                      className={`p-4 rounded-2xl border-2 transition-all cursor-pointer relative flex flex-col justify-between gap-3 overflow-hidden ${
                         isSelected
                           ? 'border-[#075e38] bg-emerald-50/50 shadow-md ring-2 ring-[#075e38]/20'
                           : 'border-slate-200 bg-white hover:border-emerald-300 hover:bg-slate-50/70 hover:shadow-xs'
@@ -1542,15 +1776,16 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({ currentTab, setCur
                         </span>
                       )}
 
-                      <div className="flex items-start gap-3">
+                      <div className="flex items-start gap-3 min-w-0">
                         <div className="p-1 rounded-xl bg-white border border-slate-200/80 shadow-2xs flex-shrink-0">
                           {renderClassBadge(c.name, c.courseName)}
                         </div>
-                        <div className="min-w-0">
+                        <div className="min-w-0 flex-1 overflow-hidden">
                           <h4
-                            className={`text-sm font-black tracking-tight leading-tight ${
+                            className={`text-sm font-black tracking-tight leading-tight break-words line-clamp-2 ${
                               isSelected ? 'text-[#075e38]' : 'text-slate-900'
                             }`}
+                            title={c.name}
                           >
                             {c.name}
                           </h4>
@@ -2893,11 +3128,11 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({ currentTab, setCur
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-5">
               <div>
                 <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                  <PlaySquare className="w-5 h-5 text-[#075e38]" />
-                  Aulas Cadastradas & Publicação de Materiais
+                  <FileText className="w-5 h-5 text-[#075e38]" />
+                  Aulas Cadastradas & Publicação de Documentos
                 </h2>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  Disponibilize apostilas em PDF, vídeos e resumos para os alunos da turma.
+                  Disponibilize documentos em PDF/DOC, textos escritos e links pedagógicos para os alunos da turma.
                 </p>
               </div>
 
@@ -4048,102 +4283,24 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({ currentTab, setCur
         </Modal>
       )}
 
-      {/* Modal Criar Nova Turma */}
-      <Modal
-        isOpen={isNewClassModalOpen}
-        onClose={() => setIsNewClassModalOpen(false)}
-        title="Cadastrar Nova Turma"
-        subtitle="Think Green Academic Core"
-      >
-        <form onSubmit={handleCreateClass} className="space-y-4 text-xs">
-          <div>
-            <label className="block font-bold text-slate-700 mb-1">Nome da Turma</label>
-            <input
-              type="text"
-              required
-              placeholder="Ex: Soccer Class - 9º Ano B ou English Class - Beginners"
-              value={newClassName}
-              onChange={(e) => setNewClassName(e.target.value)}
-              className="w-full p-2.5 border border-slate-300 rounded-xl"
-            />
-          </div>
-
-          <div>
-            <label className="block font-bold text-slate-700 mb-1">Código da Turma</label>
-            <input
-              type="text"
-              required
-              placeholder="Ex: SOC-9B ou ENG-7B"
-              value={newClassCode}
-              onChange={(e) => setNewClassCode(e.target.value)}
-              className="w-full p-2.5 border border-slate-300 rounded-xl font-mono uppercase"
-            />
-          </div>
-
-          <div>
-            <label className="block font-bold text-slate-700 mb-1">Modalidade / Curso</label>
-            <select
-              value={newClassCourse}
-              onChange={(e) => setNewClassCourse(e.target.value)}
-              className="w-full p-2.5 border border-slate-300 rounded-xl bg-white font-bold"
-            >
-              <option value="Academia de Futebol Think Green">Academia de Futebol Think Green</option>
-              <option value="Curso Livre de Inglês">Curso Livre de Inglês</option>
-              <option value="Academia & Treinos para Mulheres">Academia & Treinos para Mulheres</option>
-              <option value="Preschool">Preschool</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block font-bold text-slate-700 mb-1">Horário das Aulas</label>
-            <input
-              type="text"
-              required
-              value={newClassSchedule}
-              onChange={(e) => setNewClassSchedule(e.target.value)}
-              placeholder="Ex: Terças e Quintas, 19:00 - 19:50"
-              className="w-full p-2.5 border border-slate-300 rounded-xl"
-            />
-          </div>
-
-          <div>
-            <label className="block font-bold text-slate-700 mb-1">Espaço / Sala</label>
-            <input
-              type="text"
-              required
-              value={newClassRoom}
-              onChange={(e) => setNewClassRoom(e.target.value)}
-              placeholder="Ex: Campo Sintético 01 / Sala 02"
-              className="w-full p-2.5 border border-slate-300 rounded-xl"
-            />
-          </div>
-
-          <div className="flex justify-end gap-2 pt-3">
-            <button
-              type="button"
-              onClick={() => setIsNewClassModalOpen(false)}
-              className="px-4 py-2 border border-slate-300 rounded-xl text-slate-700 font-semibold"
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              className="px-4 py-2 bg-[#075e38] text-white rounded-xl font-bold hover:bg-[#064e2e]"
-            >
-              Salvar Turma
-            </button>
-          </div>
-        </form>
-      </Modal>
-
-      {/* Modal Criar Nova Aula */}
+      {/* Modal Criar Nova Aula (Apenas Documentos, Texto Escrito ou Links) */}
       <Modal
         isOpen={isLessonModalOpen}
         onClose={() => setIsLessonModalOpen(false)}
-        title="Publicar Nova Aula no AVA"
+        title="Publicar Nova Aula no AVA (Documento / Texto / Links)"
         subtitle={`Turma: ${selectedClass?.name}`}
       >
         <form onSubmit={handleCreateLesson} className="space-y-4 text-xs">
+          <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-[11px] text-emerald-900 space-y-1">
+            <p className="font-bold flex items-center gap-1.5">
+              <FileText className="w-3.5 h-3.5 text-[#075e38]" />
+              Formato Oficial das Aulas no AVA:
+            </p>
+            <p className="text-emerald-800">
+              As aulas são compostas exclusivamente por <strong>documentos (PDF/DOC)</strong>, <strong>texto escrito</strong> e <strong>links de estudo</strong>, proporcionando aos alunos acesso a materiais didáticos estruturados.
+            </p>
+          </div>
+
           <div>
             <label className="block font-bold text-slate-700 mb-1">Título da Aula</label>
             <input
@@ -4152,30 +4309,58 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({ currentTab, setCur
               placeholder="Ex: Aula 09: Expressões de Tempo e Preposições"
               value={newLessonTitle}
               onChange={(e) => setNewLessonTitle(e.target.value)}
-              className="w-full p-2.5 border border-slate-300 rounded-xl"
+              className="w-full p-2.5 border border-slate-300 rounded-xl font-medium"
             />
           </div>
 
           <div>
-            <label className="block font-bold text-slate-700 mb-1">Descrição e Roteiro de Estudo</label>
+            <label className="block font-bold text-slate-700 mb-1">Texto Escrito & Roteiro Pedagógico da Aula</label>
             <textarea
-              rows={3}
+              rows={4}
               required
-              placeholder="Descreva o conteúdo abordado na aula..."
+              placeholder="Digite as explicações conceituais, roteiro de leitura, orientações teóricas e resumos para os alunos..."
               value={newLessonDesc}
               onChange={(e) => setNewLessonDesc(e.target.value)}
-              className="w-full p-2.5 border border-slate-300 rounded-xl"
+              className="w-full p-2.5 border border-slate-300 rounded-xl text-xs leading-relaxed"
             />
           </div>
 
           <div>
-            <label className="block font-bold text-slate-700 mb-1">Nome do Anexo / Apostila</label>
+            <label className="block font-bold text-slate-700 mb-1">
+              Documento / Apostila Didática (PDF ou DOC)
+            </label>
             <input
               type="text"
+              placeholder="Ex: Apostila_Aula_09_Grammar.pdf ou Documento_Exercicios.docx"
               value={newLessonPdf}
               onChange={(e) => setNewLessonPdf(e.target.value)}
               className="w-full p-2.5 border border-slate-300 rounded-xl font-mono text-xs"
             />
+            <p className="text-[10px] text-slate-500 mt-1">
+              Informe o nome do arquivo que ficará disponível para download ou leitura pelo aluno.
+            </p>
+          </div>
+
+          <div className="p-3 bg-purple-50/70 border border-purple-200 rounded-xl space-y-2">
+            <label className="block font-bold text-purple-900">
+              Link de Referência / Leitura Complementar (Opcional)
+            </label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <input
+                type="url"
+                placeholder="https://exemplo.org/artigo-estudo"
+                value={newLessonLink}
+                onChange={(e) => setNewLessonLink(e.target.value)}
+                className="w-full p-2 border border-purple-300 rounded-lg text-xs bg-white font-mono"
+              />
+              <input
+                type="text"
+                placeholder="Rótulo (Ex: Artigo BBC Learning)"
+                value={newLessonLinkTitle}
+                onChange={(e) => setNewLessonLinkTitle(e.target.value)}
+                className="w-full p-2 border border-purple-300 rounded-lg text-xs bg-white"
+              />
+            </div>
           </div>
 
           <div className="flex justify-end gap-2 pt-3">
@@ -4188,9 +4373,9 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({ currentTab, setCur
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-[#075e38] text-white rounded-xl font-bold hover:bg-[#064e2e]"
+              className="px-4 py-2 bg-[#075e38] text-white rounded-xl font-bold hover:bg-[#064e2e] shadow-2xs"
             >
-              Publicar no AVA
+              Publicar Aula no AVA
             </button>
           </div>
         </form>
@@ -4382,6 +4567,116 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({ currentTab, setCur
           </div>
         </form>
       </Modal>
+
+      {/* Modal Entregas da Atividade */}
+      {selectedAssignmentForReview && (
+        <Modal
+          isOpen={!!selectedAssignmentForReview}
+          onClose={() => setSelectedAssignmentForReview(null)}
+          title={`Entregas: ${selectedAssignmentForReview.title}`}
+          subtitle={`Prazo: ${selectedAssignmentForReview.dueDate} • Valor Máximo: ${selectedAssignmentForReview.maxScore} pontos`}
+        >
+          <div className="space-y-4 text-xs">
+            <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200">
+              <p className="font-bold text-slate-800 mb-1">Instruções da Atividade:</p>
+              <p className="text-slate-600 leading-relaxed">{selectedAssignmentForReview.instructions}</p>
+            </div>
+
+            <div className="space-y-2">
+              <h4 className="font-bold text-slate-800 text-xs flex items-center justify-between">
+                <span>Relação de Alunos & Entregas</span>
+                <span className="text-[11px] text-slate-500 font-normal">
+                  {state.submissions.filter((s) => s.assignmentId === selectedAssignmentForReview.id).length} entregas registradas
+                </span>
+              </h4>
+
+              <div className="divide-y divide-slate-100 border border-slate-200 rounded-2xl overflow-hidden max-h-80 overflow-y-auto">
+                {(state.enrollments.filter((e) => e.classId === selectedAssignmentForReview.classId && e.status === 'ATIVA').length > 0
+                  ? state.enrollments.filter((e) => e.classId === selectedAssignmentForReview.classId && e.status === 'ATIVA')
+                  : state.students
+                ).map((enrollment) => {
+                  const studentName = 'studentName' in enrollment ? enrollment.studentName : enrollment.name;
+                  const studentId = 'studentId' in enrollment ? enrollment.studentId : enrollment.id;
+                  const sub = state.submissions.find(
+                    (s) => (s.assignmentId === selectedAssignmentForReview.id || s.assignmentTitle === selectedAssignmentForReview.title) &&
+                           s.studentId === studentId
+                  );
+
+                  return (
+                    <div key={studentId} className="p-3 bg-white hover:bg-slate-50 flex items-center justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="font-bold text-slate-900 truncate">{studentName}</p>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          {sub ? (
+                            <>
+                              <Badge status={sub.status} size="sm" />
+                              <span className="text-[10px] text-slate-400 font-mono">Em: {sub.submittedAt}</span>
+                              {sub.grade !== undefined && (
+                                <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded">
+                                  Nota: {sub.grade}/{selectedAssignmentForReview.maxScore}
+                                </span>
+                              )}
+                            </>
+                          ) : (
+                            <span className="text-[10px] font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full border border-rose-200">
+                              Não Entregue
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-1.5 flex-shrink-0">
+                        {sub && (
+                          <button
+                            type="button"
+                            onClick={() => setSelectedSubmissionForViewModal(sub)}
+                            className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg text-[11px] cursor-pointer"
+                          >
+                            Ver Resposta
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (sub) {
+                              setCorrectingSub(sub);
+                              setScoreInput(sub.grade || 90);
+                              setFeedbackText(sub.feedback || '');
+                            } else {
+                              setManualTarget({
+                                studentId,
+                                studentName,
+                                assignmentId: selectedAssignmentForReview.id,
+                                assignmentTitle: selectedAssignmentForReview.title,
+                              });
+                              setManualScore(selectedAssignmentForReview.maxScore);
+                              setManualFeedback('Visto presencial em sala de aula.');
+                              setIsManualModalOpen(true);
+                            }
+                          }}
+                          className="px-2.5 py-1.5 bg-[#075e38] hover:bg-[#064e2e] text-white font-bold rounded-lg text-[11px] cursor-pointer"
+                        >
+                          {sub ? 'Avaliar' : 'Dar Visto'}
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setSelectedAssignmentForReview(null)}
+                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold cursor-pointer"
+              >
+                Fechar
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
 
       {/* Modal Visualizar Envio Completo do Aluno */}
       {selectedSubmissionForViewModal && (

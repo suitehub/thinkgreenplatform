@@ -18,6 +18,7 @@ import {
   GraduationCap,
   ChevronRight,
   Filter,
+  Clock,
 } from 'lucide-react';
 import { useApp } from '../../../context/AppContext';
 import { Badge } from '../../common/Badge';
@@ -30,9 +31,11 @@ import { SecretariatHomeTab } from './tabs/SecretariatHomeTab';
 import { SecretariatEnrollmentsTab } from './tabs/SecretariatEnrollmentsTab';
 import { SecretariatClassesTab } from './tabs/SecretariatClassesTab';
 import { SecretariatDocumentsTab } from './tabs/SecretariatDocumentsTab';
+import { SecretariatCounselorTab } from './tabs/SecretariatCounselorTab';
 import { SecretariatImportTab } from './tabs/SecretariatImportTab';
 import { StudentDossierModal } from './StudentDossierModal';
 import { SecretariatSupportModal } from './SecretariatSupportModal';
+import { PendingRegistrationsQueue } from './PendingRegistrationsQueue';
 
 interface SecretariatModuleProps {
   currentTab: string;
@@ -73,6 +76,9 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
     }
     return null;
   });
+
+  // Toggle for showing Pending Registrations Queue directly in the New Student tab
+  const [showPendingQueueInWizard, setShowPendingQueueInWizard] = useState(false);
 
   // Sync inspectStudent if state.students changes or selectedStudentIdForDetail is passed
   useEffect(() => {
@@ -184,7 +190,9 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
           />
         );
 
-      case 'sec_new_student':
+      case 'sec_new_student': {
+        const pendingCount = (state.pendingRegistrations || []).filter((p) => p.status === 'PENDENTE').length;
+
         return (
           <div className="bg-white p-6 sm:p-8 rounded-2xl border border-slate-100/90 shadow-[0_2px_8px_rgba(0,0,0,0.03)] space-y-6">
             <div className="border-b border-slate-100 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -206,8 +214,55 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
               </button>
             </div>
 
-            {/* Stepper Indicator */}
-            <div className="flex items-center justify-between max-w-2xl mx-auto text-xs font-bold text-slate-400">
+            {/* Bloco para acessar a Fila de Pendentes da Recepção */}
+            <div className="bg-gradient-to-r from-amber-50 to-orange-50/60 border border-amber-300 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-2xs">
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center flex-shrink-0 shadow-sm">
+                  <Clock className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3 className="text-sm font-black text-slate-900">
+                      Fila de Cadastros Pendentes da Recepção
+                    </h3>
+                    <span className="px-2.5 py-0.5 rounded-full text-xs font-black bg-amber-200 text-amber-900 border border-amber-300">
+                      {pendingCount} {pendingCount === 1 ? 'pendente' : 'pendentes'}
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-600 mt-0.5">
+                    Alunos pré-cadastrados no balcão que aguardam homologação da Secretaria para aprovar, editar ou reprovar.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowPendingQueueInWizard(!showPendingQueueInWizard)}
+                  className={`px-4 py-2.5 rounded-xl font-black text-xs flex items-center gap-2 transition-all cursor-pointer whitespace-nowrap shadow-xs ${
+                    showPendingQueueInWizard
+                      ? 'bg-slate-800 text-white hover:bg-slate-900'
+                      : 'bg-amber-600 hover:bg-amber-700 text-white'
+                  }`}
+                >
+                  <Clock className="w-4 h-4" />
+                  <span>
+                    {showPendingQueueInWizard
+                      ? 'Voltar ao Formulário Direto'
+                      : `Acessar Fila de Pendentes (${pendingCount})`}
+                  </span>
+                </button>
+              </div>
+            </div>
+
+            {showPendingQueueInWizard ? (
+              <PendingRegistrationsQueue
+                onBackToWizard={() => setShowPendingQueueInWizard(false)}
+              />
+            ) : (
+              <>
+                {/* Stepper Indicator */}
+                <div className="flex items-center justify-between max-w-2xl mx-auto text-xs font-bold text-slate-400">
               <div
                 className={`flex items-center gap-2 cursor-pointer ${
                   wizardStep >= 1 ? 'text-[#075e38]' : ''
@@ -634,8 +689,11 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
                 </div>
               </div>
             )}
-          </div>
-        );
+            </>
+          )}
+        </div>
+      );
+    }
 
       case 'sec_students':
         return (
@@ -815,6 +873,13 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
           </div>
         );
 
+      case 'sec_pending_queue':
+        return (
+          <PendingRegistrationsQueue
+            onBackToWizard={() => setCurrentTab('sec_new_student')}
+          />
+        );
+
       case 'sec_enrollments':
         return <SecretariatEnrollmentsTab />;
 
@@ -823,6 +888,9 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
 
       case 'sec_documents':
         return <SecretariatDocumentsTab />;
+
+      case 'sec_counselor':
+        return <SecretariatCounselorTab />;
 
       case 'sec_import':
         return <SecretariatImportTab />;

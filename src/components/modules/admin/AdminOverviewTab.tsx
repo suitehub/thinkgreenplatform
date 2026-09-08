@@ -141,7 +141,7 @@ export const AdminOverviewTab: React.FC<AdminOverviewTabProps> = ({
             <div className="flex items-center justify-between p-2.5 bg-slate-50 rounded-xl border border-slate-100">
               <span className="text-slate-600 font-medium">Critério Mínimo de Aprovação:</span>
               <span className="font-bold text-slate-800">
-                {settings.minimumPassingGrade || 60} pts • {settings.attendanceRequirementPercent || 75}% freq.
+                {settings.minimumPassingGrade || 60} pts • Presença Informativa (Sem reprovação)
               </span>
             </div>
 

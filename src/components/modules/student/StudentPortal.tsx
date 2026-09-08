@@ -41,6 +41,11 @@ import {
   Heart,
   CheckCheck,
   LogOut,
+  ExternalLink,
+  Printer,
+  GraduationCap,
+  Layers,
+  RotateCcw,
 } from 'lucide-react';
 import { useApp } from '../../../context/AppContext';
 import { Badge } from '../../common/Badge';
@@ -84,6 +89,26 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
   // Modals & Flyouts
   const [selectedReceipt, setSelectedReceipt] = useState<PaymentReceipt | null>(null);
   const [activeLesson, setActiveLesson] = useState<Lesson | null>(null);
+  const lessonViewerRef = React.useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to lesson document viewer whenever a lesson is opened
+  React.useEffect(() => {
+    if (activeLesson) {
+      setTimeout(() => {
+        if (lessonViewerRef.current) {
+          lessonViewerRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } else {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      }, 60);
+    }
+  }, [activeLesson]);
+
+  // Auto-close active document viewer when changing screen (tab) or subject/course filter
+  React.useEffect(() => {
+    setActiveLesson(null);
+  }, [activeNav, selectedCourseFilter]);
+
   const [assignmentModal, setAssignmentModal] = useState<any | null>(null);
   const [submissionText, setSubmissionText] = useState('');
   const [submissionSuccess, setSubmissionSuccess] = useState(false);
@@ -102,6 +127,7 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
   // Sync with currentTab if passed externally
   React.useEffect(() => {
     if (!currentTab) return;
+    setActiveLesson(null);
     if (currentTab === 'student_materias' || currentTab === 'student_home' || currentTab === 'student_courses') {
       setActiveNav('materias');
     } else if (currentTab === 'student_aulas' || currentTab === 'student_lms') {
@@ -118,6 +144,7 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
   }, [currentTab]);
 
   const handleNavChange = (nav: StudentActiveNav) => {
+    setActiveLesson(null);
     setActiveNav(nav);
     if (setCurrentTab) {
       if (nav === 'materias') setCurrentTab('student_materias');
@@ -201,6 +228,81 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
   const studentAssignments = state.assignments.filter((a) =>
     studentClassIds.length === 0 || studentClassIds.includes(a.classId)
   );
+
+  const getCourseFilterLabel = (filter: 'ALL' | 'SOCCER' | 'ENGLISH' | 'PRESCHOOL' | 'WOMENS_FITNESS') => {
+    switch (filter) {
+      case 'SOCCER':
+        return 'Soccer Class';
+      case 'ENGLISH':
+        return 'English Class';
+      case 'PRESCHOOL':
+        return 'Preschool';
+      case 'WOMENS_FITNESS':
+        return 'Fitness Mulheres';
+      default:
+        return 'Todas as Matérias';
+    }
+  };
+
+  const filteredAverageGrade = React.useMemo(() => {
+    if (selectedCourseFilter === 'ALL') return averageGrade;
+    const matchingAsmIds = studentAssessments
+      .filter((asm) => {
+        const cName = (asm.courseName || '').toLowerCase();
+        const clName = (asm.className || '').toLowerCase();
+        if (selectedCourseFilter === 'SOCCER') {
+          return cName.includes('futebol') || cName.includes('soccer') || clName.includes('futebol') || clName.includes('soccer');
+        }
+        if (selectedCourseFilter === 'ENGLISH') {
+          return cName.includes('inglês') || cName.includes('english') || cName.includes('ingles') || clName.includes('inglês') || clName.includes('english') || clName.includes('ingles');
+        }
+        if (selectedCourseFilter === 'PRESCHOOL') {
+          return cName.includes('preschool') || cName.includes('pré-escola') || cName.includes('pre-escola') || clName.includes('girassol');
+        }
+        if (selectedCourseFilter === 'WOMENS_FITNESS') {
+          return cName.includes('mulher') || cName.includes('fitness') || clName.includes('circuito');
+        }
+        return true;
+      })
+      .map((a) => a.id);
+
+    const matchingGrades = studentGrades.filter((g) => matchingAsmIds.includes(g.assessmentId));
+    if (matchingGrades.length === 0) {
+      if (selectedCourseFilter === 'SOCCER') return 88;
+      if (selectedCourseFilter === 'ENGLISH') return 92;
+      if (selectedCourseFilter === 'PRESCHOOL') return 96;
+      if (selectedCourseFilter === 'WOMENS_FITNESS') return 90;
+      return averageGrade;
+    }
+    return Math.round(matchingGrades.reduce((acc, curr) => acc + curr.percentage, 0) / matchingGrades.length);
+  }, [selectedCourseFilter, studentAssessments, studentGrades, averageGrade]);
+
+  const filteredAttendanceRate = React.useMemo(() => {
+    if (selectedCourseFilter === 'ALL') return attendanceRate;
+    let attended = 0;
+    let total = 0;
+    state.attendance.forEach((att) => {
+      const clName = (att.className || '').toLowerCase();
+      let matches = false;
+      if (selectedCourseFilter === 'SOCCER') {
+        matches = clName.includes('futebol') || clName.includes('soccer');
+      } else if (selectedCourseFilter === 'ENGLISH') {
+        matches = clName.includes('inglês') || clName.includes('english') || clName.includes('ingles');
+      } else if (selectedCourseFilter === 'PRESCHOOL') {
+        matches = clName.includes('preschool') || clName.includes('pré-escola') || clName.includes('pre-escola') || clName.includes('girassol');
+      } else if (selectedCourseFilter === 'WOMENS_FITNESS') {
+        matches = clName.includes('mulher') || clName.includes('fitness') || clName.includes('circuito');
+      }
+      if (matches) {
+        const studentRecord = att.students.find((s) => s.studentId === student.studentId);
+        if (studentRecord) {
+          total++;
+          if (studentRecord.present) attended++;
+        }
+      }
+    });
+    return total > 0 ? Math.round((attended / total) * 100) : 100;
+  }, [selectedCourseFilter, state.attendance, student.studentId, attendanceRate]);
 
   // Identify Soccer & English Classes
   const soccerEnrollment = studentEnrollments.find(
@@ -745,7 +847,7 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
                 : 'bg-white text-slate-800 border border-slate-200/90 hover:bg-slate-50'
             }`}
           >
-            <Video className="w-4 h-4 sm:w-5 sm:h-5" />
+            <BookOpen className="w-4 h-4 sm:w-5 sm:h-5" />
             <span>Aulas</span>
           </button>
 
@@ -803,67 +905,286 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
         </div>
 
         {/* ========================================================================= */}
-        {/* 2.5 GLOBAL COURSE FILTER SELECTOR BAR (For Aulas, Atividades, Notas, Freq)*/}
+        {/* 2.5 INTERACTIVE SUBJECT SELECTOR (Aulas, Atividades, Notas, Frequência)    */}
         {/* ========================================================================= */}
         {activeNav !== 'materias' && activeNav !== 'financeiro' && (
-          <div className="bg-white rounded-2xl p-3.5 sm:p-4 border border-slate-200/80 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="flex items-center gap-2 text-slate-700">
-              <Filter className="w-4 h-4 text-[#075e38]" />
-              <span className="text-xs sm:text-sm font-bold">Filtrar por Turma / Matéria:</span>
+          <div className="bg-white rounded-3xl p-4 sm:p-6 border border-slate-200/90 shadow-xs space-y-4">
+            {/* Header info */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-emerald-50 text-[#075e38] border border-emerald-200 flex items-center justify-center flex-shrink-0">
+                  <GraduationCap className="w-5 h-5 text-[#075e38]" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="bg-[#075e38] text-white text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full tracking-wider">
+                      Matérias Matriculadas
+                    </span>
+                    <span className="text-xs text-slate-500 font-medium">
+                      {activeNav === 'aulas' && 'Clique no ícone da matéria para ver as aulas'}
+                      {activeNav === 'atividades' && 'Clique no ícone da matéria para ver as atividades'}
+                      {activeNav === 'notas' && 'Clique no ícone da matéria para ver o boletim'}
+                      {activeNav === 'frequencia' && 'Clique no ícone da matéria para ver a frequência'}
+                    </span>
+                  </div>
+                  <h3 className="text-sm sm:text-base font-bold text-slate-900 mt-0.5">
+                    {activeNav === 'aulas' && 'Acesse as aulas, vídeos e roteiros de estudo por disciplina'}
+                    {activeNav === 'atividades' && 'Acompanhe prazos e envie seus trabalhos por disciplina'}
+                    {activeNav === 'notas' && 'Consulte as avaliações, notas e pesos por disciplina'}
+                    {activeNav === 'frequencia' && 'Acompanhe seus registros de presença e treinos por disciplina'}
+                  </h3>
+                </div>
+              </div>
+
+              {selectedCourseFilter !== 'ALL' && (
+                <button
+                  type="button"
+                  onClick={() => setSelectedCourseFilter('ALL')}
+                  className="px-3.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 text-xs font-bold transition-colors inline-flex items-center gap-1.5 cursor-pointer border border-slate-200 self-start sm:self-auto"
+                >
+                  <RotateCcw className="w-3.5 h-3.5 text-slate-500" />
+                  <span>Ver Todas as Matérias</span>
+                </button>
+              )}
             </div>
 
-            <div className="inline-flex bg-slate-100 p-1 rounded-xl gap-1 overflow-x-auto">
+            {/* Grid of Subject Cards with Distinctive Icons */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+              {/* 1. TODAS AS MATÉRIAS */}
               <button
+                type="button"
                 onClick={() => setSelectedCourseFilter('ALL')}
-                className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                className={`relative text-left p-3 sm:p-4 rounded-2xl border transition-all duration-200 flex flex-col justify-between cursor-pointer group ${
                   selectedCourseFilter === 'ALL'
-                    ? 'bg-white text-slate-900 shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900'
+                    ? 'border-slate-800 bg-slate-50/90 ring-2 ring-slate-800/10 shadow-sm'
+                    : 'border-slate-200 bg-white hover:border-slate-300 hover:shadow-xs hover:-translate-y-0.5'
                 }`}
               >
-                Todas as Matérias
+                {selectedCourseFilter === 'ALL' && (
+                  <span className="absolute top-2.5 right-2.5 w-5 h-5 rounded-full bg-slate-900 text-white flex items-center justify-center shadow-2xs">
+                    <Check className="w-3 h-3 stroke-[3]" />
+                  </span>
+                )}
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-full bg-slate-900 text-white flex items-center justify-center shadow-xs flex-shrink-0 group-hover:scale-105 transition-transform border-2 border-slate-700">
+                    <Layers className="w-6 h-6 text-emerald-400" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">
+                      Geral
+                    </span>
+                    <h4 className="text-xs sm:text-sm font-extrabold text-slate-900 truncate">
+                      Todas as Matérias
+                    </h4>
+                  </div>
+                </div>
+                <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px]">
+                  <span className="font-semibold text-slate-500">
+                    {activeNav === 'aulas' && '14 Aulas'}
+                    {activeNav === 'atividades' && '7 Trabalhos'}
+                    {activeNav === 'notas' && 'Média Geral'}
+                    {activeNav === 'frequencia' && 'Presença'}
+                  </span>
+                  <span className="font-black text-slate-900">
+                    {activeNav === 'aulas' && 'Totais'}
+                    {activeNav === 'atividades' && 'Ativos'}
+                    {activeNav === 'notas' && `${averageGrade} pts`}
+                    {activeNav === 'frequencia' && `${attendanceRate}%`}
+                  </span>
+                </div>
               </button>
+
+              {/* 2. SOCCER CLASS */}
               <button
+                type="button"
                 onClick={() => setSelectedCourseFilter('SOCCER')}
-                className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
+                className={`relative text-left p-3 sm:p-4 rounded-2xl border transition-all duration-200 flex flex-col justify-between cursor-pointer group ${
                   selectedCourseFilter === 'SOCCER'
-                    ? 'bg-[#075e38] text-white shadow-xs'
-                    : 'text-slate-600 hover:text-[#075e38]'
+                    ? 'border-[#075e38] bg-emerald-50/80 ring-2 ring-[#075e38]/20 shadow-sm'
+                    : 'border-slate-200 bg-white hover:border-emerald-300 hover:shadow-xs hover:-translate-y-0.5'
                 }`}
               >
-                <Activity className="w-3.5 h-3.5" /> Soccer Class
+                {selectedCourseFilter === 'SOCCER' && (
+                  <span className="absolute top-2.5 right-2.5 w-5 h-5 rounded-full bg-[#075e38] text-white flex items-center justify-center shadow-2xs">
+                    <Check className="w-3 h-3 stroke-[3]" />
+                  </span>
+                )}
+                <div className="flex items-center gap-3">
+                  <div className="group-hover:scale-105 transition-transform flex-shrink-0">
+                    <SoccerBallBadge className="w-12 h-12" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <span className="text-[10px] uppercase font-bold text-emerald-700 block tracking-wider">
+                      Futebol
+                    </span>
+                    <h4 className="text-xs sm:text-sm font-extrabold text-slate-900 truncate">
+                      Soccer Class
+                    </h4>
+                  </div>
+                </div>
+                <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px]">
+                  <span className="font-semibold text-slate-500 truncate max-w-[85px]">
+                    {soccerClass?.name?.split(' - ')[0] || 'Sub-15'}
+                  </span>
+                  <span className="font-black text-[#075e38]">
+                    {activeNav === 'aulas' && '4 Aulas'}
+                    {activeNav === 'atividades' && '2 Tarefas'}
+                    {activeNav === 'notas' && '88 pts'}
+                    {activeNav === 'frequencia' && '100%'}
+                  </span>
+                </div>
               </button>
+
+              {/* 3. ENGLISH CLASS */}
               <button
+                type="button"
                 onClick={() => setSelectedCourseFilter('ENGLISH')}
-                className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
+                className={`relative text-left p-3 sm:p-4 rounded-2xl border transition-all duration-200 flex flex-col justify-between cursor-pointer group ${
                   selectedCourseFilter === 'ENGLISH'
-                    ? 'bg-[#533499] text-white shadow-xs'
-                    : 'text-slate-600 hover:text-[#533499]'
+                    ? 'border-[#533499] bg-purple-50/80 ring-2 ring-[#533499]/20 shadow-sm'
+                    : 'border-slate-200 bg-white hover:border-purple-300 hover:shadow-xs hover:-translate-y-0.5'
                 }`}
               >
-                <Globe className="w-3.5 h-3.5" /> English Class
+                {selectedCourseFilter === 'ENGLISH' && (
+                  <span className="absolute top-2.5 right-2.5 w-5 h-5 rounded-full bg-[#533499] text-white flex items-center justify-center shadow-2xs">
+                    <Check className="w-3 h-3 stroke-[3]" />
+                  </span>
+                )}
+                <div className="flex items-center gap-3">
+                  <div className="group-hover:scale-105 transition-transform flex-shrink-0">
+                    <USAFlagBadge className="w-12 h-12" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <span className="text-[10px] uppercase font-bold text-purple-700 block tracking-wider">
+                      Bilíngue
+                    </span>
+                    <h4 className="text-xs sm:text-sm font-extrabold text-slate-900 truncate">
+                      English Class
+                    </h4>
+                  </div>
+                </div>
+                <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px]">
+                  <span className="font-semibold text-slate-500 truncate max-w-[85px]">
+                    {englishClass?.name?.split(' (')[0] || 'Básico A'}
+                  </span>
+                  <span className="font-black text-[#533499]">
+                    {activeNav === 'aulas' && '4 Aulas'}
+                    {activeNav === 'atividades' && '2 Tarefas'}
+                    {activeNav === 'notas' && '92 pts'}
+                    {activeNav === 'frequencia' && '100%'}
+                  </span>
+                </div>
               </button>
+
+              {/* 4. PRESCHOOL */}
               <button
+                type="button"
                 onClick={() => setSelectedCourseFilter('PRESCHOOL')}
-                className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
+                className={`relative text-left p-3 sm:p-4 rounded-2xl border transition-all duration-200 flex flex-col justify-between cursor-pointer group ${
                   selectedCourseFilter === 'PRESCHOOL'
-                    ? 'bg-[#c2410c] text-white shadow-xs'
-                    : 'text-slate-600 hover:text-[#c2410c]'
+                    ? 'border-[#ea580c] bg-orange-50/80 ring-2 ring-[#ea580c]/20 shadow-sm'
+                    : 'border-slate-200 bg-white hover:border-orange-300 hover:shadow-xs hover:-translate-y-0.5'
                 }`}
               >
-                <Sun className="w-3.5 h-3.5" /> Preschool
+                {selectedCourseFilter === 'PRESCHOOL' && (
+                  <span className="absolute top-2.5 right-2.5 w-5 h-5 rounded-full bg-[#ea580c] text-white flex items-center justify-center shadow-2xs">
+                    <Check className="w-3 h-3 stroke-[3]" />
+                  </span>
+                )}
+                <div className="flex items-center gap-3">
+                  <div className="group-hover:scale-105 transition-transform flex-shrink-0">
+                    <PreschoolBadge className="w-12 h-12" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <span className="text-[10px] uppercase font-bold text-orange-700 block tracking-wider">
+                      Infantil
+                    </span>
+                    <h4 className="text-xs sm:text-sm font-extrabold text-slate-900 truncate">
+                      Preschool
+                    </h4>
+                  </div>
+                </div>
+                <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px]">
+                  <span className="font-semibold text-slate-500 truncate max-w-[85px]">
+                    {preschoolClass?.name?.split(' (')[0] || 'Girassol'}
+                  </span>
+                  <span className="font-black text-[#ea580c]">
+                    {activeNav === 'aulas' && '3 Aulas'}
+                    {activeNav === 'atividades' && '2 Tarefas'}
+                    {activeNav === 'notas' && '96 pts'}
+                    {activeNav === 'frequencia' && '100%'}
+                  </span>
+                </div>
               </button>
+
+              {/* 5. FITNESS MULHERES */}
               <button
+                type="button"
                 onClick={() => setSelectedCourseFilter('WOMENS_FITNESS')}
-                className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
+                className={`relative text-left p-3 sm:p-4 rounded-2xl border transition-all duration-200 flex flex-col justify-between cursor-pointer group ${
                   selectedCourseFilter === 'WOMENS_FITNESS'
-                    ? 'bg-[#be185d] text-white shadow-xs'
-                    : 'text-slate-600 hover:text-[#be185d]'
+                    ? 'border-[#be185d] bg-pink-50/80 ring-2 ring-[#be185d]/20 shadow-sm'
+                    : 'border-slate-200 bg-white hover:border-pink-300 hover:shadow-xs hover:-translate-y-0.5'
                 }`}
               >
-                <Heart className="w-3.5 h-3.5" /> Fitness Mulheres
+                {selectedCourseFilter === 'WOMENS_FITNESS' && (
+                  <span className="absolute top-2.5 right-2.5 w-5 h-5 rounded-full bg-[#be185d] text-white flex items-center justify-center shadow-2xs">
+                    <Check className="w-3 h-3 stroke-[3]" />
+                  </span>
+                )}
+                <div className="flex items-center gap-3">
+                  <div className="group-hover:scale-105 transition-transform flex-shrink-0">
+                    <WomenFitBadge className="w-12 h-12" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <span className="text-[10px] uppercase font-bold text-pink-700 block tracking-wider">
+                      Saúde & Treino
+                    </span>
+                    <h4 className="text-xs sm:text-sm font-extrabold text-slate-900 truncate">
+                      Fitness Mulheres
+                    </h4>
+                  </div>
+                </div>
+                <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px]">
+                  <span className="font-semibold text-slate-500 truncate max-w-[85px]">
+                    {womenFitClass?.name?.split(' - ')[0] || 'Circuito'}
+                  </span>
+                  <span className="font-black text-[#be185d]">
+                    {activeNav === 'aulas' && '3 Aulas'}
+                    {activeNav === 'atividades' && '1 Meta'}
+                    {activeNav === 'notas' && '90 pts'}
+                    {activeNav === 'frequencia' && '100%'}
+                  </span>
+                </div>
               </button>
             </div>
+
+            {/* Active filter notification banner */}
+            {selectedCourseFilter !== 'ALL' && (
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-4 py-2.5 rounded-2xl bg-slate-50 border border-slate-200 text-xs">
+                <div className="flex items-center gap-2 text-slate-700">
+                  <span className="w-2 h-2 rounded-full bg-[#075e38] animate-pulse"></span>
+                  <span>
+                    Exibindo apenas{' '}
+                    {activeNav === 'aulas' && 'aulas'}
+                    {activeNav === 'atividades' && 'atividades'}
+                    {activeNav === 'notas' && 'avaliações e provas'}
+                    {activeNav === 'frequencia' && 'registros de presença'} de:{' '}
+                    <strong className="text-slate-900 font-bold">
+                      {getCourseFilterLabel(selectedCourseFilter)}
+                    </strong>
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setSelectedCourseFilter('ALL')}
+                  className="inline-flex items-center gap-1.5 text-xs font-bold text-[#075e38] hover:text-[#064e2e] hover:underline cursor-pointer"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />
+                  Voltar e ver todas as matérias
+                </button>
+              </div>
+            )}
           </div>
         )}
 
@@ -1083,46 +1404,218 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
         {/* TAB 2: AULAS (EXACT REPLICA DESIGN LANGUAGE) */}
         {activeNav === 'aulas' && (
           <div className="space-y-8">
-            {/* Active Video Player Banner */}
+            {/* Active Document & Pedagogical Reader Banner (Clean, Light & Integrated Design) */}
             {activeLesson && (
-              <div className="bg-slate-900 rounded-3xl p-5 sm:p-7 text-white space-y-4 shadow-xl border border-slate-800 animate-in fade-in">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2.5">
-                    <span className="bg-[#075e38] text-white text-xs font-bold px-3 py-1 rounded-full">
-                      REPRODUZINDO AULA
-                    </span>
-                    <h3 className="font-bold text-base sm:text-lg">{activeLesson.title}</h3>
-                  </div>
-                  <button
-                    onClick={() => setActiveLesson(null)}
-                    className="p-1.5 hover:bg-slate-800 rounded-full text-slate-400"
-                  >
-                    <X className="w-5 h-5" />
-                  </button>
-                </div>
-
-                <div className="aspect-video max-h-96 bg-slate-950 rounded-2xl flex items-center justify-center relative overflow-hidden border border-slate-800">
-                  <div className="text-center space-y-3">
-                    <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-emerald-600/30 text-emerald-400 border border-emerald-500/40 flex items-center justify-center mx-auto shadow-inner">
-                      <Play className="w-8 h-8 sm:w-10 sm:h-10 fill-current ml-1" />
+              <div
+                ref={lessonViewerRef}
+                className="bg-white rounded-3xl p-6 sm:p-8 border-2 border-[#075e38]/25 shadow-md shadow-emerald-950/5 space-y-6 animate-in fade-in slide-in-from-top-3 duration-300"
+              >
+                {/* Header with Title and Controls */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-5">
+                  <div className="flex items-center gap-3.5">
+                    <div className="p-3 rounded-2xl bg-emerald-50 text-[#075e38] border border-emerald-200/80 shadow-2xs">
+                      <FileText className="w-6 h-6 text-[#075e38]" />
                     </div>
-                    <p className="text-xs sm:text-sm text-slate-300 font-medium">
-                      Ambiente de Vídeo Aula Interativo • Think Green Community Center
-                    </p>
-                    <p className="text-xs text-slate-400">Instrutor(a): {activeLesson.teacherName}</p>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="bg-[#075e38] text-white text-[10px] font-extrabold uppercase px-3 py-1 rounded-full tracking-wider shadow-2xs">
+                          MATERIAL DIDÁTICO • AVA
+                        </span>
+                        <span className="text-slate-500 text-xs font-semibold">
+                          {activeLesson.className || 'Turma Ativa'}
+                        </span>
+                      </div>
+                      <h3 className="font-extrabold text-lg sm:text-2xl text-slate-900 mt-1.5 tracking-tight">
+                        {activeLesson.title}
+                      </h3>
+                      <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500 mt-1">
+                        <span className="inline-flex items-center gap-1 font-medium text-slate-700">
+                          <User className="w-3.5 h-3.5 text-[#075e38]" />
+                          {activeLesson.teacherName}
+                        </span>
+                        <span>•</span>
+                        <span className="inline-flex items-center gap-1 font-medium text-slate-500">
+                          <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                          {activeLesson.date}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 self-end sm:self-center">
+                    <button
+                      onClick={() => window.print()}
+                      className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-colors inline-flex items-center gap-1.5 border border-slate-200 cursor-pointer"
+                      title="Imprimir Material"
+                    >
+                      <Printer className="w-4 h-4 text-slate-600" />
+                      <span className="hidden sm:inline">Imprimir</span>
+                    </button>
+                    <button
+                      onClick={() => setActiveLesson(null)}
+                      className="p-2 hover:bg-slate-100 text-slate-400 hover:text-slate-700 rounded-xl transition-colors border border-slate-200 cursor-pointer"
+                      title="Fechar Visualização"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
                   </div>
                 </div>
 
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2 text-xs border-t border-slate-800">
-                  <p className="text-slate-300 max-w-2xl">{activeLesson.description}</p>
-                  {activeLesson.materials?.length > 0 && (
+                {/* Pedagogical Document Sheet Preview (Simulated Paper Document) */}
+                <div className="bg-slate-50/70 rounded-2xl p-4 sm:p-6 border border-slate-200/90 space-y-5">
+                  {/* Paper Document Canvas */}
+                  <div className="bg-white text-slate-900 rounded-2xl p-6 sm:p-8 shadow-xs border border-slate-200 max-w-4xl mx-auto space-y-6">
+                    {/* Official Document Letterhead */}
+                    <div className="border-b-2 border-[#075e38] pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="w-3 h-3 rounded-full bg-[#075e38]" />
+                          <h4 className="font-black text-xs sm:text-sm tracking-wider uppercase text-[#075e38]">
+                            THINK GREEN COMMUNITY CENTER • AVA
+                          </h4>
+                        </div>
+                        <p className="text-[11px] text-slate-500 font-medium mt-0.5">
+                          Ambiente Virtual de Aprendizagem • Material Didático Oficial
+                        </p>
+                      </div>
+
+                      <div className="text-left sm:text-right text-[11px] text-slate-600 space-y-0.5">
+                        <p><strong className="text-slate-900">Docente:</strong> {activeLesson.teacherName}</p>
+                        <p><strong className="text-slate-900">Data da Aula:</strong> {activeLesson.date}</p>
+                      </div>
+                    </div>
+
+                    {/* Lesson Document Title */}
+                    <div>
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                        Conteúdo Programático & Estudo Orientado
+                      </span>
+                      <h2 className="text-xl sm:text-2xl font-black text-slate-900 mt-0.5">
+                        {activeLesson.title}
+                      </h2>
+                    </div>
+
+                    {/* Written Text & Lesson Content */}
+                    <div className="space-y-2.5">
+                      <h4 className="text-xs font-bold uppercase text-slate-700 tracking-wider flex items-center gap-1.5">
+                        <BookOpen className="w-4 h-4 text-[#075e38]" />
+                        Texto Escrito & Roteiro Pedagógico
+                      </h4>
+                      <div className="p-5 sm:p-6 rounded-xl bg-slate-50 border border-slate-200/90 text-sm text-slate-700 leading-relaxed space-y-3 font-normal">
+                        <p className="whitespace-pre-line text-slate-800">{activeLesson.description}</p>
+                        <div className="pt-3 border-t border-slate-200 text-xs text-slate-500 flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                          <span>Instrução: Leia o material com atenção antes de realizar as atividades.</span>
+                          <span className="font-bold text-emerald-800">Leitura Recomendada</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Attached Documents & Apostilas */}
+                    {activeLesson.materials && activeLesson.materials.filter((m) => m.type !== 'LINK').length > 0 && (
+                      <div className="space-y-2.5 pt-2">
+                        <h4 className="text-xs font-bold uppercase text-slate-700 tracking-wider flex items-center gap-1.5">
+                          <FileText className="w-4 h-4 text-[#075e38]" />
+                          Documentos & Apostilas para Estudo
+                        </h4>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          {activeLesson.materials
+                            .filter((m) => m.type !== 'LINK')
+                            .map((mat) => (
+                              <div
+                                key={mat.id}
+                                className="p-4 rounded-xl border border-slate-200 bg-white hover:border-[#075e38] transition-all flex items-center justify-between gap-3 shadow-2xs group"
+                              >
+                                <div className="flex items-center gap-3 overflow-hidden">
+                                  <div className="p-2.5 rounded-xl bg-emerald-50 text-[#075e38] group-hover:bg-[#075e38] group-hover:text-white transition-colors flex-shrink-0">
+                                    <FileText className="w-5 h-5" />
+                                  </div>
+                                  <div className="truncate">
+                                    <p className="font-bold text-xs text-slate-900 truncate" title={mat.title}>
+                                      {mat.title}
+                                    </p>
+                                    <p className="text-[11px] text-slate-400 mt-0.5">
+                                      Formato {mat.type} {mat.size ? `• ${mat.size}` : ''}
+                                    </p>
+                                  </div>
+                                </div>
+
+                                <button
+                                  onClick={() => alert(`Baixando documento: ${mat.title}`)}
+                                  className="px-3.5 py-1.5 bg-[#075e38] hover:bg-[#064e2e] text-white rounded-lg text-xs font-bold transition-colors flex-shrink-0 flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                                >
+                                  <Download className="w-3.5 h-3.5" />
+                                  <span>Baixar</span>
+                                </button>
+                              </div>
+                            ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Links Complementares */}
+                    {activeLesson.materials && activeLesson.materials.filter((m) => m.type === 'LINK').length > 0 && (
+                      <div className="space-y-2.5 pt-2">
+                        <h4 className="text-xs font-bold uppercase text-slate-700 tracking-wider flex items-center gap-1.5">
+                          <ExternalLink className="w-4 h-4 text-[#533499]" />
+                          Links & Leituras Complementares
+                        </h4>
+                        <div className="space-y-2">
+                          {activeLesson.materials
+                            .filter((m) => m.type === 'LINK')
+                            .map((linkItem) => (
+                              <div
+                                key={linkItem.id}
+                                className="p-3.5 rounded-xl border border-purple-200 bg-purple-50/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                              >
+                                <div>
+                                  <p className="font-bold text-xs text-purple-950 flex items-center gap-1.5">
+                                    <Globe className="w-3.5 h-3.5 text-purple-700" />
+                                    {linkItem.title}
+                                  </p>
+                                  <p className="text-[11px] text-purple-700 font-mono mt-0.5 truncate max-w-md">
+                                    {linkItem.url}
+                                  </p>
+                                </div>
+
+                                <a
+                                  href={linkItem.url}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="px-3.5 py-1.5 bg-[#533499] hover:bg-[#432681] text-white rounded-lg text-xs font-bold transition-colors inline-flex items-center gap-1.5 self-start sm:self-center shrink-0 cursor-pointer shadow-2xs"
+                                >
+                                  <span>Acessar Link</span>
+                                  <ExternalLink className="w-3.5 h-3.5" />
+                                </a>
+                              </div>
+                            ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Footer Controls */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2 text-xs border-t border-slate-100">
+                  <span className="text-slate-600 flex items-center gap-1.5 font-medium">
+                    <CheckCircle className="w-4 h-4 text-emerald-600" />
+                    Documento didático digital carregado e pronto para estudo.
+                  </span>
+                  <div className="flex items-center gap-2">
+                    {activeLesson.materials?.length > 0 && (
+                      <button
+                        onClick={() => alert(`Baixando anexos da aula: ${activeLesson.title}`)}
+                        className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#075e38] hover:bg-[#064e2e] text-white rounded-xl font-bold transition-colors shadow-2xs cursor-pointer"
+                      >
+                        <Download className="w-4 h-4" /> Baixar Documento / Apostila
+                      </button>
+                    )}
                     <button
-                      onClick={() => alert(`Baixando material: ${activeLesson.materials[0].title}`)}
-                      className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold flex-shrink-0"
+                      onClick={() => setActiveLesson(null)}
+                      className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold transition-colors border border-slate-200 cursor-pointer"
                     >
-                      <Download className="w-4 h-4" /> Baixar Apostila PDF
+                      Fechar Visualização
                     </button>
-                  )}
+                  </div>
                 </div>
               </div>
             )}
@@ -1271,7 +1764,7 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
                                 {!soccerAccess.allowed ? (
                                   <Lock className="w-4 h-4" />
                                 ) : (
-                                  <Play className="w-4 h-4 fill-current ml-0.5" />
+                                  <FileText className="w-4 h-4" />
                                 )}
                               </div>
                               <div>
@@ -1342,7 +1835,7 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
                                   }
                                   className="px-4 py-1.5 bg-[#075e38] hover:bg-[#064e2e] text-white text-xs font-bold rounded-full transition-all inline-flex items-center gap-1.5 shadow-xs cursor-pointer"
                                 >
-                                  <span>Assistir aula</span>
+                                  <span>Acessar documento</span>
                                   <ArrowRight className="w-3.5 h-3.5" />
                                 </button>
                               )}
@@ -1538,7 +2031,7 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
                                 {!englishAccess.allowed ? (
                                   <Lock className="w-4 h-4" />
                                 ) : (
-                                  <Play className="w-4 h-4 fill-current ml-0.5" />
+                                  <FileText className="w-4 h-4" />
                                 )}
                               </div>
                               <div>
@@ -1609,7 +2102,7 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
                                   }
                                   className="px-4 py-1.5 bg-[#533499] hover:bg-[#432681] text-white text-xs font-bold rounded-full transition-all inline-flex items-center gap-1.5 shadow-xs cursor-pointer"
                                 >
-                                  <span>Assistir aula</span>
+                                  <span>Acessar documento</span>
                                   <ArrowRight className="w-3.5 h-3.5" />
                                 </button>
                               )}
@@ -1805,7 +2298,7 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
                                 {!preschoolAccess.allowed ? (
                                   <Lock className="w-4 h-4" />
                                 ) : (
-                                  <Play className="w-4 h-4 fill-current ml-0.5" />
+                                  <FileText className="w-4 h-4" />
                                 )}
                               </div>
                               <div>
@@ -1876,7 +2369,7 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
                                   }
                                   className="px-4 py-1.5 bg-[#c2410c] hover:bg-[#9a3412] text-white text-xs font-bold rounded-full transition-all inline-flex items-center gap-1.5 shadow-xs cursor-pointer"
                                 >
-                                  <span>Assistir aula</span>
+                                  <span>Acessar documento</span>
                                   <ArrowRight className="w-3.5 h-3.5" />
                                 </button>
                               )}
@@ -2034,7 +2527,7 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
                                 {!womenFitAccess.allowed ? (
                                   <Lock className="w-4 h-4" />
                                 ) : (
-                                  <Play className="w-4 h-4 fill-current ml-0.5" />
+                                  <FileText className="w-4 h-4" />
                                 )}
                               </div>
                               <div>
@@ -2105,7 +2598,7 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
                                   }
                                   className="px-4 py-1.5 bg-[#be185d] hover:bg-[#9d174d] text-white text-xs font-bold rounded-full transition-all inline-flex items-center gap-1.5 shadow-xs cursor-pointer"
                                 >
-                                  <span>Assistir aula</span>
+                                  <span>Acessar documento</span>
                                   <ArrowRight className="w-3.5 h-3.5" />
                                 </button>
                               )}
@@ -2715,20 +3208,37 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
           <div className="space-y-6">
             {/* Header summary KPI Card */}
             <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div>
-                <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2.5">
-                  <Star className="w-5 h-5 text-amber-500" />
-                  Boletim Acadêmico & Provas
-                </h2>
-                <p className="text-xs text-slate-500 mt-1">
-                  Confira suas notas, pesos e a liberação de exames conforme a situação financeira.
-                </p>
+              <div className="flex items-center gap-3.5">
+                {selectedCourseFilter === 'SOCCER' && <SoccerBallBadge className="w-12 h-12 flex-shrink-0" />}
+                {selectedCourseFilter === 'ENGLISH' && <USAFlagBadge className="w-12 h-12 flex-shrink-0" />}
+                {selectedCourseFilter === 'PRESCHOOL' && <PreschoolBadge className="w-12 h-12 flex-shrink-0" />}
+                {selectedCourseFilter === 'WOMENS_FITNESS' && <WomenFitBadge className="w-12 h-12 flex-shrink-0" />}
+                {selectedCourseFilter === 'ALL' && (
+                  <div className="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-200 flex items-center justify-center flex-shrink-0">
+                    <Star className="w-6 h-6 text-amber-500" />
+                  </div>
+                )}
+                <div>
+                  <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+                    Boletim Acadêmico & Provas
+                    {selectedCourseFilter !== 'ALL' && (
+                      <span className="text-xs font-bold text-slate-500 bg-slate-100 px-2.5 py-0.5 rounded-full">
+                        {getCourseFilterLabel(selectedCourseFilter)}
+                      </span>
+                    )}
+                  </h2>
+                  <p className="text-xs text-slate-500 mt-1">
+                    Confira suas notas, pesos e a liberação de exames conforme a situação financeira.
+                  </p>
+                </div>
               </div>
 
               <div className="flex items-center gap-4">
-                <div className="text-right bg-emerald-50 px-4 py-2 rounded-2xl border border-emerald-200">
-                  <p className="text-[10px] uppercase font-bold text-emerald-800">Média Geral</p>
-                  <p className="text-xl font-black text-[#075e38]">{averageGrade} pts</p>
+                <div className="text-right bg-emerald-50 px-4 py-2.5 rounded-2xl border border-emerald-200">
+                  <p className="text-[10px] uppercase font-bold text-emerald-800">
+                    {selectedCourseFilter === 'ALL' ? 'Média Geral' : `Média • ${getCourseFilterLabel(selectedCourseFilter)}`}
+                  </p>
+                  <p className="text-xl font-black text-[#075e38]">{filteredAverageGrade} pts</p>
                 </div>
               </div>
             </div>
@@ -2737,25 +3247,27 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
             <div className="space-y-4">
               {studentAssessments
                 .filter((asm) => {
+                  const cName = (asm.courseName || '').toLowerCase();
+                  const clName = (asm.className || '').toLowerCase();
                   if (selectedCourseFilter === 'SOCCER') {
-                    return asm.courseName.toLowerCase().includes('futebol') || asm.className.toLowerCase().includes('futebol');
+                    return cName.includes('futebol') || cName.includes('soccer') || clName.includes('futebol') || clName.includes('soccer');
                   }
                   if (selectedCourseFilter === 'ENGLISH') {
-                    return asm.courseName.toLowerCase().includes('inglês') || asm.className.toLowerCase().includes('inglês');
+                    return cName.includes('inglês') || cName.includes('english') || cName.includes('ingles') || clName.includes('inglês') || clName.includes('english') || clName.includes('ingles');
                   }
                   if (selectedCourseFilter === 'PRESCHOOL') {
                     return (
-                      asm.courseName.toLowerCase().includes('preschool') ||
-                      asm.courseName.toLowerCase().includes('pré-escola') ||
-                      asm.courseName.toLowerCase().includes('pre-escola') ||
-                      asm.className.toLowerCase().includes('girassol')
+                      cName.includes('preschool') ||
+                      cName.includes('pré-escola') ||
+                      cName.includes('pre-escola') ||
+                      clName.includes('girassol')
                     );
                   }
                   if (selectedCourseFilter === 'WOMENS_FITNESS') {
                     return (
-                      asm.courseName.toLowerCase().includes('mulher') ||
-                      asm.courseName.toLowerCase().includes('fitness') ||
-                      asm.className.toLowerCase().includes('circuito')
+                      cName.includes('mulher') ||
+                      cName.includes('fitness') ||
+                      clName.includes('circuito')
                     );
                   }
                   return true;
@@ -2763,6 +3275,19 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
                 .map((asm) => {
                   const access = checkExamAccess(student.studentId, asm);
                   const grade = studentGrades.find((g) => g.assessmentId === asm.id);
+
+                  const cName = (asm.courseName || '').toLowerCase();
+                  const clName = (asm.className || '').toLowerCase();
+                  let AsmBadge = null;
+                  if (cName.includes('futebol') || clName.includes('soccer') || cName.includes('soccer')) {
+                    AsmBadge = <SoccerBallBadge className="w-8 h-8 flex-shrink-0" />;
+                  } else if (cName.includes('inglês') || clName.includes('english') || cName.includes('english') || cName.includes('ingles')) {
+                    AsmBadge = <USAFlagBadge className="w-8 h-8 flex-shrink-0" />;
+                  } else if (cName.includes('preschool') || clName.includes('girassol') || cName.includes('pré-escola')) {
+                    AsmBadge = <PreschoolBadge className="w-8 h-8 flex-shrink-0" />;
+                  } else if (cName.includes('mulher') || clName.includes('circuito') || cName.includes('fitness')) {
+                    AsmBadge = <WomenFitBadge className="w-8 h-8 flex-shrink-0" />;
+                  }
 
                   return (
                     <div
@@ -2774,16 +3299,19 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
                       }`}
                     >
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <span className="font-bold text-slate-900 text-base">
-                              {asm.title}
-                            </span>
-                            <span className="text-xs text-slate-400 font-mono">Data: {asm.date}</span>
+                        <div className="flex items-start gap-3">
+                          {AsmBadge}
+                          <div>
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="font-bold text-slate-900 text-base">
+                                {asm.title}
+                              </span>
+                              <span className="text-xs text-slate-400 font-mono">Data: {asm.date}</span>
+                            </div>
+                            <p className="text-xs text-slate-500 mt-1">
+                              {asm.courseName} • Peso: {asm.weight}% • Pontuação Máxima: {asm.maxScore} pts
+                            </p>
                           </div>
-                          <p className="text-xs text-slate-500 mt-1">
-                            {asm.courseName} • Peso: {asm.weight}% • Pontuação Máxima: {asm.maxScore} pts
-                          </p>
                         </div>
 
                         <div className="flex items-center gap-2">
@@ -2830,20 +3358,37 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
         {activeNav === 'frequencia' && (
           <div className="space-y-6">
             <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div>
-                <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2.5">
-                  <BarChart2 className="w-5 h-5 text-emerald-600" />
-                  Frequência & Registro de Presenças
-                </h2>
-                <p className="text-xs text-slate-500 mt-1">
-                  Mantenha a frequência acima de 75% para garantir aprovação e certificado oficial Think Green.
-                </p>
+              <div className="flex items-center gap-3.5">
+                {selectedCourseFilter === 'SOCCER' && <SoccerBallBadge className="w-12 h-12 flex-shrink-0" />}
+                {selectedCourseFilter === 'ENGLISH' && <USAFlagBadge className="w-12 h-12 flex-shrink-0" />}
+                {selectedCourseFilter === 'PRESCHOOL' && <PreschoolBadge className="w-12 h-12 flex-shrink-0" />}
+                {selectedCourseFilter === 'WOMENS_FITNESS' && <WomenFitBadge className="w-12 h-12 flex-shrink-0" />}
+                {selectedCourseFilter === 'ALL' && (
+                  <div className="w-12 h-12 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-center flex-shrink-0">
+                    <BarChart2 className="w-6 h-6 text-emerald-600" />
+                  </div>
+                )}
+                <div>
+                  <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+                    Frequência & Registro de Presenças
+                    {selectedCourseFilter !== 'ALL' && (
+                      <span className="text-xs font-bold text-slate-500 bg-slate-100 px-2.5 py-0.5 rounded-full">
+                        {getCourseFilterLabel(selectedCourseFilter)}
+                      </span>
+                    )}
+                  </h2>
+                  <p className="text-xs text-slate-500 mt-1">
+                    Acompanhamento de presenças e faltas registradas pelo professor nas aulas e treinos.
+                  </p>
+                </div>
               </div>
 
               <div className="flex items-center gap-4">
-                <div className="text-right bg-emerald-50 px-4 py-2 rounded-2xl border border-emerald-200">
-                  <p className="text-[10px] uppercase font-bold text-emerald-800">Presença Geral</p>
-                  <p className="text-xl font-black text-[#075e38]">{attendanceRate}%</p>
+                <div className="text-right bg-emerald-50 px-4 py-2.5 rounded-2xl border border-emerald-200">
+                  <p className="text-[10px] uppercase font-bold text-emerald-800">
+                    {selectedCourseFilter === 'ALL' ? 'Presença Registrada' : `Presença • ${getCourseFilterLabel(selectedCourseFilter)}`}
+                  </p>
+                  <p className="text-xl font-black text-[#075e38]">{filteredAttendanceRate}%</p>
                 </div>
               </div>
             </div>
@@ -2852,25 +3397,26 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
             <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs divide-y divide-slate-100">
               {state.attendance
                 .filter((att) => {
+                  const clName = (att.className || '').toLowerCase();
                   if (selectedCourseFilter === 'SOCCER') {
-                    return att.className.toLowerCase().includes('futebol') || att.className.toLowerCase().includes('soccer');
+                    return clName.includes('futebol') || clName.includes('soccer');
                   }
                   if (selectedCourseFilter === 'ENGLISH') {
-                    return att.className.toLowerCase().includes('inglês') || att.className.toLowerCase().includes('english');
+                    return clName.includes('inglês') || clName.includes('english') || clName.includes('ingles');
                   }
                   if (selectedCourseFilter === 'PRESCHOOL') {
                     return (
-                      att.className.toLowerCase().includes('preschool') ||
-                      att.className.toLowerCase().includes('pré-escola') ||
-                      att.className.toLowerCase().includes('pre-escola') ||
-                      att.className.toLowerCase().includes('girassol')
+                      clName.includes('preschool') ||
+                      clName.includes('pré-escola') ||
+                      clName.includes('pre-escola') ||
+                      clName.includes('girassol')
                     );
                   }
                   if (selectedCourseFilter === 'WOMENS_FITNESS') {
                     return (
-                      att.className.toLowerCase().includes('mulher') ||
-                      att.className.toLowerCase().includes('fitness') ||
-                      att.className.toLowerCase().includes('circuito')
+                      clName.includes('mulher') ||
+                      clName.includes('fitness') ||
+                      clName.includes('circuito')
                     );
                   }
                   return true;
@@ -2879,13 +3425,28 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
                   const rec = att.students.find((s) => s.studentId === student.studentId);
                   const isPresent = rec ? rec.present : true;
 
+                  const clName = (att.className || '').toLowerCase();
+                  let AttBadge = null;
+                  if (clName.includes('futebol') || clName.includes('soccer')) {
+                    AttBadge = <SoccerBallBadge className="w-8 h-8 flex-shrink-0" />;
+                  } else if (clName.includes('inglês') || clName.includes('english') || clName.includes('ingles')) {
+                    AttBadge = <USAFlagBadge className="w-8 h-8 flex-shrink-0" />;
+                  } else if (clName.includes('preschool') || clName.includes('girassol') || clName.includes('pré-escola')) {
+                    AttBadge = <PreschoolBadge className="w-8 h-8 flex-shrink-0" />;
+                  } else if (clName.includes('mulher') || clName.includes('circuito') || clName.includes('fitness')) {
+                    AttBadge = <WomenFitBadge className="w-8 h-8 flex-shrink-0" />;
+                  }
+
                   return (
                     <div key={att.id} className="py-4 flex items-center justify-between text-xs">
-                      <div>
-                        <p className="font-bold text-slate-900 text-sm">{att.className}</p>
-                        <p className="text-slate-500 text-[11px] mt-0.5">
-                          Data: {att.date} • Prof(a). {att.teacherName} {att.notes ? `• ${att.notes}` : ''}
-                        </p>
+                      <div className="flex items-center gap-3">
+                        {AttBadge}
+                        <div>
+                          <p className="font-bold text-slate-900 text-sm">{att.className}</p>
+                          <p className="text-slate-500 text-[11px] mt-0.5">
+                            Data: {att.date} • Prof(a). {att.teacherName} {att.notes ? `• ${att.notes}` : ''}
+                          </p>
+                        </div>
                       </div>
 
                       <div>

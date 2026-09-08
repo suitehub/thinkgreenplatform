@@ -16,6 +16,9 @@ import {
   BarChart3,
   Shield,
   X,
+  Clock,
+  Receipt,
+  Compass,
 } from 'lucide-react';
 import { Logo } from '../../common/Logo';
 import { useApp } from '../../../context/AppContext';
@@ -37,7 +40,9 @@ export const SecretariatSidebar: React.FC<SecretariatSidebarProps> = ({
   mobileOpen,
   onCloseMobile,
 }) => {
-  const { switchRole, currentUser } = useApp();
+  const { switchRole, currentUser, state } = useApp();
+
+  const pendingCount = (state.pendingRegistrations || []).filter((p) => p.status === 'PENDENTE').length;
 
   const navItems = [
     {
@@ -49,6 +54,12 @@ export const SecretariatSidebar: React.FC<SecretariatSidebarProps> = ({
       id: 'sec_new_student',
       label: 'Novo Aluno (Cadastro)',
       icon: UserPlus,
+    },
+    {
+      id: 'sec_pending_queue',
+      label: 'Fila de Pendentes',
+      icon: Clock,
+      badge: pendingCount > 0 ? pendingCount : undefined,
     },
     {
       id: 'sec_students',
@@ -69,6 +80,11 @@ export const SecretariatSidebar: React.FC<SecretariatSidebarProps> = ({
       id: 'sec_documents',
       label: 'Documentos dos Alunos',
       icon: FileText,
+    },
+    {
+      id: 'sec_counselor',
+      label: 'Orientador Educacional',
+      icon: Compass,
     },
     {
       id: 'sec_import',
@@ -127,14 +143,27 @@ export const SecretariatSidebar: React.FC<SecretariatSidebarProps> = ({
                 <button
                   key={item.id}
                   onClick={() => handleSelectTab(item.id)}
-                  className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all text-left cursor-pointer ${
+                  className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all text-left cursor-pointer ${
                     isActive
                       ? 'bg-[#075e38] text-white shadow-xs font-extrabold'
                       : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
                   }`}
                 >
-                  <Icon className={`w-4 h-4 flex-shrink-0 ${isActive ? 'text-white' : 'text-slate-400'}`} />
-                  <span className="truncate">{item.label}</span>
+                  <div className="flex items-center gap-3 min-w-0">
+                    <Icon className={`w-4 h-4 flex-shrink-0 ${isActive ? 'text-white' : 'text-slate-400'}`} />
+                    <span className="truncate">{item.label}</span>
+                  </div>
+                  {item.badge !== undefined && item.badge > 0 && (
+                    <span
+                      className={`px-1.5 py-0.5 rounded-full text-[10px] font-black leading-none ${
+                        isActive
+                          ? 'bg-amber-400 text-slate-900'
+                          : 'bg-amber-100 text-amber-900 border border-amber-300'
+                      }`}
+                    >
+                      {item.badge}
+                    </span>
+                  )}
                 </button>
               );
             })}
@@ -150,6 +179,15 @@ export const SecretariatSidebar: React.FC<SecretariatSidebarProps> = ({
             </div>
 
             <div className="grid grid-cols-2 gap-1.5 text-[10px]">
+              <button
+                onClick={() => switchRole('RECEPTION')}
+                className="px-2 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-emerald-50 hover:text-emerald-900 hover:border-emerald-300 font-semibold text-slate-700 transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs col-span-2"
+                title="Acessar Painel da Recepção"
+              >
+                <Receipt className="w-3 h-3 text-[#075e38] flex-shrink-0" />
+                <span className="truncate font-bold">Recepção (Balcão/Caixa)</span>
+              </button>
+
               <button
                 onClick={() => switchRole('STUDENT')}
                 className="px-2 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-purple-50 hover:text-purple-900 hover:border-purple-300 font-semibold text-slate-700 transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs"

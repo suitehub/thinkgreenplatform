@@ -15,6 +15,7 @@ import { FinanceModule } from './components/modules/finance/FinanceModule';
 import { AcademicModule } from './components/modules/academic/AcademicModule';
 import { AccountingModule } from './components/modules/accounting/AccountingModule';
 import { AdminModule } from './components/modules/admin/AdminModule';
+import { ReceptionModule } from './components/modules/reception/ReceptionModule';
 
 const AuthenticatedLayout: React.FC = () => {
   const { currentUser } = useApp();
@@ -33,6 +34,9 @@ const AuthenticatedLayout: React.FC = () => {
         break;
       case 'SECRETARIAT':
         setCurrentTab('sec_home');
+        break;
+      case 'RECEPTION':
+        setCurrentTab('rec_payment');
         break;
       case 'FINANCE':
         setCurrentTab('fin_home');
@@ -76,6 +80,10 @@ const AuthenticatedLayout: React.FC = () => {
       );
     }
 
+    if (currentUser.role === 'RECEPTION' || currentTab.startsWith('rec_')) {
+      return <ReceptionModule currentTab={currentTab} setCurrentTab={setCurrentTab} standalone={true} />;
+    }
+
     if (currentUser.role === 'FINANCE') {
       return <FinanceModule currentTab={currentTab} setCurrentTab={setCurrentTab} />;
     }
@@ -93,6 +101,9 @@ const AuthenticatedLayout: React.FC = () => {
           selectedStudentIdForDetail={selectedStudentForDetail}
         />
       );
+    }
+    if (currentTab.startsWith('rec_')) {
+      return <ReceptionModule currentTab={currentTab} setCurrentTab={setCurrentTab} standalone={true} />;
     }
     if (currentTab.startsWith('fin_')) {
       return <FinanceModule currentTab={currentTab} setCurrentTab={setCurrentTab} />;
@@ -139,6 +150,19 @@ const AuthenticatedLayout: React.FC = () => {
           currentTab={currentTab}
           setCurrentTab={setCurrentTab}
           selectedStudentIdForDetail={selectedStudentForDetail}
+          standalone={true}
+        />
+      </div>
+    );
+  }
+
+  // If logged in as RECEPTION, render the dedicated Think Green Painel da Recepção screen
+  if (currentUser.role === 'RECEPTION') {
+    return (
+      <div className="min-h-screen bg-[#f8fafc] text-slate-800 font-sans antialiased selection:bg-[#075e38] selection:text-white">
+        <ReceptionModule
+          currentTab={currentTab}
+          setCurrentTab={setCurrentTab}
           standalone={true}
         />
       </div>

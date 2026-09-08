@@ -20,6 +20,7 @@ import {
   SystemNotification,
   UserRole,
   PaymentMethod,
+  PendingRegistration,
 } from '../types';
 
 import {
@@ -42,6 +43,7 @@ import {
   INITIAL_AUDIT_LOGS,
   INITIAL_NOTIFICATIONS,
   INITIAL_SETTINGS,
+  INITIAL_PENDING_REGISTRATIONS,
 } from './mockData';
 
 export const STORAGE_KEY = 'think_green_platform_v6_data';
@@ -67,6 +69,7 @@ export interface AppState {
   auditLogs: AuditLog[];
   notifications: SystemNotification[];
   settings: SystemSettings;
+  pendingRegistrations: PendingRegistration[];
 }
 
 export const deduplicateById = <T extends { id?: string | number }>(items: T[]): T[] => {
@@ -111,6 +114,7 @@ export const loadInitialState = (): AppState => {
         accountingTransactions: deduplicateById(parsed.accountingTransactions || INITIAL_ACCOUNTING_TRANSACTIONS),
         auditLogs: deduplicateById(parsed.auditLogs || INITIAL_AUDIT_LOGS),
         notifications: deduplicateById(parsed.notifications || INITIAL_NOTIFICATIONS),
+        pendingRegistrations: deduplicateById(parsed.pendingRegistrations || INITIAL_PENDING_REGISTRATIONS),
         settings: {
           ...INITIAL_SETTINGS,
           ...(parsed.settings || {}),
@@ -145,6 +149,7 @@ export const loadInitialState = (): AppState => {
     accountingTransactions: deduplicateById(INITIAL_ACCOUNTING_TRANSACTIONS),
     auditLogs: deduplicateById(INITIAL_AUDIT_LOGS),
     notifications: deduplicateById(INITIAL_NOTIFICATIONS),
+    pendingRegistrations: deduplicateById(INITIAL_PENDING_REGISTRATIONS),
     settings: INITIAL_SETTINGS,
   };
 };

@@ -184,7 +184,7 @@ export const AdminSettingsTab: React.FC<AdminSettingsTabProps> = ({ onOpenResetM
             </div>
 
             <div>
-              <label className="block font-bold text-slate-700 mb-1">Frequência Mínima Exigida (%):</label>
+              <label className="block font-bold text-slate-700 mb-1">Meta de Frequência Informativa (%):</label>
               <input
                 type="number"
                 min={0}
@@ -193,6 +193,7 @@ export const AdminSettingsTab: React.FC<AdminSettingsTabProps> = ({ onOpenResetM
                 onChange={(e) => setFormData({ ...formData, attendanceRequirementPercent: Number(e.target.value) })}
                 className="w-full p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-purple-500 font-bold"
               />
+              <p className="text-[11px] text-slate-500 mt-1">Apenas para monitoramento pedagógico. A aprovação do aluno não exige presença mínima.</p>
             </div>
           </div>
 

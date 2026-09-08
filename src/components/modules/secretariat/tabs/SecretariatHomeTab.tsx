@@ -15,6 +15,7 @@ import {
   Plus,
   Upload,
   BookOpen,
+  Compass,
 } from 'lucide-react';
 import { useApp } from '../../../../context/AppContext';
 import { ClassRoom } from '../../../../types';
@@ -470,6 +471,14 @@ export const SecretariatHomeTab: React.FC<SecretariatHomeTabProps> = ({
               >
                 <Folder className="w-4 h-4 text-[#075e38] group-hover:scale-110 transition-transform" />
                 <span className="truncate">Documentos dos Alunos</span>
+              </button>
+
+              <button
+                onClick={() => onNavigate('sec_counselor')}
+                className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl bg-slate-50/70 hover:bg-emerald-50/80 text-slate-700 hover:text-[#075e38] border border-slate-200/60 hover:border-emerald-200 text-xs font-bold transition-all group cursor-pointer"
+              >
+                <Compass className="w-4 h-4 text-[#075e38] group-hover:scale-110 transition-transform" />
+                <span className="truncate">Orientador Educacional</span>
               </button>
 
               <button

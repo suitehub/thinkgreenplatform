@@ -23,6 +23,7 @@ import {
   SystemNotification,
   UserRole,
   PaymentMethod,
+  PendingRegistration,
 } from '../types';
 
 import {
@@ -68,6 +69,17 @@ interface AppContextType {
     paymentMethod: PaymentMethod,
     notes?: string
   ) => PaymentReceipt;
+
+  createPendingRegistration: (
+    data: Omit<PendingRegistration, 'id' | 'protocolNumber' | 'status' | 'createdAt' | 'createdByName' | 'createdByRole'>
+  ) => PendingRegistration;
+  approvePendingRegistration: (
+    pendingId: string,
+    adjustedData?: Partial<PendingRegistration>
+  ) => { student: Student; enrollment: Enrollment };
+  rejectPendingRegistration: (pendingId: string, reason: string) => void;
+  updatePendingRegistration: (pendingId: string, data: Partial<PendingRegistration>) => void;
+  deletePendingRegistration: (pendingId: string) => void;
 
   openCashRegister: (initialBalance: number, notes?: string) => CashRegister;
   closeCashRegister: (countedBalance: number, notes?: string) => CashRegister;
@@ -431,6 +443,277 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     );
 
     return { student: newStudent, enrollment: newEnrollment };
+  };
+
+  /**
+   * 1.1 CREATE PENDING REGISTRATION (Recepção / Pré-cadastro sem gerar ID)
+   */
+  const createPendingRegistration = (
+    data: Omit<PendingRegistration, 'id' | 'protocolNumber' | 'status' | 'createdAt' | 'createdByName' | 'createdByRole'>
+  ): PendingRegistration => {
+    const uniqueRand = Math.random().toString(36).substring(2, 8);
+    const existingCount = (state.pendingRegistrations || []).length + 1;
+    const protocolNumber = `PRE-2026-${String(existingCount).padStart(4, '0')}`;
+    const nowTimestamp = new Date().toISOString().replace('T', ' ').substring(0, 16);
+
+    const newPending: PendingRegistration = {
+      ...data,
+      id: `pre_${Date.now()}_${uniqueRand}`,
+      protocolNumber,
+      status: 'PENDENTE',
+      createdByRole: currentUser.role === 'RECEPTION' ? 'RECEPTION' : 'SECRETARIAT',
+      createdByName: `${currentUser.name} (${currentUser.role === 'RECEPTION' ? 'Recepção' : 'Secretaria'})`,
+      createdAt: nowTimestamp,
+    };
+
+    setState((prev) => ({
+      ...prev,
+      pendingRegistrations: deduplicateById([newPending, ...(prev.pendingRegistrations || [])]),
+    }));
+
+    // Audit Log
+    logAudit(
+      'SECRETARIAT',
+      'PRE_CADASTRO_RECEPÇÃO',
+      'PendingRegistration',
+      protocolNumber,
+      undefined,
+      `Pré-cadastro ${protocolNumber} registrado por ${currentUser.name} para ${data.name} (${data.courseName})`,
+      data.discountReason ? `Desconto relatado: ${data.discountValue}${data.discountType === 'PERCENT' ? '%' : ' EGP'}. Motivo: ${data.discountReason}` : 'Sem desconto.'
+    );
+
+    // Notify Secretariat
+    addNotification(
+      'Novo Cadastro Pendente da Recepção!',
+      `${data.name} (${data.courseName}) foi registrado pela recepção (Protocolo ${protocolNumber}) e aguarda homologação da secretaria.`,
+      'INFO',
+      'SECRETARIAT'
+    );
+
+    return newPending;
+  };
+
+  /**
+   * 1.2 APPROVE PENDING REGISTRATION (Secretaria aprova e gera STU ID oficial)
+   */
+  const approvePendingRegistration = (
+    pendingId: string,
+    adjustedData?: Partial<PendingRegistration>
+  ): { student: Student; enrollment: Enrollment } => {
+    const pending = (state.pendingRegistrations || []).find((p) => p.id === pendingId);
+    if (!pending) throw new Error('Cadastro pendente não encontrado');
+
+    const merged = { ...pending, ...(adjustedData || {}) };
+    const course = state.courses.find((c) => c.id === merged.courseId);
+    const classRoom = state.classes.find((cl) => cl.id === merged.classId);
+
+    const generatedStuId = generateNextStudentId(state.students);
+    const uniqueRand = Math.random().toString(36).substring(2, 8);
+    const internalId = `stu_${Date.now()}_${uniqueRand}`;
+    const nowStr = new Date().toISOString().split('T')[0];
+    const nowTimestamp = new Date().toISOString().replace('T', ' ').substring(0, 16);
+
+    const newStudent: Student = {
+      id: internalId,
+      studentId: generatedStuId,
+      name: merged.name,
+      email: merged.email || `${generatedStuId.toLowerCase()}@student.thinkgreen.org`,
+      phone: merged.phone || '',
+      rg: merged.rg || '',
+      nationalId: merged.rg || '',
+      birthDate: merged.birthDate || '',
+      gender: merged.gender || 'MASCULINO',
+      guardianName: merged.guardianName || '',
+      guardianPhone: merged.guardianPhone || '',
+      address: merged.address || '',
+      city: merged.city || 'Cairo',
+      status: 'ATIVO',
+      notes: merged.notes ? `${merged.notes} | Aprovado pela Secretaria: ${currentUser.name}` : `Aprovado pela Secretaria: ${currentUser.name}`,
+      createdAt: nowStr,
+      avatarUrl: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
+      documents: [],
+    };
+
+    const newStudentUser: User = {
+      id: `user_${internalId}`,
+      name: newStudent.name,
+      email: newStudent.email,
+      studentId: generatedStuId,
+      role: 'STUDENT',
+      department: 'Aluno Think Green',
+      status: 'ACTIVE',
+      permissions: ['access_lms_student', 'submit_assignment', 'view_own_financials'],
+      createdAt: nowStr,
+      avatarUrl: newStudent.avatarUrl,
+    };
+
+    // Calculate total with discount
+    const baseMonthlyFee = course ? course.monthlyFee : 500;
+    const baseTotal = baseMonthlyFee * merged.installmentsCount;
+    let discountAmount = 0;
+    if (merged.discountType === 'PERCENT' && merged.discountValue) {
+      discountAmount = Math.round((baseTotal * merged.discountValue) / 100);
+    } else if (merged.discountType === 'FIXED' && merged.discountValue) {
+      discountAmount = merged.discountValue;
+    }
+    const finalTotal = Math.max(0, baseTotal - discountAmount);
+    const installmentAmount = Math.max(1, Math.round(finalTotal / merged.installmentsCount));
+
+    const newEnrollment: Enrollment = {
+      id: `enr_${Date.now()}_${uniqueRand}`,
+      studentId: generatedStuId,
+      studentInternalId: internalId,
+      studentName: newStudent.name,
+      courseId: merged.courseId,
+      courseName: course ? course.name : merged.courseName,
+      classId: merged.classId,
+      className: classRoom ? classRoom.name : merged.className,
+      enrollmentDate: nowStr,
+      status: 'ATIVA',
+      paymentPlan: {
+        installmentsCount: merged.installmentsCount,
+        totalAmount: finalTotal,
+        installmentAmount,
+      },
+    };
+
+    // Auto-generate Charges with discount notes
+    const newCharges: Charge[] = [];
+    for (let i = 1; i <= merged.installmentsCount; i++) {
+      const dueDate = new Date();
+      dueDate.setMonth(dueDate.getMonth() + (i - 1));
+      dueDate.setDate(5);
+
+      const discountNote = merged.discountReason
+        ? ` [Desconto: ${discountAmount > 0 ? `${discountAmount} EGP abatidos` : ''} - Motivo: ${merged.discountReason}]`
+        : '';
+
+      newCharges.push({
+        id: `chg_${newEnrollment.id}_${i}`,
+        enrollmentId: newEnrollment.id,
+        studentId: generatedStuId,
+        studentName: newStudent.name,
+        courseName: newEnrollment.courseName,
+        installmentNumber: i,
+        totalInstallments: merged.installmentsCount,
+        amount: installmentAmount,
+        dueDate: dueDate.toISOString().split('T')[0],
+        status: i === 1 ? 'PENDENTE' : 'REGULAR',
+        notes: `Parcela ${i}/${merged.installmentsCount} gerada a partir do pré-cadastro ${merged.protocolNumber}.${discountNote}`,
+      });
+    }
+
+    const updatedPendingList = (state.pendingRegistrations || []).map((p) =>
+      p.id === pendingId
+        ? {
+            ...p,
+            ...adjustedData,
+            status: 'APROVADO' as const,
+            reviewedBy: `${currentUser.name} (${currentUser.role})`,
+            reviewedAt: nowTimestamp,
+            generatedStudentId: generatedStuId,
+          }
+        : p
+    );
+
+    setState((prev) => ({
+      ...prev,
+      students: deduplicateById([newStudent, ...prev.students]),
+      users: deduplicateById([newStudentUser, ...prev.users]),
+      enrollments: deduplicateById([newEnrollment, ...prev.enrollments]),
+      charges: deduplicateById([...newCharges, ...prev.charges]),
+      pendingRegistrations: deduplicateById(updatedPendingList),
+    }));
+
+    try {
+      confetti({
+        particleCount: 70,
+        spread: 80,
+        origin: { y: 0.6 },
+        colors: ['#075e38', '#10B981', '#F59E0B'],
+      });
+    } catch {}
+
+    logAudit(
+      'SECRETARIAT',
+      'APROVAÇÃO_MATRICULA_PENDENTE',
+      'Student',
+      generatedStuId,
+      `Protocolo: ${merged.protocolNumber}`,
+      `STU ID ${generatedStuId} gerado oficialmente para ${newStudent.name}`,
+      `Cadastro aprovado pela secretaria (${currentUser.name}). Plano de ${merged.installmentsCount}x de ${installmentAmount} EGP ativado.`
+    );
+
+    addNotification(
+      'Pré-Matrícula Aprovada!',
+      `${newStudent.name} foi homologado com sucesso. ID gerado: ${generatedStuId}.`,
+      'SUCCESS',
+      'ALL'
+    );
+
+    return { student: newStudent, enrollment: newEnrollment };
+  };
+
+  /**
+   * 1.3 REJECT PENDING REGISTRATION
+   */
+  const rejectPendingRegistration = (pendingId: string, reason: string) => {
+    const nowTimestamp = new Date().toISOString().replace('T', ' ').substring(0, 16);
+    const pending = (state.pendingRegistrations || []).find((p) => p.id === pendingId);
+
+    setState((prev) => ({
+      ...prev,
+      pendingRegistrations: (prev.pendingRegistrations || []).map((p) =>
+        p.id === pendingId
+          ? {
+              ...p,
+              status: 'REPROVADO' as const,
+              reviewedBy: `${currentUser.name} (${currentUser.role})`,
+              reviewedAt: nowTimestamp,
+              reviewNotes: reason,
+            }
+          : p
+      ),
+    }));
+
+    logAudit(
+      'SECRETARIAT',
+      'REPROVAÇÃO_MATRICULA_PENDENTE',
+      'PendingRegistration',
+      pending?.protocolNumber || pendingId,
+      'PENDENTE',
+      'REPROVADO',
+      `Pré-cadastro de ${pending?.name} reprovado por ${currentUser.name}. Motivo: ${reason}`
+    );
+
+    addNotification(
+      'Pré-Cadastro Reprovado',
+      `O pré-cadastro de ${pending?.name} (${pending?.protocolNumber}) foi reprovado pela secretaria: ${reason}`,
+      'WARNING',
+      'SECRETARIAT'
+    );
+  };
+
+  /**
+   * 1.4 UPDATE PENDING REGISTRATION
+   */
+  const updatePendingRegistration = (pendingId: string, data: Partial<PendingRegistration>) => {
+    setState((prev) => ({
+      ...prev,
+      pendingRegistrations: (prev.pendingRegistrations || []).map((p) =>
+        p.id === pendingId ? { ...p, ...data } : p
+      ),
+    }));
+  };
+
+  /**
+   * 1.5 DELETE PENDING REGISTRATION
+   */
+  const deletePendingRegistration = (pendingId: string) => {
+    setState((prev) => ({
+      ...prev,
+      pendingRegistrations: (prev.pendingRegistrations || []).filter((p) => p.id !== pendingId),
+    }));
   };
 
   /**
@@ -1742,6 +2025,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       addStudentDocument,
       deleteStudentDocument,
       registerPayment,
+      createPendingRegistration,
+      approvePendingRegistration,
+      rejectPendingRegistration,
+      updatePendingRegistration,
+      deletePendingRegistration,
       openCashRegister,
       closeCashRegister,
       addCashMovement,

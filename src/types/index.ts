@@ -9,7 +9,8 @@ export type UserRole =
   | 'FINANCE'
   | 'SECRETARIAT'
   | 'ACCOUNTING'
-  | 'SUPER_ADMIN';
+  | 'SUPER_ADMIN'
+  | 'RECEPTION';
 
 export type StudentStatus = 'ATIVO' | 'INATIVO' | 'ENCERRADO';
 export type EnrollmentStatus = 'ATIVA' | 'PENDENTE' | 'BLOQUEADA' | 'CANCELADA';
@@ -336,3 +337,41 @@ export interface SystemSettings {
     rule3_finalExamRequiresFullPayment: boolean;
   };
 }
+
+export interface PendingRegistration {
+  id: string; // e.g. 'pre_1741384000_abc'
+  protocolNumber: string; // e.g. 'PRE-2026-0001'
+  name: string;
+  birthDate?: string;
+  gender?: 'MASCULINO' | 'FEMININO' | 'OUTRO' | string;
+  rg?: string;
+  phone: string;
+  email?: string;
+  city: string;
+  address?: string;
+  guardianName?: string;
+  guardianPhone?: string;
+  notes?: string;
+
+  courseId: string;
+  courseName: string;
+  classId: string;
+  className: string;
+  monthlyFee: number;
+
+  installmentsCount: number;
+  discountType?: 'PERCENT' | 'FIXED' | 'NONE';
+  discountValue?: number; // e.g. 15 (%) or 100 (EGP)
+  discountReason?: string; // Observation explaining why discount was given
+  finalTotal: number;
+
+  status: 'PENDENTE' | 'APROVADO' | 'REPROVADO';
+  createdByRole: 'RECEPTION' | 'SECRETARIAT';
+  createdByName: string;
+  createdAt: string;
+  reviewedBy?: string;
+  reviewedAt?: string;
+  reviewNotes?: string;
+  generatedStudentId?: string; // Filled once approved by Secretariat
+}
+

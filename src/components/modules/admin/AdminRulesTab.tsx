@@ -302,7 +302,7 @@ export const AdminRulesTab: React.FC = () => {
 
           <div>
             <label className="block font-bold text-slate-700 mb-1">
-              Frequência Mínima Exigida para Certificado (%):
+              Meta de Frequência para Acompanhamento (%):
             </label>
             <div className="flex items-center gap-2">
               <input
@@ -313,8 +313,11 @@ export const AdminRulesTab: React.FC = () => {
                 onChange={(e) => setMinAttendance(Number(e.target.value))}
                 className="w-32 p-2.5 border border-slate-300 rounded-xl font-bold text-slate-900 focus:ring-2 focus:ring-purple-500"
               />
-              <span className="text-slate-500">% de presença nas aulas</span>
+              <span className="text-slate-500">% de presença (apenas informativa)</span>
             </div>
+            <p className="text-[11px] text-slate-500 mt-1">
+              A aprovação do aluno independe de frequência mínima (sem reprovação por falta). A visualização de presenças é mantida para acompanhamento pedagógico.
+            </p>
           </div>
         </div>
 
