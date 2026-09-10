@@ -24,7 +24,19 @@ import {
   UserRole,
   PaymentMethod,
   PendingRegistration,
+  EnglishAudienceLevel,
+  CourseLevelPricing,
 } from '../types';
+
+export interface PlanNegotiationInput {
+  totalAmount?: number;
+  originalTotalAmount?: number;
+  installmentAmount?: number;
+  discountType?: 'NONE' | 'PERCENT' | 'FIXED';
+  discountValue?: number;
+  discountReason?: string;
+  englishLevel?: EnglishAudienceLevel;
+}
 
 import {
   AppState,
@@ -54,11 +66,31 @@ interface AppContextType {
     studentData: Partial<Student>,
     courseId: string,
     classId: string,
-    installmentsCount: number
+    installmentsCount: number,
+    negotiationData?: PlanNegotiationInput
   ) => { student: Student; enrollment: Enrollment };
 
   updateStudent: (studentId: string, data: Partial<Student>) => void;
-  addEnrollmentToStudent: (studentId: string, courseId: string, classId: string, installmentsCount: number) => Enrollment;
+  addEnrollmentToStudent: (
+    studentId: string,
+    courseId: string,
+    classId: string,
+    installmentsCount: number,
+    negotiationData?: PlanNegotiationInput
+  ) => Enrollment;
+  renegotiateEnrollmentPlan: (
+    enrollmentId: string,
+    negotiationData: {
+      newTotalAmount: number;
+      installmentsCount: number;
+      installmentAmount?: number;
+      originalTotalAmount?: number;
+      discountType?: 'NONE' | 'PERCENT' | 'FIXED';
+      discountValue?: number;
+      discountReason?: string;
+      recalculateUnpaidCharges?: boolean;
+    }
+  ) => void;
   updateEnrollmentStatus: (enrollmentId: string, status: Enrollment['status']) => void;
   addStudentDocument: (studentId: string, doc: Omit<StudentDocument, 'id' | 'uploadedAt' | 'uploadedBy'>) => StudentDocument;
   deleteStudentDocument: (studentId: string, docId: string) => void;
@@ -97,7 +129,16 @@ interface AppContextType {
   assignTeacherToClass: (classId: string, teacherId: string, teacherName: string) => void;
   unassignTeacherFromClass: (classId: string) => void;
   updateCourse: (courseId: string, data: Partial<Course>) => void;
-  updateCourseFee: (courseId: string, newMonthlyFee: number, updateUnpaidCharges?: boolean) => void;
+  updateCourseFee: (
+    courseId: string,
+    newMonthlyFee: number,
+    updateUnpaidCharges?: boolean,
+    extraPricing?: {
+      totalCourseAmount?: number;
+      defaultInstallmentsCount?: number;
+      levels?: CourseLevelPricing[];
+    }
+  ) => void;
   createLesson: (data: Omit<Lesson, 'id'>) => Lesson;
   deleteLesson: (lessonId: string) => void;
   createAssignment: (data: Omit<Assignment, 'id'>) => Assignment;
@@ -328,7 +369,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     studentData: Partial<Student>,
     courseId: string,
     classId: string,
-    installmentsCount: number = 4
+    installmentsCount: number = 4,
+    negotiationData?: PlanNegotiationInput
   ) => {
     const generatedStuId = generateNextStudentId(state.students);
     const uniqueRand = Math.random().toString(36).substring(2, 8);
@@ -373,9 +415,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       avatarUrl: newStudent.avatarUrl,
     };
 
-    // Create Enrollment
-    const totalAmount = course ? course.monthlyFee * installmentsCount : 500 * installmentsCount;
-    const installmentAmount = totalAmount / installmentsCount;
+    // Calculate Total and Installment with Negotiation/Discount
+    let originalTotalAmount = course
+      ? (course.totalCourseAmount || course.monthlyFee * installmentsCount)
+      : 500 * installmentsCount;
+    let finalTotal = originalTotalAmount;
+
+    if (negotiationData?.originalTotalAmount) {
+      originalTotalAmount = negotiationData.originalTotalAmount;
+      finalTotal = negotiationData.totalAmount ?? originalTotalAmount;
+    } else if (negotiationData?.totalAmount !== undefined && negotiationData.totalAmount > 0) {
+      finalTotal = negotiationData.totalAmount;
+    }
+
+    const installmentAmount = Math.max(1, Math.round(finalTotal / installmentsCount));
 
     const newEnrollment: Enrollment = {
       id: `enr_${Date.now()}_${uniqueRand}`,
@@ -390,13 +443,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       status: 'ATIVA',
       paymentPlan: {
         installmentsCount,
-        totalAmount,
+        totalAmount: finalTotal,
         installmentAmount,
+        originalTotalAmount,
+        englishLevel: negotiationData?.englishLevel,
+        discountType: negotiationData?.discountType,
+        discountValue: negotiationData?.discountValue,
+        discountReason: negotiationData?.discountReason,
+        isNegotiated: !!(negotiationData?.discountValue && negotiationData.discountValue > 0),
       },
     };
 
-    // Auto-generate Charges for all installments
+    // Auto-generate Charges for all installments with discount note
     const newCharges: Charge[] = [];
+    const discountNote = negotiationData?.discountReason
+      ? ` [Negociação: ${negotiationData.discountReason}]`
+      : '';
+
     for (let i = 1; i <= installmentsCount; i++) {
       const dueDate = new Date();
       dueDate.setMonth(dueDate.getMonth() + (i - 1));
@@ -413,7 +476,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         amount: installmentAmount,
         dueDate: dueDate.toISOString().split('T')[0],
         status: i === 1 ? 'PENDENTE' : 'REGULAR',
-        notes: `Parcela ${i}/${installmentsCount} gerada na matrícula inicial.`,
+        notes: `Parcela ${i}/${installmentsCount} gerada na matrícula inicial.${discountNote}`,
       });
     }
 
@@ -574,6 +637,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         installmentsCount: merged.installmentsCount,
         totalAmount: finalTotal,
         installmentAmount,
+        originalTotalAmount: baseTotal,
+        englishLevel: merged.englishLevel,
+        discountType: merged.discountType,
+        discountValue: merged.discountValue,
+        discountReason: merged.discountReason,
+        isNegotiated: discountAmount > 0,
       },
     };
 
@@ -730,7 +799,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   /**
    * 3. ADD EXTRA ENROLLMENT TO EXISTING STUDENT (1 Aluno -> N Matrículas)
    */
-  const addEnrollmentToStudent = (studentId: string, courseId: string, classId: string, installmentsCount: number = 4) => {
+  const addEnrollmentToStudent = (
+    studentId: string,
+    courseId: string,
+    classId: string,
+    installmentsCount: number = 4,
+    negotiationData?: PlanNegotiationInput
+  ) => {
     const student = state.students.find((s) => s.studentId === studentId || s.id === studentId);
     if (!student) throw new Error('Aluno não encontrado');
 
@@ -739,8 +814,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const nowStr = new Date().toISOString().split('T')[0];
     const uniqueRand = Math.random().toString(36).substring(2, 8);
 
-    const totalAmount = course ? course.monthlyFee * installmentsCount : 500 * installmentsCount;
-    const installmentAmount = totalAmount / installmentsCount;
+    let originalTotalAmount = course
+      ? (course.totalCourseAmount || course.monthlyFee * installmentsCount)
+      : 500 * installmentsCount;
+    let finalTotal = originalTotalAmount;
+
+    if (negotiationData?.originalTotalAmount) {
+      originalTotalAmount = negotiationData.originalTotalAmount;
+      finalTotal = negotiationData.totalAmount ?? originalTotalAmount;
+    } else if (negotiationData?.totalAmount !== undefined && negotiationData.totalAmount > 0) {
+      finalTotal = negotiationData.totalAmount;
+    }
+
+    const installmentAmount = Math.max(1, Math.round(finalTotal / installmentsCount));
 
     const newEnrollment: Enrollment = {
       id: `enr_${Date.now()}_${uniqueRand}`,
@@ -755,12 +841,22 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       status: 'ATIVA',
       paymentPlan: {
         installmentsCount,
-        totalAmount,
+        totalAmount: finalTotal,
         installmentAmount,
+        originalTotalAmount,
+        englishLevel: negotiationData?.englishLevel,
+        discountType: negotiationData?.discountType,
+        discountValue: negotiationData?.discountValue,
+        discountReason: negotiationData?.discountReason,
+        isNegotiated: !!(negotiationData?.discountValue && negotiationData.discountValue > 0),
       },
     };
 
     const newCharges: Charge[] = [];
+    const discountNote = negotiationData?.discountReason
+      ? ` [Negociação: ${negotiationData.discountReason}]`
+      : '';
+
     for (let i = 1; i <= installmentsCount; i++) {
       const dueDate = new Date();
       dueDate.setMonth(dueDate.getMonth() + (i - 1));
@@ -777,6 +873,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         amount: installmentAmount,
         dueDate: dueDate.toISOString().split('T')[0],
         status: i === 1 ? 'PENDENTE' : 'REGULAR',
+        notes: `Parcela ${i}/${installmentsCount} gerada para ${newEnrollment.courseName}.${discountNote}`,
       });
     }
 
@@ -793,10 +890,107 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       newEnrollment.id,
       undefined,
       `${student.name} (${student.studentId}) adicionou ${newEnrollment.courseName}`,
-      `Nova matrícula vinculada ao mesmo ID Student.`
+      `Nova matrícula vinculada com plano de ${installmentsCount} parcelas (Total: ${finalTotal} EGP).`
     );
 
     return newEnrollment;
+  };
+
+  /**
+   * 3.1 RENEGOTIATE ENROLLMENT PLAN / APPLY DISCOUNT TO ACTIVE STUDENT
+   */
+  const renegotiateEnrollmentPlan = (
+    enrollmentId: string,
+    negotiationData: {
+      newTotalAmount: number;
+      installmentsCount: number;
+      installmentAmount?: number;
+      originalTotalAmount?: number;
+      discountType?: 'NONE' | 'PERCENT' | 'FIXED';
+      discountValue?: number;
+      discountReason?: string;
+      recalculateUnpaidCharges?: boolean;
+    }
+  ) => {
+    const enrollment = state.enrollments.find((e) => e.id === enrollmentId);
+    if (!enrollment) return;
+
+    const currentCharges = state.charges.filter((c) => c.enrollmentId === enrollmentId);
+    const paidCharges = currentCharges.filter((c) => c.status === 'PAGO');
+    const unpaidCharges = currentCharges.filter((c) => c.status === 'PENDENTE' || c.status === 'REGULAR');
+    const totalPaidAmount = paidCharges.reduce((acc, c) => acc + (c.paidAmount || c.amount), 0);
+
+    const calculatedInstallment =
+      negotiationData.installmentAmount ||
+      Math.max(1, Math.round(negotiationData.newTotalAmount / negotiationData.installmentsCount));
+
+    setState((prev) => {
+      const updatedEnrollments = prev.enrollments.map((e) => {
+        if (e.id === enrollmentId) {
+          return {
+            ...e,
+            paymentPlan: {
+              ...e.paymentPlan,
+              installmentsCount: negotiationData.installmentsCount,
+              totalAmount: negotiationData.newTotalAmount,
+              installmentAmount: calculatedInstallment,
+              originalTotalAmount:
+                negotiationData.originalTotalAmount ||
+                e.paymentPlan.originalTotalAmount ||
+                e.paymentPlan.totalAmount,
+              discountType: negotiationData.discountType,
+              discountValue: negotiationData.discountValue,
+              discountReason: negotiationData.discountReason,
+              isNegotiated: true,
+            },
+          };
+        }
+        return e;
+      });
+
+      let updatedCharges = prev.charges;
+      if (negotiationData.recalculateUnpaidCharges !== false && unpaidCharges.length > 0) {
+        const remainingToPay = Math.max(0, negotiationData.newTotalAmount - totalPaidAmount);
+        const perUnpaidAmount = Math.max(1, Math.round(remainingToPay / unpaidCharges.length));
+
+        updatedCharges = prev.charges.map((chg) => {
+          if (chg.enrollmentId === enrollmentId && (chg.status === 'PENDENTE' || chg.status === 'REGULAR')) {
+            const discountNote = negotiationData.discountReason
+              ? ` [Negociação: ${negotiationData.discountReason}]`
+              : ' [Plano Renegociado]';
+            return {
+              ...chg,
+              amount: perUnpaidAmount,
+              notes: `${chg.notes || ''}${discountNote}`.trim(),
+            };
+          }
+          return chg;
+        });
+      }
+
+      return {
+        ...prev,
+        enrollments: updatedEnrollments,
+        charges: updatedCharges,
+      };
+    });
+
+    logAudit(
+      'SECRETARIAT',
+      'RENEGOCIAR_PLANO_MATRICULA',
+      'Enrollment',
+      enrollmentId,
+      `${enrollment.paymentPlan.totalAmount} EGP`,
+      `${negotiationData.newTotalAmount} EGP`,
+      `Plano da matrícula de ${enrollment.studentName} renegociado. Novo total: ${negotiationData.newTotalAmount} EGP em ${negotiationData.installmentsCount}x de ${calculatedInstallment} EGP. Motivo: ${negotiationData.discountReason || 'Acordo de balcão'}`
+    );
+
+    addNotification(
+      'Plano Renegociado!',
+      `O plano de ${enrollment.studentName} foi ajustado para ${negotiationData.newTotalAmount} EGP (${negotiationData.installmentsCount}x de ${calculatedInstallment} EGP).`,
+      'SUCCESS',
+      'ALL'
+    );
   };
 
   const updateEnrollmentStatus = (enrollmentId: string, status: Enrollment['status']) => {
@@ -1447,15 +1641,34 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     );
   };
 
-  const updateCourseFee = (courseId: string, newMonthlyFee: number, updateUnpaidCharges: boolean = false) => {
+  const updateCourseFee = (
+    courseId: string,
+    newMonthlyFee: number,
+    updateUnpaidCharges: boolean = false,
+    extraPricing?: {
+      totalCourseAmount?: number;
+      defaultInstallmentsCount?: number;
+      levels?: CourseLevelPricing[];
+    }
+  ) => {
     const existing = state.courses.find((c) => c.id === courseId);
     if (!existing) return;
 
     const oldFee = existing.monthlyFee;
+    const newTotalAmount = extraPricing?.totalCourseAmount ?? (newMonthlyFee * (existing.defaultInstallmentsCount || 4));
+    const newDefaultInstallments = extraPricing?.defaultInstallmentsCount ?? (existing.defaultInstallmentsCount || 4);
 
     setState((prev) => {
       const updatedCourses = prev.courses.map((c) =>
-        c.id === courseId ? { ...c, monthlyFee: newMonthlyFee } : c
+        c.id === courseId
+          ? {
+              ...c,
+              monthlyFee: newMonthlyFee,
+              totalCourseAmount: newTotalAmount,
+              defaultInstallmentsCount: newDefaultInstallments,
+              levels: extraPricing?.levels ?? c.levels,
+            }
+          : c
       );
 
       let updatedCharges = prev.charges;
@@ -1508,14 +1721,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       courseId,
       `${oldFee} EGP`,
       `${newMonthlyFee} EGP`,
-      `Mensalidade do curso ${existing.name} alterada de ${oldFee} EGP para ${newMonthlyFee} EGP pela Secretaria.${
+      `Mensalidade do curso ${existing.name} alterada de ${oldFee} EGP para ${newMonthlyFee} EGP (Total: ${newTotalAmount} EGP) pela Secretaria.${
         updateUnpaidCharges ? ' (Aplicado a cobranças pendentes futuras)' : ' (Aplicado a novas matrículas)'
       }`
     );
 
     addNotification(
       'Mensalidade Atualizada!',
-      `A mensalidade do curso "${existing.name}" foi alterada para ${newMonthlyFee} EGP.`,
+      `O valor do curso "${existing.name}" foi atualizado (Total: ${newTotalAmount} EGP, ${newMonthlyFee} EGP/parcela).`,
       'SUCCESS',
       'ALL'
     );
@@ -2021,6 +2234,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       createStudentWithEnrollment,
       updateStudent,
       addEnrollmentToStudent,
+      renegotiateEnrollmentPlan,
       updateEnrollmentStatus,
       addStudentDocument,
       deleteStudentDocument,

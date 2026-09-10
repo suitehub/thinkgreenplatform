@@ -68,6 +68,20 @@ export interface StudentDocument {
   size?: string;
 }
 
+export type EnglishAudienceLevel = 'CRIANCAS' | 'ADOLESCENTES' | 'ADULTO';
+
+export interface CourseLevelPricing {
+  level: EnglishAudienceLevel;
+  label: string;
+  targetAudience: string;
+  defaultInstallments: number;
+  defaultInstallmentsCount?: number;
+  totalAmount: number;
+  totalCourseAmount?: number;
+  installmentAmount: number;
+  description?: string;
+}
+
 export interface Course {
   id: string;
   code: string;
@@ -75,9 +89,12 @@ export interface Course {
   category: 'ENGLISH' | 'PRESCHOOL' | 'FOOTBALL' | 'WOMENS_FITNESS' | 'OTHER';
   description: string;
   color: string;
-  monthlyFee: number; // in EGP
+  totalCourseAmount?: number; // Valor Inteiro do Curso
+  defaultInstallmentsCount?: number; // Quantidade de parcelas sugerida
+  monthlyFee: number; // in EGP (mensalidade base/parcela de referência)
   totalHours: number;
   isActive: boolean;
+  levels?: CourseLevelPricing[]; // 3 Níveis exclusivos para o Curso Livre de Inglês (Crianças, Adolescentes, Adulto)
 }
 
 export interface ClassRoom {
@@ -108,9 +125,15 @@ export interface Enrollment {
   status: EnrollmentStatus;
   paymentPlan: {
     installmentsCount: number;
-    totalAmount: number; // in EGP
-    installmentAmount: number; // in EGP
+    totalAmount: number; // in EGP (valor total final após negociação/desconto)
+    installmentAmount: number; // in EGP (valor de cada parcela)
+    originalTotalAmount?: number; // in EGP (valor inteiro antes do desconto)
+    englishLevel?: EnglishAudienceLevel; // 'CRIANCAS' | 'ADOLESCENTES' | 'ADULTO'
+    discountType?: 'NONE' | 'PERCENT' | 'FIXED';
+    discountValue?: number;
+    discountReason?: string;
     discountPercent?: number;
+    isNegotiated?: boolean;
   };
 }
 
@@ -360,6 +383,8 @@ export interface PendingRegistration {
   monthlyFee: number;
 
   installmentsCount: number;
+  englishLevel?: EnglishAudienceLevel;
+  originalTotal?: number;
   discountType?: 'PERCENT' | 'FIXED' | 'NONE';
   discountValue?: number; // e.g. 15 (%) or 100 (EGP)
   discountReason?: string; // Observation explaining why discount was given

@@ -19,11 +19,14 @@ import {
   ChevronRight,
   Filter,
   Clock,
+  BadgePercent,
+  Tag,
+  Calculator,
 } from 'lucide-react';
 import { useApp } from '../../../context/AppContext';
 import { Badge } from '../../common/Badge';
 import { Modal } from '../../common/Modal';
-import { Student, Course, ClassRoom, Enrollment } from '../../../types';
+import { Student, Course, ClassRoom, Enrollment, EnglishAudienceLevel } from '../../../types';
 import { formatCurrency } from '../../../lib/storage';
 import { SecretariatSidebar } from './SecretariatSidebar';
 import { SecretariatTopbar } from './SecretariatTopbar';
@@ -110,7 +113,13 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
     notes: '',
     courseId: state.courses[0]?.id || 'course_eng',
     classId: state.classes[0]?.id || 'class_eng_a',
+    englishLevel: 'CRIANCAS' as EnglishAudienceLevel,
     installmentsCount: 4,
+    customInstallmentsInput: '4',
+    enableNegotiation: false,
+    discountType: 'PERCENT' as 'PERCENT' | 'FIXED',
+    discountValue: 10,
+    discountReason: 'Acordo na Secretaria / Bolsa Familiar',
   });
 
   const [createdStudentResult, setCreatedStudentResult] = useState<{
@@ -122,6 +131,8 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
   const [extraEnrollmentModalStudent, setExtraEnrollmentModalStudent] = useState<Student | null>(null);
   const [extraCourseId, setExtraCourseId] = useState(state.courses[1]?.id || state.courses[0]?.id);
   const [extraClassId, setExtraClassId] = useState(state.classes[1]?.id || state.classes[0]?.id);
+  const [extraEnglishLevel, setExtraEnglishLevel] = useState<EnglishAudienceLevel>('CRIANCAS');
+  const [extraInstallmentsCount, setExtraInstallmentsCount] = useState<number>(4);
 
   // Filtered Students List
   const filteredStudents = state.students.filter((s) => {
@@ -141,8 +152,50 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
     return matchesSearch && matchesCourse && matchesStatus;
   });
 
+  const isEnglishCourseObj = (course: Course | undefined | null) => {
+    if (!course) return false;
+    return (
+      course.id === 'crs_eng' ||
+      course.category === 'ENGLISH' ||
+      course.name.toLowerCase().includes('inglês') ||
+      course.name.toLowerCase().includes('ingles') ||
+      course.name.toLowerCase().includes('english')
+    );
+  };
+
+  const getCourseBaseTotal = (course: Course, level?: EnglishAudienceLevel): number => {
+    if (isEnglishCourseObj(course) && course.levels && course.levels.length > 0) {
+      const matched = course.levels.find((l) => l.level === (level || 'CRIANCAS'));
+      if (matched) return matched.totalAmount || matched.totalCourseAmount || 2000;
+    }
+    if (isEnglishCourseObj(course)) {
+      if (level === 'CRIANCAS') return 2000;
+      if (level === 'ADOLESCENTES') return 1500;
+      if (level === 'ADULTO') return 1800;
+    }
+    return course.totalCourseAmount || course.monthlyFee * (course.defaultInstallmentsCount || 4);
+  };
+
   const handleFinishWizard = (e: React.FormEvent) => {
     e.preventDefault();
+    const course = state.courses.find((c) => c.id === newStudentForm.courseId);
+    if (!course) return;
+
+    const isEng = isEnglishCourseObj(course);
+    const baseTotal = getCourseBaseTotal(course, isEng ? newStudentForm.englishLevel : undefined);
+
+    let discountAmount = 0;
+    if (newStudentForm.enableNegotiation) {
+      if (newStudentForm.discountType === 'PERCENT') {
+        discountAmount = Math.round((baseTotal * (newStudentForm.discountValue || 0)) / 100);
+      } else {
+        discountAmount = Math.min(baseTotal, newStudentForm.discountValue || 0);
+      }
+    }
+
+    const finalTotal = Math.max(1, baseTotal - discountAmount);
+    const effInstallments = Math.max(1, newStudentForm.installmentsCount);
+
     const result = createStudentWithEnrollment(
       {
         name: newStudentForm.name,
@@ -160,7 +213,16 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
       },
       newStudentForm.courseId,
       newStudentForm.classId,
-      newStudentForm.installmentsCount
+      effInstallments,
+      {
+        totalAmount: finalTotal,
+        originalTotalAmount: baseTotal,
+        installmentAmount: Math.round(finalTotal / effInstallments),
+        englishLevel: isEng ? newStudentForm.englishLevel : undefined,
+        discountType: newStudentForm.enableNegotiation ? newStudentForm.discountType : 'NONE',
+        discountValue: newStudentForm.enableNegotiation ? discountAmount : 0,
+        discountReason: newStudentForm.enableNegotiation ? newStudentForm.discountReason : undefined,
+      }
     );
 
     setCreatedStudentResult(result);
@@ -170,7 +232,25 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
   const handleAddExtraEnrollment = (e: React.FormEvent) => {
     e.preventDefault();
     if (!extraEnrollmentModalStudent) return;
-    addEnrollmentToStudent(extraEnrollmentModalStudent.studentId, extraCourseId, extraClassId, 4);
+    const course = state.courses.find((c) => c.id === extraCourseId);
+    if (!course) return;
+
+    const isEng = isEnglishCourseObj(course);
+    const baseTotal = getCourseBaseTotal(course, isEng ? extraEnglishLevel : undefined);
+    const effInstallments = Math.max(1, extraInstallmentsCount);
+
+    addEnrollmentToStudent(
+      extraEnrollmentModalStudent.studentId,
+      extraCourseId,
+      extraClassId,
+      effInstallments,
+      {
+        totalAmount: baseTotal,
+        originalTotalAmount: baseTotal,
+        installmentAmount: Math.round(baseTotal / effInstallments),
+        englishLevel: isEng ? extraEnglishLevel : undefined,
+      }
+    );
     setExtraEnrollmentModalStudent(null);
   };
 
@@ -481,37 +561,84 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
             {wizardStep === 2 && (
               <div className="space-y-4 max-w-2xl mx-auto text-xs">
                 <div>
-                  <label className="block font-bold text-slate-700 mb-2">Selecione o Curso / Frente</label>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="block font-bold text-slate-700 text-xs">
+                      Selecione o Curso / Frente de Ensino *
+                    </label>
+                    <span className="text-[11px] text-slate-400">
+                      Valores exibidos em valor inteiro do curso
+                    </span>
+                  </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {state.courses.map((course) => (
-                      <div
-                        key={course.id}
-                        onClick={() => {
-                          const matchingClass = state.classes.find((c) => c.courseId === course.id);
-                          setNewStudentForm({
-                            ...newStudentForm,
-                            courseId: course.id,
-                            classId: matchingClass ? matchingClass.id : newStudentForm.classId,
-                          });
-                        }}
-                        className={`p-4 rounded-2xl border cursor-pointer transition-all ${
-                          newStudentForm.courseId === course.id
-                            ? 'border-[#075e38] bg-emerald-50/50 font-bold ring-2 ring-[#075e38]'
-                            : 'border-slate-200 bg-white hover:bg-slate-50'
-                        }`}
-                      >
-                        <p className="text-sm font-black text-slate-900">{course.name}</p>
-                        <p className="text-[11px] text-slate-500 mt-0.5">{course.description}</p>
-                        <p className="text-xs font-mono font-bold text-emerald-700 mt-2">
-                          {formatCurrency(course.monthlyFee, 'EGP')} / mês
-                        </p>
-                      </div>
-                    ))}
+                    {state.courses.map((course) => {
+                      const isEng = isEnglishCourseObj(course);
+                      const totalVal = getCourseBaseTotal(course, isEng ? newStudentForm.englishLevel : undefined);
+                      const defInst = isEng
+                        ? newStudentForm.englishLevel === 'CRIANCAS'
+                          ? 4
+                          : 3
+                        : course.defaultInstallmentsCount || 4;
+
+                      return (
+                        <div
+                          key={course.id}
+                          onClick={() => {
+                            const matchingClass = state.classes.find((c) => c.courseId === course.id);
+                            const newIsEng = isEnglishCourseObj(course);
+                            const newDefInst = newIsEng ? (newStudentForm.englishLevel === 'CRIANCAS' ? 4 : 3) : course.defaultInstallmentsCount || 4;
+                            setNewStudentForm({
+                              ...newStudentForm,
+                              courseId: course.id,
+                              classId: matchingClass ? matchingClass.id : newStudentForm.classId,
+                              installmentsCount: newDefInst,
+                              customInstallmentsInput: String(newDefInst),
+                            });
+                          }}
+                          className={`p-4 rounded-2xl border cursor-pointer transition-all flex flex-col justify-between ${
+                            newStudentForm.courseId === course.id
+                              ? 'border-[#075e38] bg-emerald-50/50 font-bold ring-2 ring-[#075e38]'
+                              : 'border-slate-200 bg-white hover:bg-slate-50'
+                          }`}
+                        >
+                          <div>
+                            <div className="flex items-center justify-between gap-1 mb-1">
+                              <p className="text-sm font-black text-slate-900">{course.name}</p>
+                              {isEng && (
+                                <span className="text-[10px] font-bold text-purple-700 bg-purple-100 px-1.5 py-0.5 rounded border border-purple-200">
+                                  3 Níveis
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-[11px] text-slate-500 line-clamp-2">{course.description}</p>
+                          </div>
+
+                          <div className="mt-3 pt-2 border-t border-slate-100">
+                            {isEng ? (
+                              <div className="space-y-0.5 text-[10px] text-purple-900 font-semibold">
+                                <p>🧒 Crianças: 2.000 EGP (4x 500)</p>
+                                <p>🎒 Teens: 1.500 EGP (3x 500)</p>
+                                <p>🧑 Adulto: 1.800 EGP (3x 600)</p>
+                              </div>
+                            ) : (
+                              <div>
+                                <span className="text-[10px] text-slate-400 block">Valor Inteiro Total</span>
+                                <p className="text-xs font-mono font-bold text-emerald-800">
+                                  {formatCurrency(totalVal, 'EGP')}{' '}
+                                  <span className="text-[10px] text-slate-500 font-normal">
+                                    ({defInst}x de {formatCurrency(Math.round(totalVal / defInst), 'EGP')})
+                                  </span>
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
 
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">Selecione a Turma & Horário</label>
+                  <label className="block font-bold text-slate-700 mb-1">Selecione a Turma & Horário *</label>
                   <select
                     value={newStudentForm.classId || ''}
                     onChange={(e) => setNewStudentForm({ ...newStudentForm, classId: e.target.value })}
@@ -540,120 +667,379 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
                     onClick={() => setWizardStep(3)}
                     className="px-6 py-2.5 bg-[#075e38] hover:bg-[#064e2e] text-white rounded-xl font-bold flex items-center gap-1.5 shadow-sm cursor-pointer"
                   >
-                    Próximo: Plano Financeiro <ArrowRight className="w-4 h-4" />
+                    Próximo: Plano Financeiro & Negociação <ArrowRight className="w-4 h-4" />
                   </button>
                 </div>
               </div>
             )}
 
-            {wizardStep === 3 && (
-              <form onSubmit={handleFinishWizard} className="space-y-4 max-w-2xl mx-auto text-xs">
-                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-3">
-                  <p className="font-bold text-slate-800 text-sm">Resumo da Nova Matrícula:</p>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-slate-600">
-                    <p>
-                      Aluno: <strong className="text-slate-900">{newStudentForm.name}</strong>
-                    </p>
-                    <p>
-                      RG / Identidade:{' '}
-                      <strong className="text-slate-900 font-mono">
-                        {newStudentForm.rg || 'Não informado'}
-                      </strong>
-                    </p>
-                    <p>
-                      Data de Nascimento:{' '}
-                      <strong className="text-slate-900">
-                        {newStudentForm.birthDate || 'Não informada'}
-                      </strong>
-                    </p>
-                    <p>
-                      Gênero:{' '}
-                      <strong className="text-slate-900">{newStudentForm.gender || 'Não informado'}</strong>
-                    </p>
-                    <p>
-                      Telefone / WhatsApp:{' '}
-                      <strong className="text-slate-900">{newStudentForm.phone}</strong>
-                    </p>
-                    <p>
-                      Cidade: <strong className="text-slate-900">{newStudentForm.city}</strong>
-                    </p>
-                    <p>
-                      Curso:{' '}
-                      <strong className="text-slate-900">
-                        {state.courses.find((c) => c.id === newStudentForm.courseId)?.name}
-                      </strong>
-                    </p>
-                    <p>
-                      Turma:{' '}
-                      <strong className="text-slate-900">
-                        {state.classes.find((c) => c.id === newStudentForm.classId)?.name}
-                      </strong>
-                    </p>
-                    <p className="sm:col-span-2 pt-1 border-t border-slate-200">
-                      Mensalidade Base:{' '}
-                      <strong className="text-emerald-700 font-mono">
-                        {formatCurrency(
-                          state.courses.find((c) => c.id === newStudentForm.courseId)?.monthlyFee || 0,
-                          'EGP'
-                        )}{' '}
-                        / mês
-                      </strong>
-                    </p>
-                  </div>
-                </div>
+            {wizardStep === 3 && (() => {
+              const activeCourse = state.courses.find((c) => c.id === newStudentForm.courseId);
+              const isEng = isEnglishCourseObj(activeCourse);
+              const baseTotal = activeCourse ? getCourseBaseTotal(activeCourse, isEng ? newStudentForm.englishLevel : undefined) : 2000;
 
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1">
-                    Número de Parcelas do Plano Financeiro
-                  </label>
-                  <select
-                    value={newStudentForm.installmentsCount ?? 4}
-                    onChange={(e) =>
-                      setNewStudentForm({
-                        ...newStudentForm,
-                        installmentsCount: Number(e.target.value),
-                      })
-                    }
-                    className="w-full p-2.5 border border-slate-300 rounded-xl font-bold text-xs bg-white"
-                  >
-                    <option value={1}>1 Parcela (Quitação Integral à Vista)</option>
-                    <option value={2}>2 Parcelas Semestrais</option>
-                    <option value={4}>4 Parcelas Mensais (Padrão)</option>
-                    <option value={6}>6 Parcelas Mensais</option>
-                  </select>
-                  <div className="mt-2 p-3 bg-emerald-50 border border-emerald-100 rounded-xl flex items-center justify-between text-xs">
-                    <span className="text-emerald-900 font-medium">Total Calculado do Plano:</span>
-                    <span className="font-mono font-black text-emerald-950 text-sm">
-                      {formatCurrency(
-                        (state.courses.find((c) => c.id === newStudentForm.courseId)?.monthlyFee || 0) *
-                          newStudentForm.installmentsCount,
-                        'EGP'
+              let discountAmt = 0;
+              if (newStudentForm.enableNegotiation) {
+                if (newStudentForm.discountType === 'PERCENT') {
+                  discountAmt = Math.round((baseTotal * (newStudentForm.discountValue || 0)) / 100);
+                } else {
+                  discountAmt = Math.min(baseTotal, newStudentForm.discountValue || 0);
+                }
+              }
+
+              const finalTotal = Math.max(1, baseTotal - discountAmt);
+              const effInstallments = Math.max(1, newStudentForm.installmentsCount);
+              const installmentAmount = Math.round(finalTotal / effInstallments);
+
+              return (
+                <form onSubmit={handleFinishWizard} className="space-y-4 max-w-2xl mx-auto text-xs">
+                  {/* Student & Course Academic Summary */}
+                  <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-3">
+                    <p className="font-bold text-slate-800 text-sm">Resumo da Nova Matrícula:</p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-slate-600">
+                      <p>
+                        Aluno: <strong className="text-slate-900">{newStudentForm.name}</strong>
+                      </p>
+                      <p>
+                        RG / Doc:{' '}
+                        <strong className="text-slate-900 font-mono">
+                          {newStudentForm.rg || 'Não informado'}
+                        </strong>
+                      </p>
+                      <p>
+                        Telefone:{' '}
+                        <strong className="text-slate-900">{newStudentForm.phone}</strong>
+                      </p>
+                      <p>
+                        Curso:{' '}
+                        <strong className="text-slate-900">{activeCourse?.name}</strong>
+                      </p>
+                      <p>
+                        Turma:{' '}
+                        <strong className="text-slate-900">
+                          {state.classes.find((c) => c.id === newStudentForm.classId)?.name}
+                        </strong>
+                      </p>
+                      <p>
+                        Valor Inteiro Base:{' '}
+                        <strong className="text-emerald-800 font-mono">
+                          {formatCurrency(baseTotal, 'EGP')}
+                        </strong>
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* English Course 3 Levels Selection */}
+                  {isEng && (
+                    <div className="p-3.5 bg-purple-50 border border-purple-200 rounded-xl space-y-2">
+                      <label className="block font-bold text-purple-950 text-xs">
+                        Nível / Faixa Etária do Curso de Inglês *
+                      </label>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setNewStudentForm({
+                              ...newStudentForm,
+                              englishLevel: 'CRIANCAS',
+                              installmentsCount: 4,
+                              customInstallmentsInput: '4',
+                            });
+                          }}
+                          className={`p-2.5 rounded-xl border text-left cursor-pointer transition-all ${
+                            newStudentForm.englishLevel === 'CRIANCAS'
+                              ? 'border-purple-600 bg-purple-600 text-white shadow-xs'
+                              : 'border-purple-200 bg-white text-slate-700 hover:bg-purple-100/50'
+                          }`}
+                        >
+                          <p className="font-bold text-xs">🧒 Crianças (Kids)</p>
+                          <p className="text-[10px] opacity-90 mt-0.5">Padrão: 4 Parcelas</p>
+                          <p className="font-mono font-bold text-xs mt-1">2.000 EGP (4x 500)</p>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setNewStudentForm({
+                              ...newStudentForm,
+                              englishLevel: 'ADOLESCENTES',
+                              installmentsCount: 3,
+                              customInstallmentsInput: '3',
+                            });
+                          }}
+                          className={`p-2.5 rounded-xl border text-left cursor-pointer transition-all ${
+                            newStudentForm.englishLevel === 'ADOLESCENTES'
+                              ? 'border-purple-600 bg-purple-600 text-white shadow-xs'
+                              : 'border-purple-200 bg-white text-slate-700 hover:bg-purple-100/50'
+                          }`}
+                        >
+                          <p className="font-bold text-xs">🎒 Adolescentes (Teens)</p>
+                          <p className="text-[10px] opacity-90 mt-0.5">Padrão: 3 Parcelas</p>
+                          <p className="font-mono font-bold text-xs mt-1">1.500 EGP (3x 500)</p>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setNewStudentForm({
+                              ...newStudentForm,
+                              englishLevel: 'ADULTO',
+                              installmentsCount: 3,
+                              customInstallmentsInput: '3',
+                            });
+                          }}
+                          className={`p-2.5 rounded-xl border text-left cursor-pointer transition-all ${
+                            newStudentForm.englishLevel === 'ADULTO'
+                              ? 'border-purple-600 bg-purple-600 text-white shadow-xs'
+                              : 'border-purple-200 bg-white text-slate-700 hover:bg-purple-100/50'
+                          }`}
+                        >
+                          <p className="font-bold text-xs">🧑 Adulto (Adults)</p>
+                          <p className="text-[10px] opacity-90 mt-0.5">Padrão: 3 Parcelas</p>
+                          <p className="font-mono font-bold text-xs mt-1">1.800 EGP (3x 600)</p>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Flexible Installments: Choose any number of installments */}
+                  <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+                    <div className="flex items-center justify-between">
+                      <label className="block font-bold text-slate-800 text-xs">
+                        Número de Parcelas do Aluno (Opção Livre)
+                      </label>
+                      <span className="text-[11px] text-slate-500 font-medium">
+                        {newStudentForm.installmentsCount === 1
+                          ? 'À Vista'
+                          : `Dividido em ${newStudentForm.installmentsCount} parcelas`}
+                      </span>
+                    </div>
+
+                    <div className="flex flex-wrap gap-1.5">
+                      {[1, 2, 3, 4, 5, 6, 8, 10, 12].map((num) => (
+                        <button
+                          key={num}
+                          type="button"
+                          onClick={() => {
+                            setNewStudentForm({
+                              ...newStudentForm,
+                              installmentsCount: num,
+                              customInstallmentsInput: String(num),
+                            });
+                          }}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                            newStudentForm.installmentsCount === num
+                              ? 'bg-[#075e38] text-white shadow-2xs'
+                              : 'bg-white border border-slate-300 text-slate-700 hover:bg-slate-100'
+                          }`}
+                        >
+                          {num === 1 ? '1x (À Vista)' : `${num}x`}
+                        </button>
+                      ))}
+                    </div>
+
+                    <div className="flex items-center gap-2 pt-1">
+                      <span className="text-slate-500 text-[11px]">Ou digite a quantidade desejada:</span>
+                      <input
+                        type="number"
+                        min={1}
+                        max={36}
+                        value={newStudentForm.customInstallmentsInput}
+                        onChange={(e) => {
+                          const valStr = e.target.value;
+                          const valNum = Number(valStr);
+                          setNewStudentForm({
+                            ...newStudentForm,
+                            customInstallmentsInput: valStr,
+                            installmentsCount: valNum > 0 ? valNum : newStudentForm.installmentsCount,
+                          });
+                        }}
+                        className="w-20 p-1.5 bg-white border border-slate-300 rounded-lg text-center font-mono font-bold text-xs"
+                      />
+                      <span className="text-slate-500 text-[11px]">parcelas</span>
+                    </div>
+                  </div>
+
+                  {/* Negotiation / Discount Panel */}
+                  <div className="p-3.5 bg-amber-50/70 border border-amber-200 rounded-xl space-y-3">
+                    <div className="flex items-center justify-between">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={newStudentForm.enableNegotiation}
+                          onChange={(e) =>
+                            setNewStudentForm({ ...newStudentForm, enableNegotiation: e.target.checked })
+                          }
+                          className="rounded border-slate-300 text-amber-600 focus:ring-amber-500"
+                        />
+                        <span className="font-bold text-amber-950 text-xs flex items-center gap-1">
+                          <BadgePercent className="w-3.5 h-3.5 text-amber-600" />
+                          Aplicar Negociação / Conceder Desconto ao Aluno
+                        </span>
+                      </label>
+                      {newStudentForm.enableNegotiation && (
+                        <span className="text-[10px] font-bold text-amber-800 bg-amber-100 px-2 py-0.5 rounded-full">
+                          Negociação Ativada
+                        </span>
                       )}
-                    </span>
+                    </div>
+
+                    {newStudentForm.enableNegotiation && (
+                      <div className="space-y-2.5 pt-1 border-t border-amber-200/70">
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <label className="block text-[10px] font-bold text-amber-900 mb-1">
+                              Formato do Desconto
+                            </label>
+                            <div className="grid grid-cols-2 gap-1">
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setNewStudentForm({ ...newStudentForm, discountType: 'PERCENT' })
+                                }
+                                className={`p-1.5 text-center font-bold text-xs rounded-lg transition-all cursor-pointer ${
+                                  newStudentForm.discountType === 'PERCENT'
+                                    ? 'bg-amber-600 text-white'
+                                    : 'bg-white border border-amber-200 text-amber-900'
+                                }`}
+                              >
+                                Porcentagem (%)
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setNewStudentForm({ ...newStudentForm, discountType: 'FIXED' })
+                                }
+                                className={`p-1.5 text-center font-bold text-xs rounded-lg transition-all cursor-pointer ${
+                                  newStudentForm.discountType === 'FIXED'
+                                    ? 'bg-amber-600 text-white'
+                                    : 'bg-white border border-amber-200 text-amber-900'
+                                }`}
+                              >
+                                Valor Fixo (EGP)
+                              </button>
+                            </div>
+                          </div>
+
+                          <div>
+                            <label className="block text-[10px] font-bold text-amber-900 mb-1">
+                              {newStudentForm.discountType === 'PERCENT'
+                                ? 'Porcentagem de Desconto (%)'
+                                : 'Valor a Abater (EGP)'}
+                            </label>
+                            <input
+                              type="number"
+                              min={1}
+                              max={newStudentForm.discountType === 'PERCENT' ? 95 : baseTotal - 1}
+                              value={newStudentForm.discountValue}
+                              onChange={(e) =>
+                                setNewStudentForm({
+                                  ...newStudentForm,
+                                  discountValue: Number(e.target.value),
+                                })
+                              }
+                              className="w-full p-2 bg-white border border-amber-300 rounded-xl font-mono font-bold text-amber-950 text-xs"
+                            />
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="block text-[10px] font-bold text-amber-900 mb-1">
+                            Motivo / Justificativa da Negociação
+                          </label>
+                          <input
+                            type="text"
+                            value={newStudentForm.discountReason}
+                            onChange={(e) =>
+                              setNewStudentForm({ ...newStudentForm, discountReason: e.target.value })
+                            }
+                            placeholder="Ex: Bolsa Social, Desconto Irmãos, Acordo de Balcão"
+                            className="w-full p-2 bg-white border border-amber-300 rounded-xl text-xs"
+                          />
+                          <div className="flex flex-wrap gap-1 mt-1.5">
+                            {[
+                              'Desconto Irmãos',
+                              'Bolsa Familiar Comunitária',
+                              'Pagamento Antecipado',
+                              'Parceria Social',
+                              'Acordo Balcão Secretaria',
+                            ].map((chip) => (
+                              <button
+                                key={chip}
+                                type="button"
+                                onClick={() =>
+                                  setNewStudentForm({ ...newStudentForm, discountReason: chip })
+                                }
+                                className="px-2 py-0.5 bg-white border border-amber-200 hover:bg-amber-100 text-amber-900 text-[10px] font-semibold rounded-md cursor-pointer"
+                              >
+                                + {chip}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
-                </div>
 
-                <div className="p-3.5 bg-emerald-50/80 text-emerald-950 rounded-xl border border-emerald-200 text-[11px] leading-relaxed">
-                  <strong>Automação Imediata:</strong> Ao confirmar, o sistema gerará o ID Student permanente (STU00000), registrará o plano no Financeiro e vinculará a turma ao diário de classe.
-                </div>
+                  {/* Financial Total Box */}
+                  <div className="p-3.5 bg-emerald-50 border border-emerald-200 rounded-xl space-y-1.5 text-xs">
+                    <div className="flex items-center justify-between text-slate-600">
+                      <span>Valor Inteiro Original:</span>
+                      <span className="font-mono font-bold text-slate-800">
+                        {formatCurrency(baseTotal, 'EGP')}
+                      </span>
+                    </div>
 
-                <div className="flex justify-between pt-4">
-                  <button
-                    type="button"
-                    onClick={() => setWizardStep(2)}
-                    className="px-4 py-2 border border-slate-300 rounded-xl font-semibold text-slate-700 hover:bg-slate-50 cursor-pointer"
-                  >
-                    Voltar
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-6 py-2.5 bg-[#075e38] hover:bg-[#064e2e] text-white rounded-xl font-black flex items-center gap-1.5 shadow-sm cursor-pointer"
-                  >
-                    <CheckCircle className="w-4 h-4" /> Gerar STU ID & Concluir Matrícula
-                  </button>
-                </div>
-              </form>
-            )}
+                    {newStudentForm.enableNegotiation && discountAmt > 0 && (
+                      <div className="flex items-center justify-between text-amber-700">
+                        <span>Desconto Concedido:</span>
+                        <span className="font-mono font-bold">
+                          -{formatCurrency(discountAmt, 'EGP')} (
+                          {newStudentForm.discountType === 'PERCENT'
+                            ? `${newStudentForm.discountValue}%`
+                            : 'Fixo'}
+                          )
+                        </span>
+                      </div>
+                    )}
+
+                    <div className="pt-1.5 border-t border-emerald-200 flex items-center justify-between font-bold text-emerald-950 text-sm">
+                      <span>Total Final do Plano ({effInstallments} parcelas):</span>
+                      <span className="font-mono font-black text-emerald-900 text-base">
+                        {formatCurrency(finalTotal, 'EGP')}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between text-emerald-900 font-bold text-xs">
+                      <span>Valor de Cada Parcela:</span>
+                      <span className="font-mono font-black bg-white px-2.5 py-1 rounded-lg border border-emerald-200 text-sm text-emerald-950">
+                        {formatCurrency(installmentAmount, 'EGP')} / mês
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="p-3 bg-emerald-50/80 text-emerald-950 rounded-xl border border-emerald-200 text-[11px] leading-relaxed">
+                    <strong>Automação Imediata:</strong> Ao confirmar, o sistema gerará o ID Student permanente (STU00000), registrará o plano financeiro com parcelas livres e vinculará a turma no sistema.
+                  </div>
+
+                  <div className="flex justify-between pt-4">
+                    <button
+                      type="button"
+                      onClick={() => setWizardStep(2)}
+                      className="px-4 py-2 border border-slate-300 rounded-xl font-semibold text-slate-700 hover:bg-slate-50 cursor-pointer"
+                    >
+                      Voltar
+                    </button>
+                    <button
+                      type="submit"
+                      className="px-6 py-2.5 bg-[#075e38] hover:bg-[#064e2e] text-white rounded-xl font-black flex items-center gap-1.5 shadow-sm cursor-pointer"
+                    >
+                      <CheckCircle className="w-4 h-4" /> Gerar STU ID & Concluir Matrícula
+                    </button>
+                  </div>
+                </form>
+              );
+            })()}
 
             {wizardStep === 5 && createdStudentResult && (
               <div className="p-8 text-center max-w-lg mx-auto bg-emerald-50/60 rounded-3xl border border-emerald-200 space-y-4">
@@ -966,33 +1352,157 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
                   setExtraCourseId(e.target.value);
                   const matchingClass = state.classes.find((c) => c.courseId === e.target.value);
                   if (matchingClass) setExtraClassId(matchingClass.id);
+                  const selCourse = state.courses.find((c) => c.id === e.target.value);
+                  if (isEnglishCourseObj(selCourse)) {
+                    setExtraInstallmentsCount(extraEnglishLevel === 'CRIANCAS' ? 4 : 3);
+                  }
                 }}
                 className="w-full p-2.5 border border-slate-300 rounded-xl font-bold bg-white"
               >
-                {state.courses.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name} ({formatCurrency(c.monthlyFee, 'EGP')}/mês)
-                  </option>
-                ))}
+                {state.courses.map((c) => {
+                  const isEng = isEnglishCourseObj(c);
+                  return (
+                    <option key={c.id} value={c.id}>
+                      {c.name} {isEng ? '(3 Níveis Etários)' : `(${formatCurrency(c.totalCourseAmount || c.monthlyFee * 4, 'EGP')} total)`}
+                    </option>
+                  );
+                })}
               </select>
             </div>
 
-            <div>
-              <label className="block font-bold text-slate-700 mb-1">Selecione a Turma</label>
-              <select
-                value={extraClassId}
-                onChange={(e) => setExtraClassId(e.target.value)}
-                className="w-full p-2.5 border border-slate-300 rounded-xl font-semibold bg-white"
-              >
-                {state.classes
-                  .filter((c) => c.courseId === extraCourseId)
-                  .map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name} • {c.schedule}
-                    </option>
-                  ))}
-              </select>
-            </div>
+            {(() => {
+              const selCourse = state.courses.find((c) => c.id === extraCourseId);
+              const isEng = isEnglishCourseObj(selCourse);
+              return (
+                <>
+                  {isEng && (
+                    <div className="p-3 bg-purple-50 border border-purple-200 rounded-xl space-y-2">
+                      <label className="block font-bold text-purple-950 text-xs">
+                        Nível do Curso de Inglês *
+                      </label>
+                      <div className="grid grid-cols-3 gap-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setExtraEnglishLevel('CRIANCAS');
+                            setExtraInstallmentsCount(4);
+                          }}
+                          className={`p-2 rounded-xl border text-center transition-all cursor-pointer ${
+                            extraEnglishLevel === 'CRIANCAS'
+                              ? 'border-purple-600 bg-purple-600 text-white font-bold'
+                              : 'border-purple-200 bg-white text-slate-700'
+                          }`}
+                        >
+                          <p className="text-xs">🧒 Crianças</p>
+                          <p className="text-[10px] font-mono mt-0.5">2.000 EGP (4x)</p>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setExtraEnglishLevel('ADOLESCENTES');
+                            setExtraInstallmentsCount(3);
+                          }}
+                          className={`p-2 rounded-xl border text-center transition-all cursor-pointer ${
+                            extraEnglishLevel === 'ADOLESCENTES'
+                              ? 'border-purple-600 bg-purple-600 text-white font-bold'
+                              : 'border-purple-200 bg-white text-slate-700'
+                          }`}
+                        >
+                          <p className="text-xs">🎒 Teens</p>
+                          <p className="text-[10px] font-mono mt-0.5">1.500 EGP (3x)</p>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setExtraEnglishLevel('ADULTO');
+                            setExtraInstallmentsCount(3);
+                          }}
+                          className={`p-2 rounded-xl border text-center transition-all cursor-pointer ${
+                            extraEnglishLevel === 'ADULTO'
+                              ? 'border-purple-600 bg-purple-600 text-white font-bold'
+                              : 'border-purple-200 bg-white text-slate-700'
+                          }`}
+                        >
+                          <p className="text-xs">🧑 Adulto</p>
+                          <p className="text-[10px] font-mono mt-0.5">1.800 EGP (3x)</p>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  <div>
+                    <label className="block font-bold text-slate-700 mb-1">Selecione a Turma</label>
+                    <select
+                      value={extraClassId}
+                      onChange={(e) => setExtraClassId(e.target.value)}
+                      className="w-full p-2.5 border border-slate-300 rounded-xl font-semibold bg-white"
+                    >
+                      {state.classes
+                        .filter((c) => c.courseId === extraCourseId)
+                        .map((c) => (
+                          <option key={c.id} value={c.id}>
+                            {c.name} • {c.schedule}
+                          </option>
+                        ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-slate-700 mb-1">
+                      Quantidade de Parcelas (Livre Escolha)
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <div className="flex flex-wrap gap-1">
+                        {[1, 2, 3, 4, 6].map((n) => (
+                          <button
+                            key={n}
+                            type="button"
+                            onClick={() => setExtraInstallmentsCount(n)}
+                            className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                              extraInstallmentsCount === n
+                                ? 'bg-[#075e38] text-white'
+                                : 'bg-slate-100 border border-slate-300 text-slate-700'
+                            }`}
+                          >
+                            {n === 1 ? '1x à vista' : `${n}x`}
+                          </button>
+                        ))}
+                      </div>
+                      <input
+                        type="number"
+                        min={1}
+                        max={24}
+                        value={extraInstallmentsCount}
+                        onChange={(e) => setExtraInstallmentsCount(Math.max(1, Number(e.target.value)))}
+                        className="w-16 p-1.5 border border-slate-300 rounded-lg text-center font-mono font-bold text-xs"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-between text-xs">
+                    <div>
+                      <span className="text-emerald-900 font-bold block">Valor Inteiro Total:</span>
+                      <span className="text-[10px] text-slate-500">
+                        {extraInstallmentsCount} parcelas de{' '}
+                        {formatCurrency(
+                          Math.round(
+                            getCourseBaseTotal(selCourse!, isEng ? extraEnglishLevel : undefined) /
+                              Math.max(1, extraInstallmentsCount)
+                          ),
+                          'EGP'
+                        )}
+                      </span>
+                    </div>
+                    <span className="font-mono font-black text-emerald-950 text-sm">
+                      {formatCurrency(
+                        getCourseBaseTotal(selCourse!, isEng ? extraEnglishLevel : undefined),
+                        'EGP'
+                      )}
+                    </span>
+                  </div>
+                </>
+              );
+            })()}
 
             <div className="flex justify-end gap-2 pt-3">
               <button

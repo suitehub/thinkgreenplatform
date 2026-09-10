@@ -30,7 +30,7 @@ import {
 import { useApp } from '../../../context/AppContext';
 import { formatCurrency } from '../../../lib/storage';
 import { ReceiptModal } from '../../common/ReceiptModal';
-import { PaymentReceipt, PaymentMethod } from '../../../types';
+import { PaymentReceipt, PaymentMethod, EnglishAudienceLevel, Course } from '../../../types';
 
 interface ReceptionModuleProps {
   currentTab?: string;
@@ -166,9 +166,29 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
   };
 
   // =========================================================================
-  // 2. NEW STUDENT REGISTRATION (PRE-CADASTRO SEM GERAR ID)
+  // 2. NEW STUDENT REGISTRATION (PRÉ-CADASTRO SEM GERAR ID)
   // =========================================================================
-  const [newStudentForm, setNewStudentForm] = useState({
+  const [newStudentForm, setNewStudentForm] = useState<{
+    name: string;
+    birthDate: string;
+    gender: string;
+    rg: string;
+    phone: string;
+    email: string;
+    city: string;
+    address: string;
+    guardianName: string;
+    guardianPhone: string;
+    notes: string;
+    courseId: string;
+    classId: string;
+    englishLevel: EnglishAudienceLevel;
+    installmentsCount: number;
+    hasDiscount: boolean;
+    discountType: 'PERCENT' | 'FIXED';
+    discountValue: number;
+    discountReason: string;
+  }>({
     name: '',
     birthDate: '',
     gender: 'MASCULINO',
@@ -182,12 +202,37 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
     notes: '',
     courseId: state.courses[0]?.id || 'course_soccer',
     classId: state.classes[0]?.id || 'class_soccer_u15',
+    englishLevel: 'CRIANCAS',
     installmentsCount: 4,
     hasDiscount: false,
-    discountType: 'PERCENT' as 'PERCENT' | 'FIXED',
+    discountType: 'PERCENT',
     discountValue: 10,
     discountReason: '',
   });
+
+  const isEnglishCourseObj = (course: Course | undefined | null) => {
+    if (!course) return false;
+    return (
+      course.id === 'crs_eng' ||
+      course.category === 'ENGLISH' ||
+      course.name.toLowerCase().includes('inglês') ||
+      course.name.toLowerCase().includes('ingles') ||
+      course.name.toLowerCase().includes('english')
+    );
+  };
+
+  const getCourseBaseTotal = (course: Course, level?: EnglishAudienceLevel): number => {
+    if (isEnglishCourseObj(course) && course.levels && course.levels.length > 0) {
+      const matched = course.levels.find((l) => l.level === (level || 'CRIANCAS'));
+      if (matched) return matched.totalAmount || matched.totalCourseAmount || 2000;
+    }
+    if (isEnglishCourseObj(course)) {
+      if (level === 'CRIANCAS') return 2000;
+      if (level === 'ADOLESCENTES') return 1500;
+      if (level === 'ADULTO') return 1800;
+    }
+    return course.totalCourseAmount || course.monthlyFee * (course.defaultInstallmentsCount || 4);
+  };
 
   const [preRegistrationSuccess, setPreRegistrationSuccess] = useState<{
     protocol: string;
@@ -202,15 +247,22 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
     return state.courses.find((c) => c.id === newStudentForm.courseId) || state.courses[0];
   }, [state.courses, newStudentForm.courseId]);
 
+  const isEngSelected = useMemo(() => {
+    return isEnglishCourseObj(selectedCourseForForm);
+  }, [selectedCourseForForm]);
+
   const availableClassesForCourse = useMemo(() => {
     return state.classes.filter((c) => c.courseId === newStudentForm.courseId);
   }, [state.classes, newStudentForm.courseId]);
 
-  // Financial preview calculation
+  // Financial preview calculation (Whole course amount)
   const calculatedBaseTotal = useMemo(() => {
-    const fee = selectedCourseForForm ? selectedCourseForForm.monthlyFee : 500;
-    return fee * newStudentForm.installmentsCount;
-  }, [selectedCourseForForm, newStudentForm.installmentsCount]);
+    if (!selectedCourseForForm) return 2000;
+    return getCourseBaseTotal(
+      selectedCourseForForm,
+      isEngSelected ? newStudentForm.englishLevel : undefined
+    );
+  }, [selectedCourseForForm, isEngSelected, newStudentForm.englishLevel]);
 
   const calculatedDiscountAmount = useMemo(() => {
     if (!newStudentForm.hasDiscount) return 0;
@@ -221,7 +273,7 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
   }, [newStudentForm.hasDiscount, newStudentForm.discountType, newStudentForm.discountValue, calculatedBaseTotal]);
 
   const calculatedFinalTotal = Math.max(0, calculatedBaseTotal - calculatedDiscountAmount);
-  const calculatedInstallmentValue = Math.max(1, Math.round(calculatedFinalTotal / newStudentForm.installmentsCount));
+  const calculatedInstallmentValue = Math.max(1, Math.round(calculatedFinalTotal / Math.max(1, newStudentForm.installmentsCount)));
 
   const handleSavePendingStudent = (e: React.FormEvent) => {
     e.preventDefault();
@@ -254,7 +306,9 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
       courseName: selectedCourseForForm ? selectedCourseForForm.name : 'Curso',
       classId: selectedClass ? selectedClass.id : '',
       className: selectedClass ? selectedClass.name : 'Turma Geral',
-      monthlyFee: selectedCourseForForm ? selectedCourseForForm.monthlyFee : 500,
+      englishLevel: isEngSelected ? newStudentForm.englishLevel : undefined,
+      totalCourseAmount: calculatedBaseTotal,
+      monthlyFee: calculatedInstallmentValue,
       installmentsCount: newStudentForm.installmentsCount,
       discountType: newStudentForm.hasDiscount ? newStudentForm.discountType : 'NONE',
       discountValue: newStudentForm.hasDiscount ? newStudentForm.discountValue : 0,
@@ -287,6 +341,7 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
       notes: '',
       courseId: state.courses[0]?.id || 'course_soccer',
       classId: state.classes[0]?.id || 'class_soccer_u15',
+      englishLevel: 'CRIANCAS',
       installmentsCount: 4,
       hasDiscount: false,
       discountType: 'PERCENT',
@@ -990,19 +1045,25 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
                       onChange={(e) => {
                         const newCId = e.target.value;
                         const matchingCl = state.classes.find((cl) => cl.courseId === newCId);
+                        const selCourse = state.courses.find((c) => c.id === newCId);
+                        const isEng = isEnglishCourseObj(selCourse);
                         setNewStudentForm({
                           ...newStudentForm,
                           courseId: newCId,
                           classId: matchingCl ? matchingCl.id : '',
+                          installmentsCount: isEng ? (newStudentForm.englishLevel === 'CRIANCAS' ? 4 : 3) : 4,
                         });
                       }}
                       className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold text-slate-900"
                     >
-                      {state.courses.map((c) => (
-                        <option key={c.id} value={c.id}>
-                          {c.name} • {formatCurrency(c.monthlyFee, 'EGP')}/mês
-                        </option>
-                      ))}
+                      {state.courses.map((c) => {
+                        const isEng = isEnglishCourseObj(c);
+                        return (
+                          <option key={c.id} value={c.id}>
+                            {c.name} {isEng ? '(3 Níveis Etários)' : `• ${formatCurrency(c.totalCourseAmount || c.monthlyFee * 4, 'EGP')} total`}
+                          </option>
+                        );
+                      })}
                     </select>
                   </div>
 
@@ -1021,6 +1082,76 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
                     </select>
                   </div>
                 </div>
+
+                {/* Bloco 3 Níveis Etários Exclusivo para Inglês */}
+                {isEngSelected && (
+                  <div className="p-3.5 bg-purple-50 border border-purple-200 rounded-2xl space-y-2">
+                    <div className="flex items-center justify-between">
+                      <label className="block font-black text-purple-950 text-xs">
+                        Nível do Curso Livre de Inglês (Faixa Etária) *
+                      </label>
+                      <span className="text-[11px] text-purple-700 font-bold">
+                        Crianças: 4 parc. | Teens & Adultos: 3 parc.
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-3 gap-2">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setNewStudentForm({
+                            ...newStudentForm,
+                            englishLevel: 'CRIANCAS',
+                            installmentsCount: 4,
+                          })
+                        }
+                        className={`p-2.5 rounded-xl border text-center transition-all cursor-pointer ${
+                          newStudentForm.englishLevel === 'CRIANCAS'
+                            ? 'border-purple-600 bg-purple-600 text-white font-black shadow-sm'
+                            : 'border-purple-200 bg-white text-slate-700 hover:bg-purple-100/50'
+                        }`}
+                      >
+                        <p className="text-xs font-bold">🧒 Crianças</p>
+                        <p className="text-[11px] font-mono mt-0.5">2.000 EGP (4x)</p>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setNewStudentForm({
+                            ...newStudentForm,
+                            englishLevel: 'ADOLESCENTES',
+                            installmentsCount: 3,
+                          })
+                        }
+                        className={`p-2.5 rounded-xl border text-center transition-all cursor-pointer ${
+                          newStudentForm.englishLevel === 'ADOLESCENTES'
+                            ? 'border-purple-600 bg-purple-600 text-white font-black shadow-sm'
+                            : 'border-purple-200 bg-white text-slate-700 hover:bg-purple-100/50'
+                        }`}
+                      >
+                        <p className="text-xs font-bold">🎒 Adolescentes</p>
+                        <p className="text-[11px] font-mono mt-0.5">1.500 EGP (3x)</p>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setNewStudentForm({
+                            ...newStudentForm,
+                            englishLevel: 'ADULTO',
+                            installmentsCount: 3,
+                          })
+                        }
+                        className={`p-2.5 rounded-xl border text-center transition-all cursor-pointer ${
+                          newStudentForm.englishLevel === 'ADULTO'
+                            ? 'border-purple-600 bg-purple-600 text-white font-black shadow-sm'
+                            : 'border-purple-200 bg-white text-slate-700 hover:bg-purple-100/50'
+                        }`}
+                      >
+                        <p className="text-xs font-bold">🧑 Adultos</p>
+                        <p className="text-[11px] font-mono mt-0.5">1.800 EGP (3x)</p>
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Bloco 3: Plano Financeiro & Opção de Relatar Desconto */}
@@ -1034,24 +1165,49 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
                   <div>
-                    <label className="block font-bold text-slate-700 mb-1">
-                      Número de Parcelas
-                    </label>
-                    <select
-                      value={newStudentForm.installmentsCount}
-                      onChange={(e) =>
-                        setNewStudentForm({
-                          ...newStudentForm,
-                          installmentsCount: Number(e.target.value),
-                        })
-                      }
-                      className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold text-slate-900"
-                    >
-                      <option value={1}>1 Parcela (À vista)</option>
-                      <option value={2}>2 Parcelas Semestrais</option>
-                      <option value={4}>4 Parcelas Mensais (Padrão)</option>
-                      <option value={6}>6 Parcelas Mensais</option>
-                    </select>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="block font-bold text-slate-700">
+                        Número de Parcelas (Escolha Livre)
+                      </label>
+                      <span className="text-[11px] text-slate-500">
+                        {newStudentForm.installmentsCount === 1
+                          ? 'À vista'
+                          : `${newStudentForm.installmentsCount} parcelas`}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="flex flex-wrap gap-1">
+                        {[1, 2, 3, 4, 5, 6].map((num) => (
+                          <button
+                            key={num}
+                            type="button"
+                            onClick={() =>
+                              setNewStudentForm({ ...newStudentForm, installmentsCount: num })
+                            }
+                            className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                              newStudentForm.installmentsCount === num
+                                ? 'bg-[#075e38] text-white'
+                                : 'bg-slate-100 border border-slate-300 text-slate-700'
+                            }`}
+                          >
+                            {num === 1 ? '1x à vista' : `${num}x`}
+                          </button>
+                        ))}
+                      </div>
+                      <input
+                        type="number"
+                        min={1}
+                        max={36}
+                        value={newStudentForm.installmentsCount}
+                        onChange={(e) =>
+                          setNewStudentForm({
+                            ...newStudentForm,
+                            installmentsCount: Math.max(1, Number(e.target.value)),
+                          })
+                        }
+                        className="w-16 p-1.5 border border-slate-300 rounded-lg text-center font-mono font-bold text-xs"
+                      />
+                    </div>
                   </div>
 
                   <div className="flex items-center pt-5">

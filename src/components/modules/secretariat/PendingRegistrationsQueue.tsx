@@ -19,7 +19,7 @@ import {
   HelpCircle,
 } from 'lucide-react';
 import { useApp } from '../../../context/AppContext';
-import { PendingRegistration } from '../../../types';
+import { PendingRegistration, EnglishAudienceLevel, Course } from '../../../types';
 import { formatCurrency } from '../../../lib/storage';
 import { Modal } from '../../common/Modal';
 
@@ -61,6 +61,7 @@ export const PendingRegistrationsQueue: React.FC<PendingRegistrationsQueueProps>
     rg: string;
     courseId: string;
     classId: string;
+    englishLevel: EnglishAudienceLevel;
     installmentsCount: number;
     discountType: 'NONE' | 'PERCENT' | 'FIXED';
     discountValue: number;
@@ -71,11 +72,36 @@ export const PendingRegistrationsQueue: React.FC<PendingRegistrationsQueueProps>
     rg: '',
     courseId: '',
     classId: '',
+    englishLevel: 'CRIANCAS',
     installmentsCount: 4,
     discountType: 'NONE',
     discountValue: 0,
     discountReason: '',
   });
+
+  const isEnglishCourse = (course: Course | undefined | null) => {
+    if (!course) return false;
+    return (
+      course.id === 'crs_eng' ||
+      course.category === 'ENGLISH' ||
+      course.name.toLowerCase().includes('inglês') ||
+      course.name.toLowerCase().includes('ingles') ||
+      course.name.toLowerCase().includes('english')
+    );
+  };
+
+  const getCourseBaseTotal = (course: Course, level?: EnglishAudienceLevel): number => {
+    if (isEnglishCourse(course) && course.levels && course.levels.length > 0) {
+      const matched = course.levels.find((l) => l.level === (level || 'CRIANCAS'));
+      if (matched) return matched.totalAmount || matched.totalCourseAmount || 2000;
+    }
+    if (isEnglishCourse(course)) {
+      if (level === 'CRIANCAS') return 2000;
+      if (level === 'ADOLESCENTES') return 1500;
+      if (level === 'ADULTO') return 1800;
+    }
+    return course.totalCourseAmount || course.monthlyFee * (course.defaultInstallmentsCount || 4);
+  };
 
   // Filtered pending registrations
   const filteredList = useMemo(() => {
@@ -121,6 +147,7 @@ export const PendingRegistrationsQueue: React.FC<PendingRegistrationsQueueProps>
       rg: item.rg || '',
       courseId: item.courseId,
       classId: item.classId,
+      englishLevel: item.englishLevel || 'CRIANCAS',
       installmentsCount: item.installmentsCount,
       discountType: item.discountType,
       discountValue: item.discountValue || 0,
@@ -136,8 +163,11 @@ export const PendingRegistrationsQueue: React.FC<PendingRegistrationsQueueProps>
     const course = state.courses.find((c) => c.id === editForm.courseId);
     const classRoom = state.classes.find((cl) => cl.id === editForm.classId);
 
-    const baseMonthlyFee = course ? course.monthlyFee : editingItem.monthlyFee;
-    const baseTotal = baseMonthlyFee * editForm.installmentsCount;
+    const isEng = isEnglishCourse(course);
+    const baseTotal = course
+      ? getCourseBaseTotal(course, isEng ? editForm.englishLevel : undefined)
+      : editingItem.monthlyFee * editForm.installmentsCount;
+
     let discountAmount = 0;
     if (editForm.discountType === 'PERCENT') {
       discountAmount = Math.round((baseTotal * editForm.discountValue) / 100);
@@ -154,6 +184,7 @@ export const PendingRegistrationsQueue: React.FC<PendingRegistrationsQueueProps>
       courseName: course ? course.name : editingItem.courseName,
       classId: editForm.classId,
       className: classRoom ? classRoom.name : editingItem.className,
+      englishLevel: isEng ? editForm.englishLevel : undefined,
       installmentsCount: editForm.installmentsCount,
       discountType: editForm.discountType,
       discountValue: editForm.discountValue,
@@ -413,15 +444,25 @@ export const PendingRegistrationsQueue: React.FC<PendingRegistrationsQueueProps>
                       <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">
                         Curso & Turma Pretendida
                       </p>
-                      <p className="text-sm font-bold text-slate-900">{item.courseName}</p>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="text-sm font-bold text-slate-900">{item.courseName}</p>
+                        {item.englishLevel && (
+                          <span className="text-[10px] font-bold text-purple-700 bg-purple-50 border border-purple-200 px-2 py-0.5 rounded-md">
+                            {item.englishLevel === 'CRIANCAS' ? '🧒 Crianças (4x)' : item.englishLevel === 'ADOLESCENTES' ? '🎒 Adolescentes (3x)' : '🧑 Adulto (3x)'}
+                          </span>
+                        )}
+                      </div>
                       <p className="text-xs text-slate-600">
                         Turma: <strong className="text-slate-800">{item.className}</strong>
                       </p>
                       <p className="text-xs text-slate-600">
-                        Mensalidade Base: <strong className="font-mono">{formatCurrency(item.monthlyFee, 'EGP')}</strong>
+                        Valor Inteiro do Curso: <strong className="font-mono text-slate-800">{formatCurrency(item.totalCourseAmount || item.finalTotal, 'EGP')}</strong>
                       </p>
                       <p className="text-xs text-slate-600">
-                        Plano: <strong className="text-slate-800">{item.installmentsCount} parcelas</strong>
+                        Plano: <strong className="text-slate-800">{item.installmentsCount} parcelas</strong> de{' '}
+                        <strong className="font-mono text-emerald-800">
+                          {formatCurrency(Math.round(item.finalTotal / Math.max(1, item.installmentsCount)), 'EGP')}
+                        </strong>
                       </p>
                     </div>
 
@@ -632,10 +673,13 @@ export const PendingRegistrationsQueue: React.FC<PendingRegistrationsQueueProps>
                     onChange={(e) => {
                       const newCId = e.target.value;
                       const matchingClass = state.classes.find((cl) => cl.courseId === newCId);
+                      const courseObj = state.courses.find((c) => c.id === newCId);
+                      const isEng = isEnglishCourse(courseObj);
                       setEditForm({
                         ...editForm,
                         courseId: newCId,
                         classId: matchingClass ? matchingClass.id : editForm.classId,
+                        installmentsCount: isEng ? (editForm.englishLevel === 'CRIANCAS' ? 4 : 3) : 4,
                       });
                     }}
                     className="w-full p-2.5 border border-slate-300 rounded-xl text-xs font-bold"
@@ -666,40 +710,124 @@ export const PendingRegistrationsQueue: React.FC<PendingRegistrationsQueueProps>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1">Parcelas</label>
-                  <select
-                    value={editForm.installmentsCount}
-                    onChange={(e) =>
-                      setEditForm({ ...editForm, installmentsCount: Number(e.target.value) })
-                    }
-                    className="w-full p-2.5 border border-slate-300 rounded-xl text-xs font-bold"
-                  >
-                    <option value={1}>1x À vista</option>
-                    <option value={2}>2x Semestral</option>
-                    <option value={4}>4x Mensais</option>
-                    <option value={6}>6x Mensais</option>
-                  </select>
-                </div>
+              {/* If English, show 3 audience levels */}
+              {(() => {
+                const currentCourse = state.courses.find((c) => c.id === editForm.courseId);
+                const isEng = isEnglishCourse(currentCourse);
+                if (!isEng) return null;
+                return (
+                  <div className="p-3 bg-purple-50 border border-purple-200 rounded-xl space-y-1.5">
+                    <label className="block font-bold text-purple-950 text-xs">
+                      Nível de Inglês (Faixa Etária) *
+                    </label>
+                    <div className="grid grid-cols-3 gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setEditForm({ ...editForm, englishLevel: 'CRIANCAS', installmentsCount: 4 })
+                        }
+                        className={`p-2 rounded-xl border text-center transition-all cursor-pointer ${
+                          editForm.englishLevel === 'CRIANCAS'
+                            ? 'border-purple-600 bg-purple-600 text-white font-bold'
+                            : 'border-purple-200 bg-white text-slate-700'
+                        }`}
+                      >
+                        <p className="text-xs">🧒 Crianças</p>
+                        <p className="text-[10px] font-mono mt-0.5">2.000 (4x)</p>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setEditForm({ ...editForm, englishLevel: 'ADOLESCENTES', installmentsCount: 3 })
+                        }
+                        className={`p-2 rounded-xl border text-center transition-all cursor-pointer ${
+                          editForm.englishLevel === 'ADOLESCENTES'
+                            ? 'border-purple-600 bg-purple-600 text-white font-bold'
+                            : 'border-purple-200 bg-white text-slate-700'
+                        }`}
+                      >
+                        <p className="text-xs">🎒 Teens</p>
+                        <p className="text-[10px] font-mono mt-0.5">1.500 (3x)</p>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setEditForm({ ...editForm, englishLevel: 'ADULTO', installmentsCount: 3 })
+                        }
+                        className={`p-2 rounded-xl border text-center transition-all cursor-pointer ${
+                          editForm.englishLevel === 'ADULTO'
+                            ? 'border-purple-600 bg-purple-600 text-white font-bold'
+                            : 'border-purple-200 bg-white text-slate-700'
+                        }`}
+                      >
+                        <p className="text-xs">🧑 Adulto</p>
+                        <p className="text-[10px] font-mono mt-0.5">1.800 (3x)</p>
+                      </button>
+                    </div>
+                  </div>
+                );
+              })()}
 
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1">Tipo de Desconto</label>
-                  <select
-                    value={editForm.discountType}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <label className="block font-bold text-slate-700 text-xs">
+                    Quantidade de Parcelas (Escolha Livre)
+                  </label>
+                  <span className="text-[11px] text-slate-500">
+                    {editForm.installmentsCount === 1
+                      ? '1x À vista'
+                      : `${editForm.installmentsCount} parcelas`}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap gap-1">
+                    {[1, 2, 3, 4, 5, 6, 8, 12].map((num) => (
+                      <button
+                        key={num}
+                        type="button"
+                        onClick={() => setEditForm({ ...editForm, installmentsCount: num })}
+                        className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                          editForm.installmentsCount === num
+                            ? 'bg-[#075e38] text-white'
+                            : 'bg-slate-100 border border-slate-300 text-slate-700'
+                        }`}
+                      >
+                        {num === 1 ? '1x À vista' : `${num}x`}
+                      </button>
+                    ))}
+                  </div>
+                  <input
+                    type="number"
+                    min={1}
+                    max={36}
+                    value={editForm.installmentsCount}
                     onChange={(e) =>
                       setEditForm({
                         ...editForm,
-                        discountType: e.target.value as 'NONE' | 'PERCENT' | 'FIXED',
+                        installmentsCount: Math.max(1, Number(e.target.value)),
                       })
                     }
-                    className="w-full p-2.5 border border-slate-300 rounded-xl text-xs font-bold"
-                  >
-                    <option value="NONE">Sem Desconto</option>
-                    <option value="PERCENT">Percentual (%)</option>
-                    <option value="FIXED">Valor Fixo (EGP)</option>
-                  </select>
+                    className="w-16 p-1.5 border border-slate-300 rounded-lg text-center font-mono font-bold text-xs"
+                  />
                 </div>
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">Tipo de Desconto / Negociação</label>
+                <select
+                  value={editForm.discountType}
+                  onChange={(e) =>
+                    setEditForm({
+                      ...editForm,
+                      discountType: e.target.value as 'NONE' | 'PERCENT' | 'FIXED',
+                    })
+                  }
+                  className="w-full p-2.5 border border-slate-300 rounded-xl text-xs font-bold"
+                >
+                  <option value="NONE">Sem Desconto</option>
+                  <option value="PERCENT">Percentual (%)</option>
+                  <option value="FIXED">Valor Fixo (EGP)</option>
+                </select>
               </div>
 
               {editForm.discountType !== 'NONE' && (
@@ -733,6 +861,46 @@ export const PendingRegistrationsQueue: React.FC<PendingRegistrationsQueueProps>
                   </div>
                 </div>
               )}
+
+              {/* Total Summary Box */}
+              {(() => {
+                const currentCourse = state.courses.find((c) => c.id === editForm.courseId);
+                const isEng = isEnglishCourse(currentCourse);
+                const baseTotal = currentCourse
+                  ? getCourseBaseTotal(currentCourse, isEng ? editForm.englishLevel : undefined)
+                  : (editingItem?.monthlyFee || 500) * editForm.installmentsCount;
+                let discountAmt = 0;
+                if (editForm.discountType === 'PERCENT') {
+                  discountAmt = Math.round((baseTotal * (editForm.discountValue || 0)) / 100);
+                } else if (editForm.discountType === 'FIXED') {
+                  discountAmt = Math.min(baseTotal, editForm.discountValue || 0);
+                }
+                const finalTot = Math.max(1, baseTotal - discountAmt);
+                const instAmt = Math.round(finalTot / Math.max(1, editForm.installmentsCount));
+
+                return (
+                  <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl space-y-1 text-xs">
+                    <div className="flex justify-between text-slate-600">
+                      <span>Valor Inteiro Base:</span>
+                      <span className="font-mono font-bold">{formatCurrency(baseTotal, 'EGP')}</span>
+                    </div>
+                    {discountAmt > 0 && (
+                      <div className="flex justify-between text-amber-700">
+                        <span>Desconto:</span>
+                        <span className="font-mono font-bold">-{formatCurrency(discountAmt, 'EGP')}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between font-bold text-emerald-950 pt-1 border-t border-emerald-200 text-sm">
+                      <span>Total Final ({editForm.installmentsCount}x):</span>
+                      <span className="font-mono font-black">{formatCurrency(finalTot, 'EGP')}</span>
+                    </div>
+                    <div className="flex justify-between text-emerald-900 font-semibold text-xs">
+                      <span>Valor de cada parcela:</span>
+                      <span className="font-mono font-bold">{formatCurrency(instAmt, 'EGP')} / mês</span>
+                    </div>
+                  </div>
+                );
+              })()}
 
               <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
                 <button

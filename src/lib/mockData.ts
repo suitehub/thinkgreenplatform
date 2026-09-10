@@ -2,6 +2,7 @@ import {
   User,
   Student,
   Course,
+  CourseLevelPricing,
   ClassRoom,
   Enrollment,
   Charge,
@@ -164,17 +165,50 @@ export const INITIAL_USERS: User[] = [
   },
 ];
 
+export const DEFAULT_ENGLISH_LEVELS: CourseLevelPricing[] = [
+  {
+    level: 'CRIANCAS',
+    label: 'Crianças (Kids)',
+    targetAudience: 'Educação Infantil e Fundamental I (6 a 11 anos)',
+    defaultInstallments: 4, // 4 parcelas padrão para Crianças
+    totalAmount: 2000, // Valor Inteiro: 2.000 EGP (4x de 500 EGP)
+    installmentAmount: 500,
+    description: 'Abordagem lúdica, vocabulário cotidiano, contação de histórias e fonética infantil.',
+  },
+  {
+    level: 'ADOLESCENTES',
+    label: 'Adolescentes (Teens)',
+    targetAudience: 'Ensino Fundamental II e Médio (12 a 17 anos)',
+    defaultInstallments: 3, // 3 parcelas padrão para Adolescentes
+    totalAmount: 1500, // Valor Inteiro: 1.500 EGP (3x de 500 EGP)
+    installmentAmount: 500,
+    description: 'Conversação ativa, cultura jovem, produção textual, apresentações e debates.',
+  },
+  {
+    level: 'ADULTO',
+    label: 'Adulto (Adults)',
+    targetAudience: 'Universitários e Profissionais (18+ anos)',
+    defaultInstallments: 3, // 3 parcelas padrão para Adultos
+    totalAmount: 1800, // Valor Inteiro: 1.800 EGP (3x de 600 EGP)
+    installmentAmount: 600,
+    description: 'Fluência comunicativa, inglês profissional, viagens, entrevistas e negócios.',
+  },
+];
+
 export const INITIAL_COURSES: Course[] = [
   {
     id: 'course_eng',
     code: 'ENG-100',
     name: 'Curso Livre de Inglês',
     category: 'ENGLISH',
-    description: 'Programa intensivo e conversacional de língua inglesa com metodologia comunicativa do Centro.',
+    description: 'Programa intensivo e conversacional de língua inglesa com metodologia comunicativa dividida em 3 níveis (Crianças, Adolescentes e Adulto).',
     color: '#7C3AED',
+    totalCourseAmount: 1800,
+    defaultInstallmentsCount: 3,
     monthlyFee: 500,
     totalHours: 60,
     isActive: true,
+    levels: DEFAULT_ENGLISH_LEVELS,
   },
   {
     id: 'course_preschool',
@@ -183,6 +217,8 @@ export const INITIAL_COURSES: Course[] = [
     category: 'PRESCHOOL',
     description: 'Educação infantil, desenvolvimento socioemocional, bilinguismo precoce e artes.',
     color: '#F97316',
+    totalCourseAmount: 3000,
+    defaultInstallmentsCount: 4,
     monthlyFee: 750,
     totalHours: 120,
     isActive: true,
@@ -194,6 +230,8 @@ export const INITIAL_COURSES: Course[] = [
     category: 'FOOTBALL',
     description: 'Treinamento de futebol de alto rendimento, disciplina tática, saúde física e trabalho em equipe.',
     color: '#16A34A',
+    totalCourseAmount: 1600,
+    defaultInstallmentsCount: 4,
     monthlyFee: 400,
     totalHours: 48,
     isActive: true,
@@ -205,6 +243,8 @@ export const INITIAL_COURSES: Course[] = [
     category: 'WOMENS_FITNESS',
     description: 'Programa exclusivo de fortalecimento funcional, condicionamento aeróbico e bem-estar comunitário feminino.',
     color: '#DB2777',
+    totalCourseAmount: 1800,
+    defaultInstallmentsCount: 4,
     monthlyFee: 450,
     totalHours: 40,
     isActive: true,
