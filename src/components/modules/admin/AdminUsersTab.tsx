@@ -43,6 +43,7 @@ export const AdminUsersTab: React.FC = () => {
     name: string;
     email: string;
     phone: string;
+    roles: UserRole[];
     role: UserRole;
     department: string;
     status: 'ACTIVE' | 'INACTIVE';
@@ -51,6 +52,7 @@ export const AdminUsersTab: React.FC = () => {
     name: '',
     email: '',
     phone: '+20 10 ',
+    roles: ['SECRETARIAT'],
     role: 'SECRETARIAT',
     department: 'Secretaria Acadêmica',
     status: 'ACTIVE',
@@ -58,31 +60,70 @@ export const AdminUsersTab: React.FC = () => {
   });
 
   const rolesList: { role: UserRole; label: string; icon: any; color: string }[] = [
-    { role: 'STUDENT', label: 'Aluno (Estudante)', icon: GraduationCap, color: 'bg-purple-50 text-purple-700 border-purple-200' },
-    { role: 'TEACHER', label: 'Professor / Docente', icon: BookOpen, color: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
-    { role: 'FINANCE', label: 'Financeiro / Tesouraria', icon: CreditCard, color: 'bg-amber-50 text-amber-700 border-amber-200' },
-    { role: 'SECRETARIAT', label: 'Secretaria', icon: Users, color: 'bg-teal-50 text-teal-700 border-teal-200' },
-    { role: 'ACCOUNTING', label: 'Contabilidade', icon: BarChart3, color: 'bg-blue-50 text-blue-700 border-blue-200' },
     { role: 'SUPER_ADMIN', label: 'Super Admin', icon: Shield, color: 'bg-purple-100 text-purple-900 border-purple-300 font-bold' },
+    { role: 'TEACHER', label: 'Professor / Docente', icon: BookOpen, color: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+    { role: 'SECRETARIAT', label: 'Secretaria', icon: Users, color: 'bg-teal-50 text-teal-700 border-teal-200' },
+    { role: 'FINANCE', label: 'Financeiro / Tesouraria', icon: CreditCard, color: 'bg-amber-50 text-amber-700 border-amber-200' },
+    { role: 'ACCOUNTING', label: 'Contabilidade', icon: BarChart3, color: 'bg-blue-50 text-blue-700 border-blue-200' },
+    { role: 'RECEPTION', label: 'Recepção / Front Desk', icon: Building2, color: 'bg-indigo-50 text-indigo-700 border-indigo-200' },
+    { role: 'STUDENT', label: 'Aluno (Estudante)', icon: GraduationCap, color: 'bg-purple-50 text-purple-700 border-purple-200' },
   ];
 
   const getRoleBadge = (role: UserRole) => {
     switch (role) {
       case 'STUDENT':
-        return <span className="px-2 py-0.5 rounded-md text-[11px] font-bold bg-purple-50 text-purple-800 border border-purple-200">Aluno</span>;
+        return <span key={role} className="px-2 py-0.5 rounded-md text-[11px] font-bold bg-purple-50 text-purple-800 border border-purple-200">Aluno</span>;
       case 'TEACHER':
-        return <span className="px-2 py-0.5 rounded-md text-[11px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">Professor</span>;
+        return <span key={role} className="px-2 py-0.5 rounded-md text-[11px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">Professor</span>;
       case 'FINANCE':
-        return <span className="px-2 py-0.5 rounded-md text-[11px] font-bold bg-amber-50 text-amber-800 border border-amber-200">Financeiro</span>;
+        return <span key={role} className="px-2 py-0.5 rounded-md text-[11px] font-bold bg-amber-50 text-amber-800 border border-amber-200">Financeiro</span>;
       case 'SECRETARIAT':
-        return <span className="px-2 py-0.5 rounded-md text-[11px] font-bold bg-teal-50 text-teal-800 border border-teal-200">Secretaria</span>;
+        return <span key={role} className="px-2 py-0.5 rounded-md text-[11px] font-bold bg-teal-50 text-teal-800 border border-teal-200">Secretaria</span>;
       case 'ACCOUNTING':
-        return <span className="px-2 py-0.5 rounded-md text-[11px] font-bold bg-blue-50 text-blue-800 border border-blue-200">Contabilidade</span>;
+        return <span key={role} className="px-2 py-0.5 rounded-md text-[11px] font-bold bg-blue-50 text-blue-800 border border-blue-200">Contabilidade</span>;
+      case 'RECEPTION':
+        return <span key={role} className="px-2 py-0.5 rounded-md text-[11px] font-bold bg-indigo-50 text-indigo-800 border border-indigo-200">Recepção</span>;
       case 'SUPER_ADMIN':
-        return <span className="px-2 py-0.5 rounded-md text-[11px] font-bold bg-purple-100 text-purple-900 border border-purple-300">Super Admin</span>;
+        return <span key={role} className="px-2 py-0.5 rounded-md text-[11px] font-bold bg-purple-100 text-purple-900 border border-purple-300">Super Admin</span>;
       default:
-        return <span className="px-2 py-0.5 rounded-md text-[11px] font-bold bg-slate-100 text-slate-700">{role}</span>;
+        return <span key={role} className="px-2 py-0.5 rounded-md text-[11px] font-bold bg-slate-100 text-slate-700">{role}</span>;
     }
+  };
+
+  // Multi-role toggle handlers
+  const toggleRoleInCreate = (roleToToggle: UserRole) => {
+    const currentRoles = formData.roles && formData.roles.length > 0 ? [...formData.roles] : [formData.role];
+    let newRoles: UserRole[];
+    if (currentRoles.includes(roleToToggle)) {
+      if (currentRoles.length === 1) return; // Keep at least one role
+      newRoles = currentRoles.filter((r) => r !== roleToToggle);
+    } else {
+      newRoles = [...currentRoles, roleToToggle];
+    }
+    const newActiveRole = newRoles.includes(formData.role) ? formData.role : newRoles[0];
+    setFormData({
+      ...formData,
+      roles: newRoles,
+      role: newActiveRole,
+    });
+  };
+
+  const toggleRoleInEdit = (roleToToggle: UserRole) => {
+    if (!editingUser) return;
+    const currentRoles = editingUser.roles && editingUser.roles.length > 0 ? [...editingUser.roles] : [editingUser.role];
+    let newRoles: UserRole[];
+    if (currentRoles.includes(roleToToggle)) {
+      if (currentRoles.length === 1) return; // Keep at least one role
+      newRoles = currentRoles.filter((r) => r !== roleToToggle);
+    } else {
+      newRoles = [...currentRoles, roleToToggle];
+    }
+    const newActiveRole = newRoles.includes(editingUser.role) ? editingUser.role : newRoles[0];
+    setEditingUser({
+      ...editingUser,
+      roles: newRoles,
+      role: newActiveRole,
+    });
   };
 
   // Filter users
@@ -94,7 +135,10 @@ export const AdminUsersTab: React.FC = () => {
       (user.department && user.department.toLowerCase().includes(searchQuery.toLowerCase())) ||
       (user.studentId && user.studentId.toLowerCase().includes(searchQuery.toLowerCase()));
 
-    const matchesRole = roleFilter === 'ALL' || user.role === roleFilter;
+    const matchesRole =
+      roleFilter === 'ALL' ||
+      user.role === roleFilter ||
+      (user.roles && user.roles.includes(roleFilter as UserRole));
     const matchesStatus = statusFilter === 'ALL' || user.status === statusFilter;
 
     return matchesSearch && matchesRole && matchesStatus;
@@ -105,6 +149,7 @@ export const AdminUsersTab: React.FC = () => {
       name: '',
       email: '',
       phone: '+20 10 ',
+      roles: ['SECRETARIAT'],
       role: 'SECRETARIAT',
       department: 'Secretaria Acadêmica',
       status: 'ACTIVE',
@@ -117,33 +162,44 @@ export const AdminUsersTab: React.FC = () => {
     e.preventDefault();
     if (!formData.name.trim() || !formData.email.trim()) return;
 
+    const selectedRoles = formData.roles && formData.roles.length > 0 ? formData.roles : [formData.role];
+
     createUser({
       name: formData.name.trim(),
       email: formData.email.trim(),
       phone: formData.phone.trim(),
-      role: formData.role,
+      roles: selectedRoles,
+      role: formData.role || selectedRoles[0],
       department: formData.department.trim(),
       status: formData.status,
       permissions: ['*'],
-      studentId: formData.role === 'STUDENT' ? formData.studentId.trim() || undefined : undefined,
+      studentId: selectedRoles.includes('STUDENT') ? formData.studentId.trim() || undefined : undefined,
     });
 
     setIsNewUserModalOpen(false);
   };
 
   const handleOpenEditModal = (user: User) => {
-    setEditingUser(user);
+    const userRoles = user.roles && user.roles.length > 0 ? user.roles : [user.role];
+    setEditingUser({
+      ...user,
+      roles: userRoles,
+      role: user.role || userRoles[0],
+    });
   };
 
   const handleSaveEditUser = (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingUser) return;
 
+    const selectedRoles = editingUser.roles && editingUser.roles.length > 0 ? editingUser.roles : [editingUser.role];
+
     updateUser(editingUser.id, {
       name: editingUser.name,
       email: editingUser.email,
       phone: editingUser.phone,
-      role: editingUser.role,
+      roles: selectedRoles,
+      role: editingUser.role || selectedRoles[0],
       department: editingUser.department,
       status: editingUser.status,
       studentId: editingUser.studentId,
@@ -277,9 +333,13 @@ export const AdminUsersTab: React.FC = () => {
                     </td>
 
                     <td className="px-4 py-3 whitespace-nowrap">
-                      {getRoleBadge(user.role)}
+                      <div className="flex flex-wrap gap-1 items-center max-w-xs">
+                        {(user.roles && user.roles.length > 0 ? user.roles : [user.role]).map((r) =>
+                          getRoleBadge(r)
+                        )}
+                      </div>
                       {user.studentId && (
-                        <span className="block font-mono text-[10px] text-slate-400 mt-0.5">
+                        <span className="block font-mono text-[10px] text-slate-400 mt-1">
                           ID: {user.studentId}
                         </span>
                       )}
@@ -396,20 +456,53 @@ export const AdminUsersTab: React.FC = () => {
             </div>
           </div>
 
+          {/* Multi-role Selection */}
+          <div>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="block font-bold text-slate-700">Funções Vinculadas (Multi-Função) *</label>
+              <span className="text-[11px] text-slate-500">Selecione uma ou mais (ex: Super Admin + Professor)</span>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+              {rolesList.map((r) => {
+                const isSelected = (formData.roles && formData.roles.length > 0 ? formData.roles : [formData.role]).includes(r.role);
+                return (
+                  <button
+                    key={r.role}
+                    type="button"
+                    onClick={() => toggleRoleInCreate(r.role)}
+                    className={`flex items-center gap-2 p-2 rounded-lg border text-xs font-semibold text-left transition-all cursor-pointer ${
+                      isSelected
+                        ? 'bg-purple-100/90 text-purple-900 border-purple-300 shadow-2xs font-bold ring-1 ring-purple-300'
+                        : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-100'
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={isSelected}
+                      readOnly
+                      className="w-3.5 h-3.5 text-purple-600 rounded border-slate-300 pointer-events-none"
+                    />
+                    <r.icon className="w-3.5 h-3.5 flex-shrink-0" />
+                    <span className="truncate">{r.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block font-bold text-slate-700 mb-1">Papel / Nível de Acesso (Role) *</label>
+              <label className="block font-bold text-slate-700 mb-1">Função Ativa Inicial (Ao Efetuar Login) *</label>
               <select
                 value={formData.role}
                 onChange={(e) => setFormData({ ...formData, role: e.target.value as UserRole })}
                 className="w-full p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-purple-500"
               >
-                <option value="STUDENT">Aluno</option>
-                <option value="TEACHER">Professor</option>
-                <option value="FINANCE">Financeiro</option>
-                <option value="SECRETARIAT">Secretaria</option>
-                <option value="ACCOUNTING">Contabilidade</option>
-                <option value="SUPER_ADMIN">Super Admin</option>
+                {(formData.roles && formData.roles.length > 0 ? formData.roles : [formData.role]).map((r) => (
+                  <option key={r} value={r}>
+                    {rolesList.find((rl) => rl.role === r)?.label || r}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -417,7 +510,7 @@ export const AdminUsersTab: React.FC = () => {
               <label className="block font-bold text-slate-700 mb-1">Departamento / Lotação</label>
               <input
                 type="text"
-                placeholder="Ex: Coordenação de Idiomas"
+                placeholder="Ex: Coordenação Geral & Docência"
                 value={formData.department}
                 onChange={(e) => setFormData({ ...formData, department: e.target.value })}
                 className="w-full p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-purple-500"
@@ -425,7 +518,7 @@ export const AdminUsersTab: React.FC = () => {
             </div>
           </div>
 
-          {formData.role === 'STUDENT' && (
+          {((formData.roles || []).includes('STUDENT') || formData.role === 'STUDENT') && (
             <div>
               <label className="block font-bold text-slate-700 mb-1">Vincular ID do Aluno (STU00000)</label>
               <input
@@ -510,20 +603,53 @@ export const AdminUsersTab: React.FC = () => {
               </div>
             </div>
 
+            {/* Multi-role Selection in Edit Modal */}
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="block font-bold text-slate-700">Funções Vinculadas (Multi-Função) *</label>
+                <span className="text-[11px] text-slate-500">Pode vincular mais de uma (ex: Super Admin + Professor)</span>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+                {rolesList.map((r) => {
+                  const isSelected = (editingUser.roles && editingUser.roles.length > 0 ? editingUser.roles : [editingUser.role]).includes(r.role);
+                  return (
+                    <button
+                      key={r.role}
+                      type="button"
+                      onClick={() => toggleRoleInEdit(r.role)}
+                      className={`flex items-center gap-2 p-2 rounded-lg border text-xs font-semibold text-left transition-all cursor-pointer ${
+                        isSelected
+                          ? 'bg-purple-100/90 text-purple-900 border-purple-300 shadow-2xs font-bold ring-1 ring-purple-300'
+                          : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-100'
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        readOnly
+                        className="w-3.5 h-3.5 text-purple-600 rounded border-slate-300 pointer-events-none"
+                      />
+                      <r.icon className="w-3.5 h-3.5 flex-shrink-0" />
+                      <span className="truncate">{r.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block font-bold text-slate-700 mb-1">Papel (Role) *</label>
+                <label className="block font-bold text-slate-700 mb-1">Função Ativa Principal</label>
                 <select
                   value={editingUser.role}
                   onChange={(e) => setEditingUser({ ...editingUser, role: e.target.value as UserRole })}
                   className="w-full p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-purple-500"
                 >
-                  <option value="STUDENT">Aluno</option>
-                  <option value="TEACHER">Professor</option>
-                  <option value="FINANCE">Financeiro</option>
-                  <option value="SECRETARIAT">Secretaria</option>
-                  <option value="ACCOUNTING">Contabilidade</option>
-                  <option value="SUPER_ADMIN">Super Admin</option>
+                  {(editingUser.roles && editingUser.roles.length > 0 ? editingUser.roles : [editingUser.role]).map((r) => (
+                    <option key={r} value={r}>
+                      {rolesList.find((rl) => rl.role === r)?.label || r}
+                    </option>
+                  ))}
                 </select>
               </div>
 

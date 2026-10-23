@@ -21,6 +21,7 @@ import {
   UserRole,
   PaymentMethod,
   PendingRegistration,
+  PendingPayment,
 } from '../types';
 
 import {
@@ -44,6 +45,7 @@ import {
   INITIAL_NOTIFICATIONS,
   INITIAL_SETTINGS,
   INITIAL_PENDING_REGISTRATIONS,
+  INITIAL_PENDING_PAYMENTS,
 } from './mockData';
 
 export const STORAGE_KEY = 'think_green_platform_v6_data';
@@ -70,6 +72,7 @@ export interface AppState {
   notifications: SystemNotification[];
   settings: SystemSettings;
   pendingRegistrations: PendingRegistration[];
+  pendingPayments: PendingPayment[];
 }
 
 export const deduplicateById = <T extends { id?: string | number }>(items: T[]): T[] => {
@@ -92,12 +95,46 @@ export const loadInitialState = (): AppState => {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
       const parsed = JSON.parse(saved);
-      // Ensure all arrays and nested objects exist in case of schema updates or legacy storage
-      // Deduplicate all arrays to eliminate duplicate key errors from rapid saves or faulty migrations
+
+      // Normalize users to guarantee roles array
+      const rawUsers: User[] = deduplicateById(parsed.users || INITIAL_USERS);
+      const normalizedUsers: User[] = rawUsers.map((u) => {
+        let userRoles: UserRole[] = Array.isArray(u.roles) && u.roles.length > 0 ? [...u.roles] : [u.role];
+        // Ensure example user_super_admin has both SUPER_ADMIN and TEACHER
+        if (u.id === 'user_super_admin' && !userRoles.includes('TEACHER')) {
+          userRoles = ['SUPER_ADMIN', 'TEACHER'];
+        }
+        return {
+          ...u,
+          roles: userRoles,
+          role: u.role || userRoles[0] || 'SUPER_ADMIN',
+        };
+      });
+
+      // Normalize students: remove ENCERRADO, default systemAccess to LIBERADO
+      const rawStudents: Student[] = deduplicateById(parsed.students || INITIAL_STUDENTS);
+      const normalizedStudents: Student[] = rawStudents.map((s) => ({
+        ...s,
+        status: ((s.status as string) === 'ENCERRADO' ? 'INATIVO' : s.status) || 'ATIVO',
+        systemAccess: s.systemAccess || 'LIBERADO',
+      }));
+
+      // Normalize currentUser
+      let rawCurrentUser: User = parsed.currentUser || normalizedUsers[0] || INITIAL_USERS[0];
+      const matchedStoredUser = normalizedUsers.find((u) => u.id === rawCurrentUser.id);
+      const normalizedCurrentUser: User = matchedStoredUser
+        ? { ...matchedStoredUser, role: rawCurrentUser.role || matchedStoredUser.role }
+        : {
+            ...rawCurrentUser,
+            roles: Array.isArray(rawCurrentUser.roles) && rawCurrentUser.roles.length > 0
+              ? rawCurrentUser.roles
+              : [rawCurrentUser.role],
+          };
+
       return {
-        currentUser: parsed.currentUser || INITIAL_USERS[0],
-        users: deduplicateById(parsed.users || INITIAL_USERS),
-        students: deduplicateById(parsed.students || INITIAL_STUDENTS),
+        currentUser: normalizedCurrentUser,
+        users: normalizedUsers,
+        students: normalizedStudents,
         courses: deduplicateById(parsed.courses || INITIAL_COURSES),
         classes: deduplicateById(parsed.classes || INITIAL_CLASSES),
         enrollments: deduplicateById(parsed.enrollments || INITIAL_ENROLLMENTS),
@@ -115,6 +152,7 @@ export const loadInitialState = (): AppState => {
         auditLogs: deduplicateById(parsed.auditLogs || INITIAL_AUDIT_LOGS),
         notifications: deduplicateById(parsed.notifications || INITIAL_NOTIFICATIONS),
         pendingRegistrations: deduplicateById(parsed.pendingRegistrations || INITIAL_PENDING_REGISTRATIONS),
+        pendingPayments: deduplicateById(parsed.pendingPayments || INITIAL_PENDING_PAYMENTS),
         settings: {
           ...INITIAL_SETTINGS,
           ...(parsed.settings || {}),
@@ -150,6 +188,7 @@ export const loadInitialState = (): AppState => {
     auditLogs: deduplicateById(INITIAL_AUDIT_LOGS),
     notifications: deduplicateById(INITIAL_NOTIFICATIONS),
     pendingRegistrations: deduplicateById(INITIAL_PENDING_REGISTRATIONS),
+    pendingPayments: deduplicateById(INITIAL_PENDING_PAYMENTS),
     settings: INITIAL_SETTINGS,
   };
 };

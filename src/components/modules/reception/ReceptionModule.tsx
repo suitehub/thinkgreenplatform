@@ -30,7 +30,8 @@ import {
 import { useApp } from '../../../context/AppContext';
 import { formatCurrency } from '../../../lib/storage';
 import { ReceiptModal } from '../../common/ReceiptModal';
-import { PaymentReceipt, PaymentMethod, EnglishAudienceLevel, Course } from '../../../types';
+import { ProvisionalReceiptModal } from '../../common/ProvisionalReceiptModal';
+import { PaymentReceipt, PaymentMethod, EnglishAudienceLevel, Course, PendingPayment } from '../../../types';
 
 interface ReceptionModuleProps {
   currentTab?: string;
@@ -48,6 +49,7 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
     switchRole,
     logout,
     registerPayment,
+    createPendingPayment,
     createPendingRegistration,
   } = useApp();
 
@@ -72,6 +74,10 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
   // Receipt Modal State
   const [selectedReceipt, setSelectedReceipt] = useState<PaymentReceipt | null>(null);
   const [isReceiptModalOpen, setIsReceiptModalOpen] = useState<boolean>(false);
+
+  // Provisional Receipt Modal State (Pré-Registro de Pagamento)
+  const [selectedProvisionalPayment, setSelectedProvisionalPayment] = useState<PendingPayment | null>(null);
+  const [isProvisionalModalOpen, setIsProvisionalModalOpen] = useState<boolean>(false);
 
   // =========================================================================
   // 1. PAYMENT LAUNCH STATE
@@ -141,19 +147,29 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
 
   const handleConfirmPayment = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedChargeId || paymentAmount <= 0) return;
+    if (!selectedChargeId || paymentAmount <= 0 || !selectedStudent) return;
+
+    const charge = studentCharges.find((c) => c.id === selectedChargeId);
+    if (!charge) return;
 
     try {
-      const receipt = registerPayment(
-        selectedChargeId,
-        paymentAmount,
+      const pendingPayment = createPendingPayment({
+        chargeId: selectedChargeId,
+        studentId: selectedStudent.studentId,
+        studentName: selectedStudent.name,
+        courseName: charge.courseName,
+        installmentNumber: charge.installmentNumber,
+        totalInstallments: charge.totalInstallments,
+        amount: paymentAmount,
         paymentMethod,
-        paymentNotes || 'Recebimento registrado na Recepção do Centro'
-      );
+        receptionNotes: paymentNotes || 'Recebido no balcão da Recepção (dinheiro físico guardado na gaveta).',
+      });
 
-      setSelectedReceipt(receipt);
-      setIsReceiptModalOpen(true);
-      setPaymentSuccessMsg(`Pagamento confirmado com sucesso! Recibo ${receipt.receiptNumber} emitido.`);
+      setSelectedProvisionalPayment(pendingPayment);
+      setIsProvisionalModalOpen(true);
+      setPaymentSuccessMsg(
+        `Pré-Registro ${pendingPayment.protocolNumber} enviado com sucesso! Comprovante Provisório emitido. Aguardando conferência e aprovação da Tesouraria.`
+      );
 
       // Reset form
       setSelectedChargeId('');
@@ -161,7 +177,7 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
       setPaymentNotes('');
     } catch (err) {
       console.error(err);
-      alert('Erro ao processar pagamento.');
+      alert('Erro ao processar pré-registro de pagamento.');
     }
   };
 
@@ -354,6 +370,20 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
   // 3. RECEIPTS TAB
   // =========================================================================
   const [receiptSearch, setReceiptSearch] = useState('');
+  const [receiptViewMode, setReceiptViewMode] = useState<'provisional' | 'official'>('provisional');
+
+  const filteredProvisionalReceipts = useMemo(() => {
+    const list = state.pendingPayments || [];
+    if (!receiptSearch.trim()) return list;
+    const q = receiptSearch.toLowerCase();
+    return list.filter(
+      (r) =>
+        r.protocolNumber.toLowerCase().includes(q) ||
+        r.provisionalReceiptNumber.toLowerCase().includes(q) ||
+        r.studentName.toLowerCase().includes(q) ||
+        r.courseName.toLowerCase().includes(q)
+    );
+  }, [state.pendingPayments, receiptSearch]);
 
   const filteredReceipts = useMemo(() => {
     if (!receiptSearch.trim()) return state.receipts;
@@ -367,30 +397,39 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
   }, [state.receipts, receiptSearch]);
 
   // =========================================================================
-  // 4. DAILY REPORT TAB
+  // 4. DAILY REPORT TAB (Conferência Física Balcão vs Caixa Rony)
   // =========================================================================
   const todayStr = new Date().toISOString().split('T')[0];
   const [reportDate, setReportDate] = useState(todayStr);
 
-  const dailyReceipts = useMemo(() => {
+  // All payments pre-registered today at Reception
+  const dailyPendingPayments = useMemo(() => {
+    return (state.pendingPayments || []).filter((p) => p.registeredAt.startsWith(reportDate));
+  }, [state.pendingPayments, reportDate]);
+
+  // Physical cash received in reception drawer today (Precisa bater com o dinheiro que o Rony recebe)
+  const dailyReceptionPhysicalCash = useMemo(() => {
+    return dailyPendingPayments
+      .filter((p) => p.paymentMethod === 'DINHEIRO')
+      .reduce((sum, p) => sum + p.amount, 0);
+  }, [dailyPendingPayments]);
+
+  const dailyReceptionTotal = useMemo(() => {
+    return dailyPendingPayments.reduce((sum, p) => sum + p.amount, 0);
+  }, [dailyPendingPayments]);
+
+  const dailyApprovedByTreasury = useMemo(() => {
+    return dailyPendingPayments.filter((p) => p.status === 'APROVADO');
+  }, [dailyPendingPayments]);
+
+  const dailyPendingApproval = useMemo(() => {
+    return dailyPendingPayments.filter((p) => p.status === 'PENDENTE');
+  }, [dailyPendingPayments]);
+
+  // Official receipts confirmed today
+  const dailyOfficialReceipts = useMemo(() => {
     return state.receipts.filter((r) => r.date.startsWith(reportDate));
   }, [state.receipts, reportDate]);
-
-  const dailyTotal = useMemo(() => {
-    return dailyReceipts.reduce((sum, r) => sum + r.amount, 0);
-  }, [dailyReceipts]);
-
-  const dailyCash = useMemo(() => {
-    return dailyReceipts
-      .filter((r) => r.paymentMethod === 'DINHEIRO')
-      .reduce((sum, r) => sum + r.amount, 0);
-  }, [dailyReceipts]);
-
-  const dailyDigital = useMemo(() => {
-    return dailyReceipts
-      .filter((r) => r.paymentMethod !== 'DINHEIRO')
-      .reduce((sum, r) => sum + r.amount, 0);
-  }, [dailyReceipts]);
 
   return (
     <div className="min-h-screen bg-[#f8fafc] text-slate-800 font-sans pb-16">
@@ -502,7 +541,7 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
               }`}
             >
               <DollarSign className="w-4 h-4" />
-              <span>Lançar Pagamento</span>
+              <span>Lançar Pagamento (Pré-Registro)</span>
             </button>
 
             <button
@@ -526,7 +565,7 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
               }`}
             >
               <Receipt className="w-4 h-4" />
-              <span>Recibos Emitidos</span>
+              <span>Recibos & Comprovantes</span>
             </button>
 
             <button
@@ -547,23 +586,41 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
       {/* Main Content Area - ultra simple, high-contrast, distraction-free */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
         {/* =================================================================== */}
-        {/* TAB 1: LANÇAR PAGAMENTO                                            */}
+        {/* =================================================================== */}
+        {/* TAB 1: LANÇAR PAGAMENTO (PRÉ-REGISTRO PENDENTE)                     */}
         {/* =================================================================== */}
         {activeTab === 'payment' && (
           <div className="space-y-6">
+            {/* Banner Explicativo - Pré-registro de pagamento */}
+            <div className="bg-emerald-50/80 border border-emerald-200 p-4 sm:p-5 rounded-2xl flex items-start gap-3">
+              <Sparkles className="w-5 h-5 text-emerald-700 flex-shrink-0 mt-0.5" />
+              <div className="text-xs text-emerald-950 space-y-1">
+                <p className="font-black text-sm text-emerald-900">
+                  Pré-Registro de Pagamento (Balcão de Atendimento)
+                </p>
+                <p>
+                  Assim como no cadastro de novos alunos, todo pagamento recebido aqui é lançado como{' '}
+                  <strong>PRÉ-REGISTRO PENDENTE</strong>. O sistema emite um{' '}
+                  <strong>Comprovante Provisório de Pré-Registro</strong> para o aluno e o valor é
+                  enviado para a fila da <strong>Tesouraria</strong> para conferência física do dinheiro na
+                  gaveta e aprovação final pelo <strong>Rony</strong>.
+                </p>
+              </div>
+            </div>
+
             {/* Context Feedback */}
             {paymentSuccessMsg && (
-              <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl flex items-center justify-between gap-3 text-xs text-emerald-900 animate-in fade-in">
+              <div className="p-4 bg-emerald-50 border border-emerald-300 rounded-2xl flex items-center justify-between gap-3 text-xs text-emerald-900 animate-in fade-in shadow-2xs">
                 <div className="flex items-center gap-2 font-bold">
                   <CheckCircle className="w-5 h-5 text-emerald-600 flex-shrink-0" />
                   <span>{paymentSuccessMsg}</span>
                 </div>
-                {selectedReceipt && (
+                {selectedProvisionalPayment && (
                   <button
-                    onClick={() => setIsReceiptModalOpen(true)}
-                    className="px-3 py-1.5 bg-[#075e38] text-white font-bold rounded-lg hover:bg-emerald-800 transition-all flex items-center gap-1 cursor-pointer"
+                    onClick={() => setIsProvisionalModalOpen(true)}
+                    className="px-3.5 py-1.5 bg-[#075e38] text-white font-bold rounded-xl hover:bg-emerald-800 transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs"
                   >
-                    <Eye className="w-3.5 h-3.5" /> Ver Recibo
+                    <Eye className="w-3.5 h-3.5" /> Ver Comprovante Provisório
                   </button>
                 )}
               </div>
@@ -696,7 +753,7 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
                       2. Selecionar Parcela & Forma de Pagamento
                     </h2>
                     <p className="text-[11px] text-slate-500">
-                      Confirme os valores recebidos e emita o recibo oficial imediatamente
+                      Lance o valor recebido no balcão e emita o comprovante provisório para aprovação da Tesouraria
                     </p>
                   </div>
 
@@ -753,7 +810,7 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-slate-100">
                     <div>
                       <label className="block text-xs font-bold text-slate-700 mb-1">
-                        Valor Recebido (EGP) *
+                        Valor Recebido no Balcão (EGP) *
                       </label>
                       <input
                         type="number"
@@ -784,11 +841,11 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
 
                     <div className="sm:col-span-2">
                       <label className="block text-xs font-bold text-slate-700 mb-1">
-                        Observações no Recibo (Opcional)
+                        Observações no Comprovante Provisório (Opcional)
                       </label>
                       <input
                         type="text"
-                        placeholder="Ex: Pago pelo pai no balcão; comprovante arquivado no caixa..."
+                        placeholder="Ex: Pago pelo pai em dinheiro no balcão; cédulas guardadas na gaveta da recepção..."
                         value={paymentNotes}
                         onChange={(e) => setPaymentNotes(e.target.value)}
                         className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-800 focus:bg-white focus:ring-2 focus:ring-[#075e38] outline-hidden"
@@ -804,14 +861,119 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
                       className="w-full py-3.5 bg-[#075e38] hover:bg-[#064e2e] disabled:opacity-50 text-white font-black text-sm rounded-xl shadow-md flex items-center justify-center gap-2 transition-all cursor-pointer"
                     >
                       <Receipt className="w-5 h-5" />
-                      <span>Confirmar Pagamento & Emitir Recibo Oficial</span>
+                      <span>Salvar Pré-Registro de Pagamento & Emitir Comprovante</span>
                     </button>
                     <p className="text-[11px] text-slate-400 text-center mt-2">
-                      Ao confirmar, o caixa registrará a entrada financeira e o recibo autenticado será gerado instantaneamente.
+                      Ao registrar, o pagamento ficará com status <strong>PENDENTE</strong> para a <strong>Tesouraria (Rony)</strong> aprovar após conferência do dinheiro físico.
                     </p>
                   </div>
                 </form>
               </div>
+            </div>
+
+            {/* Sub-section: Fila Recente de Pré-Registros de Pagamento */}
+            <div className="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-2xs space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+                <div>
+                  <h3 className="text-sm font-black text-slate-900 flex items-center gap-2">
+                    <Clock className="w-4 h-4 text-[#075e38]" />
+                    Fila de Pré-Registros de Pagamento (Recepção ⇄ Tesouraria)
+                  </h3>
+                  <p className="text-[11px] text-slate-500">
+                    Acompanhe os pagamentos lançados no balcão e a aprovação pela Tesouraria
+                  </p>
+                </div>
+                <span className="text-xs font-bold text-slate-500">
+                  Total na Fila: {(state.pendingPayments || []).length}
+                </span>
+              </div>
+
+              {(state.pendingPayments || []).length === 0 ? (
+                <div className="p-8 text-center bg-slate-50 rounded-xl border border-slate-200">
+                  <p className="text-xs text-slate-400 font-medium">Nenhum pré-registro de pagamento lançado ainda.</p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-slate-50 text-slate-500 font-black uppercase text-[10px] border-b border-slate-100">
+                      <tr>
+                        <th className="py-2.5 px-3">Protocolo</th>
+                        <th className="py-2.5 px-3">Data/Hora</th>
+                        <th className="py-2.5 px-3">Aluno</th>
+                        <th className="py-2.5 px-3">Curso / Parcela</th>
+                        <th className="py-2.5 px-3">Meio</th>
+                        <th className="py-2.5 px-3 text-right">Valor</th>
+                        <th className="py-2.5 px-3 text-center">Status</th>
+                        <th className="py-2.5 px-3 text-right">Ação</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {(state.pendingPayments || []).map((p) => {
+                        const isPending = p.status === 'PENDENTE';
+                        const isApproved = p.status === 'APROVADO';
+                        const isRejected = p.status === 'REPROVADO';
+
+                        return (
+                          <tr key={p.id} className="hover:bg-slate-50/70 transition-colors">
+                            <td className="py-2.5 px-3 font-mono font-bold text-[#075e38]">
+                              {p.protocolNumber}
+                            </td>
+                            <td className="py-2.5 px-3 text-slate-500 text-[11px] whitespace-nowrap">
+                              {p.registeredAt}
+                            </td>
+                            <td className="py-2.5 px-3">
+                              <span className="font-bold text-slate-900">{p.studentName}</span>
+                              <span className="block font-mono text-[10px] text-slate-400">
+                                {p.studentId}
+                              </span>
+                            </td>
+                            <td className="py-2.5 px-3 text-slate-600 text-[11px]">
+                              {p.courseName} (Parc. {p.installmentNumber}/{p.totalInstallments})
+                            </td>
+                            <td className="py-2.5 px-3">
+                              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700">
+                                {p.paymentMethod === 'DINHEIRO' ? 'Dinheiro' : p.paymentMethod}
+                              </span>
+                            </td>
+                            <td className="py-2.5 px-3 text-right font-mono font-black text-emerald-800">
+                              {formatCurrency(p.amount, 'EGP')}
+                            </td>
+                            <td className="py-2.5 px-3 text-center whitespace-nowrap">
+                              <span
+                                className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
+                                  isApproved
+                                    ? 'bg-emerald-100 text-emerald-800'
+                                    : isRejected
+                                    ? 'bg-rose-100 text-rose-800'
+                                    : 'bg-amber-100 text-amber-900'
+                                }`}
+                              >
+                                {isApproved
+                                  ? '✓ APROVADO'
+                                  : isRejected
+                                  ? '✕ RECUSADO'
+                                  : '⏳ PENDENTE'}
+                              </span>
+                            </td>
+                            <td className="py-2.5 px-3 text-right whitespace-nowrap">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setSelectedProvisionalPayment(p);
+                                  setIsProvisionalModalOpen(true);
+                                }}
+                                className="px-2.5 py-1 bg-emerald-50 text-emerald-800 hover:bg-[#075e38] hover:text-white rounded-lg text-xs font-bold transition-colors inline-flex items-center gap-1 cursor-pointer"
+                              >
+                                <Eye className="w-3.5 h-3.5" /> Comprovante
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -1347,7 +1509,7 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
         )}
 
         {/* =================================================================== */}
-        {/* TAB 3: RECIBOS EMITIDOS                                            */}
+        {/* TAB 3: RECIBOS & COMPROVANTES                                       */}
         {/* =================================================================== */}
         {activeTab === 'receipts' && (
           <div className="space-y-4">
@@ -1355,95 +1517,234 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
               <div>
                 <h2 className="text-sm font-black text-slate-900 flex items-center gap-2">
                   <Receipt className="w-4 h-4 text-[#075e38]" />
-                  Recibos Oficiais Emitidos
+                  Recibos & Comprovantes Emitidos
                 </h2>
                 <p className="text-[11px] text-slate-500">
-                  Consulte, visualize ou reimprima os recibos de pagamentos processados
+                  Consulte comprovantes provisórios de pré-registro e recibos oficiais homologados
                 </p>
               </div>
 
-              <div className="relative w-full sm:w-72">
-                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
-                <input
-                  type="text"
-                  placeholder="Buscar por número, aluno..."
-                  value={receiptSearch}
-                  onChange={(e) => setReceiptSearch(e.target.value)}
-                  className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:bg-white focus:ring-2 focus:ring-[#075e38] outline-hidden"
-                />
+              {/* Sub-view switcher & Search */}
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                <div className="flex p-1 bg-slate-100 rounded-xl">
+                  <button
+                    type="button"
+                    onClick={() => setReceiptViewMode('provisional')}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                      receiptViewMode === 'provisional'
+                        ? 'bg-[#075e38] text-white shadow-2xs'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    1. Comprovantes Provisórios ({(state.pendingPayments || []).length})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setReceiptViewMode('official')}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                      receiptViewMode === 'official'
+                        ? 'bg-[#075e38] text-white shadow-2xs'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    2. Recibos Oficiais ({state.receipts.length})
+                  </button>
+                </div>
+
+                <div className="relative w-full sm:w-64">
+                  <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+                  <input
+                    type="text"
+                    placeholder="Buscar por número, aluno..."
+                    value={receiptSearch}
+                    onChange={(e) => setReceiptSearch(e.target.value)}
+                    className="w-full pl-9 pr-4 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:bg-white focus:ring-2 focus:ring-[#075e38] outline-hidden"
+                  />
+                </div>
               </div>
             </div>
 
-            {filteredReceipts.length === 0 ? (
-              <div className="p-8 text-center bg-white rounded-2xl border border-slate-200">
-                <Receipt className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-                <p className="text-xs text-slate-500 font-medium">Nenhum recibo encontrado.</p>
-              </div>
-            ) : (
+            {/* VIEW 1: COMPROVANTES PROVISÓRIOS */}
+            {receiptViewMode === 'provisional' && (
               <div className="bg-white rounded-2xl border border-slate-200 shadow-2xs overflow-hidden">
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left text-xs">
-                    <thead className="bg-slate-50 text-slate-500 font-black uppercase text-[10px] border-b border-slate-100">
-                      <tr>
-                        <th className="py-3 px-4">Recibo Nº</th>
-                        <th className="py-3 px-4">Data / Hora</th>
-                        <th className="py-3 px-4">Aluno</th>
-                        <th className="py-3 px-4">Curso / Parcela</th>
-                        <th className="py-3 px-4">Forma</th>
-                        <th className="py-3 px-4 text-right">Valor</th>
-                        <th className="py-3 px-4 text-center">Ação</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100">
-                      {filteredReceipts.map((r) => (
-                        <tr key={r.id} className="hover:bg-slate-50/60 transition-colors">
-                          <td className="py-3 px-4 font-mono font-black text-emerald-800">
-                            {r.receiptNumber}
-                          </td>
-                          <td className="py-3 px-4 text-slate-600 text-[11px] whitespace-nowrap">
-                            {r.date}
-                          </td>
-                          <td className="py-3 px-4">
-                            <span className="font-bold text-slate-900">{r.studentName}</span>
-                            <span className="block font-mono text-[10px] text-slate-400">
-                              {r.studentId}
-                            </span>
-                          </td>
-                          <td className="py-3 px-4 text-slate-600 text-[11px]">
-                            {r.courseName}
-                          </td>
-                          <td className="py-3 px-4">
-                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700">
-                              {r.paymentMethod}
-                            </span>
-                          </td>
-                          <td className="py-3 px-4 text-right font-mono font-black text-emerald-800">
-                            {formatCurrency(r.amount, 'EGP')}
-                          </td>
-                          <td className="py-3 px-4 text-center">
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setSelectedReceipt(r);
-                                setIsReceiptModalOpen(true);
-                              }}
-                              className="px-2.5 py-1 bg-emerald-50 text-emerald-800 hover:bg-[#075e38] hover:text-white rounded-lg text-xs font-bold transition-colors inline-flex items-center gap-1 cursor-pointer"
-                            >
-                              <Eye className="w-3.5 h-3.5" /> Visualizar
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                <div className="p-3.5 bg-amber-50/70 border-b border-amber-200 flex items-center justify-between text-xs text-amber-950 font-bold">
+                  <span>Comprovantes Provisórios Emitidos pela Recepção (Aguardando ou Aprovados pela Tesouraria)</span>
+                  <span className="font-mono text-amber-800">{filteredProvisionalReceipts.length} comprovante(s)</span>
                 </div>
+
+                {filteredProvisionalReceipts.length === 0 ? (
+                  <div className="p-8 text-center">
+                    <Receipt className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                    <p className="text-xs text-slate-500 font-medium">Nenhum comprovante provisório encontrado.</p>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs">
+                      <thead className="bg-slate-50 text-slate-500 font-black uppercase text-[10px] border-b border-slate-100">
+                        <tr>
+                          <th className="py-3 px-4">Comprovante / Protocolo</th>
+                          <th className="py-3 px-4">Data / Hora</th>
+                          <th className="py-3 px-4">Aluno</th>
+                          <th className="py-3 px-4">Curso / Parcela</th>
+                          <th className="py-3 px-4">Forma</th>
+                          <th className="py-3 px-4 text-right">Valor</th>
+                          <th className="py-3 px-4 text-center">Status Tesouraria</th>
+                          <th className="py-3 px-4 text-center">Ação</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100">
+                        {filteredProvisionalReceipts.map((p) => {
+                          const isPending = p.status === 'PENDENTE';
+                          const isApproved = p.status === 'APROVADO';
+                          const isRejected = p.status === 'REPROVADO';
+
+                          return (
+                            <tr key={p.id} className="hover:bg-slate-50/60 transition-colors">
+                              <td className="py-3 px-4">
+                                <span className="font-mono font-black text-[#075e38] block">
+                                  {p.provisionalReceiptNumber}
+                                </span>
+                                <span className="font-mono text-[10px] text-slate-400">
+                                  Prot: {p.protocolNumber}
+                                </span>
+                              </td>
+                              <td className="py-3 px-4 text-slate-600 text-[11px] whitespace-nowrap">
+                                {p.registeredAt}
+                              </td>
+                              <td className="py-3 px-4">
+                                <span className="font-bold text-slate-900 block">{p.studentName}</span>
+                                <span className="font-mono text-[10px] text-slate-400">
+                                  {p.studentId}
+                                </span>
+                              </td>
+                              <td className="py-3 px-4 text-slate-600 text-[11px]">
+                                {p.courseName} (Parc. {p.installmentNumber}/{p.totalInstallments})
+                              </td>
+                              <td className="py-3 px-4">
+                                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700">
+                                  {p.paymentMethod === 'DINHEIRO' ? 'Dinheiro' : p.paymentMethod}
+                                </span>
+                              </td>
+                              <td className="py-3 px-4 text-right font-mono font-black text-emerald-800">
+                                {formatCurrency(p.amount, 'EGP')}
+                              </td>
+                              <td className="py-3 px-4 text-center whitespace-nowrap">
+                                <span
+                                  className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
+                                    isApproved
+                                      ? 'bg-emerald-100 text-emerald-800'
+                                      : isRejected
+                                      ? 'bg-rose-100 text-rose-800'
+                                      : 'bg-amber-100 text-amber-900'
+                                  }`}
+                                >
+                                  {isApproved
+                                    ? '✓ APROVADO'
+                                    : isRejected
+                                    ? '✕ RECUSADO'
+                                    : '⏳ PENDENTE'}
+                                </span>
+                              </td>
+                              <td className="py-3 px-4 text-center">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setSelectedProvisionalPayment(p);
+                                    setIsProvisionalModalOpen(true);
+                                  }}
+                                  className="px-2.5 py-1 bg-emerald-50 text-emerald-800 hover:bg-[#075e38] hover:text-white rounded-lg text-xs font-bold transition-colors inline-flex items-center gap-1 cursor-pointer"
+                                >
+                                  <Eye className="w-3.5 h-3.5" /> Ver Comprovante
+                                </button>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* VIEW 2: RECIBOS OFICIAIS */}
+            {receiptViewMode === 'official' && (
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-2xs overflow-hidden">
+                <div className="p-3.5 bg-emerald-50/70 border-b border-emerald-200 flex items-center justify-between text-xs text-emerald-950 font-bold">
+                  <span>Recibos Fiscais Oficiais Emitidos e Homologados</span>
+                  <span className="font-mono text-emerald-800">{filteredReceipts.length} recibo(s)</span>
+                </div>
+
+                {filteredReceipts.length === 0 ? (
+                  <div className="p-8 text-center">
+                    <Receipt className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                    <p className="text-xs text-slate-500 font-medium">Nenhum recibo oficial encontrado.</p>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs">
+                      <thead className="bg-slate-50 text-slate-500 font-black uppercase text-[10px] border-b border-slate-100">
+                        <tr>
+                          <th className="py-3 px-4">Recibo Nº</th>
+                          <th className="py-3 px-4">Data / Hora</th>
+                          <th className="py-3 px-4">Aluno</th>
+                          <th className="py-3 px-4">Curso / Parcela</th>
+                          <th className="py-3 px-4">Forma</th>
+                          <th className="py-3 px-4 text-right">Valor</th>
+                          <th className="py-3 px-4 text-center">Ação</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100">
+                        {filteredReceipts.map((r) => (
+                          <tr key={r.id} className="hover:bg-slate-50/60 transition-colors">
+                            <td className="py-3 px-4 font-mono font-black text-emerald-800">
+                              {r.receiptNumber}
+                            </td>
+                            <td className="py-3 px-4 text-slate-600 text-[11px] whitespace-nowrap">
+                              {r.date}
+                            </td>
+                            <td className="py-3 px-4">
+                              <span className="font-bold text-slate-900">{r.studentName}</span>
+                              <span className="block font-mono text-[10px] text-slate-400">
+                                {r.studentId}
+                              </span>
+                            </td>
+                            <td className="py-3 px-4 text-slate-600 text-[11px]">
+                              {r.courseName}
+                            </td>
+                            <td className="py-3 px-4">
+                              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700">
+                                {r.paymentMethod}
+                              </span>
+                            </td>
+                            <td className="py-3 px-4 text-right font-mono font-black text-emerald-800">
+                              {formatCurrency(r.amount, 'EGP')}
+                            </td>
+                            <td className="py-3 px-4 text-center">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setSelectedReceipt(r);
+                                  setIsReceiptModalOpen(true);
+                                }}
+                                className="px-2.5 py-1 bg-emerald-50 text-emerald-800 hover:bg-[#075e38] hover:text-white rounded-lg text-xs font-bold transition-colors inline-flex items-center gap-1 cursor-pointer"
+                              >
+                                <Eye className="w-3.5 h-3.5" /> Visualizar Recibo
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </div>
             )}
           </div>
         )}
 
         {/* =================================================================== */}
-        {/* TAB 4: RELATÓRIO DIÁRIO                                            */}
+        {/* TAB 4: RELATÓRIO DIÁRIO (CONFERÊNCIA FÍSICA COM O RONY)            */}
         {/* =================================================================== */}
         {activeTab === 'daily_report' && (
           <div className="space-y-6">
@@ -1455,7 +1756,7 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
                   Relatório Diário de Pagamentos Recebidos
                 </h2>
                 <p className="text-[11px] text-slate-500">
-                  Fechamento financeiro diário do balcão de atendimento
+                  Fechamento financeiro do balcão para bater o dinheiro físico com o Rony (Tesouraria)
                 </p>
               </div>
 
@@ -1480,46 +1781,69 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
               </div>
             </div>
 
+            {/* Reconciliation Highlight Box */}
+            <div className="p-4 bg-emerald-50/90 border border-emerald-300 rounded-2xl flex items-start gap-3">
+              <Banknote className="w-5 h-5 text-[#075e38] flex-shrink-0 mt-0.5" />
+              <div className="text-xs text-emerald-950 space-y-1">
+                <p className="font-black text-sm text-emerald-900">
+                  Conferência Física Diária do Balcão (Recepção ⇄ Rony)
+                </p>
+                <p>
+                  O dinheiro em espécie arrecadado no atendimento presencial deve bater exatamente com os valores
+                  entregues ao <strong>Rony</strong> no encerramento do turno. A Tesouraria valida cada pré-registro
+                  para quitação final.
+                </p>
+              </div>
+            </div>
+
             {/* KPI Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="p-4 bg-white rounded-2xl border border-slate-200 shadow-2xs">
                 <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider block">
-                  Total Arrecadado no Dia
+                  Dinheiro Físico no Balcão
                 </span>
-                <p className="text-xl font-mono font-black text-[#075e38] mt-1">
-                  {formatCurrency(dailyTotal, 'EGP')}
+                <p className="text-2xl font-mono font-black text-emerald-800 mt-1">
+                  {formatCurrency(dailyReceptionPhysicalCash, 'EGP')}
                 </p>
                 <p className="text-[11px] text-slate-500 mt-0.5">
-                  {dailyReceipts.length} recibos processados
+                  Gaveteiro da Recepção (a entregar ao Rony)
                 </p>
               </div>
 
               <div className="p-4 bg-white rounded-2xl border border-slate-200 shadow-2xs">
                 <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider block">
-                  Dinheiro Físico (Caixa)
+                  Pré-Registros Pendentes
                 </span>
-                <p className="text-xl font-mono font-black text-emerald-700 mt-1">
-                  {formatCurrency(dailyCash, 'EGP')}
+                <p className="text-2xl font-mono font-black text-amber-600 mt-1">
+                  {dailyPendingApproval.length}
                 </p>
-                <p className="text-[11px] text-slate-500 mt-0.5">Disponível no gaveteiro</p>
+                <p className="text-[11px] text-amber-700 font-semibold mt-0.5">
+                  {formatCurrency(dailyPendingApproval.reduce((s, p) => s + p.amount, 0), 'EGP')} aguardando validação
+                </p>
               </div>
 
               <div className="p-4 bg-white rounded-2xl border border-slate-200 shadow-2xs">
                 <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider block">
-                  Instapay & Digital
+                  Aprovados pela Tesouraria
                 </span>
-                <p className="text-xl font-mono font-black text-blue-700 mt-1">
-                  {formatCurrency(dailyDigital, 'EGP')}
+                <p className="text-2xl font-mono font-black text-[#075e38] mt-1">
+                  {dailyApprovedByTreasury.length}
                 </p>
-                <p className="text-[11px] text-slate-500 mt-0.5">Cartão & Transferências</p>
+                <p className="text-[11px] text-emerald-700 font-semibold mt-0.5">
+                  {formatCurrency(dailyApprovedByTreasury.reduce((s, p) => s + p.amount, 0), 'EGP')} homologados
+                </p>
               </div>
 
               <div className="p-4 bg-white rounded-2xl border border-slate-200 shadow-2xs">
                 <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider block">
-                  Operador do Balcão
+                  Total Geral do Dia
                 </span>
-                <p className="text-sm font-black text-slate-800 mt-1 truncate">{currentUser.name}</p>
-                <p className="text-[11px] text-emerald-700 font-bold mt-0.5">Recepção Ativa</p>
+                <p className="text-2xl font-mono font-black text-slate-900 mt-1">
+                  {formatCurrency(dailyReceptionTotal, 'EGP')}
+                </p>
+                <p className="text-[11px] text-slate-500 mt-0.5">
+                  {dailyPendingPayments.length} lançamento(s) na recepção
+                </p>
               </div>
             </div>
 
@@ -1530,15 +1854,15 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
                   Detalhamento de Pagamentos do Dia ({reportDate})
                 </h3>
                 <span className="text-xs font-bold text-slate-500">
-                  Total: {formatCurrency(dailyTotal, 'EGP')}
+                  Total Lançado: {formatCurrency(dailyReceptionTotal, 'EGP')}
                 </span>
               </div>
 
-              {dailyReceipts.length === 0 ? (
+              {dailyPendingPayments.length === 0 ? (
                 <div className="p-8 text-center">
                   <Clock className="w-8 h-8 text-slate-300 mx-auto mb-2" />
                   <p className="text-xs text-slate-500 font-medium">
-                    Nenhum pagamento registrado nesta data ({reportDate}).
+                    Nenhum pagamento pré-registrado nesta data ({reportDate}).
                   </p>
                 </div>
               ) : (
@@ -1547,46 +1871,69 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
                     <thead className="bg-slate-50 text-slate-500 font-black uppercase text-[10px] border-b border-slate-100">
                       <tr>
                         <th className="py-3 px-4">Hora</th>
-                        <th className="py-3 px-4">Recibo</th>
+                        <th className="py-3 px-4">Protocolo / Comprovante</th>
                         <th className="py-3 px-4">Estudante</th>
                         <th className="py-3 px-4">Descrição</th>
                         <th className="py-3 px-4">Forma</th>
                         <th className="py-3 px-4 text-right">Valor</th>
-                        <th className="py-3 px-4 text-center">Recibo</th>
+                        <th className="py-3 px-4 text-center">Status Tesouraria</th>
+                        <th className="py-3 px-4 text-center">Comprovante</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
-                      {dailyReceipts.map((r) => (
-                        <tr key={r.id} className="hover:bg-slate-50/60 transition-colors">
+                      {dailyPendingPayments.map((p) => (
+                        <tr key={p.id} className="hover:bg-slate-50/60 transition-colors">
                           <td className="py-3 px-4 text-slate-500 font-mono text-[11px]">
-                            {r.date.split(' ')[1] || r.date}
-                          </td>
-                          <td className="py-3 px-4 font-mono font-bold text-emerald-800">
-                            {r.receiptNumber}
+                            {p.registeredAt.split(' ')[1] || p.registeredAt}
                           </td>
                           <td className="py-3 px-4">
-                            <span className="font-bold text-slate-900">{r.studentName}</span>
-                            <span className="block font-mono text-[10px] text-slate-400">
-                              {r.studentId}
+                            <span className="font-mono font-bold text-emerald-800 block">
+                              {p.protocolNumber}
+                            </span>
+                            <span className="font-mono text-[10px] text-slate-400">
+                              {p.provisionalReceiptNumber}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4">
+                            <span className="font-bold text-slate-900 block">{p.studentName}</span>
+                            <span className="font-mono text-[10px] text-slate-400">
+                              {p.studentId}
                             </span>
                           </td>
                           <td className="py-3 px-4 text-slate-600 text-[11px]">
-                            {r.installmentDescription || r.courseName}
+                            {p.courseName} (Parc. {p.installmentNumber}/{p.totalInstallments})
                           </td>
                           <td className="py-3 px-4">
                             <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700">
-                              {r.paymentMethod}
+                              {p.paymentMethod === 'DINHEIRO' ? 'Dinheiro' : p.paymentMethod}
                             </span>
                           </td>
                           <td className="py-3 px-4 text-right font-mono font-black text-emerald-800">
-                            {formatCurrency(r.amount, 'EGP')}
+                            {formatCurrency(p.amount, 'EGP')}
+                          </td>
+                          <td className="py-3 px-4 text-center whitespace-nowrap">
+                            <span
+                              className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
+                                p.status === 'APROVADO'
+                                  ? 'bg-emerald-100 text-emerald-800'
+                                  : p.status === 'REPROVADO'
+                                  ? 'bg-rose-100 text-rose-800'
+                                  : 'bg-amber-100 text-amber-900'
+                              }`}
+                            >
+                              {p.status === 'APROVADO'
+                                ? '✓ APROVADO'
+                                : p.status === 'REPROVADO'
+                                ? '✕ RECUSADO'
+                                : '⏳ PENDENTE'}
+                            </span>
                           </td>
                           <td className="py-3 px-4 text-center">
                             <button
                               type="button"
                               onClick={() => {
-                                setSelectedReceipt(r);
-                                setIsReceiptModalOpen(true);
+                                setSelectedProvisionalPayment(p);
+                                setIsProvisionalModalOpen(true);
                               }}
                               className="px-2.5 py-1 bg-emerald-50 text-emerald-800 hover:bg-[#075e38] hover:text-white rounded-lg text-xs font-bold transition-colors inline-flex items-center gap-1 cursor-pointer"
                             >
@@ -1604,13 +1951,23 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
         )}
       </main>
 
-      {/* Shared Receipt Modal */}
+      {/* Shared Official Receipt Modal */}
       <ReceiptModal
         receipt={selectedReceipt}
         isOpen={isReceiptModalOpen}
         onClose={() => {
           setIsReceiptModalOpen(false);
           setSelectedReceipt(null);
+        }}
+      />
+
+      {/* Shared Provisional Receipt Modal */}
+      <ProvisionalReceiptModal
+        payment={selectedProvisionalPayment}
+        isOpen={isProvisionalModalOpen}
+        onClose={() => {
+          setIsProvisionalModalOpen(false);
+          setSelectedProvisionalPayment(null);
         }}
       />
     </div>

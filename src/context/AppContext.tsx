@@ -24,6 +24,7 @@ import {
   UserRole,
   PaymentMethod,
   PendingRegistration,
+  PendingPayment,
   EnglishAudienceLevel,
   CourseLevelPricing,
 } from '../types';
@@ -101,6 +102,17 @@ interface AppContextType {
     paymentMethod: PaymentMethod,
     notes?: string
   ) => PaymentReceipt;
+
+  // Pending Payments (Recepção -> Aprovação da Tesouraria / Rony)
+  createPendingPayment: (
+    data: Omit<PendingPayment, 'id' | 'protocolNumber' | 'provisionalReceiptNumber' | 'status' | 'registeredAt' | 'registeredBy'>
+  ) => PendingPayment;
+  approvePendingPayment: (
+    pendingPaymentId: string,
+    reviewNotes?: string
+  ) => { paymentReceipt: PaymentReceipt; pendingPayment: PendingPayment };
+  rejectPendingPayment: (pendingPaymentId: string, reason: string) => void;
+  deletePendingPayment: (pendingPaymentId: string) => void;
 
   createPendingRegistration: (
     data: Omit<PendingRegistration, 'id' | 'protocolNumber' | 'status' | 'createdAt' | 'createdByName' | 'createdByRole'>
@@ -232,12 +244,21 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           s.name.toLowerCase().includes(query)
       );
       if (student) {
+        // Enforce student systemAccess rule: se o cadastro estiver bloqueado o aluno não pode acessar o sistema
+        if (student.systemAccess === 'BLOQUEADO') {
+          return {
+            success: false,
+            message: `Acesso ao sistema bloqueado para ${student.name} (${student.studentId}). O cadastro do aluno foi marcado como "Acesso: Bloqueado" pela secretaria. Procure o atendimento.`,
+          };
+        }
+
         matchedUser = {
           id: `user_student_${student.id}`,
           name: student.name,
           email: student.email,
           studentId: student.studentId,
           role: 'STUDENT',
+          roles: ['STUDENT'],
           department: 'Aluno Think Green',
           status: student.status === 'ATIVO' ? 'ACTIVE' : 'INACTIVE',
           permissions: ['access_lms_student', 'submit_assignment', 'view_own_financials'],
@@ -269,6 +290,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       matchedUser = state.currentUser || state.users[0];
     }
 
+    // Double check if matched user is linked to a blocked student
+    if (matchedUser.studentId) {
+      const linkedStudent = state.students.find((s) => s.studentId === matchedUser?.studentId);
+      if (linkedStudent && linkedStudent.systemAccess === 'BLOQUEADO') {
+        return {
+          success: false,
+          message: `Acesso ao sistema bloqueado para ${linkedStudent.name} (${linkedStudent.studentId}). O cadastro está marcado como "Acesso: Bloqueado" pela secretaria. Procure a administração.`,
+        };
+      }
+    }
+
     setCurrentUser(matchedUser);
     setIsAuthenticated(true);
     try {
@@ -286,11 +318,25 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const switchRole = (role: UserRole) => {
-    const targetUser = state.users.find((u) => u.role === role) || {
+    // If the currently logged in user has this role linked in their assigned roles:
+    if (currentUser.roles && currentUser.roles.includes(role)) {
+      const updatedUser: User = { ...currentUser, role };
+      setCurrentUser(updatedUser);
+      setState((prev) => ({
+        ...prev,
+        currentUser: updatedUser,
+        users: prev.users.map((u) => (u.id === currentUser.id ? updatedUser : u)),
+      }));
+      return;
+    }
+
+    // Otherwise find an existing user configured with this role (or fallback)
+    const targetUser = state.users.find((u) => u.role === role || u.roles?.includes(role)) || {
       id: `temp_${role.toLowerCase()}`,
       name: `Usuário ${role}`,
       email: `${role.toLowerCase()}@thinkgreen.org`,
       role,
+      roles: [role],
       status: 'ACTIVE',
       permissions: ['*'],
       createdAt: new Date().toISOString().split('T')[0],
@@ -782,6 +828,159 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setState((prev) => ({
       ...prev,
       pendingRegistrations: (prev.pendingRegistrations || []).filter((p) => p.id !== pendingId),
+    }));
+  };
+
+  /**
+   * 1.6 CREATE PENDING PAYMENT (Recepção / Pré-registro de pagamento)
+   */
+  const createPendingPayment = (
+    data: Omit<PendingPayment, 'id' | 'protocolNumber' | 'provisionalReceiptNumber' | 'status' | 'registeredAt' | 'registeredBy'>
+  ): PendingPayment => {
+    const existingCount = (state.pendingPayments || []).length + 1;
+    const protocolNumber = `PAG-2026-${String(existingCount).padStart(4, '0')}`;
+    const provisionalReceiptNumber = `REC-PROV-2026-${String(existingCount).padStart(4, '0')}`;
+    const nowTimestamp = new Date().toISOString().replace('T', ' ').substring(0, 16);
+    const uniqueRand = Math.random().toString(36).substring(2, 8);
+
+    const newPending: PendingPayment = {
+      ...data,
+      id: `pre_pay_${Date.now()}_${uniqueRand}`,
+      protocolNumber,
+      provisionalReceiptNumber,
+      status: 'PENDENTE',
+      registeredBy: `${currentUser.name} (${currentUser.role === 'RECEPTION' ? 'Recepção' : currentUser.role})`,
+      registeredAt: nowTimestamp,
+    };
+
+    setState((prev) => ({
+      ...prev,
+      pendingPayments: deduplicateById([newPending, ...(prev.pendingPayments || [])]),
+    }));
+
+    logAudit(
+      'FINANCE',
+      'PRE_REGISTRO_PAGAMENTO_RECEPÇÃO',
+      'PendingPayment',
+      protocolNumber,
+      undefined,
+      `Pré-registro de pagamento ${protocolNumber} recebido no balcão da Recepção por ${currentUser.name}: ${data.amount} EGP (${data.studentName} - ${data.courseName})`,
+      `Forma: ${data.paymentMethod}. Aguarda validação física e conciliação do caixa pelo Rony / Tesouraria.`
+    );
+
+    addNotification(
+      'Novo Pagamento Pendente da Recepção!',
+      `${data.studentName} realizou pré-registro de pagamento de ${data.amount} EGP no balcão (${protocolNumber}). Aguarda conferência do dinheiro físico pela Tesouraria.`,
+      'INFO',
+      'FINANCE'
+    );
+
+    return newPending;
+  };
+
+  /**
+   * 1.7 APPROVE PENDING PAYMENT (Tesouraria / Rony confere dinheiro físico e homologa)
+   */
+  const approvePendingPayment = (
+    pendingPaymentId: string,
+    reviewNotes?: string
+  ): { paymentReceipt: PaymentReceipt; pendingPayment: PendingPayment } => {
+    const pending = (state.pendingPayments || []).find((p) => p.id === pendingPaymentId);
+    if (!pending) throw new Error('Pré-registro de pagamento não encontrado');
+
+    const officialReceipt = registerPayment(
+      pending.chargeId,
+      pending.amount,
+      pending.paymentMethod,
+      reviewNotes || `Pagamento aprovado e dinheiro físico conferido na Tesouraria (Rony). Ref. Pré-Registro ${pending.protocolNumber}. ${pending.receptionNotes || ''}`.trim()
+    );
+
+    const nowTimestamp = new Date().toISOString().replace('T', ' ').substring(0, 16);
+
+    const updatedPending: PendingPayment = {
+      ...pending,
+      status: 'APROVADO',
+      reviewedBy: `${currentUser.name} (Tesouraria)`,
+      reviewedAt: nowTimestamp,
+      reviewNotes: reviewNotes || 'Conferido com o dinheiro físico recebido no caixa.',
+      officialReceiptNumber: officialReceipt.receiptNumber,
+      officialReceiptId: officialReceipt.id,
+    };
+
+    setState((prev) => ({
+      ...prev,
+      pendingPayments: (prev.pendingPayments || []).map((p) =>
+        p.id === pendingPaymentId ? updatedPending : p
+      ),
+    }));
+
+    logAudit(
+      'FINANCE',
+      'APROVACAO_PAGAMENTO_RECEPCAO',
+      'PendingPayment',
+      pending.protocolNumber,
+      'PENDENTE',
+      `APROVADO -> Recibo Oficial ${officialReceipt.receiptNumber}`,
+      `Pagamento de ${pending.amount} EGP homologado pela tesouraria (${currentUser.name}). Dinheiro físico conciliado.`
+    );
+
+    addNotification(
+      'Pagamento Homologado pela Tesouraria!',
+      `O pré-registro ${pending.protocolNumber} de ${pending.studentName} (${pending.amount} EGP) foi aprovado e o recibo oficial ${officialReceipt.receiptNumber} foi emitido.`,
+      'SUCCESS',
+      'ALL'
+    );
+
+    return { paymentReceipt: officialReceipt, pendingPayment: updatedPending };
+  };
+
+  /**
+   * 1.8 REJECT PENDING PAYMENT (Tesouraria rejeita com motivo)
+   */
+  const rejectPendingPayment = (pendingPaymentId: string, reason: string) => {
+    const nowTimestamp = new Date().toISOString().replace('T', ' ').substring(0, 16);
+    const pending = (state.pendingPayments || []).find((p) => p.id === pendingPaymentId);
+
+    setState((prev) => ({
+      ...prev,
+      pendingPayments: (prev.pendingPayments || []).map((p) =>
+        p.id === pendingPaymentId
+          ? {
+              ...p,
+              status: 'REPROVADO',
+              reviewedBy: `${currentUser.name} (Tesouraria)`,
+              reviewedAt: nowTimestamp,
+              reviewNotes: reason,
+            }
+          : p
+      ),
+    }));
+
+    logAudit(
+      'FINANCE',
+      'REPROVACAO_PAGAMENTO_RECEPCAO',
+      'PendingPayment',
+      pending?.protocolNumber || pendingPaymentId,
+      'PENDENTE',
+      'REPROVADO',
+      `Pré-registro de pagamento ${pending?.protocolNumber} de ${pending?.studentName} reprovado pela tesouraria. Motivo: ${reason}`
+    );
+
+    addNotification(
+      'Pré-Registro de Pagamento Reprovado',
+      `O pagamento de ${pending?.studentName} (${pending?.protocolNumber}) foi recusado pela tesouraria: ${reason}`,
+      'WARNING',
+      'RECEPTION'
+    );
+  };
+
+  /**
+   * 1.9 DELETE PENDING PAYMENT
+   */
+  const deletePendingPayment = (pendingPaymentId: string) => {
+    setState((prev) => ({
+      ...prev,
+      pendingPayments: (prev.pendingPayments || []).filter((p) => p.id !== pendingPaymentId),
     }));
   };
 
@@ -1912,9 +2111,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const createUser = (data: Omit<User, 'id' | 'createdAt'>): User => {
     const uniqueRand = Math.random().toString(36).substring(2, 8);
+    const userRoles = Array.isArray(data.roles) && data.roles.length > 0 ? data.roles : [data.role];
     const newUser: User = {
       ...data,
       id: `usr_${Date.now()}_${uniqueRand}`,
+      roles: userRoles,
+      role: data.role || userRoles[0],
       createdAt: new Date().toISOString().split('T')[0],
       status: data.status || 'ACTIVE',
       permissions: data.permissions || ['*'],
@@ -1923,17 +2125,43 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       ...prev,
       users: deduplicateById([...prev.users, newUser]),
     }));
-    logAudit('ADMIN', 'CRIAR_USUARIO', 'User', newUser.id, undefined, `${newUser.name} (${newUser.role}) - ${newUser.email}`);
+    logAudit('ADMIN', 'CRIAR_USUARIO', 'User', newUser.id, undefined, `${newUser.name} (${newUser.roles?.join(', ') || newUser.role}) - ${newUser.email}`);
     return newUser;
   };
 
   const updateUser = (userId: string, data: Partial<User>) => {
     setState((prev) => {
-      const updatedUsers = prev.users.map((u) => (u.id === userId ? { ...u, ...data } : u));
+      const updatedUsers = prev.users.map((u) => {
+        if (u.id === userId) {
+          const newRoles = Array.isArray(data.roles) && data.roles.length > 0 ? data.roles : (u.roles || [u.role]);
+          const newActiveRole = data.role && newRoles.includes(data.role) ? data.role : (newRoles.includes(u.role) ? u.role : newRoles[0]);
+          return {
+            ...u,
+            ...data,
+            roles: newRoles,
+            role: newActiveRole,
+          };
+        }
+        return u;
+      });
+
+      const isCurrent = prev.currentUser.id === userId;
+      let updatedCurrent = prev.currentUser;
+      if (isCurrent) {
+        const newRoles = Array.isArray(data.roles) && data.roles.length > 0 ? data.roles : (prev.currentUser.roles || [prev.currentUser.role]);
+        const newActiveRole = data.role && newRoles.includes(data.role) ? data.role : (newRoles.includes(prev.currentUser.role) ? prev.currentUser.role : newRoles[0]);
+        updatedCurrent = {
+          ...prev.currentUser,
+          ...data,
+          roles: newRoles,
+          role: newActiveRole,
+        };
+      }
+
       return {
         ...prev,
         users: updatedUsers,
-        currentUser: prev.currentUser.id === userId ? { ...prev.currentUser, ...data } : prev.currentUser,
+        currentUser: updatedCurrent,
       };
     });
     logAudit('ADMIN', 'ATUALIZAR_USUARIO', 'User', userId, undefined, JSON.stringify(data));
@@ -2213,10 +2441,26 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
    * 10. REAL-TIME BUSINESS RULES CHECKS
    */
   const checkExamAccess = (studentId: string, assessment: Assessment) => {
+    const stu = state.students.find((s) => s.studentId === studentId || s.id === studentId);
+    if (stu && stu.systemAccess === 'BLOQUEADO') {
+      return {
+        allowed: false,
+        reason: 'Acesso ao sistema e avaliações bloqueado pela secretaria acadêmica.',
+        isFinancialBlock: false,
+      };
+    }
     return evaluateExamAccess(studentId, assessment, state.charges, state.settings);
   };
 
   const checkClassroomAccess = (studentId: string, classId: string) => {
+    const stu = state.students.find((s) => s.studentId === studentId || s.id === studentId);
+    if (stu && stu.systemAccess === 'BLOQUEADO') {
+      return {
+        allowed: false,
+        reason: 'Acesso ao sistema e salas de aula bloqueado pela secretaria acadêmica.',
+        isFinancialBlock: false,
+      };
+    }
     return evaluateClassroomAccess(studentId, classId, state.charges, state.enrollments, state.settings);
   };
 
@@ -2239,6 +2483,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       addStudentDocument,
       deleteStudentDocument,
       registerPayment,
+      createPendingPayment,
+      approvePendingPayment,
+      rejectPendingPayment,
+      deletePendingPayment,
       createPendingRegistration,
       approvePendingRegistration,
       rejectPendingRegistration,

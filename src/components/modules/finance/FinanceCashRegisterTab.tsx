@@ -118,6 +118,32 @@ export const FinanceCashRegisterTab: React.FC = () => {
         </div>
       </div>
 
+      {/* Reception Pre-registrations Physical Cash Reconciliation Box */}
+      {(() => {
+        const pendingCash = (state.pendingPayments || [])
+          .filter((p) => p.status === 'PENDENTE' && p.paymentMethod === 'DINHEIRO')
+          .reduce((sum, p) => sum + p.amount, 0);
+        const pendingCount = (state.pendingPayments || []).filter((p) => p.status === 'PENDENTE').length;
+
+        if (pendingCount === 0) return null;
+
+        return (
+          <div className="p-4 bg-amber-50/90 border border-amber-300 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+            <div className="flex items-start gap-3">
+              <Banknote className="w-5 h-5 text-amber-700 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="font-black text-amber-950 text-sm">
+                  Conferência Física do Rony ({pendingCount} pré-registro(s) aguardando validação)
+                </p>
+                <p className="text-amber-900 text-[11px] mt-0.5">
+                  Existe um total de <strong>{formatCurrency(pendingCash, 'EGP')}</strong> em dinheiro físico lançado pela Recepção que precisa bater com as cédulas da gaveta antes de ser somado definitivamente ao saldo do caixa.
+                </p>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
       {/* Cash Movement Log Table */}
       <div className="space-y-3">
         <h3 className="font-bold text-xs text-slate-900 uppercase tracking-wider">

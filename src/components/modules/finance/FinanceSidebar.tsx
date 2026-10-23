@@ -16,6 +16,7 @@ import {
   Users,
   Shield,
   BarChart3,
+  CheckSquare,
 } from 'lucide-react';
 import { useApp } from '../../../context/AppContext';
 
@@ -30,7 +31,11 @@ export const FinanceSidebar: React.FC<FinanceSidebarProps> = ({
   setCurrentTab,
   onOpenSupportModal,
 }) => {
-  const { switchRole } = useApp();
+  const { state, switchRole } = useApp();
+
+  const pendingReceptionCount = (state.pendingPayments || []).filter(
+    (p) => p.status === 'PENDENTE'
+  ).length;
 
   const navItems = [
     {
@@ -38,6 +43,13 @@ export const FinanceSidebar: React.FC<FinanceSidebarProps> = ({
       label: 'Painel Geral',
       icon: Home,
       aliases: ['fin_home', 'fin_overview', ''],
+    },
+    {
+      id: 'fin_reception_approvals',
+      label: 'Validação da Recepção',
+      icon: CheckSquare,
+      badge: pendingReceptionCount,
+      aliases: ['fin_reception_approvals'],
     },
     {
       id: 'fin_charges',
@@ -95,14 +107,25 @@ export const FinanceSidebar: React.FC<FinanceSidebarProps> = ({
             <button
               key={item.id}
               onClick={() => setCurrentTab(item.id)}
-              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all text-left cursor-pointer ${
+              className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all text-left cursor-pointer ${
                 active
                   ? 'bg-[#075e38] text-white shadow-xs'
                   : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
               }`}
             >
-              <Icon className={`w-4 h-4 ${active ? 'text-white' : 'text-slate-500'}`} />
-              <span className="truncate">{item.label}</span>
+              <div className="flex items-center gap-3 truncate">
+                <Icon className={`w-4 h-4 flex-shrink-0 ${active ? 'text-white' : 'text-slate-500'}`} />
+                <span className="truncate">{item.label}</span>
+              </div>
+              {item.badge !== undefined && item.badge > 0 && (
+                <span
+                  className={`px-1.5 py-0.5 rounded-full text-[10px] font-black ${
+                    active ? 'bg-white text-[#075e38]' : 'bg-amber-500 text-white'
+                  }`}
+                >
+                  {item.badge}
+                </span>
+              )}
             </button>
           );
         })}

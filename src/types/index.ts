@@ -12,7 +12,7 @@ export type UserRole =
   | 'SUPER_ADMIN'
   | 'RECEPTION';
 
-export type StudentStatus = 'ATIVO' | 'INATIVO' | 'ENCERRADO';
+export type StudentStatus = 'ATIVO' | 'INATIVO';
 export type EnrollmentStatus = 'ATIVA' | 'PENDENTE' | 'BLOQUEADA' | 'CANCELADA';
 export type FinancialStatus = 'REGULAR' | 'PENDENTE' | 'EM ATRASO' | 'PAGO' | 'CANCELADO';
 export type AssessmentStatus = 'LIBERADA' | 'BLOQUEADA' | 'CONCLUÍDA';
@@ -25,7 +25,8 @@ export interface User {
   name: string;
   email: string;
   studentId?: string; // STU00000 for students
-  role: UserRole;
+  role: UserRole; // Current active/primary role
+  roles?: UserRole[]; // All linked roles for this user (e.g. ['SUPER_ADMIN', 'TEACHER'])
   avatarUrl?: string;
   phone?: string;
   department?: string;
@@ -52,6 +53,7 @@ export interface Student {
   address?: string;
   city: string; // e.g. Cairo, Giza, Alexandria
   status: StudentStatus;
+  systemAccess?: 'LIBERADO' | 'BLOQUEADO'; // Acesso ao sistema (Liberado / Bloqueado)
   notes?: string;
   createdAt: string;
   avatarUrl?: string;
@@ -399,4 +401,30 @@ export interface PendingRegistration {
   reviewNotes?: string;
   generatedStudentId?: string; // Filled once approved by Secretariat
 }
+
+export interface PendingPayment {
+  id: string; // e.g. 'pre_pay_1741384000_abc'
+  protocolNumber: string; // e.g. 'PAG-2026-0001'
+  provisionalReceiptNumber: string; // e.g. 'REC-PROV-2026-0001'
+  chargeId: string;
+  studentId: string; // STU00000
+  studentName: string;
+  courseName: string;
+  installmentNumber: number;
+  totalInstallments: number;
+  amount: number; // in EGP
+  paymentMethod: PaymentMethod;
+  receptionNotes?: string;
+  status: 'PENDENTE' | 'APROVADO' | 'REPROVADO';
+  registeredBy: string; // Name and role of reception clerk
+  registeredAt: string; // YYYY-MM-DD HH:MM
+  
+  // Treasury review
+  reviewedBy?: string;
+  reviewedAt?: string;
+  reviewNotes?: string;
+  officialReceiptNumber?: string;
+  officialReceiptId?: string;
+}
+
 

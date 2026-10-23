@@ -94,11 +94,14 @@ export const StudentDossierModal: React.FC<StudentDossierModalProps> = ({
 
   if (!isOpen || !student) return null;
 
+  // Retrieve current active student record from state to reflect live changes
+  const activeStudent = state.students.find((s) => s.id === student.id || s.studentId === student.studentId) || student;
+
   // Retrieve all student related records
-  const studentEnrollments = state.enrollments.filter((e) => e.studentId === student.studentId);
-  const studentCharges = state.charges.filter((c) => c.studentId === student.studentId);
-  const studentReceipts = state.receipts.filter((r) => r.studentId === student.studentId);
-  const studentGrades = state.grades.filter((g) => g.studentId === student.studentId);
+  const studentEnrollments = state.enrollments.filter((e) => e.studentId === activeStudent.studentId);
+  const studentCharges = state.charges.filter((c) => c.studentId === activeStudent.studentId);
+  const studentReceipts = state.receipts.filter((r) => r.studentId === activeStudent.studentId);
+  const studentGrades = state.grades.filter((g) => g.studentId === activeStudent.studentId);
 
   // Financial calculations
   const totalAmountContracted = studentCharges.reduce((acc, c) => acc + c.amount, 0);
@@ -235,9 +238,14 @@ export const StudentDossierModal: React.FC<StudentDossierModalProps> = ({
     }, 400);
   };
 
-  // Handle Status Change
+  // Handle Status Change (Only ATIVO and INATIVO)
   const handleChangeStatus = (newStatus: Student['status']) => {
-    updateStudent(student.studentId, { status: newStatus });
+    updateStudent(activeStudent.studentId, { status: newStatus });
+  };
+
+  // Handle Selectable System Access (LIBERADO or BLOQUEADO)
+  const handleToggleSystemAccess = (newAccess: 'LIBERADO' | 'BLOQUEADO') => {
+    updateStudent(activeStudent.studentId, { systemAccess: newAccess });
   };
 
   // Handle Add Document
@@ -245,10 +253,10 @@ export const StudentDossierModal: React.FC<StudentDossierModalProps> = ({
     e.preventDefault();
     if (!newDocTitle.trim()) return;
 
-    addStudentDocument(student.studentId, {
+    addStudentDocument(activeStudent.studentId, {
       title: newDocTitle.trim(),
       type: newDocType,
-      url: `https://thinkgreen.org/docs/${student.studentId}_${Date.now()}.pdf`,
+      url: `https://thinkgreen.org/docs/${activeStudent.studentId}_${Date.now()}.pdf`,
       size: '1.8 MB',
     });
 
@@ -264,7 +272,7 @@ export const StudentDossierModal: React.FC<StudentDossierModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-2 sm:p-4 md:p-6 bg-slate-900/60 backdrop-blur-xs">
       <div
-        id={`student-dossier-${student.studentId}`}
+        id={`student-dossier-${activeStudent.studentId}`}
         className="relative w-full max-w-6xl bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden my-4 max-h-[92vh] flex flex-col transition-all"
       >
         {/* TOP CLEAN HEADER */}
@@ -273,15 +281,15 @@ export const StudentDossierModal: React.FC<StudentDossierModalProps> = ({
             {/* Student ID & Name */}
             <div className="flex items-start sm:items-center gap-4">
               <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-slate-100 border border-slate-200 flex items-center justify-center flex-shrink-0 overflow-hidden">
-                {student.avatarUrl ? (
+                {activeStudent.avatarUrl ? (
                   <img
-                    src={student.avatarUrl}
-                    alt={student.name}
+                    src={activeStudent.avatarUrl}
+                    alt={activeStudent.name}
                     className="w-full h-full object-cover"
                   />
                 ) : (
                   <span className="font-bold text-xl text-slate-600">
-                    {student.name.charAt(0)}
+                    {activeStudent.name.charAt(0)}
                   </span>
                 )}
               </div>
@@ -289,25 +297,25 @@ export const StudentDossierModal: React.FC<StudentDossierModalProps> = ({
               <div>
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="font-mono text-xs font-semibold px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 border border-slate-200">
-                    {student.studentId}
+                    {activeStudent.studentId}
                   </span>
                   <span className="text-xs text-slate-500">
-                    Cadastrado em {student.createdAt}
+                    Cadastrado em {activeStudent.createdAt}
                   </span>
                 </div>
                 <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight mt-1">
-                  {student.name}
+                  {activeStudent.name}
                 </h2>
                 <div className="flex items-center gap-2 mt-2 flex-wrap">
-                  {/* Status Cadastral Selector */}
+                  {/* Status Cadastral Selector: apenas ATIVO e INATIVO */}
                   <select
-                    value={student.status || 'ATIVO'}
+                    value={activeStudent.status === 'INATIVO' ? 'INATIVO' : 'ATIVO'}
                     onChange={(e) => handleChangeStatus(e.target.value as Student['status'])}
                     className="bg-white hover:bg-slate-50 text-slate-700 text-xs font-medium px-2.5 py-1 rounded-lg border border-slate-200 shadow-2xs focus:outline-hidden cursor-pointer"
+                    title="Status do Cadastro do Aluno"
                   >
                     <option value="ATIVO">🟢 Cadastro Ativo</option>
                     <option value="INATIVO">🟡 Cadastro Inativo</option>
-                    <option value="ENCERRADO">🔴 Cadastro Encerrado</option>
                   </select>
 
                   {/* Financial Status Pill */}
@@ -324,24 +332,22 @@ export const StudentDossierModal: React.FC<StudentDossierModalProps> = ({
                     Finanças: {financialStatus}
                   </span>
 
-                  {/* Classroom Gate Status Pill */}
-                  <span
-                    className={`text-xs font-semibold px-2.5 py-1 rounded-lg flex items-center gap-1.5 border ${
-                      hasAnyClassroomBlock
-                        ? 'bg-rose-50 text-rose-700 border-rose-200'
-                        : 'bg-slate-50 text-slate-700 border-slate-200'
-                    }`}
-                  >
-                    {hasAnyClassroomBlock ? (
-                      <>
-                        <Lock className="w-3.5 h-3.5 text-rose-600" /> Acesso: Bloqueado
-                      </>
-                    ) : (
-                      <>
-                        <Unlock className="w-3.5 h-3.5 text-emerald-600" /> Acesso: Liberado
-                      </>
-                    )}
-                  </span>
+                  {/* Selectable System Access (Liberado / Bloqueado) */}
+                  <div className="relative inline-flex items-center">
+                    <select
+                      value={activeStudent.systemAccess || 'LIBERADO'}
+                      onChange={(e) => handleToggleSystemAccess(e.target.value as 'LIBERADO' | 'BLOQUEADO')}
+                      className={`text-xs font-semibold px-2.5 py-1 rounded-lg border shadow-2xs focus:outline-hidden cursor-pointer transition-colors ${
+                        (activeStudent.systemAccess || 'LIBERADO') === 'BLOQUEADO'
+                          ? 'bg-rose-50 text-rose-700 border-rose-300 hover:bg-rose-100'
+                          : 'bg-emerald-50 text-emerald-700 border-emerald-300 hover:bg-emerald-100'
+                      }`}
+                      title="Definir se o aluno tem acesso liberado ou bloqueado ao sistema"
+                    >
+                      <option value="LIBERADO">🔓 Acesso: Liberado</option>
+                      <option value="BLOQUEADO">🔒 Acesso: Bloqueado</option>
+                    </select>
+                  </div>
                 </div>
               </div>
             </div>

@@ -6,6 +6,7 @@ import { FinanceOverviewTab } from './FinanceOverviewTab';
 import { FinanceChargesTab } from './FinanceChargesTab';
 import { FinanceCashRegisterTab } from './FinanceCashRegisterTab';
 import { FinanceReceiptsTab } from './FinanceReceiptsTab';
+import { FinanceReceptionApprovalsTab } from './FinanceReceptionApprovalsTab';
 import { FinanceOverdueTab } from './FinanceOverdueTab';
 import { FinanceReportsTab } from './FinanceReportsTab';
 import { NewChargeModal } from './NewChargeModal';
@@ -76,6 +77,11 @@ export const FinanceModule: React.FC<FinanceModuleProps> = ({
               onOpenQuickPaymentModal={handleOpenQuickPayment}
               onViewReceipt={(rec) => setSelectedReceipt(rec)}
             />
+          )}
+
+          {/* TAB: VALIDAÇÃO DE PAGAMENTOS DA RECEPÇÃO (RONY / TESOURARIA) */}
+          {activeTab === 'fin_reception_approvals' && (
+            <FinanceReceptionApprovalsTab />
           )}
 
           {/* TAB 2: MENSALIDADES & COBRANÇAS */}
