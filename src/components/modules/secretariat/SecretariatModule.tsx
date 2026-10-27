@@ -39,6 +39,7 @@ import { SecretariatImportTab } from './tabs/SecretariatImportTab';
 import { StudentDossierModal } from './StudentDossierModal';
 import { SecretariatSupportModal } from './SecretariatSupportModal';
 import { PendingRegistrationsQueue } from './PendingRegistrationsQueue';
+import { DocumentPhotoCapture } from '../../common/DocumentPhotoCapture';
 
 interface SecretariatModuleProps {
   currentTab: string;
@@ -98,7 +99,29 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
 
   // 3-Step "Novo Aluno" Wizard State
   const [wizardStep, setWizardStep] = useState(1);
-  const [newStudentForm, setNewStudentForm] = useState({
+  const [newStudentForm, setNewStudentForm] = useState<{
+    name: string;
+    birthDate: string;
+    gender: string;
+    rg: string;
+    nationalId: string;
+    email: string;
+    phone: string;
+    city: string;
+    address: string;
+    guardianName: string;
+    notes: string;
+    documentPhotoUrl?: string;
+    courseId: string;
+    classId: string;
+    englishLevel: EnglishAudienceLevel;
+    installmentsCount: number;
+    customInstallmentsInput: string;
+    enableNegotiation: boolean;
+    discountType: 'PERCENT' | 'FIXED';
+    discountValue: number;
+    discountReason: string;
+  }>({
     name: '',
     birthDate: '',
     gender: 'MASCULINO',
@@ -109,8 +132,8 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
     city: 'Cairo',
     address: '',
     guardianName: '',
-    guardianPhone: '',
     notes: '',
+    documentPhotoUrl: undefined,
     courseId: state.courses[0]?.id || 'course_eng',
     classId: state.classes[0]?.id || 'class_eng_a',
     englishLevel: 'CRIANCAS' as EnglishAudienceLevel,
@@ -205,11 +228,11 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
         nationalId: newStudentForm.rg || newStudentForm.nationalId,
         email: newStudentForm.email,
         phone: newStudentForm.phone,
-        city: newStudentForm.city,
+        city: newStudentForm.city || 'Cairo',
         address: newStudentForm.address,
         guardianName: newStudentForm.guardianName,
-        guardianPhone: newStudentForm.guardianPhone,
         notes: newStudentForm.notes,
+        documentPhotoUrl: newStudentForm.documentPhotoUrl,
       },
       newStudentForm.courseId,
       newStudentForm.classId,
@@ -444,7 +467,7 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
 
                   <div>
                     <label className="block font-bold text-slate-700 mb-1">
-                      RG (Registro Geral / Identidade) *
+                      RG (Registro Geral / Identidade)
                     </label>
                     <input
                       type="text"
@@ -452,6 +475,16 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
                       value={newStudentForm.rg || ''}
                       onChange={(e) => setNewStudentForm({ ...newStudentForm, rg: e.target.value })}
                       className="w-full p-2.5 border border-slate-300 rounded-xl text-xs font-mono focus:ring-2 focus:ring-[#075e38] focus:border-transparent outline-hidden"
+                    />
+                  </div>
+
+                  {/* Foto do Documento (ID) Diretamente Embaixo do RG */}
+                  <div className="sm:col-span-2 p-3 bg-slate-50/90 rounded-xl border border-slate-200">
+                    <DocumentPhotoCapture
+                      value={newStudentForm.documentPhotoUrl}
+                      onChange={(photo) => setNewStudentForm({ ...newStudentForm, documentPhotoUrl: photo })}
+                      label="Foto do Documento (RG / ID)"
+                      helperText="Não obrigatório. Anexe uma imagem ou tire uma foto com a câmera. Será arquivada diretamente nos documentos da ficha do aluno."
                     />
                   </div>
 
@@ -470,62 +503,28 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
                   </div>
 
                   <div>
-                    <label className="block font-bold text-slate-700 mb-1">Email de Contato</label>
+                    <label className="block font-bold text-slate-700 mb-1">
+                      Email de Contato <span className="text-slate-400 font-normal">(Opcional)</span>
+                    </label>
                     <input
                       type="email"
-                      placeholder="aluno@email.com"
+                      placeholder="aluno@email.com (opcional)"
                       value={newStudentForm.email || ''}
                       onChange={(e) => setNewStudentForm({ ...newStudentForm, email: e.target.value })}
                       className="w-full p-2.5 border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-[#075e38] focus:border-transparent outline-hidden"
                     />
                   </div>
 
-                  <div>
-                    <label className="block font-bold text-slate-700 mb-1">Cidade / Distrito</label>
-                    <input
-                      type="text"
-                      value={newStudentForm.city || ''}
-                      onChange={(e) => setNewStudentForm({ ...newStudentForm, city: e.target.value })}
-                      className="w-full p-2.5 border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-[#075e38] focus:border-transparent outline-hidden"
-                    />
-                  </div>
-
                   <div className="sm:col-span-2">
-                    <label className="block font-bold text-slate-700 mb-1">Endereço Residencial</label>
-                    <input
-                      type="text"
-                      placeholder="Rua, Número, Bairro / Distrito"
-                      value={newStudentForm.address || ''}
-                      onChange={(e) => setNewStudentForm({ ...newStudentForm, address: e.target.value })}
-                      className="w-full p-2.5 border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-[#075e38] focus:border-transparent outline-hidden"
-                    />
-                  </div>
-
-                  <div>
                     <label className="block font-bold text-slate-700 mb-1">
-                      Nome do Responsável (se menor)
+                      Nome do Responsável <span className="text-slate-400 font-normal">(se menor de idade - opcional)</span>
                     </label>
                     <input
                       type="text"
-                      placeholder="Ex: Mahmoud Ibrahim"
+                      placeholder="Ex: Mahmoud Ibrahim (pai/mãe)"
                       value={newStudentForm.guardianName || ''}
                       onChange={(e) =>
                         setNewStudentForm({ ...newStudentForm, guardianName: e.target.value })
-                      }
-                      className="w-full p-2.5 border border-slate-300 rounded-xl text-xs"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block font-bold text-slate-700 mb-1">
-                      Telefone do Responsável
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="+20 10 9988 7766"
-                      value={newStudentForm.guardianPhone || ''}
-                      onChange={(e) =>
-                        setNewStudentForm({ ...newStudentForm, guardianPhone: e.target.value })
                       }
                       className="w-full p-2.5 border border-slate-300 rounded-xl text-xs"
                     />
@@ -1084,11 +1083,90 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
       case 'sec_students':
         return (
           <div className="bg-white p-6 rounded-2xl border border-slate-100/90 shadow-[0_2px_8px_rgba(0,0,0,0.03)] space-y-5">
+            {/* Top Metric Filter Cards: Total Histórico vs Ativos */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <button
+                type="button"
+                onClick={() => setFilterStatus('ALL')}
+                className={`p-3.5 rounded-xl border text-left transition-all cursor-pointer ${
+                  filterStatus === 'ALL'
+                    ? 'bg-emerald-50/80 border-[#075e38] ring-2 ring-[#075e38]'
+                    : 'bg-slate-50 border-slate-200 hover:bg-slate-100'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-slate-500">
+                    Total que Já Passaram no Projeto
+                  </span>
+                  <span className="text-[10px] font-bold text-[#075e38] bg-white px-2 py-0.5 rounded-md border border-emerald-100">
+                    Histórico Geral
+                  </span>
+                </div>
+                <div className="flex items-baseline gap-2 mt-1">
+                  <span className="text-2xl font-black text-slate-900">{state.students.length}</span>
+                  <span className="text-xs text-slate-500">alunos registrados</span>
+                </div>
+                <p className="text-[10px] text-slate-400 mt-1">Clique para ver todos os alunos do histórico</p>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setFilterStatus('ATIVO')}
+                className={`p-3.5 rounded-xl border text-left transition-all cursor-pointer ${
+                  filterStatus === 'ATIVO'
+                    ? 'bg-emerald-50/80 border-[#075e38] ring-2 ring-[#075e38]'
+                    : 'bg-slate-50 border-slate-200 hover:bg-slate-100'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-emerald-800">
+                    Alunos Ativos no Momento
+                  </span>
+                  <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-md">
+                    Cursando
+                  </span>
+                </div>
+                <div className="flex items-baseline gap-2 mt-1">
+                  <span className="text-2xl font-black text-emerald-900">
+                    {state.students.filter((s) => s.status === 'ATIVO').length}
+                  </span>
+                  <span className="text-xs text-slate-500">matriculados ativos</span>
+                </div>
+                <p className="text-[10px] text-slate-400 mt-1">Clique para filtrar apenas ativos</p>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setFilterStatus('INATIVO')}
+                className={`p-3.5 rounded-xl border text-left transition-all cursor-pointer ${
+                  filterStatus === 'INATIVO'
+                    ? 'bg-slate-200/80 border-slate-700 ring-2 ring-slate-700'
+                    : 'bg-slate-50 border-slate-200 hover:bg-slate-100'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-slate-500">
+                    Concluídos / Inativos
+                  </span>
+                  <span className="text-[10px] font-bold text-slate-600 bg-slate-200 px-2 py-0.5 rounded-md">
+                    Histórico Passado
+                  </span>
+                </div>
+                <div className="flex items-baseline gap-2 mt-1">
+                  <span className="text-2xl font-black text-slate-700">
+                    {state.students.filter((s) => s.status === 'INATIVO').length}
+                  </span>
+                  <span className="text-xs text-slate-500">inativos / encerrados</span>
+                </div>
+                <p className="text-[10px] text-slate-400 mt-1">Clique para filtrar concluídos/inativos</p>
+              </button>
+            </div>
+
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
               <div>
                 <h2 className="text-base font-black text-slate-900 flex items-center gap-2">
                   <Users className="w-5 h-5 text-[#075e38]" />
-                  Cadastro Central de Alunos ({filteredStudents.length})
+                  Alunos & Matrículas ({filteredStudents.length} {filterStatus === 'ALL' ? 'no histórico geral' : filterStatus === 'ATIVO' ? 'ativos' : 'inativos'})
                 </h2>
                 <p className="text-xs text-slate-500 mt-0.5">
                   Identificador permanente STU00000 — 1 Aluno para Múltiplas Matrículas
@@ -1126,10 +1204,9 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
                   onChange={(e) => setFilterStatus(e.target.value)}
                   className="px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-700"
                 >
-                  <option value="ALL">Todos os Status</option>
-                  <option value="ATIVO">Ativo</option>
-                  <option value="BLOQUEADO">Bloqueado</option>
-                  <option value="PENDENTE">Pendente</option>
+                  <option value="ALL">Todos no Histórico ({state.students.length})</option>
+                  <option value="ATIVO">Alunos Ativos ({state.students.filter(s => s.status === 'ATIVO').length})</option>
+                  <option value="INATIVO">Concluídos / Inativos ({state.students.filter(s => s.status === 'INATIVO').length})</option>
                 </select>
 
                 <button
@@ -1267,7 +1344,9 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
         );
 
       case 'sec_enrollments':
-        return <SecretariatEnrollmentsTab />;
+        // Matrículas está unificada na aba Alunos conforme solicitado
+        setCurrentTab('sec_students');
+        return null;
 
       case 'sec_classes':
         return <SecretariatClassesTab />;

@@ -18,6 +18,7 @@ import {
   Trash2,
   Share2,
   Megaphone,
+  Percent,
 } from 'lucide-react';
 import { ClassRoom, Assessment, Assignment, Lesson } from '../../../types';
 import {
@@ -25,6 +26,10 @@ import {
   getStoredAnnouncements,
   saveStoredAnnouncements,
 } from './teacherData';
+import {
+  ASSESSMENT_TEMPLATES,
+  getDefaultAssessmentConfig,
+} from '../../../lib/assessmentTemplates';
 
 interface ClassOverviewTabProps {
   selectedClass: ClassRoom;
@@ -652,6 +657,42 @@ export const ClassOverviewTab: React.FC<ClassOverviewTabProps> = ({
                 <span>+ Agendar Nova Prova</span>
               </button>
             )}
+          </div>
+
+          {/* Critérios & Pesos de Notas da Turma (Matriz Oficial) */}
+          <div className="bg-white rounded-3xl border border-slate-200/70 shadow-xs p-6 space-y-3.5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Percent className="w-4 h-4 text-purple-700" />
+                <h3 className="text-xs sm:text-sm font-bold text-slate-900 uppercase tracking-wider">
+                  Critérios de Notas & Pesos
+                </h3>
+              </div>
+              <span className="text-[10px] font-bold text-purple-700 bg-purple-50 border border-purple-200 px-2 py-0.5 rounded-full">
+                {selectedClass.assessmentTemplate || 'ADULT_A1'}
+              </span>
+            </div>
+
+            <p className="text-[11px] text-slate-500 leading-relaxed">
+              Distribuição oficial de pesos definida pela Orientação Educacional para compor a média dos alunos:
+            </p>
+
+            <div className="space-y-2 pt-1">
+              {(selectedClass.assessmentConfig || getDefaultAssessmentConfig(selectedClass.assessmentTemplate || 'ADULT_A1')).map((it) => (
+                <div
+                  key={it.id}
+                  className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-100 text-xs"
+                >
+                  <div className="min-w-0 flex-1">
+                    <span className="font-bold text-slate-800 block truncate">{it.name}</span>
+                    <span className="text-[10px] text-slate-400 block truncate">{it.description || it.type}</span>
+                  </div>
+                  <span className="font-mono font-black text-purple-700 ml-2 bg-purple-50 px-2 py-0.5 rounded-md border border-purple-200">
+                    {it.weight}%
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>

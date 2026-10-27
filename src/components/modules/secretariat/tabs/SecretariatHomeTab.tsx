@@ -165,15 +165,18 @@ export const SecretariatHomeTab: React.FC<SecretariatHomeTabProps> = ({
     <div className="space-y-6 animate-fade-in">
       {/* 1. TOP 4 METRIC STAT CARDS */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
-        {/* Card 1: ALUNOS ATIVOS */}
-        <div className="bg-white p-5 rounded-2xl border border-slate-100/90 shadow-[0_2px_8px_rgba(0,0,0,0.03)] hover:shadow-md transition-shadow">
+        {/* Card 1: TOTAL DE ALUNOS NO PROJETO (Histórico Geral) */}
+        <div
+          onClick={() => onNavigate('sec_students')}
+          className="bg-white p-5 rounded-2xl border border-slate-100/90 shadow-[0_2px_8px_rgba(0,0,0,0.03)] hover:shadow-md transition-shadow cursor-pointer"
+        >
           <div className="flex items-start gap-3.5">
             <div className="w-12 h-12 rounded-full bg-[#075e38] text-white flex items-center justify-center flex-shrink-0 shadow-sm">
               <Users className="w-6 h-6" />
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-[11px] font-extrabold tracking-wider text-slate-400 uppercase">
-                ALUNOS ATIVOS
+                TOTAL DE ALUNOS NO PROJETO
               </p>
               <h3 className="text-2xl sm:text-3xl font-black text-slate-900 mt-0.5 tracking-tight">
                 {totalStudents.toLocaleString('pt-BR')}
@@ -182,7 +185,7 @@ export const SecretariatHomeTab: React.FC<SecretariatHomeTabProps> = ({
           </div>
           <div className="mt-3 pt-2.5 border-t border-slate-50 flex items-center justify-between">
             <span className="text-xs font-semibold text-emerald-600 flex items-center gap-1">
-              +{totalStudents} cadastrados
+              Todos que já passaram no projeto
             </span>
             {/* Sparkline Graphic SVG */}
             <svg className="w-20 h-6 text-[#075e38] overflow-visible" viewBox="0 0 80 24" fill="none">
@@ -197,24 +200,27 @@ export const SecretariatHomeTab: React.FC<SecretariatHomeTabProps> = ({
           </div>
         </div>
 
-        {/* Card 2: MATRÍCULAS ATIVAS */}
-        <div className="bg-white p-5 rounded-2xl border border-slate-100/90 shadow-[0_2px_8px_rgba(0,0,0,0.03)] hover:shadow-md transition-shadow">
+        {/* Card 2: ALUNOS ATIVOS ATUALMENTE */}
+        <div
+          onClick={() => onNavigate('sec_students')}
+          className="bg-white p-5 rounded-2xl border border-slate-100/90 shadow-[0_2px_8px_rgba(0,0,0,0.03)] hover:shadow-md transition-shadow cursor-pointer"
+        >
           <div className="flex items-start gap-3.5">
             <div className="w-12 h-12 rounded-full bg-[#7c3aed] text-white flex items-center justify-center flex-shrink-0 shadow-sm">
               <GraduationCap className="w-6 h-6" />
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-[11px] font-extrabold tracking-wider text-slate-400 uppercase">
-                MATRÍCULAS ATIVAS
+                ALUNOS ATIVOS ATUALMENTE
               </p>
               <h3 className="text-2xl sm:text-3xl font-black text-slate-900 mt-0.5 tracking-tight">
-                {totalEnrollments.toLocaleString('pt-BR')}
+                {state.students.filter((s) => s.status === 'ATIVO').length.toLocaleString('pt-BR')}
               </h3>
             </div>
           </div>
           <div className="mt-3 pt-2.5 border-t border-slate-50 flex items-center justify-between">
             <span className="text-xs font-semibold text-purple-600 flex items-center gap-1">
-              +{totalEnrollments} em andamento
+              Cursando ativamente
             </span>
             <svg className="w-20 h-6 text-purple-500 overflow-visible" viewBox="0 0 80 24" fill="none">
               <path
@@ -446,15 +452,7 @@ export const SecretariatHomeTab: React.FC<SecretariatHomeTabProps> = ({
                 className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl bg-slate-50/70 hover:bg-emerald-50/80 text-slate-700 hover:text-[#075e38] border border-slate-200/60 hover:border-emerald-200 text-xs font-bold transition-all group cursor-pointer"
               >
                 <Users className="w-4 h-4 text-[#075e38] group-hover:scale-110 transition-transform" />
-                <span className="truncate">Alunos & Cadastros</span>
-              </button>
-
-              <button
-                onClick={() => onNavigate('sec_enrollments')}
-                className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl bg-slate-50/70 hover:bg-emerald-50/80 text-slate-700 hover:text-[#075e38] border border-slate-200/60 hover:border-emerald-200 text-xs font-bold transition-all group cursor-pointer"
-              >
-                <GraduationCap className="w-4 h-4 text-[#075e38] group-hover:scale-110 transition-transform" />
-                <span className="truncate">Matrículas & Cursos</span>
+                <span className="truncate">Alunos & Matrículas</span>
               </button>
 
               <button

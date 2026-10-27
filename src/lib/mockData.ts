@@ -22,6 +22,7 @@ import {
   PendingRegistration,
   PendingPayment,
 } from '../types';
+import { getDefaultAssessmentConfig } from './assessmentTemplates';
 
 export const INITIAL_SETTINGS: SystemSettings = {
   centerName: 'Think Green Community Center',
@@ -277,6 +278,8 @@ export const INITIAL_CLASSES: ClassRoom[] = [
     startDate: '2026-02-01',
     endDate: '2026-11-30',
     status: 'ACTIVE',
+    assessmentTemplate: 'CUSTOM',
+    assessmentConfig: getDefaultAssessmentConfig('CUSTOM'),
   },
   {
     id: 'class_eng_a',
@@ -291,6 +294,8 @@ export const INITIAL_CLASSES: ClassRoom[] = [
     startDate: '2026-02-01',
     endDate: '2026-11-30',
     status: 'ACTIVE',
+    assessmentTemplate: 'ADULT_A1',
+    assessmentConfig: getDefaultAssessmentConfig('ADULT_A1'),
   },
   {
     id: 'class_reading',
@@ -305,6 +310,8 @@ export const INITIAL_CLASSES: ClassRoom[] = [
     startDate: '2026-02-01',
     endDate: '2026-11-30',
     status: 'ACTIVE',
+    assessmentTemplate: 'TEENAGERS',
+    assessmentConfig: getDefaultAssessmentConfig('TEENAGERS'),
   },
   {
     id: 'class_eng_b',
@@ -319,6 +326,8 @@ export const INITIAL_CLASSES: ClassRoom[] = [
     startDate: '2026-02-01',
     endDate: '2026-06-30',
     status: 'ACTIVE',
+    assessmentTemplate: 'ADULT_B1',
+    assessmentConfig: getDefaultAssessmentConfig('ADULT_B1'),
   },
   {
     id: 'class_preschool_a',
@@ -333,6 +342,8 @@ export const INITIAL_CLASSES: ClassRoom[] = [
     startDate: '2026-02-01',
     endDate: '2026-11-30',
     status: 'ACTIVE',
+    assessmentTemplate: 'KIDS_LB_LG',
+    assessmentConfig: getDefaultAssessmentConfig('KIDS_LB_LG'),
   },
   {
     id: 'class_football_sub15',
@@ -347,6 +358,8 @@ export const INITIAL_CLASSES: ClassRoom[] = [
     startDate: '2026-02-01',
     endDate: '2026-11-30',
     status: 'ACTIVE',
+    assessmentTemplate: 'CUSTOM',
+    assessmentConfig: getDefaultAssessmentConfig('CUSTOM'),
   },
   {
     id: 'class_women_circuit',
@@ -361,6 +374,8 @@ export const INITIAL_CLASSES: ClassRoom[] = [
     startDate: '2026-02-01',
     endDate: '2026-08-31',
     status: 'ACTIVE',
+    assessmentTemplate: 'CUSTOM',
+    assessmentConfig: getDefaultAssessmentConfig('CUSTOM'),
   },
 ];
 

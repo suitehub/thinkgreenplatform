@@ -20,6 +20,7 @@ import {
   Printer,
   Download,
   ExternalLink,
+  Eye,
   Lock,
   Unlock,
   BookOpen,
@@ -81,6 +82,9 @@ export const StudentDossierModal: React.FC<StudentDossierModalProps> = ({
 
   // Selected Receipt to View
   const [selectedReceipt, setSelectedReceipt] = useState<PaymentReceipt | null>(null);
+
+  // Document Photo Preview Modal
+  const [previewDocPhoto, setPreviewDocPhoto] = useState<{ title: string; url: string } | null>(null);
 
   // Print Mode
   const [isPrinting, setIsPrinting] = useState(false);
@@ -1206,51 +1210,80 @@ export const StudentDossierModal: React.FC<StudentDossierModalProps> = ({
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {student.documents.map((doc) => (
-                      <div
-                        key={doc.id}
-                        className="p-4 bg-white rounded-2xl border border-slate-200 flex items-center justify-between gap-3 hover:border-slate-300 transition-colors shadow-2xs"
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center flex-shrink-0 border border-slate-200">
-                            <FileText className="w-5 h-5" />
-                          </div>
-                          <div>
-                            <p className="font-bold text-slate-900 text-xs line-clamp-1">{doc.title}</p>
-                            <div className="flex items-center gap-2 text-[10px] text-slate-400 mt-0.5">
-                              <span className="font-semibold text-slate-700">{doc.type}</span>
-                              <span>•</span>
-                              <span>{doc.size || '1.5 MB'}</span>
-                              <span>•</span>
-                              <span>{doc.uploadedAt}</span>
+                    {student.documents.map((doc) => {
+                      const isImage = doc.url && (doc.url.startsWith('data:image') || doc.type === 'ID_CARD');
+                      return (
+                        <div
+                          key={doc.id}
+                          className="p-4 bg-white rounded-2xl border border-slate-200 flex items-center justify-between gap-3 hover:border-slate-300 transition-colors shadow-2xs"
+                        >
+                          <div className="flex items-center gap-3 min-w-0">
+                            {isImage ? (
+                              <button
+                                type="button"
+                                onClick={() => setPreviewDocPhoto({ title: doc.title, url: doc.url })}
+                                className="w-12 h-12 rounded-xl overflow-hidden border border-slate-200 flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity bg-slate-100 flex items-center justify-center shadow-2xs"
+                                title="Clique para ampliar imagem do documento"
+                              >
+                                <img
+                                  src={doc.url}
+                                  alt={doc.title}
+                                  className="w-full h-full object-cover"
+                                />
+                              </button>
+                            ) : (
+                              <div className="w-10 h-10 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center flex-shrink-0 border border-slate-200">
+                                <FileText className="w-5 h-5" />
+                              </div>
+                            )}
+                            <div className="min-w-0">
+                              <p className="font-bold text-slate-900 text-xs line-clamp-1">{doc.title}</p>
+                              <div className="flex items-center gap-2 text-[10px] text-slate-400 mt-0.5">
+                                <span className="font-semibold text-slate-700">{doc.type}</span>
+                                <span>•</span>
+                                <span>{doc.size || '1.5 MB'}</span>
+                                <span>•</span>
+                                <span>{doc.uploadedAt}</span>
+                              </div>
                             </div>
                           </div>
-                        </div>
 
-                        <div className="flex items-center gap-1.5 flex-shrink-0">
-                          <a
-                            href={doc.url}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="p-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors border border-transparent hover:border-slate-200"
-                            title="Baixar / Visualizar Documento"
-                          >
-                            <Download className="w-4 h-4" />
-                          </a>
-                          <button
-                            onClick={() => {
-                              if (confirm(`Deseja remover o documento "${doc.title}" do prontuário?`)) {
-                                deleteStudentDocument(student.studentId, doc.id);
-                              }
-                            }}
-                            className="p-1.5 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
-                            title="Excluir Documento"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
+                          <div className="flex items-center gap-1.5 flex-shrink-0">
+                            {isImage ? (
+                              <button
+                                type="button"
+                                onClick={() => setPreviewDocPhoto({ title: doc.title, url: doc.url })}
+                                className="p-1.5 text-emerald-700 hover:text-emerald-900 hover:bg-emerald-50 rounded-lg transition-colors border border-transparent hover:border-emerald-200 cursor-pointer"
+                                title="Visualizar Imagem Ampliada"
+                              >
+                                <Eye className="w-4 h-4" />
+                              </button>
+                            ) : (
+                              <a
+                                href={doc.url}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="p-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors border border-transparent hover:border-slate-200"
+                                title="Baixar / Visualizar Documento"
+                              >
+                                <Download className="w-4 h-4" />
+                              </a>
+                            )}
+                            <button
+                              onClick={() => {
+                                if (confirm(`Deseja remover o documento "${doc.title}" do prontuário?`)) {
+                                  deleteStudentDocument(student.studentId, doc.id);
+                                }
+                              }}
+                              className="p-1.5 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                              title="Excluir Documento"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </div>
@@ -1386,6 +1419,49 @@ export const StudentDossierModal: React.FC<StudentDossierModalProps> = ({
           isOpen={!!selectedReceipt}
           onClose={() => setSelectedReceipt(null)}
         />
+      )}
+
+      {/* SUB-MODAL: DOCUMENT PHOTO FULL PREVIEW */}
+      {previewDocPhoto && (
+        <div
+          className="fixed inset-0 z-60 bg-black/80 flex items-center justify-center p-4 backdrop-blur-xs animate-in fade-in"
+          onClick={() => setPreviewDocPhoto(null)}
+        >
+          <div
+            className="bg-white rounded-2xl max-w-2xl w-full overflow-hidden shadow-2xl p-4 space-y-3"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+              <div>
+                <h4 className="font-black text-slate-900 text-sm">{previewDocPhoto.title}</h4>
+                <p className="text-[11px] text-slate-500">Prontuário de {student.name} ({student.studentId})</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setPreviewDocPhoto(null)}
+                className="p-1 text-slate-400 hover:text-slate-700 rounded-lg cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="max-h-[70vh] overflow-auto flex items-center justify-center bg-slate-100 rounded-xl p-2">
+              <img
+                src={previewDocPhoto.url}
+                alt={previewDocPhoto.title}
+                className="max-h-[65vh] w-auto object-contain rounded-lg shadow-sm"
+              />
+            </div>
+            <div className="flex justify-end pt-1">
+              <button
+                type="button"
+                onClick={() => setPreviewDocPhoto(null)}
+                className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl cursor-pointer"
+              >
+                Fechar Visualização
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

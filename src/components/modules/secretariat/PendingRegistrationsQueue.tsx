@@ -430,11 +430,20 @@ export const PendingRegistrationsQueue: React.FC<PendingRegistrationsQueueProps>
                             </strong>
                           </p>
                         )}
-                        {item.city && (
-                          <p>
-                            Cidade / Endereço:{' '}
-                            <span className="text-slate-700">{item.city} {item.address ? `• ${item.address}` : ''}</span>
-                          </p>
+                        {item.documentPhotoUrl && (
+                          <div className="pt-2 flex items-center gap-2.5">
+                            <img
+                              src={item.documentPhotoUrl}
+                              alt="RG do aluno"
+                              className="w-12 h-12 object-cover rounded-lg border border-slate-300 shadow-2xs"
+                            />
+                            <div>
+                              <span className="text-[10px] font-black uppercase text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 inline-block">
+                                Foto do Documento (ID) Anexada
+                              </span>
+                              <p className="text-[10px] text-slate-500 mt-0.5">Será vinculada direto à ficha do aluno</p>
+                            </div>
+                          </div>
                         )}
                       </div>
                     </div>

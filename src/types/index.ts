@@ -39,7 +39,7 @@ export interface Student {
   id: string; // Internal unique ID
   studentId: string; // STU00000 unique permanent identifier
   name: string;
-  email: string;
+  email?: string;
   phone: string;
   level?: string; // Nível acadêmico (ex: Beginner, Intermediate, Kids, Level 1)
   age?: number; // Idade do aluno
@@ -51,12 +51,13 @@ export interface Student {
   guardianName?: string;
   guardianPhone?: string;
   address?: string;
-  city: string; // e.g. Cairo, Giza, Alexandria
+  city?: string; // e.g. Cairo, Giza, Alexandria
   status: StudentStatus;
   systemAccess?: 'LIBERADO' | 'BLOQUEADO'; // Acesso ao sistema (Liberado / Bloqueado)
   notes?: string;
   createdAt: string;
   avatarUrl?: string;
+  documentPhotoUrl?: string; // Foto anexada do RG/ID
   documents: StudentDocument[];
 }
 
@@ -99,19 +100,42 @@ export interface Course {
   levels?: CourseLevelPricing[]; // 3 Níveis exclusivos para o Curso Livre de Inglês (Crianças, Adolescentes, Adulto)
 }
 
+export type AssessmentTemplateLevel =
+  | 'ADULT_A1'
+  | 'ADULT_A2'
+  | 'ADULT_B1'
+  | 'ADULT_B2_C1'
+  | 'TEENAGERS'
+  | 'KIDS_LB_LG'
+  | 'CUSTOM';
+
+export interface ClassAssessmentItem {
+  id: string;
+  name: string;
+  weight: number; // Porcentagem do peso (ex: 10, 30, 50)
+  type: string; // 'ATTENDANCE' | 'WORKBOOK' | 'HOMEWORK' | 'ORAL_EXAM' | 'UNIT_TESTS' | 'MIDTERM' | 'FINAL' | 'CUSTOM'
+  description?: string;
+  unitTestsCount?: number;
+  unitTestWeightEach?: number;
+}
+
 export interface ClassRoom {
   id: string;
   courseId: string;
+  courseName?: string;
   name: string; // e.g. "Inglês Básico - Turma A"
   code: string; // e.g. "ENG-101-A"
   teacherId: string;
   teacherName: string;
   schedule: string; // e.g. "Segunda e Quarta, 18:00 - 19:30"
   room: string; // e.g. "Sala 02 - Bloco A"
-  maxCapacity: number;
+  maxCapacity?: number;
+  capacity?: number;
   startDate: string;
   endDate: string;
-  status: 'ACTIVE' | 'UPCOMING' | 'COMPLETED';
+  status: 'ACTIVE' | 'UPCOMING' | 'COMPLETED' | string;
+  assessmentTemplate?: AssessmentTemplateLevel;
+  assessmentConfig?: ClassAssessmentItem[];
 }
 
 export interface Enrollment {
@@ -372,11 +396,12 @@ export interface PendingRegistration {
   rg?: string;
   phone: string;
   email?: string;
-  city: string;
+  city?: string;
   address?: string;
   guardianName?: string;
   guardianPhone?: string;
   notes?: string;
+  documentPhotoUrl?: string; // Foto anexada do RG/ID pela Recepção/Secretaria
 
   courseId: string;
   courseName: string;

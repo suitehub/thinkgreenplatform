@@ -63,13 +63,8 @@ export const SecretariatSidebar: React.FC<SecretariatSidebarProps> = ({
     },
     {
       id: 'sec_students',
-      label: 'Alunos & Cadastros',
+      label: 'Alunos & Matrículas',
       icon: Users,
-    },
-    {
-      id: 'sec_enrollments',
-      label: 'Matrículas & Cursos',
-      icon: GraduationCap,
     },
     {
       id: 'sec_classes',

@@ -47,6 +47,7 @@ import {
   HelpCircle,
   FileSpreadsheet,
   LogOut,
+  Percent,
 } from 'lucide-react';
 import { useApp } from '../../../context/AppContext';
 import {
@@ -59,7 +60,8 @@ import {
 } from '../../common/ThinkGardenLogos';
 import { Modal } from '../../common/Modal';
 import { Badge } from '../../common/Badge';
-import { Assessment, AssessmentType, Assignment, Submission, Lesson } from '../../../types';
+import { Assessment, AssessmentType, Assignment, Submission, Lesson, ClassAssessmentItem } from '../../../types';
+import { getDefaultAssessmentConfig } from '../../../lib/assessmentTemplates';
 import { ClassHeader, ClassSubTab } from './ClassHeader';
 import { ClassOverviewTab } from './ClassOverviewTab';
 import { ClassContentsTab } from './ClassContentsTab';
@@ -501,18 +503,61 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
   const [examSearch, setExamSearch] = useState('');
   const [examFilterClass, setExamFilterClass] = useState('ALL');
 
-  // Form state for creating Exam
-  const [examTitle, setExamTitle] = useState('');
+  // Form state for creating Exam - linked strictly to pre-selected assessment items of the class
   const [examClassId, setExamClassId] = useState(selectedClass?.id || teacherClasses[0]?.id || '');
+  const currentExamClass = React.useMemo(() => {
+    return state.classes.find((c) => c.id === examClassId) || selectedClass || teacherClasses[0];
+  }, [state.classes, examClassId, selectedClass, teacherClasses]);
+
+  const availableClassAssessmentItems: ClassAssessmentItem[] = React.useMemo(() => {
+    if (currentExamClass?.assessmentConfig && currentExamClass.assessmentConfig.length > 0) {
+      return currentExamClass.assessmentConfig;
+    }
+    const tmpl = currentExamClass?.assessmentTemplate || 'ADULT_A1';
+    return getDefaultAssessmentConfig(tmpl);
+  }, [currentExamClass]);
+
+  const [selectedAssessmentItemId, setSelectedAssessmentItemId] = useState<string>('');
+  const [examTitle, setExamTitle] = useState('');
   const [examType, setExamType] = useState<AssessmentType>('PROVA_1');
   const [examDate, setExamDate] = useState(new Date().toISOString().split('T')[0]);
   const [examTime, setExamTime] = useState('19:00');
   const [examMaxScore, setExamMaxScore] = useState(100);
-  const [examWeight, setExamWeight] = useState(40);
+  const [examWeight, setExamWeight] = useState(30);
   const [examRequiredStage, setExamRequiredStage] = useState<'NONE' | 'STAGE_1_PAID' | 'STAGE_2_PAID' | 'STAGE_FINAL_PAID'>('STAGE_2_PAID');
   const [examContent, setExamContent] = useState('');
   const [examInstructions, setExamInstructions] = useState('');
   const [examSuccessToast, setExamSuccessToast] = useState(false);
+
+  // Sync selected assessment item whenever target class or available items change
+  React.useEffect(() => {
+    if (availableClassAssessmentItems.length > 0) {
+      // Find matching item or default to first
+      const currentMatched = availableClassAssessmentItems.find((it) => it.id === selectedAssessmentItemId) || availableClassAssessmentItems[0];
+      setSelectedAssessmentItemId(currentMatched.id);
+      setExamTitle(currentMatched.name);
+      setExamWeight(currentMatched.weight);
+      if (currentMatched.type === 'MIDTERM') setExamType('PROVA_1');
+      else if (currentMatched.type === 'FINAL') setExamType('PROVA_FINAL');
+      else if (currentMatched.type === 'HOMEWORK') setExamType('TRABALHO');
+      else if (currentMatched.type === 'UNIT_TESTS') setExamType('QUIZ');
+      else setExamType('PROVA_1');
+    }
+  }, [examClassId, availableClassAssessmentItems]);
+
+  const handleSelectAssessmentItem = (itemId: string) => {
+    setSelectedAssessmentItemId(itemId);
+    const item = availableClassAssessmentItems.find((it) => it.id === itemId);
+    if (item) {
+      setExamTitle(item.name);
+      setExamWeight(item.weight);
+      if (item.type === 'MIDTERM') setExamType('PROVA_1');
+      else if (item.type === 'FINAL') setExamType('PROVA_FINAL');
+      else if (item.type === 'HOMEWORK') setExamType('TRABALHO');
+      else if (item.type === 'UNIT_TESTS') setExamType('QUIZ');
+      else setExamType('PROVA_1');
+    }
+  };
 
   const handleCreateAssessment = (e: React.FormEvent) => {
     e.preventDefault();
@@ -529,14 +574,13 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
       maxScore: Number(examMaxScore) || 100,
       weight: Number(examWeight) || 30,
       requiredPaymentStage: examRequiredStage,
-      description: examContent.substring(0, 120),
-      content: examContent,
-      instructions: examInstructions,
+      description: examContent ? examContent.substring(0, 120) : `Avaliação oficial vinculada aos critérios da turma: ${examTitle} (${examWeight}%)`,
+      content: examContent || `Avaliação curricular oficial Think Green: ${examTitle}. Peso configurado: ${examWeight}%.`,
+      instructions: examInstructions || 'Avaliação presencial/curricular vinculada aos critérios aprovados pela Orientação Educacional.',
       status: 'AGENDADA',
     });
 
     setIsExamModalOpen(false);
-    setExamTitle('');
     setExamContent('');
     setExamInstructions('');
     setExamSuccessToast(true);
@@ -4024,51 +4068,56 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
         subtitle="Defina o conteúdo programático, nota máxima e critérios de aplicação"
       >
         <form onSubmit={handleCreateAssessment} className="space-y-4 text-xs">
-          {/* Título da Prova */}
+          {/* Turma de Destino */}
           <div>
-            <label className="block font-bold text-slate-700 mb-1">
-              Título da Avaliação / Prova *
-            </label>
-            <input
-              type="text"
-              required
-              placeholder="Ex: Prova 1 - Simple Present, Vocabulário & Diálogos"
-              value={examTitle}
-              onChange={(e) => setExamTitle(e.target.value)}
-              className="w-full p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#075e38] focus:outline-hidden"
-            />
+            <label className="block font-bold text-slate-700 mb-1">Turma de Destino *</label>
+            <select
+              value={examClassId}
+              onChange={(e) => setExamClassId(e.target.value)}
+              className="w-full p-2.5 border border-slate-300 rounded-xl bg-white font-bold text-slate-800 text-xs"
+            >
+              {teacherClasses.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name} ({c.code})
+                </option>
+              ))}
+            </select>
           </div>
 
-          {/* Turma de Destino & Tipo */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="block font-bold text-slate-700 mb-1">Turma de Destino *</label>
-              <select
-                value={examClassId}
-                onChange={(e) => setExamClassId(e.target.value)}
-                className="w-full p-2.5 border border-slate-300 rounded-xl bg-white font-bold text-slate-800"
-              >
-                {teacherClasses.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
+          {/* Vincular à Avaliação Pré-Selecionada */}
+          <div className="p-3.5 bg-purple-50/70 rounded-2xl border border-purple-200 space-y-2">
+            <div className="flex items-center justify-between">
+              <label className="block font-bold text-purple-950 text-xs">
+                Vincular à Avaliação Pré-Selecionada da Turma *
+              </label>
+              <span className="text-[10px] font-black uppercase tracking-wider text-purple-700 bg-purple-100 px-2 py-0.5 rounded-md">
+                Critério Oficial da Turma
+              </span>
             </div>
 
-            <div>
-              <label className="block font-bold text-slate-700 mb-1">Tipo de Avaliação *</label>
-              <select
-                value={examType}
-                onChange={(e) => setExamType(e.target.value as AssessmentType)}
-                className="w-full p-2.5 border border-slate-300 rounded-xl bg-white font-bold text-slate-800"
-              >
-                <option value="PROVA_1">Prova 1 (Midterm)</option>
-                <option value="PROVA_FINAL">Prova Final (Exam)</option>
-                <option value="QUIZ">Quiz / Simulado</option>
-                <option value="TRABALHO">Trabalho / Projeto</option>
-                <option value="RECUPERACAO">Recuperação</option>
-              </select>
+            <p className="text-[11px] text-purple-900/80">
+              As avaliações são padronizadas pela Orientação Educacional. Selecione a avaliação que você está registrando:
+            </p>
+
+            <select
+              value={selectedAssessmentItemId}
+              onChange={(e) => handleSelectAssessmentItem(e.target.value)}
+              className="w-full p-2.5 bg-white border border-purple-300 rounded-xl font-bold text-slate-900 text-xs focus:ring-2 focus:ring-purple-400 focus:outline-hidden cursor-pointer"
+            >
+              {availableClassAssessmentItems.map((item) => (
+                <option key={item.id} value={item.id}>
+                  {item.name} — Peso: {item.weight}% {item.description ? `(${item.description})` : ''}
+                </option>
+              ))}
+            </select>
+
+            <div className="flex items-center justify-between pt-1 text-xs">
+              <span className="text-slate-600">
+                Título Vinculado: <strong className="text-slate-900 font-bold">{examTitle}</strong>
+              </span>
+              <span className="text-purple-800 font-black">
+                Peso Definido: {examWeight}% na Média
+              </span>
             </div>
           </div>
 
@@ -4092,18 +4141,15 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
 
             <div>
               <label className="block font-bold text-slate-700 mb-1">
-                Peso na Média Semestral (%) *
+                Peso na Média Semestral (%)
               </label>
-              <input
-                type="number"
-                min="1"
-                max="100"
-                required
-                value={examWeight}
-                onChange={(e) => setExamWeight(Number(e.target.value))}
-                className="w-full p-2.5 border border-slate-300 rounded-xl font-mono font-bold"
-              />
-              <span className="text-[10px] text-slate-400">Ex: 40%</span>
+              <div className="flex items-center gap-2 p-2.5 bg-slate-100 border border-slate-200 rounded-xl">
+                <Percent className="w-4 h-4 text-purple-600 flex-shrink-0" />
+                <span className="font-mono font-black text-slate-900 text-xs">
+                  {examWeight}%
+                </span>
+                <span className="text-[10px] text-slate-400 ml-auto font-medium">Definido pela Orientação</span>
+              </div>
             </div>
           </div>
 

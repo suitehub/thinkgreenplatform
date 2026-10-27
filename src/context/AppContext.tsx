@@ -426,6 +426,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     const nowStr = new Date().toISOString().split('T')[0];
 
+    const initialDocs: StudentDocument[] = studentData.documents ? [...studentData.documents] : [];
+    if (studentData.documentPhotoUrl) {
+      initialDocs.push({
+        id: `doc_rg_${Date.now()}`,
+        title: 'Foto do Documento de Identidade (RG/ID)',
+        type: 'ID_CARD',
+        url: studentData.documentPhotoUrl,
+        uploadedAt: nowStr,
+        uploadedBy: currentUser.name,
+        size: '1.2 MB',
+      });
+    }
+
     const newStudent: Student = {
       id: internalId,
       studentId: generatedStuId,
@@ -444,7 +457,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       notes: studentData.notes || '',
       createdAt: nowStr,
       avatarUrl: studentData.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
-      documents: [],
+      documentPhotoUrl: studentData.documentPhotoUrl,
+      documents: initialDocs,
     };
 
     // Create User account for student
@@ -622,6 +636,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const nowStr = new Date().toISOString().split('T')[0];
     const nowTimestamp = new Date().toISOString().replace('T', ' ').substring(0, 16);
 
+    const initialDocs: StudentDocument[] = [];
+    if (merged.documentPhotoUrl) {
+      initialDocs.push({
+        id: `doc_rg_${Date.now()}`,
+        title: 'Foto do Documento de Identidade (RG/ID)',
+        type: 'ID_CARD',
+        url: merged.documentPhotoUrl,
+        uploadedAt: nowStr,
+        uploadedBy: `${currentUser.name} (Secretaria)`,
+        size: '1.2 MB',
+      });
+    }
+
     const newStudent: Student = {
       id: internalId,
       studentId: generatedStuId,
@@ -640,7 +667,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       notes: merged.notes ? `${merged.notes} | Aprovado pela Secretaria: ${currentUser.name}` : `Aprovado pela Secretaria: ${currentUser.name}`,
       createdAt: nowStr,
       avatarUrl: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
-      documents: [],
+      documentPhotoUrl: merged.documentPhotoUrl,
+      documents: initialDocs,
     };
 
     const newStudentUser: User = {

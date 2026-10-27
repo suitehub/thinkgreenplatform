@@ -31,6 +31,7 @@ import { useApp } from '../../../context/AppContext';
 import { formatCurrency } from '../../../lib/storage';
 import { ReceiptModal } from '../../common/ReceiptModal';
 import { ProvisionalReceiptModal } from '../../common/ProvisionalReceiptModal';
+import { DocumentPhotoCapture } from '../../common/DocumentPhotoCapture';
 import { PaymentReceipt, PaymentMethod, EnglishAudienceLevel, Course, PendingPayment } from '../../../types';
 
 interface ReceptionModuleProps {
@@ -194,8 +195,8 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
     city: string;
     address: string;
     guardianName: string;
-    guardianPhone: string;
     notes: string;
+    documentPhotoUrl?: string;
     courseId: string;
     classId: string;
     englishLevel: EnglishAudienceLevel;
@@ -214,8 +215,8 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
     city: 'Cairo',
     address: '',
     guardianName: '',
-    guardianPhone: '',
     notes: '',
+    documentPhotoUrl: undefined,
     courseId: state.courses[0]?.id || 'course_soccer',
     classId: state.classes[0]?.id || 'class_soccer_u15',
     englishLevel: 'CRIANCAS',
@@ -313,11 +314,11 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
       rg: newStudentForm.rg,
       phone: newStudentForm.phone,
       email: newStudentForm.email,
-      city: newStudentForm.city,
+      city: newStudentForm.city || 'Cairo',
       address: newStudentForm.address,
       guardianName: newStudentForm.guardianName,
-      guardianPhone: newStudentForm.guardianPhone,
       notes: newStudentForm.notes,
+      documentPhotoUrl: newStudentForm.documentPhotoUrl,
       courseId: newStudentForm.courseId,
       courseName: selectedCourseForForm ? selectedCourseForForm.name : 'Curso',
       classId: selectedClass ? selectedClass.id : '',
@@ -1091,15 +1092,24 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
 
                   <div>
                     <label className="block font-bold text-slate-700 mb-1">
-                      RG / Documento de Identidade *
+                      RG / Documento de Identidade
                     </label>
                     <input
                       type="text"
-                      required
                       placeholder="12.345.678-9 ou ID Nacional"
                       value={newStudentForm.rg}
                       onChange={(e) => setNewStudentForm({ ...newStudentForm, rg: e.target.value })}
                       className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-mono focus:bg-white focus:ring-2 focus:ring-[#075e38] outline-hidden"
+                    />
+                  </div>
+
+                  {/* Foto do Documento (ID) Logo Abaixo do RG */}
+                  <div className="sm:col-span-2 p-3 bg-slate-50/90 rounded-xl border border-slate-200">
+                    <DocumentPhotoCapture
+                      value={newStudentForm.documentPhotoUrl}
+                      onChange={(photo) => setNewStudentForm({ ...newStudentForm, documentPhotoUrl: photo })}
+                      label="Foto do Documento (RG / ID)"
+                      helperText="Não obrigatório. Anexe uma foto ou tire foto com a câmera. Ficará salva no pré-cadastro para a Secretaria validar e arquivar na ficha do aluno."
                     />
                   </div>
 
@@ -1118,59 +1128,27 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
                   </div>
 
                   <div>
-                    <label className="block font-bold text-slate-700 mb-1">Email de Contato</label>
+                    <label className="block font-bold text-slate-700 mb-1">
+                      Email de Contato <span className="text-slate-400 font-normal">(Opcional)</span>
+                    </label>
                     <input
                       type="email"
-                      placeholder="aluno@email.com"
+                      placeholder="aluno@email.com (opcional)"
                       value={newStudentForm.email}
                       onChange={(e) => setNewStudentForm({ ...newStudentForm, email: e.target.value })}
                       className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs focus:bg-white focus:ring-2 focus:ring-[#075e38] outline-hidden"
                     />
                   </div>
 
-                  <div>
-                    <label className="block font-bold text-slate-700 mb-1">Cidade / Região</label>
-                    <input
-                      type="text"
-                      value={newStudentForm.city}
-                      onChange={(e) => setNewStudentForm({ ...newStudentForm, city: e.target.value })}
-                      className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs focus:bg-white focus:ring-2 focus:ring-[#075e38] outline-hidden"
-                    />
-                  </div>
-
                   <div className="sm:col-span-2">
-                    <label className="block font-bold text-slate-700 mb-1">Endereço Residencial</label>
-                    <input
-                      type="text"
-                      placeholder="Rua, Número, Bairro"
-                      value={newStudentForm.address}
-                      onChange={(e) => setNewStudentForm({ ...newStudentForm, address: e.target.value })}
-                      className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs focus:bg-white focus:ring-2 focus:ring-[#075e38] outline-hidden"
-                    />
-                  </div>
-
-                  <div>
                     <label className="block font-bold text-slate-700 mb-1">
-                      Nome do Responsável (se menor)
+                      Nome do Responsável <span className="text-slate-400 font-normal">(se menor de idade - opcional)</span>
                     </label>
                     <input
                       type="text"
-                      placeholder="Nome do pai, mãe ou tutor"
+                      placeholder="Nome do pai, mãe ou tutor legal"
                       value={newStudentForm.guardianName}
                       onChange={(e) => setNewStudentForm({ ...newStudentForm, guardianName: e.target.value })}
-                      className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block font-bold text-slate-700 mb-1">
-                      Telefone do Responsável
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="+20 10 9988 7766"
-                      value={newStudentForm.guardianPhone}
-                      onChange={(e) => setNewStudentForm({ ...newStudentForm, guardianPhone: e.target.value })}
                       className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs"
                     />
                   </div>
