@@ -46,6 +46,13 @@ import {
   GraduationCap,
   Layers,
   RotateCcw,
+  Headphones,
+  Volume2,
+  FolderOpen,
+  Pin,
+  Megaphone,
+  HelpCircle,
+  Send,
 } from 'lucide-react';
 import { useApp } from '../../../context/AppContext';
 import { Badge } from '../../common/Badge';
@@ -62,7 +69,25 @@ import {
   SunWatermark,
   FitnessWatermark,
 } from '../../common/ThinkGardenLogos';
-import { Charge, PaymentReceipt, Lesson, Assessment, Enrollment, ClassRoom } from '../../../types';
+import {
+  Charge,
+  PaymentReceipt,
+  Lesson,
+  Assessment,
+  Enrollment,
+  ClassRoom,
+  DidacticMaterial,
+  Quiz,
+  QuizSubmission,
+  GeneralAnnouncement,
+} from '../../../types';
+import {
+  getStoredDidacticMaterials,
+  getStoredQuizzes,
+  getStoredQuizSubmissions,
+  saveStoredQuizSubmissions,
+  getStoredGeneralAnnouncements,
+} from '../teacher/teacherData';
 
 interface StudentPortalProps {
   currentTab?: string;
@@ -123,6 +148,131 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
   } | null>(null);
   const [copiedId, setCopiedId] = useState(false);
   const [activeActionDropdown, setActiveActionDropdown] = useState<string | null>(null);
+
+  // =========================================================================
+  // AJUSTES 1, 3, 4, 6 STATE
+  // =========================================================================
+  const [generalAnnouncements, setGeneralAnnouncements] = useState<GeneralAnnouncement[]>(() =>
+    getStoredGeneralAnnouncements()
+  );
+  const [isGeneralMuralDismissed, setIsGeneralMuralDismissed] = useState(false);
+  const [didacticMaterials, setDidacticMaterials] = useState<DidacticMaterial[]>(() =>
+    getStoredDidacticMaterials()
+  );
+  const [quizzes, setQuizzes] = useState<Quiz[]>(() => getStoredQuizzes());
+  const [quizSubmissions, setQuizSubmissions] = useState<QuizSubmission[]>(() =>
+    getStoredQuizSubmissions()
+  );
+
+  // Active Quiz Modal & State
+  const [activeQuizModal, setActiveQuizModal] = useState<Quiz | null>(null);
+  const [quizAnswers, setQuizAnswers] = useState<Record<string, string | string[]>>({});
+  const [quizSubmissionResult, setQuizSubmissionResult] = useState<QuizSubmission | null>(null);
+
+  // Active Didactic Material Viewer Modal
+  const [activeMaterialModal, setActiveMaterialModal] = useState<DidacticMaterial | null>(null);
+
+  const handleOpenQuiz = (quiz: Quiz) => {
+    setActiveQuizModal(quiz);
+    setQuizAnswers({});
+    setQuizSubmissionResult(null);
+  };
+
+  const handleSelectQuizOption = (questionId: string, optionId: string) => {
+    setQuizAnswers((prev) => ({
+      ...prev,
+      [questionId]: optionId,
+    }));
+  };
+
+  const handleEssayQuizAnswer = (questionId: string, text: string) => {
+    setQuizAnswers((prev) => ({
+      ...prev,
+      [questionId]: text,
+    }));
+  };
+
+  const handleSubmitQuiz = (studentObj: { studentId: string; name: string }) => {
+    if (!activeQuizModal) return;
+
+    let earnedPoints = 0;
+    const studentAnsList: QuizSubmission['answers'] = [];
+
+    activeQuizModal.questions.forEach((q) => {
+      const studentAnswer = quizAnswers[q.id];
+      let isCorrect = false;
+
+      if (q.type === 'MULTIPLE_CHOICE') {
+        const correctOpt = (q.options || []).find((o) => o.isCorrect || o.id === q.correctOptionId);
+        if (correctOpt && studentAnswer === correctOpt.id) {
+          isCorrect = true;
+          earnedPoints += q.points;
+        }
+      } else if (q.type === 'TRUE_FALSE') {
+        if (q.correctBooleanAnswer !== undefined) {
+          const isTrueAnswer = studentAnswer === 'true' || studentAnswer === true;
+          if (isTrueAnswer === q.correctBooleanAnswer) {
+            isCorrect = true;
+            earnedPoints += q.points;
+          }
+        } else {
+          const correctOpt = (q.options || []).find((o) => o.isCorrect);
+          if (correctOpt && studentAnswer === correctOpt.id) {
+            isCorrect = true;
+            earnedPoints += q.points;
+          }
+        }
+      } else if (q.type === 'FILL_BLANK') {
+        const expected = q.correctBlankAnswer || (q.options || []).find((o) => o.isCorrect)?.text || '';
+        if (
+          expected &&
+          typeof studentAnswer === 'string' &&
+          studentAnswer.trim().toLowerCase() === expected.trim().toLowerCase()
+        ) {
+          isCorrect = true;
+          earnedPoints += q.points;
+        }
+      } else {
+        // Essay question - tentative completion points, flagged for teacher feedback
+        if (typeof studentAnswer === 'string' && studentAnswer.trim().length > 5) {
+          earnedPoints += Math.round(q.points * 0.95);
+          isCorrect = true;
+        }
+      }
+
+      studentAnsList.push({
+        questionId: q.id,
+        answer: (typeof studentAnswer === 'string' ? studentAnswer : '') || '',
+        isCorrect,
+      });
+    });
+
+    const submission: QuizSubmission = {
+      id: `qsub_${Date.now()}`,
+      quizId: activeQuizModal.id,
+      studentId: studentObj.studentId,
+      studentName: studentObj.name,
+      score: earnedPoints,
+      maxScore: activeQuizModal.totalPoints,
+      submittedAt:
+        new Date().toLocaleDateString('pt-BR') +
+        ' ' +
+        new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+      answers: studentAnsList,
+      teacherFeedback:
+        'Parabéns pela realização da atividade interativa! A compreensão auditiva e as respostas foram processadas pelo sistema.',
+    };
+
+    const updated = [
+      submission,
+      ...quizSubmissions.filter(
+        (s) => !(s.quizId === activeQuizModal.id && s.studentId === studentObj.studentId)
+      ),
+    ];
+    setQuizSubmissions(updated);
+    saveStoredQuizSubmissions(updated);
+    setQuizSubmissionResult(submission);
+  };
 
   // Sync with currentTab if passed externally
   React.useEffect(() => {
@@ -276,6 +426,36 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
     }
     return Math.round(matchingGrades.reduce((acc, curr) => acc + curr.percentage, 0) / matchingGrades.length);
   }, [selectedCourseFilter, studentAssessments, studentGrades, averageGrade]);
+
+  // Requirement 4: Verification of Final Grade Release by Teacher & Final Exam completion
+  const isFinalGradeAllowedToView = React.useMemo(() => {
+    const targetClasses = state.classes.filter((c) => {
+      if (selectedCourseFilter === 'ALL') return studentClassIds.includes(c.id);
+      if (selectedCourseFilter === 'SOCCER') return c.id === 'class_soccer';
+      if (selectedCourseFilter === 'ENGLISH') return c.id === 'class_eng_a';
+      if (selectedCourseFilter === 'PRESCHOOL') return c.id === 'class_preschool_a';
+      if (selectedCourseFilter === 'WOMENS_FITNESS') return c.id === 'class_women_circuit';
+      return studentClassIds.includes(c.id);
+    });
+
+    if (targetClasses.length === 0) return false;
+
+    return targetClasses.every((cls) => {
+      const isReleased = cls.isFinalGradeReleased === true;
+      const finalExam = studentAssessments.find(
+        (a) =>
+          a.classId === cls.id &&
+          (a.title.toLowerCase().includes('final') ||
+            a.title.toLowerCase().includes('exame final') ||
+            a.title.toLowerCase().includes('final term'))
+      );
+      const hasFinalExamGrade = finalExam
+        ? studentGrades.some((g) => g.assessmentId === finalExam.id)
+        : false;
+
+      return isReleased && hasFinalExamGrade;
+    });
+  }, [selectedCourseFilter, state.classes, studentClassIds, studentAssessments, studentGrades]);
 
   const filteredAttendanceRate = React.useMemo(() => {
     if (selectedCourseFilter === 'ALL') return attendanceRate;
@@ -1346,54 +1526,106 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
             <div className="lg:col-span-4">
               <div
                 onClick={() => setIsAvisosModalOpen(true)}
-                className="bg-white rounded-3xl p-7 sm:p-8 border border-slate-200/70 shadow-sm hover:shadow-md transition-all relative overflow-hidden flex flex-col justify-between min-h-[460px] cursor-pointer group"
+                className="bg-white rounded-3xl p-6 sm:p-7 border-2 border-emerald-200/90 shadow-sm hover:shadow-md transition-all relative overflow-hidden flex flex-col justify-between min-h-[460px] cursor-pointer group"
               >
                 {/* Background Leaf Outline in Bottom Right */}
                 <div className="absolute right-[-20px] bottom-[-20px] pointer-events-none text-emerald-800/5">
                   <LeavesWatermark className="w-48 h-48" />
                 </div>
 
-                {/* Top: Green Bell + AVISOS */}
+                {/* Top: Green Bell + AVISOS + Count */}
                 <div>
-                  <div className="flex items-center gap-2.5 text-[#075e38]">
-                    <Bell className="w-6 h-6 stroke-[2.5]" />
-                    <span className="font-extrabold tracking-wider text-base sm:text-lg">
-                      AVISOS
-                    </span>
-                  </div>
-
-                  {/* Main Headline */}
-                  <div className="mt-8 space-y-1">
-                    <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-900 leading-tight tracking-tight uppercase">
-                      CAMP THINK
-                    </h3>
-                    <h3 className="text-2xl sm:text-3xl font-extrabold text-[#075e38] leading-tight tracking-tight uppercase">
-                      GREEN
-                    </h3>
-                    <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-900 leading-tight tracking-tight uppercase">
-                      COMMUNITY
-                    </h3>
-                    <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-900 leading-tight tracking-tight uppercase">
-                      CENTER
-                    </h3>
-                  </div>
-
-                  {/* Calendar 2026 Row */}
-                  <div className="flex items-center gap-3.5 mt-8">
-                    <div className="text-[#075e38]">
-                      <Calendar className="w-10 h-10 stroke-[2.2]" />
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2.5 text-[#075e38]">
+                      <Bell className="w-6 h-6 stroke-[2.5]" />
+                      <span className="font-extrabold tracking-wider text-base sm:text-lg">
+                        AVISOS
+                      </span>
                     </div>
-                    <span className="text-4xl sm:text-5xl font-black text-[#075e38] tracking-tight">
-                      2026
+                    <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-emerald-100 text-[#075e38] border border-emerald-200">
+                      {generalAnnouncements.length} Ativo(s)
                     </span>
+                  </div>
+
+                  <p className="text-xs text-slate-500 font-medium mt-1">
+                    Direção Geral & Coordenação Think Green
+                  </p>
+
+                  {/* List of General Announcements in Card */}
+                  <div className="mt-5 space-y-3 relative z-10">
+                    {generalAnnouncements.slice(0, 2).map((ann, idx) => {
+                      const isUrgent = ann.priority === 'URGENT';
+                      const isImportant = ann.priority === 'IMPORTANT';
+
+                      return (
+                        <div
+                          key={ann.id || idx}
+                          className={`p-3.5 rounded-2xl border transition-all ${
+                            ann.pinned
+                              ? 'bg-emerald-50/70 border-emerald-300'
+                              : isUrgent
+                              ? 'bg-rose-50/70 border-rose-300'
+                              : 'bg-slate-50/90 border-slate-200'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between gap-1 mb-1.5">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              {ann.pinned && (
+                                <span className="inline-flex items-center gap-0.5 text-[9px] font-black uppercase bg-emerald-600 text-white px-1.5 py-0.2 rounded shadow-2xs">
+                                  <Pin className="w-2.5 h-2.5" /> Fixado
+                                </span>
+                              )}
+                              <span
+                                className={`text-[9px] font-black uppercase px-2 py-0.2 rounded-full border ${
+                                  isUrgent
+                                    ? 'bg-rose-100 text-rose-800 border-rose-200'
+                                    : isImportant
+                                    ? 'bg-amber-100 text-amber-800 border-amber-200'
+                                    : 'bg-blue-100 text-blue-800 border-blue-200'
+                                }`}
+                              >
+                                {isUrgent ? 'Urgente' : isImportant ? 'Importante' : 'Informativo'}
+                              </span>
+                            </div>
+                            <span className="text-[10px] text-slate-400 font-mono">
+                              {ann.createdAt.split(' ')[0]}
+                            </span>
+                          </div>
+
+                          <h4 className="font-extrabold text-xs sm:text-sm text-slate-900 line-clamp-2 leading-snug">
+                            {ann.title}
+                          </h4>
+
+                          <p className="text-[11px] text-slate-600 line-clamp-2 mt-1 leading-relaxed">
+                            {ann.content}
+                          </p>
+
+                          <div className="mt-2 pt-1.5 border-t border-slate-200/60 flex items-center justify-between text-[10px] text-slate-500 font-semibold">
+                            <span>{ann.authorRole}</span>
+                            <span className="text-[#075e38]">Todas as Turmas</span>
+                          </div>
+                        </div>
+                      );
+                    })}
+
+                    {generalAnnouncements.length > 2 && (
+                      <div className="text-center py-1">
+                        <span className="text-[11px] font-bold text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200">
+                          + {generalAnnouncements.length - 2} outro(s) comunicado(s) ativo(s)
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
 
                 {/* Bottom: CLIQUE E SAIBA MAIS */}
-                <div className="pt-6 relative z-10">
+                <div className="pt-4 border-t border-slate-100 relative z-10 flex items-center justify-between">
                   <span className="text-xs font-black tracking-widest text-slate-900 group-hover:text-[#075e38] transition-colors uppercase flex items-center gap-2">
                     CLIQUE E SAIBA MAIS
                     <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                  </span>
+                  <span className="text-[10px] font-bold text-slate-400">
+                    Abrir mural
                   </span>
                 </div>
               </div>
@@ -1619,6 +1851,141 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
                 </div>
               </div>
             )}
+
+            {/* ========================================================================= */}
+            {/* 1. MATERIAIS DIDÁTICOS (PDF, GOOGLE DRIVE E VÍDEOS DE APOIO)             */}
+            {/* ========================================================================= */}
+            <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xs space-y-5">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-[#075e38] flex items-center justify-center border border-emerald-200 flex-shrink-0 shadow-2xs">
+                    <FolderOpen className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-[10px] font-black uppercase tracking-wider bg-emerald-100 text-[#075e38] px-2.5 py-0.5 rounded-full border border-emerald-200">
+                        Materiais de Apoio
+                      </span>
+                      <span className="text-xs text-slate-500 font-semibold">
+                        {didacticMaterials.length} arquivos disponíveis
+                      </span>
+                    </div>
+                    <h3 className="text-base sm:text-lg font-black text-slate-900 mt-0.5">
+                      Apostilas em PDF, Google Drive & Vídeos Complementares
+                    </h3>
+                  </div>
+                </div>
+
+                <p className="text-xs text-slate-500 max-w-sm">
+                  Materiais didáticos disponibilizados pelos professores para download, estudo na nuvem e acompanhamento das aulas.
+                </p>
+              </div>
+
+              {/* Grid of Didactic Materials */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {didacticMaterials
+                  .filter((mat) => {
+                    if (selectedCourseFilter === 'ALL') return true;
+                    if (selectedCourseFilter === 'SOCCER') return mat.classId === 'class_soccer';
+                    if (selectedCourseFilter === 'ENGLISH') return mat.classId === 'class_eng_a';
+                    if (selectedCourseFilter === 'PRESCHOOL') return mat.classId === 'class_preschool_a';
+                    if (selectedCourseFilter === 'WOMENS_FITNESS') return mat.classId === 'class_women_circuit';
+                    return true;
+                  })
+                  .map((mat) => {
+                    const isPdf = mat.type === 'PDF';
+                    const isDrive = mat.type === 'GOOGLE_DRIVE';
+                    const isVideo = mat.type === 'VIDEO_LINK';
+
+                    return (
+                      <div
+                        key={mat.id}
+                        className={`p-5 rounded-2xl border transition-all flex flex-col justify-between gap-4 ${
+                          isPdf
+                            ? 'bg-rose-50/40 border-rose-200 hover:border-rose-300'
+                            : isDrive
+                            ? 'bg-emerald-50/40 border-emerald-200 hover:border-emerald-300'
+                            : 'bg-indigo-50/40 border-indigo-200 hover:border-indigo-300'
+                        }`}
+                      >
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between gap-2">
+                            <span
+                              className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full border flex items-center gap-1 ${
+                                isPdf
+                                  ? 'bg-rose-100 text-rose-800 border-rose-300'
+                                  : isDrive
+                                  ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                                  : 'bg-indigo-100 text-indigo-800 border-indigo-300'
+                              }`}
+                            >
+                              {isPdf && <FileText className="w-3 h-3" />}
+                              {isDrive && <FolderOpen className="w-3 h-3" />}
+                              {isVideo && <Video className="w-3 h-3" />}
+                              {isPdf ? 'Apostila PDF' : isDrive ? 'Google Drive' : 'Vídeo Complementar'}
+                            </span>
+
+                            <span className="text-[10px] text-slate-400 font-mono">
+                              {mat.fileSize || 'Online'}
+                            </span>
+                          </div>
+
+                          <div>
+                            <h4 className="font-extrabold text-sm text-slate-900 line-clamp-2 leading-snug">
+                              {mat.title}
+                            </h4>
+                            {mat.description && (
+                              <p className="text-xs text-slate-600 line-clamp-2 mt-1">
+                                {mat.description}
+                              </p>
+                            )}
+                          </div>
+
+                          <div className="pt-2 border-t border-slate-200/60 text-[11px] text-slate-500">
+                            <span className="font-semibold text-slate-700">{mat.className}</span> • Prof(a).{' '}
+                            {mat.teacherName}
+                          </div>
+                        </div>
+
+                        {/* Action Button */}
+                        <div className="pt-1">
+                          {isPdf && (
+                            <button
+                              onClick={() => setActiveMaterialModal(mat)}
+                              className="w-full py-2.5 px-3 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer"
+                            >
+                              <FileText className="w-3.5 h-3.5" />
+                              <span>Visualizar Apostila PDF</span>
+                            </button>
+                          )}
+
+                          {isDrive && (
+                            <a
+                              href={mat.url}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="w-full py-2.5 px-3 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer"
+                            >
+                              <ExternalLink className="w-3.5 h-3.5" />
+                              <span>Abrir no Google Drive</span>
+                            </a>
+                          )}
+
+                          {isVideo && (
+                            <button
+                              onClick={() => setActiveMaterialModal(mat)}
+                              className="w-full py-2.5 px-3 bg-indigo-700 hover:bg-indigo-800 text-white rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer"
+                            >
+                              <Play className="w-3.5 h-3.5" />
+                              <span>Assistir Vídeo de Apoio</span>
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+              </div>
+            </div>
 
             {/* 1. SOCCER CLASS SECTION */}
             {(selectedCourseFilter === 'ALL' || selectedCourseFilter === 'SOCCER') && (
@@ -2617,6 +2984,123 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
         {/* TAB 3: ATIVIDADES & TRABALHOS (EXACT REPLICA DESIGN LANGUAGE) */}
         {activeNav === 'atividades' && (
           <div className="space-y-8">
+            {/* ========================================================================= */}
+            {/* 3. QUIZZES INTERATIVOS COM ÁUDIO (FORMS & D2L/BRIGHTSPACE STYLE)         */}
+            {/* ========================================================================= */}
+            <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xs space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-5">
+                <div className="flex items-center gap-3.5">
+                  <div className="w-12 h-12 rounded-2xl bg-purple-50 text-[#533499] flex items-center justify-center border border-purple-200 flex-shrink-0 shadow-2xs">
+                    <Headphones className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-[10px] font-black uppercase tracking-wider bg-purple-100 text-[#533499] px-2.5 py-0.5 rounded-full border border-purple-200">
+                        Atividades Interativas • Quiz
+                      </span>
+                      <span className="text-xs text-slate-500 font-semibold">
+                        Google Forms & D2L Reference
+                      </span>
+                    </div>
+                    <h3 className="text-base sm:text-lg font-black text-slate-900 mt-0.5">
+                      Quizzes com Áudio & Compreensão Auditiva de Inglês
+                    </h3>
+                  </div>
+                </div>
+
+                <div className="text-xs text-slate-500 max-w-sm">
+                  Responda perguntas de múltipla escolha, verdadeiro ou falso, preenchimento de lacunas e dissertativas diretamente na plataforma com áudio embutido.
+                </div>
+              </div>
+
+              {/* Quiz Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {quizzes
+                  .filter((q) => {
+                    if (selectedCourseFilter === 'ALL') return true;
+                    if (selectedCourseFilter === 'ENGLISH') return q.classId === 'class_eng_a';
+                    if (selectedCourseFilter === 'SOCCER') return q.classId === 'class_soccer';
+                    return true;
+                  })
+                  .map((quiz) => {
+                    const studentSub = quizSubmissions.find(
+                      (s) => s.quizId === quiz.id && s.studentId === student.studentId
+                    );
+
+                    return (
+                      <div
+                        key={quiz.id}
+                        className="p-5 sm:p-6 rounded-2xl border-2 border-purple-100 bg-purple-50/30 hover:border-purple-300 transition-all flex flex-col justify-between gap-4"
+                      >
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-[10px] font-black uppercase bg-purple-100 text-[#533499] px-2.5 py-0.5 rounded-full border border-purple-200 flex items-center gap-1">
+                              <USAFlagBadge className="w-3.5 h-3.5 inline-block" />
+                              {quiz.className}
+                            </span>
+
+                            {quiz.audioUrl && (
+                              <span className="text-[10px] font-extrabold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-md flex items-center gap-1 border border-emerald-200">
+                                <Headphones className="w-3 h-3 text-emerald-700" /> Áudio Incluso
+                              </span>
+                            )}
+                          </div>
+
+                          <div>
+                            <h4 className="font-extrabold text-base text-slate-900 leading-snug">
+                              {quiz.title}
+                            </h4>
+                            <p className="text-xs text-slate-600 mt-1 line-clamp-2">
+                              {quiz.description}
+                            </p>
+                          </div>
+
+                          <div className="flex items-center gap-2 flex-wrap text-[11px] text-slate-600 pt-1">
+                            <span className="bg-white px-2 py-0.5 rounded-md border border-slate-200 font-bold">
+                              {quiz.questions.length} Questões
+                            </span>
+                            <span className="bg-white px-2 py-0.5 rounded-md border border-slate-200 font-bold text-[#075e38]">
+                              Valor: {quiz.totalPoints} pts
+                            </span>
+                            {quiz.timeLimitMinutes && (
+                              <span className="bg-white px-2 py-0.5 rounded-md border border-slate-200 text-slate-500 font-mono">
+                                ⏱ {quiz.timeLimitMinutes} min
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Submission status & button */}
+                        <div className="pt-3 border-t border-purple-100 flex items-center justify-between gap-2">
+                          {studentSub ? (
+                            <div className="flex items-center justify-between w-full">
+                              <span className="text-xs font-bold text-emerald-800 bg-emerald-100 px-2.5 py-1 rounded-xl border border-emerald-200 flex items-center gap-1">
+                                <CheckCircle className="w-3.5 h-3.5 text-emerald-700" />
+                                Nota: {studentSub.score} / {studentSub.maxScore} pts
+                              </span>
+                              <button
+                                onClick={() => handleOpenQuiz(quiz)}
+                                className="px-3.5 py-1.5 rounded-xl bg-purple-100 hover:bg-purple-200 text-[#533499] text-xs font-bold transition-colors cursor-pointer"
+                              >
+                                Refazer Quiz
+                              </button>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => handleOpenQuiz(quiz)}
+                              className="w-full py-3 px-4 rounded-xl bg-[#533499] hover:bg-[#432681] text-white text-xs font-black transition-all flex items-center justify-center gap-2 shadow-xs cursor-pointer active:scale-98"
+                            >
+                              <Play className="w-3.5 h-3.5 text-purple-200" />
+                              <span>INICIAR QUIZ INTERATIVO COM ÁUDIO</span>
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+              </div>
+            </div>
+
             {/* 1. SOCCER CLASS ATIVIDADES */}
             {(selectedCourseFilter === 'ALL' || selectedCourseFilter === 'SOCCER') && (
               <div className="bg-white rounded-3xl overflow-hidden border border-slate-200/80 shadow-xs">
@@ -3234,14 +3718,57 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
               </div>
 
               <div className="flex items-center gap-4">
-                <div className="text-right bg-emerald-50 px-4 py-2.5 rounded-2xl border border-emerald-200">
-                  <p className="text-[10px] uppercase font-bold text-emerald-800">
-                    {selectedCourseFilter === 'ALL' ? 'Média Geral' : `Média • ${getCourseFilterLabel(selectedCourseFilter)}`}
-                  </p>
-                  <p className="text-xl font-black text-[#075e38]">{filteredAverageGrade} pts</p>
-                </div>
+                {isFinalGradeAllowedToView ? (
+                  <div className="text-right bg-emerald-50 px-4 py-2.5 rounded-2xl border border-emerald-200">
+                    <p className="text-[10px] uppercase font-bold text-emerald-800">
+                      {selectedCourseFilter === 'ALL'
+                        ? 'Média Final Homologada'
+                        : `Média Final • ${getCourseFilterLabel(selectedCourseFilter)}`}
+                    </p>
+                    <p className="text-xl font-black text-[#075e38]">{filteredAverageGrade} pts</p>
+                    <span className="text-[9px] font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded">
+                      ✓ Liberada pelo Professor
+                    </span>
+                  </div>
+                ) : (
+                  <div className="text-right bg-amber-50 px-4 py-2.5 rounded-2xl border border-amber-300">
+                    <p className="text-[10px] uppercase font-black text-amber-800">
+                      Média Final
+                    </p>
+                    <p className="text-base sm:text-lg font-black text-amber-900">Em Andamento</p>
+                    <span className="text-[9px] font-bold text-amber-800 bg-amber-100 px-1.5 py-0.5 rounded">
+                      Aguardando Final Exam
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
+
+            {/* Informational banner when final grade is pending release / final exam */}
+            {!isFinalGradeAllowedToView && (
+              <div className="p-4 rounded-2xl bg-amber-50/90 border-2 border-amber-300 text-amber-950 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-full bg-amber-500 text-white flex items-center justify-center flex-shrink-0 shadow-2xs font-bold text-sm mt-0.5">
+                    !
+                  </div>
+                  <div>
+                    <h4 className="font-extrabold text-xs sm:text-sm text-amber-950 flex items-center gap-2">
+                      <span>Média Final em Andamento • Fechamento Pendente</span>
+                      <span className="px-2 py-0.5 rounded-full bg-amber-200 text-amber-900 text-[10px] font-black uppercase">
+                        Controle do Professor
+                      </span>
+                    </h4>
+                    <p className="text-xs text-amber-900/90 mt-1 leading-relaxed">
+                      Por diretriz pedagógica, a média final não é exibida como definitiva antes da aplicação e lançamento do <strong>Final Exam</strong> e da liberação formal pelo professor. Acompanhe abaixo o andamento de cada avaliação parcial já realizada.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="text-xs font-bold text-amber-900 bg-amber-100/90 px-3 py-1.5 rounded-xl border border-amber-200 self-start sm:self-auto shrink-0">
+                  Status: Parcial em Curso
+                </div>
+              </div>
+            )}
 
             {/* List of Assessments with Access Gates */}
             <div className="space-y-4">
@@ -3575,64 +4102,117 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
       {/* 4. MODALS & DIALOGS                                                       */}
       {/* ========================================================================= */}
 
-      {/* MODAL 1: CAMP THINK GREEN 2026 DETAILS (FROM AVISOS CARD) */}
+      {/* MODAL 1: MURAL COMPLETO DE AVISOS GERAIS DA DIREÇÃO & COORDENAÇÃO */}
       {isAvisosModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 space-y-5 shadow-2xl border border-slate-200 relative overflow-hidden">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-slate-900/60 backdrop-blur-xs animate-in fade-in overflow-y-auto">
+          <div className="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 space-y-5 shadow-2xl border border-slate-200 relative overflow-hidden my-8 max-h-[85vh] flex flex-col justify-between">
             {/* Background Watermark */}
             <div className="absolute right-[-20px] bottom-[-20px] pointer-events-none text-emerald-800/5">
-              <LeavesWatermark className="w-56 h-56" />
+              <LeavesWatermark className="w-64 h-64" />
             </div>
 
-            <div className="flex items-start justify-between">
-              <div className="flex items-center gap-2 text-[#075e38]">
-                <Bell className="w-5 h-5" />
-                <span className="font-extrabold tracking-wider text-xs uppercase">
-                  Comunicado Oficial
-                </span>
+            <div className="flex items-start justify-between border-b border-slate-100 pb-4 relative z-10">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-emerald-100 text-[#075e38] flex items-center justify-center font-bold shadow-2xs">
+                  <Megaphone className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-extrabold tracking-wider text-[10px] uppercase bg-emerald-100 text-[#075e38] px-2.5 py-0.5 rounded-full border border-emerald-200">
+                      Mural Oficial
+                    </span>
+                    <span className="text-xs text-slate-500 font-semibold">
+                      Todas as Turmas Simultaneamente
+                    </span>
+                  </div>
+                  <h2 className="text-lg sm:text-xl font-black text-slate-900 mt-0.5">
+                    Avisos da Direção & Coordenação Pedagógica
+                  </h2>
+                </div>
               </div>
+
               <button
                 onClick={() => setIsAvisosModalOpen(false)}
-                className="p-1.5 hover:bg-slate-100 rounded-full text-slate-400"
+                className="p-1.5 hover:bg-slate-100 rounded-full text-slate-400 cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div>
-              <h2 className="text-2xl font-black text-slate-900 leading-tight">
-                CAMP THINK <span className="text-[#075e38]">GREEN</span> COMMUNITY CENTER
-              </h2>
-              <div className="flex items-center gap-2 text-sm text-[#075e38] font-bold mt-1">
-                <Calendar className="w-4 h-4" />
-                <span>Edição Oficial • Verão 2026</span>
-              </div>
+            <div className="overflow-y-auto pr-1 space-y-4 my-2 relative z-10 flex-1">
+              {generalAnnouncements.length === 0 ? (
+                <div className="text-center py-10 text-slate-400">
+                  <Megaphone className="w-10 h-10 mx-auto text-slate-300 mb-2" />
+                  <p className="font-bold text-slate-600 text-sm">Nenhum comunicado ativo no momento.</p>
+                </div>
+              ) : (
+                generalAnnouncements.map((ann) => {
+                  const isUrgent = ann.priority === 'URGENT';
+                  const isImportant = ann.priority === 'IMPORTANT';
+
+                  return (
+                    <div
+                      key={ann.id}
+                      className={`p-5 rounded-2xl border transition-all ${
+                        ann.pinned
+                          ? 'bg-emerald-50/50 border-emerald-300 shadow-2xs'
+                          : isUrgent
+                          ? 'bg-rose-50/50 border-rose-300'
+                          : 'bg-slate-50/80 border-slate-200'
+                      }`}
+                    >
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          {ann.pinned && (
+                            <span className="inline-flex items-center gap-1 text-[9px] font-black uppercase bg-emerald-600 text-white px-2 py-0.5 rounded-md shadow-2xs">
+                              <Pin className="w-2.5 h-2.5" /> Fixado
+                            </span>
+                          )}
+                          <span
+                            className={`text-[9px] font-black uppercase px-2.5 py-0.5 rounded-full border ${
+                              isUrgent
+                                ? 'bg-rose-100 text-rose-800 border-rose-300'
+                                : isImportant
+                                ? 'bg-amber-100 text-amber-800 border-amber-300'
+                                : 'bg-blue-100 text-blue-800 border-blue-300'
+                            }`}
+                          >
+                            {isUrgent ? 'Urgente' : isImportant ? 'Comunicado Importante' : 'Informativo'}
+                          </span>
+                          <span className="text-xs font-bold text-slate-700 bg-white px-2.5 py-0.5 rounded-lg border border-slate-200">
+                            {ann.authorRole}
+                          </span>
+                        </div>
+
+                        <span className="text-xs text-slate-400 font-mono">
+                          {ann.createdAt}
+                        </span>
+                      </div>
+
+                      <h4 className="text-sm sm:text-base font-extrabold text-slate-900 mt-2.5">
+                        {ann.title}
+                      </h4>
+
+                      <p className="text-xs sm:text-sm text-slate-700 mt-1.5 leading-relaxed whitespace-pre-line font-medium">
+                        {ann.content}
+                      </p>
+
+                      <div className="mt-3 pt-2 border-t border-slate-200/70 flex items-center justify-between text-[11px] text-slate-500">
+                        <span>Assinado por: <strong>{ann.authorName}</strong></span>
+                        <span className="font-semibold text-emerald-800">Transmitido a todas as turmas</span>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
             </div>
 
-            <div className="text-xs text-slate-600 space-y-3 leading-relaxed border-y border-slate-100 py-4">
-              <p>
-                O <strong>Think Green Community Center</strong> no Cairo convida todos os alunos para a edição 2026 do nosso Acampamento e Oficinas Especiais!
-              </p>
-              <div className="bg-emerald-50/80 p-3.5 rounded-2xl border border-emerald-200/70 space-y-1.5">
-                <p className="font-bold text-[#075e38]">Atividades Inclusas no Programa:</p>
-                <ul className="list-disc list-inside space-y-1 text-slate-700">
-                  <li>Torneio Interclasses de Futebol (Soccer Camp) no Campo Principal</li>
-                  <li>Imersão Intensiva em Língua Inglesa com Professores Nativos</li>
-                  <li>Workshops de Sustentabilidade, Horta Urbana e Liderança Comunitária</li>
-                  <li>Certificado de Participação e Medalhas Comemorativas 2026</li>
-                </ul>
-              </div>
-              <p className="text-slate-500">
-                Alunos com matrícula ativa possuem desconto exclusivo e prioridade na escolha de turmas. Procure a secretaria ou coordenação para garantir sua vaga.
-              </p>
-            </div>
-
-            <div className="flex justify-end gap-3 pt-1">
+            <div className="flex justify-end gap-3 pt-3 border-t border-slate-100 relative z-10">
               <button
                 onClick={() => setIsAvisosModalOpen(false)}
-                className="px-5 py-2.5 bg-[#075e38] hover:bg-[#064e2e] text-white font-bold text-xs rounded-full transition-colors"
+                className="px-6 py-2.5 bg-[#075e38] hover:bg-[#064e2e] text-white font-bold text-xs rounded-xl transition-colors cursor-pointer shadow-xs"
               >
-                Entendido
+                Fechar Mural de Avisos
               </button>
             </div>
           </div>
@@ -3899,6 +4479,385 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
                 className="px-6 py-2.5 bg-[#075e38] hover:bg-[#064e2e] text-white font-bold text-xs rounded-full transition-colors cursor-pointer"
               >
                 Fechar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* MODAL 5: INTERACTIVE QUIZ MODAL WITH AUDIO (REQUIREMENT 3)               */}
+      {/* ========================================================================= */}
+      {activeQuizModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-slate-900/70 backdrop-blur-xs animate-in fade-in overflow-y-auto">
+          <div className="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 space-y-6 shadow-2xl border border-slate-200 my-8">
+            {/* Modal Header */}
+            <div className="flex items-start justify-between border-b border-slate-100 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 rounded-2xl bg-purple-100 text-[#533499] flex items-center justify-center font-bold flex-shrink-0 shadow-2xs">
+                  <Headphones className="w-6 h-6" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-[10px] font-black uppercase tracking-wider bg-purple-100 text-[#533499] px-2.5 py-0.5 rounded-full border border-purple-200">
+                      Quiz Interativo
+                    </span>
+                    <span className="text-xs font-bold text-slate-500">
+                      {activeQuizModal.className}
+                    </span>
+                  </div>
+                  <h3 className="font-black text-slate-900 text-lg sm:text-xl mt-0.5">
+                    {activeQuizModal.title}
+                  </h3>
+                </div>
+              </div>
+
+              <button
+                onClick={() => {
+                  setActiveQuizModal(null);
+                  setQuizSubmissionResult(null);
+                }}
+                className="p-1.5 hover:bg-slate-100 rounded-full text-slate-400 cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Submission Result View */}
+            {quizSubmissionResult ? (
+              <div className="space-y-6 py-4 animate-in fade-in">
+                <div className="p-6 rounded-3xl bg-emerald-50 border-2 border-emerald-300 text-center space-y-3">
+                  <div className="w-16 h-16 rounded-full bg-emerald-600 text-white flex items-center justify-center mx-auto shadow-md">
+                    <Check className="w-8 h-8 stroke-[3]" />
+                  </div>
+                  <h4 className="text-xl font-black text-emerald-950">
+                    Quiz Enviado com Sucesso!
+                  </h4>
+                  <p className="text-sm text-emerald-800 max-w-md mx-auto">
+                    Suas respostas foram gravadas no sistema acadêmico do Think Green Platform.
+                  </p>
+                  <div className="inline-block px-5 py-2.5 rounded-2xl bg-white border border-emerald-200 shadow-xs">
+                    <span className="text-xs font-bold uppercase text-slate-500 block">Pontuação Registrada</span>
+                    <span className="text-2xl font-black text-[#075e38]">
+                      {quizSubmissionResult.score} / {quizSubmissionResult.maxScore} pts
+                    </span>
+                  </div>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 text-xs text-slate-700 space-y-2">
+                  <p className="font-bold text-slate-900 flex items-center gap-1.5">
+                    <Sparkles className="w-4 h-4 text-amber-500" />
+                    Feedback do Sistema / Professor:
+                  </p>
+                  <p className="italic text-slate-600">"{quizSubmissionResult.teacherFeedback}"</p>
+                  <p className="text-[11px] text-slate-400 pt-1">
+                    Enviado em: {quizSubmissionResult.submittedAt}
+                  </p>
+                </div>
+
+                <div className="flex justify-end pt-2">
+                  <button
+                    onClick={() => {
+                      setActiveQuizModal(null);
+                      setQuizSubmissionResult(null);
+                    }}
+                    className="px-6 py-3 bg-[#075e38] hover:bg-[#064e2e] text-white font-bold text-xs rounded-xl transition-all shadow-xs cursor-pointer"
+                  >
+                    Concluir e Voltar ao Portal
+                  </button>
+                </div>
+              </div>
+            ) : (
+              /* Quiz Taking Questions Form */
+              <div className="space-y-6 max-h-[65vh] overflow-y-auto pr-1">
+                {/* 1. AUDIO PLAYER SECTION (REQUIREMENT 3: Áudio de Listening) */}
+                {activeQuizModal.audioUrl && (
+                  <div className="p-4 sm:p-5 rounded-2xl bg-purple-50/70 border-2 border-purple-200/90 space-y-3 shadow-2xs">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Volume2 className="w-5 h-5 text-[#533499] animate-pulse" />
+                        <span className="font-black text-xs sm:text-sm text-purple-950 uppercase tracking-wide">
+                          Faixa de Áudio • Compreensão Auditiva (Listening)
+                        </span>
+                      </div>
+                      <span className="text-[11px] font-bold text-purple-800 bg-purple-100 px-2 py-0.5 rounded-md">
+                        English Audio Track
+                      </span>
+                    </div>
+
+                    <p className="text-xs text-purple-900 font-medium">
+                      Ouça o áudio com atenção no reprodutor abaixo para responder as perguntas relacionadas:
+                    </p>
+
+                    <div className="bg-white p-2.5 rounded-xl border border-purple-200/70 shadow-2xs">
+                      <audio
+                        controls
+                        className="w-full h-10 accent-[#533499]"
+                        src={activeQuizModal.audioUrl}
+                      >
+                        Seu navegador não suporta a tag de áudio HTML5.
+                      </audio>
+                    </div>
+                  </div>
+                )}
+
+                {/* 2. QUESTIONS BUILDER */}
+                <div className="space-y-6">
+                  {activeQuizModal.questions.map((q, idx) => {
+                    const currentAns = quizAnswers[q.id];
+
+                    return (
+                      <div
+                        key={q.id}
+                        className="p-5 rounded-2xl bg-slate-50 border border-slate-200/90 space-y-3.5"
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-xs font-black text-slate-800 bg-white px-2.5 py-1 rounded-lg border border-slate-200 shadow-2xs">
+                            Questão {idx + 1} de {activeQuizModal.questions.length}
+                          </span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] font-bold text-slate-500 uppercase bg-slate-200/60 px-2 py-0.5 rounded">
+                              {q.type === 'MULTIPLE_CHOICE'
+                                ? 'Múltipla Escolha'
+                                : q.type === 'TRUE_FALSE'
+                                ? 'Verdadeiro / Falso'
+                                : q.type === 'FILL_BLANK'
+                                ? 'Preenchimento de Lacuna'
+                                : 'Dissertativa'}
+                            </span>
+                            <span className="text-xs font-black text-[#075e38] bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                              {q.points} pts
+                            </span>
+                          </div>
+                        </div>
+
+                        <p className="font-bold text-sm text-slate-900 leading-snug">
+                          {q.question || q.prompt}
+                        </p>
+
+                        {/* Format: Multiple Choice */}
+                        {q.type === 'MULTIPLE_CHOICE' && (
+                          <div className="space-y-2 pt-1">
+                            {(q.options || []).map((opt) => {
+                              const isSelected = currentAns === opt.id;
+                              return (
+                                <label
+                                  key={opt.id}
+                                  onClick={() => handleSelectQuizOption(q.id, opt.id)}
+                                  className={`p-3 rounded-xl border flex items-center gap-3 transition-all cursor-pointer ${
+                                    isSelected
+                                      ? 'bg-purple-100/70 border-[#533499] text-purple-950 font-bold shadow-2xs'
+                                      : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-100'
+                                  }`}
+                                >
+                                  <input
+                                    type="radio"
+                                    name={`quiz_q_${q.id}`}
+                                    checked={isSelected}
+                                    onChange={() => handleSelectQuizOption(q.id, opt.id)}
+                                    className="accent-[#533499] w-4 h-4 cursor-pointer"
+                                  />
+                                  <span className="text-xs leading-normal">{opt.text}</span>
+                                </label>
+                              );
+                            })}
+                          </div>
+                        )}
+
+                        {/* Format: True / False */}
+                        {q.type === 'TRUE_FALSE' && (
+                          <div className="grid grid-cols-2 gap-3 pt-1">
+                            {((q.options && q.options.length > 0)
+                              ? q.options
+                              : [
+                                  { id: 'true', text: 'True (Verdadeiro)' },
+                                  { id: 'false', text: 'False (Falso)' },
+                                ]
+                            ).map((opt) => {
+                              const isSelected =
+                                currentAns === opt.id ||
+                                (opt.id === 'true' && (currentAns === 'true' || currentAns === true)) ||
+                                (opt.id === 'false' && (currentAns === 'false' || currentAns === false));
+                              return (
+                                <button
+                                  key={opt.id}
+                                  type="button"
+                                  onClick={() => handleSelectQuizOption(q.id, opt.id)}
+                                  className={`py-3 px-4 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
+                                    isSelected
+                                      ? 'bg-[#533499] text-white border-[#533499] shadow-xs'
+                                      : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'
+                                  }`}
+                                >
+                                  {opt.text}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        )}
+
+                        {/* Format: Fill in the Blank */}
+                        {q.type === 'FILL_BLANK' && (
+                          <div className="pt-1">
+                            <input
+                              type="text"
+                              value={typeof currentAns === 'string' ? currentAns : ''}
+                              onChange={(e) => handleEssayQuizAnswer(q.id, e.target.value)}
+                              placeholder="Digite a palavra ou expressão em inglês..."
+                              className="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 font-medium focus:border-[#533499] focus:ring-1 focus:ring-[#533499] focus:outline-hidden"
+                            />
+                          </div>
+                        )}
+
+                        {/* Format: Essay / Dissertativa */}
+                        {q.type === 'ESSAY' && (
+                          <div className="pt-1 space-y-1.5">
+                            <textarea
+                              rows={3}
+                              value={typeof currentAns === 'string' ? currentAns : ''}
+                              onChange={(e) => handleEssayQuizAnswer(q.id, e.target.value)}
+                              placeholder="Escreva sua resposta dissertativa em inglês aqui..."
+                              className="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 leading-relaxed focus:border-[#533499] focus:ring-1 focus:ring-[#533499] focus:outline-hidden resize-none"
+                            />
+                            <div className="text-right text-[10px] text-slate-400">
+                              {typeof currentAns === 'string' ? currentAns.length : 0} caracteres
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Footer Buttons */}
+                <div className="pt-4 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setActiveQuizModal(null)}
+                    className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition-colors cursor-pointer"
+                  >
+                    Salvar e Continuar Depois
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleSubmitQuiz(student)}
+                    className="px-8 py-3 bg-[#533499] hover:bg-[#432681] text-white font-black text-xs rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+                  >
+                    <Send className="w-3.5 h-3.5" />
+                    <span>FINALIZAR E ENVIAR RESPOSTAS</span>
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* MODAL 6: DIDACTIC MATERIAL VIEWER MODAL (REQUIREMENT 1)                   */}
+      {/* ========================================================================= */}
+      {activeMaterialModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-slate-900/70 backdrop-blur-xs animate-in fade-in">
+          <div className="bg-white rounded-3xl max-w-xl w-full p-6 sm:p-8 space-y-5 shadow-2xl border border-slate-200">
+            <div className="flex items-start justify-between border-b border-slate-100 pb-4">
+              <div className="flex items-center gap-3">
+                <div
+                  className={`w-11 h-11 rounded-2xl flex items-center justify-center font-bold flex-shrink-0 shadow-2xs ${
+                    activeMaterialModal.type === 'PDF'
+                      ? 'bg-rose-100 text-rose-700'
+                      : activeMaterialModal.type === 'GOOGLE_DRIVE'
+                      ? 'bg-emerald-100 text-[#075e38]'
+                      : 'bg-indigo-100 text-indigo-700'
+                  }`}
+                >
+                  {activeMaterialModal.type === 'PDF' && <FileText className="w-6 h-6" />}
+                  {activeMaterialModal.type === 'GOOGLE_DRIVE' && <FolderOpen className="w-6 h-6" />}
+                  {activeMaterialModal.type === 'VIDEO_LINK' && <Video className="w-6 h-6" />}
+                </div>
+                <div>
+                  <span className="text-[10px] font-black uppercase tracking-wider bg-slate-100 text-slate-700 px-2.5 py-0.5 rounded-full border border-slate-200">
+                    {activeMaterialModal.type === 'PDF'
+                      ? 'Apostila em PDF'
+                      : activeMaterialModal.type === 'GOOGLE_DRIVE'
+                      ? 'Pasta do Google Drive'
+                      : 'Vídeo Complementar'}
+                  </span>
+                  <h3 className="font-extrabold text-slate-900 text-base sm:text-lg mt-0.5">
+                    {activeMaterialModal.title}
+                  </h3>
+                </div>
+              </div>
+
+              <button
+                onClick={() => setActiveMaterialModal(null)}
+                className="p-1.5 hover:bg-slate-100 rounded-full text-slate-400 cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-3 text-xs text-slate-700">
+              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-2">
+                <p className="font-semibold text-slate-800">
+                  {activeMaterialModal.description || 'Material oficial para acompanhamento das aulas.'}
+                </p>
+                <div className="pt-2 border-t border-slate-200 text-[11px] text-slate-500 flex flex-wrap gap-3">
+                  <span>Turma: <strong>{activeMaterialModal.className}</strong></span>
+                  <span>Professor: <strong>{activeMaterialModal.teacherName}</strong></span>
+                  <span>Tamanho: <strong>{activeMaterialModal.fileSize || 'Online'}</strong></span>
+                </div>
+              </div>
+
+              {activeMaterialModal.type === 'PDF' && (
+                <div className="p-8 rounded-2xl bg-slate-100 border-2 border-dashed border-slate-300 text-center space-y-3">
+                  <FileText className="w-12 h-12 mx-auto text-rose-500" />
+                  <p className="font-bold text-slate-800 text-sm">
+                    {activeMaterialModal.title}.pdf
+                  </p>
+                  <p className="text-xs text-slate-500">
+                    Documento digital formatado e otimizado para visualização e impressão.
+                  </p>
+                  <button
+                    onClick={() => {
+                      alert(`Iniciando download da apostila: ${activeMaterialModal.title}.pdf`);
+                    }}
+                    className="px-5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-xl transition-all shadow-xs inline-flex items-center gap-2 cursor-pointer"
+                  >
+                    <Download className="w-4 h-4" />
+                    <span>Baixar Arquivo PDF Completo</span>
+                  </button>
+                </div>
+              )}
+
+              {activeMaterialModal.type === 'VIDEO_LINK' && (
+                <div className="p-6 rounded-2xl bg-slate-900 text-white text-center space-y-3">
+                  <Play className="w-12 h-12 mx-auto text-emerald-400" />
+                  <p className="font-bold text-sm text-white">
+                    {activeMaterialModal.title}
+                  </p>
+                  <p className="text-xs text-slate-400">
+                    Link de vídeo externo para consulta e revisão do conteúdo.
+                  </p>
+                  <a
+                    href={activeMaterialModal.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl transition-all shadow-xs inline-flex items-center gap-2 cursor-pointer"
+                  >
+                    <ExternalLink className="w-4 h-4" />
+                    <span>Abrir Vídeo na Plataforma Externa</span>
+                  </a>
+                </div>
+              )}
+            </div>
+
+            <div className="flex justify-end pt-2 border-t border-slate-100">
+              <button
+                onClick={() => setActiveMaterialModal(null)}
+                className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition-colors cursor-pointer"
+              >
+                Fechar Visualização
               </button>
             </div>
           </div>

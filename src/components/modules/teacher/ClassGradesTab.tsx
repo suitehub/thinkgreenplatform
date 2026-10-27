@@ -13,6 +13,7 @@ import {
   Filter,
   Check,
   ChevronDown,
+  Lock,
 } from 'lucide-react';
 import { Student, ClassRoom, Assessment, Grade, Assignment, Submission } from '../../../types';
 
@@ -26,6 +27,7 @@ interface ClassGradesTabProps {
   onSaveGrade: (grade: Omit<Grade, 'id' | 'gradedAt' | 'gradedBy'>) => void;
   onSaveBatchGrades: (grades: Omit<Grade, 'id' | 'gradedAt' | 'gradedBy'>[]) => void;
   onOpenExamDetails?: (exam: Assessment) => void;
+  onToggleFinalGradeRelease?: (isReleased: boolean) => void;
 }
 
 export const ClassGradesTab: React.FC<ClassGradesTabProps> = ({
@@ -38,6 +40,7 @@ export const ClassGradesTab: React.FC<ClassGradesTabProps> = ({
   onSaveGrade,
   onSaveBatchGrades,
   onOpenExamDetails,
+  onToggleFinalGradeRelease,
 }) => {
   // Mode: 'gradebook' (table matrix) or 'grading' (direct entry form for selected assessment)
   const [viewMode, setViewMode] = useState<'gradebook' | 'grading'>('gradebook');
@@ -49,6 +52,18 @@ export const ClassGradesTab: React.FC<ClassGradesTabProps> = ({
   }>({});
   const [searchQuery, setSearchQuery] = useState('');
   const [savedSuccessToast, setSavedSuccessToast] = useState(false);
+
+  // Requirement 4: Final Exam and Final Grade Release state
+  const finalExam = assessments.find(
+    (a) =>
+      a.type === 'PROVA_FINAL' ||
+      a.title.toLowerCase().includes('final') ||
+      a.title.toLowerCase().includes('conclus')
+  );
+  const finalExamGradesCount = finalExam
+    ? grades.filter((g) => g.assessmentId === finalExam.id).length
+    : 0;
+  const isFinalGradeReleased = selectedClass.isFinalGradeReleased ?? false;
 
   // Sync selectedAssessmentId if assessments change
   React.useEffect(() => {
@@ -186,6 +201,92 @@ export const ClassGradesTab: React.FC<ClassGradesTabProps> = ({
           </button>
         </div>
       )}
+
+      {/* Requirement 4: Controle de exibição da média final */}
+      <div
+        className={`p-5 sm:p-6 rounded-3xl border transition-all flex flex-col md:flex-row md:items-center justify-between gap-4 ${
+          isFinalGradeReleased
+            ? 'bg-emerald-50/70 border-emerald-300 shadow-xs'
+            : 'bg-amber-50/70 border-amber-300 shadow-xs'
+        }`}
+      >
+        <div className="flex items-start gap-3.5">
+          <div
+            className={`w-11 h-11 rounded-2xl flex items-center justify-center flex-shrink-0 ${
+              isFinalGradeReleased
+                ? 'bg-[#075e38] text-white shadow-2xs'
+                : 'bg-amber-500 text-white shadow-2xs'
+            }`}
+          >
+            {isFinalGradeReleased ? <CheckCircle className="w-6 h-6" /> : <Lock className="w-6 h-6" />}
+          </div>
+          <div className="space-y-1">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span
+                className={`text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full ${
+                  isFinalGradeReleased
+                    ? 'bg-emerald-200 text-emerald-900 border border-emerald-300'
+                    : 'bg-amber-200 text-amber-950 border border-amber-300'
+                }`}
+              >
+                {isFinalGradeReleased
+                  ? 'Média Final Liberada para os Alunos'
+                  : 'Média Final Oculta / Em Andamento para os Alunos'}
+              </span>
+              {finalExam && (
+                <span className="text-[11px] font-bold text-slate-600 bg-white px-2 py-0.5 rounded border border-slate-200">
+                  {finalExam.title}: {finalExamGradesCount}/{students.length} notas lançadas
+                </span>
+              )}
+            </div>
+            <h4 className="text-sm font-bold text-slate-900">
+              {isFinalGradeReleased
+                ? 'Os alunos matriculados visualizam a média final fechada no boletim escolar.'
+                : 'A média final está protegida: alunos visualizam o status "Em andamento" para evitar interpretação precipitada de médias parciais.'}
+            </h4>
+            <p className="text-xs text-slate-600">
+              {isFinalGradeReleased
+                ? 'Caso precise revisar ou alterar notas, você pode suspender a liberação a qualquer momento.'
+                : 'A exibição da média final no portal do aluno deve ocorrer apenas quando as avaliações necessárias estiverem concluídas, as notas lançadas e liberadas pelo professor.'}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2.5 self-end md:self-center flex-shrink-0">
+          <button
+            type="button"
+            onClick={() => {
+              if (!isFinalGradeReleased && finalExam && finalExamGradesCount < students.length) {
+                if (
+                  !confirm(
+                    `Atenção: O exame final "${finalExam.title}" ainda possui notas pendentes (${finalExamGradesCount}/${students.length} lançadas).\n\nDeseja liberar a média final aos alunos mesmo assim?`
+                  )
+                ) {
+                  return;
+                }
+              }
+              onToggleFinalGradeRelease?.(!isFinalGradeReleased);
+            }}
+            className={`px-4 py-2.5 rounded-2xl text-xs font-bold transition-all shadow-xs cursor-pointer flex items-center gap-2 ${
+              isFinalGradeReleased
+                ? 'bg-white hover:bg-slate-100 text-slate-800 border border-slate-300'
+                : 'bg-[#075e38] hover:bg-[#064e2e] text-white'
+            }`}
+          >
+            {isFinalGradeReleased ? (
+              <>
+                <Lock className="w-4 h-4 text-amber-600" />
+                <span>Suspender Liberação (Ocultar Média)</span>
+              </>
+            ) : (
+              <>
+                <CheckCircle className="w-4 h-4 text-emerald-200" />
+                <span>Liberar Média Final para Alunos</span>
+              </>
+            )}
+          </button>
+        </div>
+      </div>
 
       {/* Control Header & Mode Switcher */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-3xl border border-slate-200/70 shadow-xs">

@@ -133,11 +133,13 @@ interface AppContextType {
   saveGrade: (assessmentId: string, studentId: string, score: number, feedback?: string) => Grade;
   saveBatchGrades: (assessmentId: string, grades: { studentId: string; score: number; feedback?: string }[]) => void;
   createAssessment: (data: Omit<Assessment, 'id'>) => Assessment;
+  updateAssessment: (assessmentId: string, data: Partial<Assessment>) => void;
   deleteAssessment: (assessmentId: string) => void;
 
   createClass: (data: Omit<ClassRoom, 'id'>) => ClassRoom;
   updateClass: (classId: string, data: Partial<ClassRoom>) => void;
   deleteClass: (classId: string) => void;
+  toggleFinalGradeRelease: (classId: string, isReleased?: boolean) => void;
   assignTeacherToClass: (classId: string, teacherId: string, teacherName: string) => void;
   unassignTeacherFromClass: (classId: string) => void;
   updateCourse: (courseId: string, data: Partial<Course>) => void;
@@ -154,6 +156,7 @@ interface AppContextType {
   createLesson: (data: Omit<Lesson, 'id'>) => Lesson;
   deleteLesson: (lessonId: string) => void;
   createAssignment: (data: Omit<Assignment, 'id'>) => Assignment;
+  updateAssignment: (assignmentId: string, data: Partial<Assignment>) => void;
   deleteAssignment: (assignmentId: string) => void;
   submitAssignment: (assignmentId: string, studentId: string, submissionText: string, attachmentName?: string) => Submission;
   gradeSubmission: (submissionId: string, score: number, feedback?: string) => void;
@@ -1664,6 +1667,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     logAudit('ACADEMIC', 'EXCLUIR_AVALIACAO', 'Assessment', assessmentId, undefined, undefined, `Avaliação ${assessmentId} excluída`);
   };
 
+  const updateAssessment = (assessmentId: string, data: Partial<Assessment>) => {
+    setState((prev) => ({
+      ...prev,
+      assessments: prev.assessments.map((a) => (a.id === assessmentId ? { ...a, ...data } : a)),
+    }));
+    logAudit('ACADEMIC', 'EDITAR_AVALIACAO', 'Assessment', assessmentId, undefined, undefined, `Avaliação ${assessmentId} atualizada.`);
+  };
+
   const createClass = (data: Omit<ClassRoom, 'id'>): ClassRoom => {
     const newCls: ClassRoom = {
       ...data,
@@ -1777,6 +1788,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       'WARNING',
       'ALL'
     );
+  };
+
+  const toggleFinalGradeRelease = (classId: string, isReleased?: boolean) => {
+    setState((prev) => ({
+      ...prev,
+      classes: prev.classes.map((cls) => {
+        if (cls.id !== classId) return cls;
+        const current = cls.isFinalGradeReleased ?? false;
+        const nextVal = isReleased !== undefined ? isReleased : !current;
+        return { ...cls, isFinalGradeReleased: nextVal };
+      }),
+    }));
+    logAudit('ACADEMIC', 'LIBERACAO_MEDIA_FINAL', 'ClassRoom', classId, undefined, undefined, `Controle de liberação da média final atualizado.`);
   };
 
   const assignTeacherToClass = (classId: string, teacherId: string, teacherName: string) => {
@@ -2013,6 +2037,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       submissions: prev.submissions.filter((s) => s.assignmentId !== assignmentId),
     }));
     logAudit('LMS', 'EXCLUIR_ATIVIDADE', 'Assignment', assignmentId, undefined, undefined, `Atividade ${assignmentId} excluída`);
+  };
+
+  const updateAssignment = (assignmentId: string, data: Partial<Assignment>) => {
+    setState((prev) => ({
+      ...prev,
+      assignments: prev.assignments.map((asg) => (asg.id === assignmentId ? { ...asg, ...data } : asg)),
+    }));
+    logAudit('LMS', 'EDITAR_ATIVIDADE', 'Assignment', assignmentId, undefined, undefined, `Atividade ${assignmentId} atualizada.`);
   };
 
   const submitAssignment = (
@@ -2527,10 +2559,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       saveGrade,
       saveBatchGrades,
       createAssessment,
+      updateAssessment,
       deleteAssessment,
       createClass,
       updateClass,
       deleteClass,
+      toggleFinalGradeRelease,
       assignTeacherToClass,
       unassignTeacherFromClass,
       updateCourse,
@@ -2538,6 +2572,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       createLesson,
       deleteLesson,
       createAssignment,
+      updateAssignment,
       deleteAssignment,
       submitAssignment,
       gradeSubmission,

@@ -98,11 +98,14 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
     saveGrade,
     saveBatchGrades,
     createAssessment,
+    updateAssessment,
     deleteAssessment,
     createClass,
+    toggleFinalGradeRelease,
     createLesson,
     deleteLesson,
     createAssignment,
+    updateAssignment,
     deleteAssignment,
     submitAssignment,
     gradeSubmission,
@@ -217,7 +220,11 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
   const [attendanceViewMode, setAttendanceViewMode] = useState<'diaria' | 'semanal'>('diaria');
   const [weekOffset, setWeekOffset] = useState<number>(0);
   const [attendanceList, setAttendanceList] = useState<{
-    [studentId: string]: { present: boolean; note?: string };
+    [studentId: string]: {
+      present: boolean;
+      homeworkStatus: 'completed' | 'not_completed' | 'no_homework';
+      note?: string;
+    };
   }>({});
   const [attendanceSaved, setAttendanceSaved] = useState(false);
 
@@ -273,16 +280,23 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
       (a) => a.classId === selectedClass?.id && a.date === attendanceDate
     );
 
-    const initial: { [studentId: string]: { present: boolean; note?: string } } = {};
+    const initial: {
+      [studentId: string]: {
+        present: boolean;
+        homeworkStatus: 'completed' | 'not_completed' | 'no_homework';
+        note?: string;
+      };
+    } = {};
     classEnrollments.forEach((e) => {
       if (existingAtt) {
         const studentRec = existingAtt.students.find((s) => s.studentId === e.studentId);
         initial[e.studentId] = {
           present: studentRec ? studentRec.present : true,
+          homeworkStatus: studentRec?.homeworkStatus || 'completed',
           note: studentRec?.note || '',
         };
       } else {
-        initial[e.studentId] = { present: true, note: '' };
+        initial[e.studentId] = { present: true, homeworkStatus: 'no_homework', note: '' };
       }
     });
     setAttendanceList(initial);
@@ -292,16 +306,59 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
     setAttendanceList((prev) => ({
       ...prev,
       [studentId]: {
-        ...prev[studentId],
         present: !prev[studentId]?.present,
+        homeworkStatus: prev[studentId]?.homeworkStatus || 'no_homework',
+        note: prev[studentId]?.note || '',
+      },
+    }));
+  };
+
+  const handleSetHomeworkStatus = (
+    studentId: string,
+    status: 'completed' | 'not_completed' | 'no_homework'
+  ) => {
+    setAttendanceList((prev) => ({
+      ...prev,
+      [studentId]: {
+        present: prev[studentId]?.present ?? true,
+        homeworkStatus: status,
+        note: prev[studentId]?.note || '',
       },
     }));
   };
 
   const handleMarkAllPresent = (present: boolean) => {
-    const updated: { [studentId: string]: { present: boolean; note?: string } } = {};
+    const updated: {
+      [studentId: string]: {
+        present: boolean;
+        homeworkStatus: 'completed' | 'not_completed' | 'no_homework';
+        note?: string;
+      };
+    } = {};
     classEnrollments.forEach((e) => {
-      updated[e.studentId] = { present, note: attendanceList[e.studentId]?.note || '' };
+      updated[e.studentId] = {
+        present,
+        homeworkStatus: attendanceList[e.studentId]?.homeworkStatus || 'no_homework',
+        note: attendanceList[e.studentId]?.note || '',
+      };
+    });
+    setAttendanceList(updated);
+  };
+
+  const handleMarkAllHomework = (status: 'completed' | 'not_completed' | 'no_homework') => {
+    const updated: {
+      [studentId: string]: {
+        present: boolean;
+        homeworkStatus: 'completed' | 'not_completed' | 'no_homework';
+        note?: string;
+      };
+    } = {};
+    classEnrollments.forEach((e) => {
+      updated[e.studentId] = {
+        present: attendanceList[e.studentId]?.present ?? true,
+        homeworkStatus: status,
+        note: attendanceList[e.studentId]?.note || '',
+      };
     });
     setAttendanceList(updated);
   };
@@ -311,10 +368,11 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
       studentId: enr.studentId,
       studentName: enr.studentName,
       present: attendanceList[enr.studentId]?.present ?? true,
+      homeworkStatus: attendanceList[enr.studentId]?.homeworkStatus || 'no_homework',
       note: attendanceList[enr.studentId]?.note || '',
     }));
 
-    saveAttendance(selectedClass.id, attendanceDate, records, 'Chamada realizada via Diário Eletrônico');
+    saveAttendance(selectedClass.id, attendanceDate, records, 'Chamada e controle de homework realizados via Diário Eletrônico');
     setAttendanceSaved(true);
     setTimeout(() => setAttendanceSaved(false), 3000);
   };
@@ -494,6 +552,16 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
     (e) => attendanceList[e.studentId]?.present ?? true
   ).length;
   const absentCount = classEnrollments.length - presentCount;
+
+  const homeworkDoneCount = classEnrollments.filter(
+    (e) => (attendanceList[e.studentId]?.homeworkStatus || 'no_homework') === 'completed'
+  ).length;
+  const homeworkNotDoneCount = classEnrollments.filter(
+    (e) => (attendanceList[e.studentId]?.homeworkStatus || 'no_homework') === 'not_completed'
+  ).length;
+  const homeworkNoneCount = classEnrollments.filter(
+    (e) => (attendanceList[e.studentId]?.homeworkStatus || 'no_homework') === 'no_homework'
+  ).length;
 
   // =========================================================================
   // 2. PROVAS / ASSESSMENTS STATE & MODALS
@@ -1170,35 +1238,53 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                   }
                 }}
                 onOpenExamDetails={(exam) => setSelectedExamForDetails(exam)}
+                onToggleFinalGradeRelease={(rel) => toggleFinalGradeRelease(selectedClass.id, rel)}
               />
             )}
 
-            {/* SUB-TAB 5: CHAMADA / FREQUÊNCIA DA TURMA */}
+            {/* SUB-TAB 5: CHAMADA / FREQUÊNCIA DA TURMA (Com Registro de Homework - Req. 2) */}
             {classWorkspaceSubTab === 'chamada' && (
               <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200/80 shadow-xs space-y-6">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-100 pb-4">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-emerald-100 text-[#075e38] flex items-center justify-center">
                       <CalendarCheck className="w-5 h-5" />
                     </div>
                     <div>
                       <h3 className="text-base sm:text-lg font-bold text-slate-900">
-                        Diário Eletrônico de Chamadas — {selectedClass.name}
+                        Diário Eletrônico de Chamadas & Homework — {selectedClass.name}
                       </h3>
                       <p className="text-xs text-slate-500">
-                        Lançamento oficial de presenças e faltas da turma
+                        Lançamento de presenças e registro de homework independente por aluno
                       </p>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
                     <button
+                      type="button"
                       onClick={() => handleMarkAllPresent(true)}
                       className="px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-[#075e38] text-xs font-bold border border-emerald-200 transition-colors cursor-pointer"
                     >
-                      Marcar Todos Presentes
+                      Todos Presentes
                     </button>
                     <button
+                      type="button"
+                      onClick={() => handleMarkAllHomework('completed')}
+                      className="px-3 py-1.5 rounded-xl bg-teal-50 hover:bg-teal-100 text-teal-800 text-xs font-bold border border-teal-200 transition-colors cursor-pointer"
+                    >
+                      Todos Fezeram HW
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleMarkAllHomework('no_homework')}
+                      className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold border border-slate-300 transition-colors cursor-pointer"
+                      title="Primeira aula de nível ou aula pós-prova (não penaliza nem entra no cálculo)"
+                    >
+                      Sem Homework Hoje
+                    </button>
+                    <button
+                      type="button"
                       onClick={handleSaveAttendance}
                       className="px-4 py-2 rounded-xl bg-[#075e38] hover:bg-[#064e2e] text-white text-xs font-bold shadow-xs transition-colors cursor-pointer flex items-center gap-1.5"
                     >
@@ -1211,11 +1297,11 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                 {attendanceSaved && (
                   <div className="p-4 bg-emerald-50 text-emerald-900 border border-emerald-200 rounded-2xl text-xs font-bold flex items-center gap-2">
                     <CheckCircle className="w-4 h-4 text-emerald-600" />
-                    <span>Chamada da turma salva com sucesso!</span>
+                    <span>Chamada e registros de homework da turma salvos com sucesso!</span>
                   </div>
                 )}
 
-                {/* Date bar */}
+                {/* Date bar & Summary Metrics */}
                 <div className="flex flex-wrap items-center justify-between gap-3 bg-slate-50 p-3.5 rounded-2xl border border-slate-200/70">
                   <div className="flex items-center gap-2">
                     <Calendar className="w-4 h-4 text-slate-500" />
@@ -1228,27 +1314,40 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                     />
                   </div>
 
-                  <div className="flex items-center gap-3 text-xs font-bold">
+                  {/* Presence and Homework counters */}
+                  <div className="flex flex-wrap items-center gap-2.5 text-xs font-bold">
                     <span className="text-emerald-700 bg-emerald-100/70 px-2.5 py-1 rounded-lg">
                       {presentCount} Presentes
                     </span>
                     <span className="text-rose-700 bg-rose-100/70 px-2.5 py-1 rounded-lg">
                       {absentCount} Ausentes
                     </span>
+                    <span className="text-slate-300">|</span>
+                    <span className="text-teal-800 bg-teal-100/80 px-2.5 py-1 rounded-lg border border-teal-200" title="Alunos que fizeram o homework">
+                      ✓ {homeworkDoneCount} Fez HW
+                    </span>
+                    <span className="text-amber-800 bg-amber-100/80 px-2.5 py-1 rounded-lg border border-amber-200" title="Alunos que não fizeram o homework (entra no cálculo)">
+                      ✗ {homeworkNotDoneCount} Não fez HW
+                    </span>
+                    <span className="text-slate-600 bg-slate-200/80 px-2.5 py-1 rounded-lg border border-slate-300" title="Aulas sem tarefa (não penaliza nem entra na média)">
+                      — {homeworkNoneCount} Sem HW
+                    </span>
                   </div>
                 </div>
 
-                {/* Students attendance list */}
+                {/* Students attendance list with Homework 3-Option Selector */}
                 <div className="divide-y divide-slate-100">
                   {classEnrollments.map((enr) => {
                     const isPresent = attendanceList[enr.studentId]?.present ?? true;
+                    const hwStatus = attendanceList[enr.studentId]?.homeworkStatus || 'no_homework';
+
                     return (
                       <div
                         key={enr.studentId}
-                        className="py-3 px-2 flex items-center justify-between gap-3 hover:bg-slate-50/70 rounded-xl transition-colors"
+                        className="py-3.5 px-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-50/70 rounded-2xl transition-colors"
                       >
                         <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center font-bold text-xs">
+                          <div className="w-9 h-9 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center font-bold text-xs flex-shrink-0">
                             {enr.studentName
                               .split(' ')
                               .map((n) => n[0])
@@ -1260,12 +1359,57 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                               {enr.studentName}
                             </span>
                             <span className="text-[10px] text-slate-400 font-mono">
-                              {enr.studentId}
+                              Matrícula: {enr.studentId}
                             </span>
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-2">
+                        {/* Controls: Homework 3-options + Presence Button */}
+                        <div className="flex flex-wrap items-center gap-3 self-end sm:self-center">
+                          {/* Requirement 2: Homework Status 3-way toggle */}
+                          <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200">
+                            <span className="text-[10px] font-bold text-slate-500 uppercase px-1.5">
+                              HW:
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => handleSetHomeworkStatus(enr.studentId, 'completed')}
+                              className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
+                                hwStatus === 'completed'
+                                  ? 'bg-emerald-600 text-white shadow-2xs'
+                                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200'
+                              }`}
+                              title="Fez o homework"
+                            >
+                              ✓ Fez
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleSetHomeworkStatus(enr.studentId, 'not_completed')}
+                              className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
+                                hwStatus === 'not_completed'
+                                  ? 'bg-amber-600 text-white shadow-2xs'
+                                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200'
+                              }`}
+                              title="Não fez o homework (computado na nota)"
+                            >
+                              ✗ Não fez
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleSetHomeworkStatus(enr.studentId, 'no_homework')}
+                              className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
+                                hwStatus === 'no_homework'
+                                  ? 'bg-slate-700 text-white shadow-2xs'
+                                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200'
+                              }`}
+                              title="Não houve homework nesta aula (não penaliza nem entra no cálculo)"
+                            >
+                              — Não houve
+                            </button>
+                          </div>
+
+                          {/* Presence Button (Independent of homework) */}
                           <button
                             type="button"
                             onClick={() => handleToggleAttendance(enr.studentId)}
@@ -2146,19 +2290,41 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                     </div>
 
                     {/* Bulk Actions */}
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => handleMarkAllPresent(true)}
-                        className="px-3.5 py-2 bg-emerald-100 text-emerald-800 hover:bg-emerald-200 rounded-xl font-bold text-xs transition-colors shadow-2xs cursor-pointer border border-emerald-200"
-                      >
-                        Todos Presentes
-                      </button>
-                      <button
-                        onClick={() => handleMarkAllPresent(false)}
-                        className="px-3.5 py-2 bg-slate-200 text-slate-700 hover:bg-slate-300 rounded-xl font-bold text-xs transition-colors shadow-2xs cursor-pointer border border-slate-300"
-                      >
-                        Todos Ausentes
-                      </button>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl border border-slate-200">
+                        <span className="text-[10px] font-bold text-slate-500 uppercase px-1">Presença:</span>
+                        <button
+                          onClick={() => handleMarkAllPresent(true)}
+                          className="px-2.5 py-1 bg-emerald-100 text-emerald-800 hover:bg-emerald-200 rounded-lg font-bold text-xs transition-colors shadow-2xs cursor-pointer border border-emerald-200"
+                        >
+                          Todos Presentes
+                        </button>
+                        <button
+                          onClick={() => handleMarkAllPresent(false)}
+                          className="px-2.5 py-1 bg-slate-200 text-slate-700 hover:bg-slate-300 rounded-lg font-bold text-xs transition-colors shadow-2xs cursor-pointer border border-slate-300"
+                        >
+                          Todos Ausentes
+                        </button>
+                      </div>
+
+                      <div className="flex items-center gap-1.5 bg-amber-50 p-1 rounded-xl border border-amber-200">
+                        <span className="text-[10px] font-bold text-amber-800 uppercase px-1 flex items-center gap-1">
+                          <BookOpen className="w-3 h-3 text-amber-700" /> HW:
+                        </span>
+                        <button
+                          onClick={() => handleMarkAllHomework('completed')}
+                          className="px-2.5 py-1 bg-emerald-600 text-white hover:bg-emerald-700 rounded-lg font-bold text-xs transition-colors shadow-2xs cursor-pointer"
+                        >
+                          Todos Fez
+                        </button>
+                        <button
+                          onClick={() => handleMarkAllHomework('no_homework')}
+                          className="px-2.5 py-1 bg-slate-200 text-slate-700 hover:bg-slate-300 rounded-lg font-bold text-xs transition-colors shadow-2xs cursor-pointer border border-slate-300"
+                          title="Aula sem lição de casa (ex: 1ª aula ou pós-prova - não desconta nem penaliza)"
+                        >
+                          Sem Homework
+                        </button>
+                      </div>
                     </div>
                   </div>
 
@@ -2242,6 +2408,51 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                             </div>
 
                             <div className="flex items-center gap-2 self-end sm:self-center">
+                              {/* Registro de Homework (Ajuste 2: Fez / Não fez / Não houve) */}
+                              <div className="flex flex-col gap-1">
+                                <span className="text-[10px] font-black uppercase text-slate-500 flex items-center gap-1">
+                                  <BookOpen className="w-3 h-3 text-[#075e38]" /> Homework:
+                                </span>
+                                <div className="flex items-center rounded-xl bg-slate-100 p-1 border border-slate-200">
+                                  <button
+                                    type="button"
+                                    onClick={() => handleSetHomeworkStatus(enr.studentId, 'completed')}
+                                    className={`px-2 py-1 rounded-lg text-[11px] font-black transition-all cursor-pointer ${
+                                      (attendanceList[enr.studentId]?.homeworkStatus || 'completed') === 'completed'
+                                        ? 'bg-emerald-600 text-white shadow-2xs'
+                                        : 'text-slate-600 hover:text-slate-900'
+                                    }`}
+                                    title="Fez o homework (pontua na média)"
+                                  >
+                                    ✓ Fez
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleSetHomeworkStatus(enr.studentId, 'not_completed')}
+                                    className={`px-2 py-1 rounded-lg text-[11px] font-black transition-all cursor-pointer ${
+                                      attendanceList[enr.studentId]?.homeworkStatus === 'not_completed'
+                                        ? 'bg-rose-600 text-white shadow-2xs'
+                                        : 'text-slate-600 hover:text-slate-900'
+                                    }`}
+                                    title="Não fez o homework"
+                                  >
+                                    ✗ Não fez
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleSetHomeworkStatus(enr.studentId, 'no_homework')}
+                                    className={`px-2 py-1 rounded-lg text-[11px] font-black transition-all cursor-pointer ${
+                                      attendanceList[enr.studentId]?.homeworkStatus === 'no_homework'
+                                        ? 'bg-amber-600 text-white shadow-2xs'
+                                        : 'text-slate-600 hover:text-slate-900'
+                                    }`}
+                                    title="Não houve homework nesta aula (ex: 1ª aula ou pós-prova — não penaliza nem entra no cálculo)"
+                                  >
+                                    — Não houve
+                                  </button>
+                                </div>
+                              </div>
+
                               {/* Observação rápida */}
                               <input
                                 type="text"
@@ -2256,7 +2467,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                                     },
                                   }))
                                 }
-                                className="w-28 sm:w-36 px-2.5 py-1.5 bg-white border border-slate-200 rounded-xl text-xs text-slate-700 focus:border-[#075e38] focus:ring-1 focus:ring-[#075e38] focus:outline-hidden"
+                                className="w-24 sm:w-28 px-2.5 py-1.5 bg-white border border-slate-200 rounded-xl text-xs text-slate-700 focus:border-[#075e38] focus:ring-1 focus:ring-[#075e38] focus:outline-hidden"
                               />
 
                               {/* Toggle Presente / Ausente */}
@@ -2324,6 +2535,9 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                           </span>
                           <span className="text-xs font-bold text-rose-800 bg-rose-100 px-2.5 py-0.5 rounded-md border border-rose-200">
                             {absentCount} Ausentes
+                          </span>
+                          <span className="text-xs font-bold text-amber-800 bg-amber-100 px-2.5 py-0.5 rounded-md border border-amber-200">
+                            HW: {homeworkDoneCount} fez • {homeworkNotDoneCount} não fez • {homeworkNoneCount} sem HW
                           </span>
                           <span className="text-xs font-medium text-slate-500">
                             Total: {classEnrollments.length} alunos

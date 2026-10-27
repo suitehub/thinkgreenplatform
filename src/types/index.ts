@@ -136,6 +136,7 @@ export interface ClassRoom {
   status: 'ACTIVE' | 'UPCOMING' | 'COMPLETED' | string;
   assessmentTemplate?: AssessmentTemplateLevel;
   assessmentConfig?: ClassAssessmentItem[];
+  isFinalGradeReleased?: boolean; // Controle de liberação da média final pelo professor
 }
 
 export interface Enrollment {
@@ -237,6 +238,7 @@ export interface AttendanceRecord {
     studentId: string; // STU00000
     studentName: string;
     present: boolean;
+    homeworkStatus?: 'completed' | 'not_completed' | 'no_homework';
     justified?: boolean;
     note?: string;
   }[];
@@ -450,6 +452,110 @@ export interface PendingPayment {
   reviewNotes?: string;
   officialReceiptNumber?: string;
   officialReceiptId?: string;
+}
+
+export type DidacticMaterialType = 'PDF' | 'DRIVE' | 'VIDEO' | 'GOOGLE_DRIVE' | 'VIDEO_LINK';
+
+export interface DidacticMaterial {
+  id: string;
+  classId: string;
+  className?: string;
+  topicId?: string;
+  title: string;
+  description?: string;
+  type: DidacticMaterialType;
+  url: string; // File URL, Google Drive link, or YouTube/video embed link
+  fileName?: string;
+  fileSize?: string;
+  teacherId?: string;
+  teacherName?: string;
+  createdAt: string;
+}
+
+export type QuizQuestionType = 'MULTIPLE_CHOICE' | 'ESSAY' | 'TRUE_FALSE' | 'FILL_BLANK';
+
+export interface QuizQuestionOption {
+  id: string;
+  text: string;
+  isCorrect?: boolean;
+}
+
+export interface QuizQuestion {
+  id: string;
+  question: string;
+  prompt?: string;
+  type: QuizQuestionType;
+  options?: QuizQuestionOption[]; // Para MULTIPLE_CHOICE
+  correctOptionId?: string; // Para auto-correção de MULTIPLE_CHOICE
+  correctBooleanAnswer?: boolean; // Para TRUE_FALSE
+  correctBlankAnswer?: string; // Para FILL_BLANK
+  points: number;
+  explanation?: string;
+}
+
+export interface Quiz {
+  id: string;
+  classId: string;
+  className?: string;
+  topicId?: string;
+  title: string;
+  description?: string;
+  instructions?: string;
+  audioUrl?: string; // Áudio anexado/link para listening comprehension
+  audioTitle?: string;
+  questions: QuizQuestion[];
+  totalPoints: number;
+  timeLimitMinutes?: number;
+  dueDate?: string;
+  createdAt: string;
+  createdBy: string;
+}
+
+export interface QuizSubmission {
+  id: string;
+  quizId: string;
+  quizTitle?: string;
+  classId?: string;
+  studentId: string;
+  studentName: string;
+  answers:
+    | {
+        [questionId: string]: {
+          selectedOptionId?: string;
+          booleanAnswer?: boolean;
+          textAnswer?: string;
+          isCorrect?: boolean;
+          scoreEarned?: number;
+        };
+      }
+    | Array<{
+        questionId: string;
+        answer: string | string[];
+        isCorrect?: boolean;
+      }>;
+  totalScoreEarned?: number;
+  score?: number;
+  maxScore: number;
+  percentage?: number;
+  submittedAt: string;
+  status?: 'AVALIADO' | 'PENDENTE_CORRECAO';
+  feedback?: string;
+  teacherFeedback?: string;
+}
+
+export interface GeneralAnnouncement {
+  id: string;
+  title: string;
+  content: string;
+  authorName: string;
+  authorRole: string;
+  targetRole?: 'ALL' | 'STUDENT' | 'TEACHER';
+  targetAudience?: string;
+  pinned?: boolean;
+  priority?: 'HIGH' | 'NORMAL' | 'URGENT' | 'IMPORTANT';
+  createdAt: string;
+  updatedAt?: string;
+  tags?: string[];
 }
 
 
