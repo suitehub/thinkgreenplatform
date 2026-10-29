@@ -60,13 +60,15 @@ import {
 } from '../../common/ThinkGardenLogos';
 import { Modal } from '../../common/Modal';
 import { Badge } from '../../common/Badge';
-import { Assessment, AssessmentType, Assignment, Submission, Lesson, ClassAssessmentItem } from '../../../types';
+import { Assessment, AssessmentType, Assignment, Submission, Lesson, ClassAssessmentItem, ClassLessonPlan } from '../../../types';
 import { getDefaultAssessmentConfig } from '../../../lib/assessmentTemplates';
 import { ClassHeader, ClassSubTab } from './ClassHeader';
 import { ClassOverviewTab } from './ClassOverviewTab';
 import { ClassContentsTab } from './ClassContentsTab';
 import { ClassPeopleTab } from './ClassPeopleTab';
 import { ClassGradesTab } from './ClassGradesTab';
+import { ClassLessonPlanTab } from './ClassLessonPlanTab';
+import { getStoredLessonPlans, saveStoredLessonPlans } from './teacherData';
 
 export type TeacherNavTab = 'turmas' | 'chamadas' | 'provas' | 'notas' | 'aulas' | 'atividades';
 
@@ -210,6 +212,28 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
   const classEnrollments = state.enrollments.filter(
     (e) => e.classId === selectedClass?.id && e.status === 'ATIVA'
   );
+
+  // =========================================================================
+  // 0. LESSON PLANS STATE (PLANOS DE AULA - EXCEL REFERENCE)
+  // =========================================================================
+  const [lessonPlans, setLessonPlans] = useState<ClassLessonPlan[]>(() => getStoredLessonPlans());
+
+  const handleSaveLessonPlan = (plan: ClassLessonPlan) => {
+    setLessonPlans((prev) => {
+      const exists = prev.some((p) => p.id === plan.id);
+      const updated = exists ? prev.map((p) => (p.id === plan.id ? plan : p)) : [plan, ...prev];
+      saveStoredLessonPlans(updated);
+      return updated;
+    });
+  };
+
+  const handleDeleteLessonPlan = (planId: string) => {
+    setLessonPlans((prev) => {
+      const updated = prev.filter((p) => p.id !== planId);
+      saveStoredLessonPlans(updated);
+      return updated;
+    });
+  };
 
   // =========================================================================
   // 1. ATTENDANCE STATE (CHAMADAS)
@@ -1192,6 +1216,16 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                   setSelectedAssessmentId(exam.id);
                   setClassWorkspaceSubTab('notas');
                 }}
+              />
+            )}
+
+            {/* SUB-TAB: PLANO DE AULA (LESSON PLAN - BASEADO NO MODELO EXCEL) */}
+            {classWorkspaceSubTab === 'plano_aula' && (
+              <ClassLessonPlanTab
+                selectedClass={selectedClass}
+                lessonPlans={lessonPlans}
+                onSaveLessonPlan={handleSaveLessonPlan}
+                onDeleteLessonPlan={handleDeleteLessonPlan}
               />
             )}
 

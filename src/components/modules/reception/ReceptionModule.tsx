@@ -833,9 +833,7 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
                         onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)}
                         className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold text-slate-800 focus:bg-white focus:ring-2 focus:ring-[#075e38] outline-hidden"
                       >
-                        <option value="DINHEIRO">💵 Dinheiro Físico (Balcão)</option>
-                        <option value="INSTAPAY_EG">⚡ Instapay (Egito / PIX)</option>
-                        <option value="CARTAO">💳 Cartão de Débito / Crédito</option>
+                        <option value="DINHEIRO">💵 Dinheiro Físico (Balcão / Caixa)</option>
                         <option value="TRANSFERENCIA">🏦 Transferência Bancária</option>
                       </select>
                     </div>
@@ -933,7 +931,7 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
                             </td>
                             <td className="py-2.5 px-3">
                               <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700">
-                                {p.paymentMethod === 'DINHEIRO' ? 'Dinheiro' : p.paymentMethod}
+                                {p.paymentMethod === 'TRANSFERENCIA' ? '🏦 Transferência' : '💵 Dinheiro Físico'}
                               </span>
                             </td>
                             <td className="py-2.5 px-3 text-right font-mono font-black text-emerald-800">
@@ -1600,7 +1598,7 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
                               </td>
                               <td className="py-3 px-4">
                                 <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700">
-                                  {p.paymentMethod === 'DINHEIRO' ? 'Dinheiro' : p.paymentMethod}
+                                  {p.paymentMethod === 'TRANSFERENCIA' ? '🏦 Transferência' : '💵 Dinheiro Físico'}
                                 </span>
                               </td>
                               <td className="py-3 px-4 text-right font-mono font-black text-emerald-800">
@@ -1692,7 +1690,7 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
                             </td>
                             <td className="py-3 px-4">
                               <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700">
-                                {r.paymentMethod}
+                                {r.paymentMethod === 'TRANSFERENCIA' ? '🏦 Transferência' : '💵 Dinheiro Físico'}
                               </span>
                             </td>
                             <td className="py-3 px-4 text-right font-mono font-black text-emerald-800">
@@ -1883,7 +1881,7 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
                           </td>
                           <td className="py-3 px-4">
                             <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700">
-                              {p.paymentMethod === 'DINHEIRO' ? 'Dinheiro' : p.paymentMethod}
+                              {p.paymentMethod === 'TRANSFERENCIA' ? '🏦 Transferência' : '💵 Dinheiro Físico'}
                             </span>
                           </td>
                           <td className="py-3 px-4 text-right font-mono font-black text-emerald-800">

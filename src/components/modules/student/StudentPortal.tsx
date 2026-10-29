@@ -4034,7 +4034,7 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
                   </span>
                 </div>
                 <p className="text-[11px] text-purple-900 leading-relaxed">
-                  Os pagamentos e a respectiva liberação de acesso pedagógico (aulas, avaliações e frequência) são processados <strong>exclusivamente pelo Setor Financeiro / Tesouraria</strong> após o recebimento em <strong>dinheiro em espécie (EGP)</strong> no balcão da secretaria.
+                  Os pagamentos e a respectiva liberação de acesso pedagógico (aulas, avaliações e frequência) são processados <strong>exclusivamente pelo Setor Financeiro / Tesouraria</strong> após o recebimento em <strong>dinheiro físico</strong> ou <strong>transferência bancária</strong>.
                 </p>
                 <p className="text-[11px] text-purple-800">
                   Apresente seu <strong>ID de Aluno ({student.studentId})</strong> na recepção para efetuar o pagamento. Assim que o operador der baixa no caixa, sua liberação é imediata e o recibo oficial autenticado ficará disponível abaixo para consulta e impressão.

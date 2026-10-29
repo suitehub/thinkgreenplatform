@@ -16,7 +16,7 @@ export type StudentStatus = 'ATIVO' | 'INATIVO';
 export type EnrollmentStatus = 'ATIVA' | 'PENDENTE' | 'BLOQUEADA' | 'CANCELADA';
 export type FinancialStatus = 'REGULAR' | 'PENDENTE' | 'EM ATRASO' | 'PAGO' | 'CANCELADO';
 export type AssessmentStatus = 'LIBERADA' | 'BLOQUEADA' | 'CONCLUÍDA';
-export type PaymentMethod = 'DINHEIRO' | 'INSTAPAY_EG' | 'CARTAO' | 'TRANSFERENCIA' | 'VOUCHER';
+export type PaymentMethod = 'DINHEIRO' | 'TRANSFERENCIA';
 export type CashRegisterStatus = 'ABERTO' | 'FECHADO';
 export type AssessmentType = 'PROVA_1' | 'PROVA_FINAL' | 'TRABALHO' | 'QUIZ' | 'PARTICIPACAO';
 
@@ -557,5 +557,158 @@ export interface GeneralAnnouncement {
   updatedAt?: string;
   tags?: string[];
 }
+
+// =========================================================================
+// PLANO DE AULA (LESSON PLAN) BASEADO NA PLANILHA EXCEL DE REFERÊNCIA
+// =========================================================================
+export interface ClassLessonPlan {
+  id: string;
+  classId: string;
+  className?: string;
+  teacherId?: string;
+  teacherName?: string;
+  date: string; // e.g. "2026-08-18" ou "ago 18 (ter)"
+  dateDisplay?: string; // e.g. "ago 18 (ter)"
+  dateFormatted?: string; // e.g. "18 de Agosto de 2026 (Terça-feira)"
+  
+  // 8 colunas/dimensões da planilha Excel oficial:
+  unitContent: string; // Unit Content: Describe the unit content from the book (ex: Let's Go Student Book, p. 4-6, etc.)
+  handwriting: string; // Handwriting: Worksheet used in class, Handwriting Book pages (ex: Handwriting Book p.10-11.pdf)
+  reading: string; // Reading: Reading text, dialogue, textbook text used in class
+  writing: string; // Writing: Spelling exercises, grammar worksheet used in class
+  speakingTime: string; // Speaking Time: Interactive activities with details
+  homework: string; // Homework: Workbook pages (ex: Workbook p.11)
+  materials: string; // Materials: Necessary materials (slides, worksheets, papers, colored pencils, crayons, books)
+  observations: string; // Observations: Other activities, incidents, special needs, tests
+  
+  status: 'PLANEJADA' | 'MINISTRADA' | 'EM_ANDAMENTO';
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+// =========================================================================
+// MÓDULO DE CONTABILIDADE & GASTOS — THINK GREEN COMMUNITY CENTER
+// =========================================================================
+
+// As 3 Grandes Macroáreas do Rony
+export type AccountingMacroArea = 'LIXO' | 'PRE_ESCOLA' | 'CENTRO_COMUNITARIO';
+
+// Subáreas / Categorias Detalhadas de Recebimento
+export type RevenueSubArea =
+  | 'CURSO_INGLES' // Crianças 4 meses, Adolescentes 3 meses (2.000 EGP editável)
+  | 'PRE_ESCOLA' // Máx 2 vezes ou anual/semestral 9.000 EGP
+  | 'ACADEMIA_GINASTICA' // Academia e Aula de Ginástica (mesma categoria)
+  | 'AULAS_FUTEBOL' // Aulas de Futebol Sub-15
+  | 'CANTINA' // Vendas da cantina
+  | 'VENDA_LIXO' // Reciclagem / Venda de lixo
+  | 'ALUGUEL_CAMPO_PINGPONG' // Aluguel de campo de futebol e mesa de ping pong
+  | 'SUMMER_CAMPING' // Acampamento de verão / colônia
+  | 'OUTROS'; // Outras receitas comunitárias
+
+export interface AccountingRevenue {
+  id: string;
+  receiptNumber?: string;
+  date: string; // YYYY-MM-DD
+  month: string; // e.g. "01", "02", ..., "12"
+  year: number; // e.g. 2025, 2026
+  macroArea: AccountingMacroArea; // 'LIXO' | 'PRE_ESCOLA' | 'CENTRO_COMUNITARIO'
+  subArea: RevenueSubArea;
+  title: string;
+  description?: string;
+  amount: number; // in EGP (editável)
+  payerName?: string;
+  installmentsInfo?: string; // ex: "Parcela 2 de 3 (Adolescente)" ou "Semestre 1 (9.000 EGP)"
+  paymentMethod: PaymentMethod;
+  registeredBy: string;
+  status: 'CONFIRMADO' | 'PENDENTE' | 'ESTORNADO';
+  notes?: string;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+// Orçamentos / Budget Menu da planilha de gastos do Rony (image_813704e7.png)
+export type ExpenseBudget = 'General' | 'Preschool' | 'Community' | 'Recycle' | 'Outreach';
+
+// 28 Categorias de Orçamento da Planilha Oficial (image_813704e7.png)
+export type ExpenseCategory =
+  | "Translator's transportation"
+  | 'ESF - AM Training'
+  | 'Internet'
+  | 'Mobile phone'
+  | 'Arabic classes'
+  | 'Computer'
+  | 'Toner'
+  | 'Ink for printer'
+  | 'Electricity area TG / Volunteers houses'
+  | 'Cleaning Supplies'
+  | 'Maintenance Area TG / Volunteers houses'
+  | 'Expenses and additional costs (General)'
+  | 'Flowers and Trees'
+  | 'Tools and equipment'
+  | 'Gasoline (Motorcycle)'
+  | 'Diesel (Loader)'
+  | 'Maintenance (Loader and Motorcycle)'
+  | 'Painting Supplies'
+  | 'Expenses and additional costs (Recycle)'
+  | 'Preschool Materials (books and educatio'
+  | 'School supplements / cleaning'
+  | 'Staff training'
+  | 'Expenses and additional costs (Preschoo'
+  | 'Books and materials - English'
+  | 'Supplies for Soccer class / GYM'
+  | 'Worker'
+  | 'Expenses and additional costs (Communi'
+  | 'Events, Outreach, and church planting act'
+  | 'Volunteers Outreach'
+  | string;
+
+// Item individual da Planilha de Gastos Oficial do Rony (image_813704e7.png)
+export interface AccountingExpenseItem {
+  id: string;
+  receiptNumber: number; // Receipt # (1, 2, 3...)
+  date: string; // DD/MM/YYYY ou YYYY-MM-DD
+  product: string; // Descrição do produto ou serviço
+  price: number; // Price (EGP)
+  budget: ExpenseBudget; // General, Preschool, Community, Recycle, Outreach
+  category: ExpenseCategory; // Categoria da lista
+  paidTo?: string; // Beneficiário / Fornecedor / Reembolsado
+  sourceReportId?: string; // Vinculado a um Expense Report se originado de reembolso
+  notes?: string;
+  receiptPhotoUrl?: string; // Comprovante / Foto anexada
+  createdAt?: string;
+}
+
+// Item de linha do Expense Report Template (Expense_Report_Template_6710de3e.pdf)
+export interface ExpenseReportLineItem {
+  id: string;
+  category: ExpenseCategory;
+  description: string;
+  date: string; // DD/MM/YYYY ou YYYY-MM-DD
+  amount: number; // in EGP
+}
+
+// Relatório de Reembolso do Funcionário / Voluntário (Expense_Report_Template_6710de3e.pdf)
+export interface StaffExpenseReport {
+  id: string;
+  reportCode: string; // e.g. "EXP-2026-001"
+  userId: string;
+  fullName: string; // Full name do funcionário/voluntário
+  userEmail?: string;
+  event: string; // Event / Finalidade do gasto
+  date: string; // Data do relatório
+  items: ExpenseReportLineItem[];
+  totalAmount: number; // Soma automática dos itens em EGP
+  receiptPhotoUrl?: string; // Foto do comprovante anexada (opção de tirar foto / upload)
+  signatureName?: string; // Payment received / Signature
+  status: 'PENDENTE' | 'APROVADO' | 'REJEITADO';
+  reviewedBy?: string; // Rony ou responsável contábil
+  reviewedAt?: string;
+  reviewNotes?: string;
+  assignedExpenseReceipts?: number[]; // IDs dos recibos gerados na planilha de gastos ao aprovar
+  createdAt: string;
+  updatedAt?: string;
+}
+
+
 
 

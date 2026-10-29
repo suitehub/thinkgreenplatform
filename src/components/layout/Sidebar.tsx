@@ -23,9 +23,12 @@ import {
   Layers,
   Sparkles,
   DollarSign,
+  FileSpreadsheet,
   BarChart3,
   Shield,
   Zap,
+  Smartphone,
+  Store,
 } from 'lucide-react';
 import { Logo } from '../common/Logo';
 import { useApp } from '../../context/AppContext';
@@ -68,6 +71,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           { id: 'teacher_grades', label: 'Lançar Notas', icon: Award },
           { id: 'teacher_lessons', label: 'Aulas & Materiais (AVA)', icon: BookMarked },
           { id: 'teacher_assignments', label: 'Corrigir Trabalhos', icon: FileCheck },
+          { id: 'acc_employee_portal', label: 'Pedir Reembolso (Gastos)', icon: Receipt },
         ];
 
       case 'SECRETARIAT':
@@ -79,6 +83,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           { id: 'sec_classes', label: 'Turmas & Horários', icon: BookOpen },
           { id: 'sec_documents', label: 'Documentos dos Alunos', icon: FileText },
           { id: 'sec_import', label: 'Importar Planilhas', icon: Database },
+          { id: 'acc_employee_portal', label: 'Pedir Reembolso (Gastos)', icon: Receipt },
         ];
 
       case 'FINANCE':
@@ -93,11 +98,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
       case 'ACCOUNTING':
         return [
-          { id: 'acc_home', label: 'Painel Contábil', icon: Home },
-          { id: 'acc_transactions', label: 'Receitas & Despesas', icon: CreditCard },
-          { id: 'acc_cost_centers', label: 'Centros de Custo', icon: Layers },
-          { id: 'acc_closing', label: 'Fechamento Mensal (DRE)', icon: FileText },
-          { id: 'acc_reports', label: 'Relatórios Gerenciais', icon: PieChart },
+          { id: 'acc_home', label: 'Painel Contábil (Rony)', icon: Home },
+          { id: 'acc_revenues', label: 'Recebimentos (Entradas)', icon: CreditCard },
+          { id: 'acc_expenses', label: 'Gastos & Planilha Oficial', icon: FileSpreadsheet, highlight: true },
+          { id: 'acc_reimbursements', label: 'Pendências de Reembolso', icon: Receipt },
+          { id: 'acc_employee_portal', label: 'Portal de Reembolso (App)', icon: Smartphone },
         ];
 
       case 'SUPER_ADMIN':
@@ -272,6 +277,21 @@ export const Sidebar: React.FC<SidebarProps> = ({
             >
               <FileText className="w-3.5 h-3.5 flex-shrink-0" />
               <span>Secretaria</span>
+            </button>
+
+            <button
+              onClick={() => {
+                switchRole('RECEPTION');
+                setCurrentTab('rec_payment');
+              }}
+              className={`px-2 py-1.5 rounded-lg border text-left font-medium transition-all flex items-center gap-1.5 ${
+                currentUser.role === 'RECEPTION'
+                  ? 'border-purple-600 bg-purple-100 text-purple-900 font-bold'
+                  : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-100'
+              }`}
+            >
+              <Store className="w-3.5 h-3.5 flex-shrink-0" />
+              <span>Recepção</span>
             </button>
 
             <button

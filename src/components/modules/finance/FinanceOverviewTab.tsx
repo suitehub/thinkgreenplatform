@@ -90,18 +90,14 @@ export const FinanceOverviewTab: React.FC<FinanceOverviewTabProps> = ({
   const cancelledCount = 2;
   const cancelledPct = '0,8%';
 
-  // Format payment methods cleanly
+  // Format payment methods cleanly (Dinheiro Físico ou Transferência Bancária)
   const formatPaymentMethod = (method?: string) => {
     switch (method) {
-      case 'INSTAPAY_EG':
-        return 'PIX / InstaPay';
-      case 'CARTAO':
-        return 'Cartão de Crédito';
       case 'TRANSFERENCIA':
-        return 'Boleto / Transf.';
+        return 'Transferência Bancária';
       case 'DINHEIRO':
       default:
-        return 'Dinheiro em Espécie';
+        return 'Dinheiro Físico';
     }
   };
 
@@ -680,7 +676,7 @@ export const FinanceOverviewTab: React.FC<FinanceOverviewTabProps> = ({
                         <span className="text-slate-700 font-medium block">Mensalidade - Maio/2026</span>
                         <span className="text-[10.5px] text-slate-400">Soccer Class - Turma 8A</span>
                       </td>
-                      <td className="py-3.5 pr-2 font-medium text-slate-600">Cartão de Crédito</td>
+                      <td className="py-3.5 pr-2 font-medium text-slate-600">Transferência Bancária</td>
                       <td className="py-3.5 pr-2 font-bold text-slate-900 font-mono">EGP 520,00</td>
                       <td className="py-3.5 pr-2">
                         <span className="px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-full font-bold text-[10.5px] border border-emerald-200/60 inline-flex items-center">

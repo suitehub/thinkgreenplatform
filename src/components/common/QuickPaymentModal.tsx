@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Banknote, Check, ShieldCheck, MapPin } from 'lucide-react';
+import { Banknote, Check, ShieldCheck, MapPin, Building2 } from 'lucide-react';
 import { Modal } from './Modal';
 import { Charge, PaymentMethod } from '../../types';
 import { useApp } from '../../context/AppContext';
@@ -19,7 +19,7 @@ export const QuickPaymentModal: React.FC<QuickPaymentModalProps> = ({
   onSuccess,
 }) => {
   const { registerPayment } = useApp();
-  const [method] = useState<PaymentMethod>('DINHEIRO');
+  const [method, setMethod] = useState<PaymentMethod>('DINHEIRO');
   const [amount, setAmount] = useState<number>(charge?.amount || 500);
   const [notes, setNotes] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -77,11 +77,11 @@ export const QuickPaymentModal: React.FC<QuickPaymentModalProps> = ({
       }
     >
       <form onSubmit={handleSubmit} className="space-y-4 text-xs">
-        {/* Physical Notice Banner */}
-        <div className="p-3 bg-amber-50/90 rounded-2xl border border-amber-200/80 flex items-start gap-2.5">
-          <MapPin className="w-4 h-4 text-amber-700 flex-shrink-0 mt-0.5" />
-          <div className="text-[11px] text-amber-900 leading-relaxed">
-            <strong>Norma Institucional:</strong> Os recebimentos são realizados <strong>exclusivamente em meio físico (dinheiro em espécie)</strong> na recepção/tesouraria do Think Green Community Center. Pagamentos online não são aceitos.
+        {/* Physical / Bank Notice Banner */}
+        <div className="p-3 bg-emerald-50/90 rounded-2xl border border-emerald-200/80 flex items-start gap-2.5">
+          <MapPin className="w-4 h-4 text-emerald-700 flex-shrink-0 mt-0.5" />
+          <div className="text-[11px] text-emerald-900 leading-relaxed">
+            <strong>Norma Institucional:</strong> Os recebimentos são realizados <strong>exclusivamente via Dinheiro Físico ou Transferência Bancária</strong> na tesouraria do Think Green Community Center.
           </div>
         </div>
 
@@ -110,7 +110,7 @@ export const QuickPaymentModal: React.FC<QuickPaymentModalProps> = ({
         {/* Payment Amount Input */}
         <div>
           <label className="block text-slate-700 font-bold mb-1">
-            Valor em Dinheiro Recebido no Caixa (EGP - Libras Egípcias)
+            Valor Recebido (EGP - Libras Egípcias)
           </label>
           <div className="relative">
             <input
@@ -127,22 +127,59 @@ export const QuickPaymentModal: React.FC<QuickPaymentModalProps> = ({
           </div>
         </div>
 
-        {/* Single Physical Payment Method */}
+        {/* Payment Method Selector (Only Dinheiro Físico or Transferência Bancária) */}
         <div>
           <label className="block text-slate-700 font-bold mb-1.5">Forma de Recebimento</label>
-          <div className="p-3 rounded-2xl border-2 border-emerald-600 bg-emerald-50/60 text-emerald-950 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center flex-shrink-0 shadow-xs">
-                <Banknote className="w-5 h-5" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => setMethod('DINHEIRO')}
+              className={`p-3 rounded-2xl border-2 text-left flex items-center justify-between transition-all cursor-pointer ${
+                method === 'DINHEIRO'
+                  ? 'border-emerald-600 bg-emerald-50/70 text-emerald-950 shadow-xs'
+                  : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+              }`}
+            >
+              <div className="flex items-center gap-2.5">
+                <div
+                  className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                    method === 'DINHEIRO' ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-500'
+                  }`}
+                >
+                  <Banknote className="w-5 h-5" />
+                </div>
+                <div>
+                  <p className="font-bold text-xs">Dinheiro Físico</p>
+                  <p className="text-[10px] text-slate-500">Balcão / Caixa</p>
+                </div>
               </div>
-              <div>
-                <p className="font-bold text-xs text-emerald-950">Dinheiro em Espécie (Físico / Balcão)</p>
-                <p className="text-[11px] text-emerald-700">Recebido presencialmente no caixa da secretaria/tesouraria</p>
+              {method === 'DINHEIRO' && <Check className="w-4 h-4 text-emerald-600 flex-shrink-0" />}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setMethod('TRANSFERENCIA')}
+              className={`p-3 rounded-2xl border-2 text-left flex items-center justify-between transition-all cursor-pointer ${
+                method === 'TRANSFERENCIA'
+                  ? 'border-emerald-600 bg-emerald-50/70 text-emerald-950 shadow-xs'
+                  : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+              }`}
+            >
+              <div className="flex items-center gap-2.5">
+                <div
+                  className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                    method === 'TRANSFERENCIA' ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-500'
+                  }`}
+                >
+                  <Building2 className="w-5 h-5" />
+                </div>
+                <div>
+                  <p className="font-bold text-xs">Transferência Bancária</p>
+                  <p className="text-[10px] text-slate-500">Depósito em conta</p>
+                </div>
               </div>
-            </div>
-            <span className="text-[10px] font-extrabold uppercase bg-emerald-200/80 text-emerald-900 px-2.5 py-1 rounded-full">
-              Físico
-            </span>
+              {method === 'TRANSFERENCIA' && <Check className="w-4 h-4 text-emerald-600 flex-shrink-0" />}
+            </button>
           </div>
         </div>
 

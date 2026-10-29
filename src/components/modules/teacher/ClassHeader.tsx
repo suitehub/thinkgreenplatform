@@ -15,6 +15,7 @@ import {
   UserCheck,
   Star,
   CheckCircle2,
+  FileSpreadsheet,
 } from 'lucide-react';
 import { ClassRoom } from '../../../types';
 import {
@@ -26,7 +27,7 @@ import {
   ThinkGardenLogo,
 } from '../../common/ThinkGardenLogos';
 
-export type ClassSubTab = 'visao_geral' | 'conteudos' | 'pessoas' | 'notas' | 'chamada';
+export type ClassSubTab = 'visao_geral' | 'conteudos' | 'plano_aula' | 'pessoas' | 'notas' | 'chamada';
 
 interface ClassHeaderProps {
   selectedClass: ClassRoom;
@@ -284,7 +285,29 @@ export const ClassHeader: React.FC<ClassHeaderProps> = ({
           </span>
         </button>
 
-        {/* 3. Pessoas (People) */}
+        {/* 3. Plano de Aula (Lesson Plan - Baseado no modelo Excel) */}
+        <button
+          onClick={() => onChangeSubTab('plano_aula')}
+          className={`flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap cursor-pointer ${
+            activeSubTab === 'plano_aula'
+              ? 'bg-[#075e38] text-white shadow-xs'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+          }`}
+        >
+          <FileSpreadsheet className="w-4 h-4" />
+          <span>Plano de Aula</span>
+          <span
+            className={`text-[10px] px-1.5 py-0.2 rounded-md font-extrabold ${
+              activeSubTab === 'plano_aula'
+                ? 'bg-white/20 text-white'
+                : 'bg-emerald-50 text-emerald-800'
+            }`}
+          >
+            Lesson Plan
+          </span>
+        </button>
+
+        {/* 4. Pessoas (People) */}
         <button
           onClick={() => onChangeSubTab('pessoas')}
           className={`flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap cursor-pointer ${

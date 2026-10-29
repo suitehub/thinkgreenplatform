@@ -113,7 +113,9 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ receipt, isOpen, onC
               Forma de Pagamento
             </span>
             <span className="inline-block bg-white text-emerald-800 font-bold text-xs px-3 py-1 rounded-lg border border-emerald-200 shadow-2xs mt-1">
-              Dinheiro em Espécie (Físico / Balcão)
+              {receipt.paymentMethod === 'TRANSFERENCIA'
+                ? 'Transferência Bancária'
+                : 'Dinheiro Físico'}
             </span>
           </div>
         </div>

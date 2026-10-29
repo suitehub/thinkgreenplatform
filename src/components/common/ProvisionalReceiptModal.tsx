@@ -177,11 +177,9 @@ export const ProvisionalReceiptModal: React.FC<ProvisionalReceiptModalProps> = (
               Meio Informado
             </span>
             <span className="inline-block bg-white text-emerald-900 font-bold text-xs px-3 py-1.5 rounded-lg border border-emerald-200 shadow-2xs mt-1">
-              {payment.paymentMethod === 'DINHEIRO'
-                ? '💵 Dinheiro em Espécie (Físico no Balcão)'
-                : payment.paymentMethod === 'INSTAPAY_EG'
-                ? '⚡ Instapay (Egito / Digital)'
-                : payment.paymentMethod}
+              {payment.paymentMethod === 'TRANSFERENCIA'
+                ? '🏦 Transferência Bancária'
+                : '💵 Dinheiro Físico'}
             </span>
           </div>
         </div>

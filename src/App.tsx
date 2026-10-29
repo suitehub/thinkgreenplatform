@@ -14,6 +14,7 @@ import { SecretariatModule } from './components/modules/secretariat/SecretariatM
 import { FinanceModule } from './components/modules/finance/FinanceModule';
 import { AcademicModule } from './components/modules/academic/AcademicModule';
 import { AccountingModule } from './components/modules/accounting/AccountingModule';
+import { EmployeeReimbursementPortal } from './components/modules/accounting/EmployeeReimbursementPortal';
 import { AdminModule } from './components/modules/admin/AdminModule';
 import { ReceptionModule } from './components/modules/reception/ReceptionModule';
 
@@ -88,6 +89,22 @@ const AuthenticatedLayout: React.FC = () => {
       return <FinanceModule currentTab={currentTab} setCurrentTab={setCurrentTab} />;
     }
 
+    if (currentTab === 'acc_employee_portal' || currentTab === 'employee_reimbursement') {
+      return (
+        <EmployeeReimbursementPortal
+          onBack={() => {
+            if (currentUser.role === 'ACCOUNTING') setCurrentTab('acc_home');
+            else if (currentUser.role === 'TEACHER') setCurrentTab('teacher_home');
+            else if (currentUser.role === 'SECRETARIAT') setCurrentTab('sec_home');
+            else if (currentUser.role === 'RECEPTION') setCurrentTab('rec_payment');
+            else if (currentUser.role === 'FINANCE') setCurrentTab('fin_home');
+            else setCurrentTab('admin_home');
+          }}
+          standalone={false}
+        />
+      );
+    }
+
     if (currentUser.role === 'ACCOUNTING') {
       return <AccountingModule currentTab={currentTab} setCurrentTab={setCurrentTab} />;
     }
@@ -123,6 +140,25 @@ const AuthenticatedLayout: React.FC = () => {
 
     return <AdminModule currentTab={currentTab} setCurrentTab={setCurrentTab} />;
   };
+
+  // If viewing employee reimbursement portal standalone
+  if (currentTab === 'acc_employee_portal' || currentTab === 'employee_reimbursement') {
+    return (
+      <div className="min-h-screen bg-[#f8fafc] text-slate-800 font-sans antialiased selection:bg-[#075e38] selection:text-white">
+        <EmployeeReimbursementPortal
+          onBack={() => {
+            if (currentUser.role === 'ACCOUNTING') setCurrentTab('acc_home');
+            else if (currentUser.role === 'TEACHER') setCurrentTab('teacher_home');
+            else if (currentUser.role === 'SECRETARIAT') setCurrentTab('sec_home');
+            else if (currentUser.role === 'RECEPTION') setCurrentTab('rec_payment');
+            else if (currentUser.role === 'FINANCE') setCurrentTab('fin_home');
+            else setCurrentTab('admin_home');
+          }}
+          standalone={true}
+        />
+      </div>
+    );
+  }
 
   // If logged in as STUDENT, render the dedicated Think Green Portal Estudante screen
   if (currentUser.role === 'STUDENT') {
@@ -174,6 +210,19 @@ const AuthenticatedLayout: React.FC = () => {
     return (
       <div className="min-h-screen bg-[#f8fafc] text-slate-800 font-sans antialiased selection:bg-[#075e38] selection:text-white">
         <FinanceModule
+          currentTab={currentTab}
+          setCurrentTab={setCurrentTab}
+          standalone={true}
+        />
+      </div>
+    );
+  }
+
+  // If logged in as ACCOUNTING, render the dedicated Think Green Painel Contábil screen
+  if (currentUser.role === 'ACCOUNTING') {
+    return (
+      <div className="min-h-screen bg-[#f8fafc] text-slate-800 font-sans antialiased selection:bg-[#075e38] selection:text-white">
+        <AccountingModule
           currentTab={currentTab}
           setCurrentTab={setCurrentTab}
           standalone={true}

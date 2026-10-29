@@ -19,6 +19,8 @@ import {
   Share2,
   Megaphone,
   Percent,
+  FileSpreadsheet,
+  ArrowRight,
 } from 'lucide-react';
 import { ClassRoom, Assessment, Assignment, Lesson } from '../../../types';
 import {
@@ -30,6 +32,7 @@ import {
   ASSESSMENT_TEMPLATES,
   getDefaultAssessmentConfig,
 } from '../../../lib/assessmentTemplates';
+import { ClassSubTab } from './ClassHeader';
 
 interface ClassOverviewTabProps {
   selectedClass: ClassRoom;
@@ -39,7 +42,7 @@ interface ClassOverviewTabProps {
   classLessons: Lesson[];
   pendingSubmissionsCount: number;
   attendanceRatePercent: number;
-  onNavigateToTab: (tab: 'conteudos' | 'pessoas' | 'notas' | 'chamada') => void;
+  onNavigateToTab: (tab: ClassSubTab) => void;
   onOpenExamDetails?: (exam: Assessment) => void;
   onOpenNewLesson?: () => void;
   onOpenNewAssignment?: () => void;
@@ -657,6 +660,31 @@ export const ClassOverviewTab: React.FC<ClassOverviewTabProps> = ({
                 <span>+ Agendar Nova Prova</span>
               </button>
             )}
+          </div>
+
+          {/* Card: Plano de Aula (Lesson Plan) */}
+          <div className="bg-gradient-to-br from-[#2e1065] via-[#3b0764] to-[#4c1d95] text-white rounded-3xl p-6 space-y-3.5 shadow-md border border-purple-800 relative overflow-hidden">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-black uppercase tracking-wider bg-white/20 px-2.5 py-0.5 rounded-full text-purple-100 border border-white/20">
+                Planejamento Pedagógico
+              </span>
+              <FileSpreadsheet className="w-5 h-5 text-purple-300" />
+            </div>
+            <div>
+              <h4 className="font-extrabold text-base leading-snug">
+                Plano de Aula (Lesson Plan)
+              </h4>
+              <p className="text-xs text-purple-200/90 leading-relaxed mt-1">
+                Acesse o planejamento detalhado por aula com as 8 dimensões oficiais (Unit Content, Handwriting, Reading, Writing, Speaking, Homework e Materiais).
+              </p>
+            </div>
+            <button
+              onClick={() => onNavigateToTab('plano_aula')}
+              className="w-full py-2.5 px-3 rounded-xl bg-white hover:bg-purple-50 text-[#533499] font-black text-xs transition-all flex items-center justify-center gap-2 cursor-pointer shadow-xs active:scale-98"
+            >
+              <span>Abrir Plano de Aula</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
           </div>
 
           {/* Critérios & Pesos de Notas da Turma (Matriz Oficial) */}

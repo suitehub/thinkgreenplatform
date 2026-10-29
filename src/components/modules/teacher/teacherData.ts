@@ -153,8 +153,9 @@ const MATERIALS_STORAGE_KEY = 'think_green_didactic_materials_v1';
 const QUIZZES_STORAGE_KEY = 'think_green_quizzes_v1';
 const QUIZ_SUBMISSIONS_STORAGE_KEY = 'think_green_quiz_submissions_v1';
 const GENERAL_ANNOUNCEMENTS_STORAGE_KEY = 'think_green_general_announcements_v1';
+const LESSON_PLANS_STORAGE_KEY = 'think_green_class_lesson_plans_v1';
 
-import { DidacticMaterial, Quiz, QuizSubmission, GeneralAnnouncement } from '../../../types';
+import { DidacticMaterial, Quiz, QuizSubmission, GeneralAnnouncement, ClassLessonPlan } from '../../../types';
 
 export const INITIAL_DIDACTIC_MATERIALS: DidacticMaterial[] = [
   {
@@ -465,4 +466,157 @@ export function saveStoredGeneralAnnouncements(announcements: GeneralAnnouncemen
     console.error('Error saving general announcements:', e);
   }
 }
+
+// =========================================================================
+// PLANOS DE AULA INICIAIS (BASEADOS NO MODELO EXCEL DO CLIENTE)
+// =========================================================================
+export const INITIAL_LESSON_PLANS: ClassLessonPlan[] = [
+  // --- INGLÊS BÁSICO A / LET'S GO 1 (Mr. João Ferelli / Prof. Lucas) ---
+  {
+    id: 'lp_eng_1',
+    classId: 'class_eng_a',
+    className: 'Inglês Básico A (Let\'s Go 1)',
+    teacherId: 'user_teacher_1',
+    teacherName: 'Mr. João Ferelli',
+    date: '2026-08-18',
+    dateDisplay: 'ago 18 (ter)',
+    dateFormatted: '18 de Agosto de 2026 (Terça-feira)',
+    unitContent: '- Describe the unit content from the Let\'s Go Student Book\nLG1 book p. 4-6\n- Asking "What\'s your name?" & alphabet warm-up',
+    handwriting: '- Please, upload any worksheet used in class.\nHandwriting Book p.10-11.pdf (Tracing lines & uppercase letters A, B, C, D)',
+    reading: '- Reading Text:\nWelcome to Let\'s Go 1. Short dialogue:\nTeacher: "Hello! My name is Mr. João. What\'s your name?"\nStudent: "Hi! My name is Farida."',
+    writing: '- Spelling Exercise:\nTracing & copying greetings words (Hi, Hello, Name, I am).',
+    speakingTime: '- Describe interactive activities with details:\nCircle time greeting practice. Asking and answering "What\'s your name? / My name is..." in pairs with the soft ball toss.',
+    homework: '- Workbook p. 4-5 (Exercises 1 & 2).',
+    materials: '- Let\'s Go 1 Student Book, Handwriting Book, name stickers, soft ball for icebreaker, flashcards.',
+    observations: '- Primeira aula do nível LG1; acolhimento e ambientação dos alunos novos ao Centro Comunitário Think Green.',
+    status: 'MINISTRADA',
+    createdAt: '2026-08-15',
+  },
+  {
+    id: 'lp_eng_2',
+    classId: 'class_eng_a',
+    className: 'Inglês Básico A (Let\'s Go 1)',
+    teacherId: 'user_teacher_1',
+    teacherName: 'Mr. João Ferelli',
+    date: '2026-08-25',
+    dateDisplay: 'ago 25 (ter)',
+    dateFormatted: '25 de Agosto de 2026 (Terça-feira)',
+    unitContent: '- LG1 book - U2 - Colors and shapes - p. 12-13;\nGreetings and social communication (Exercises And B p.12, C and D p.13):\n- Greeting with "Hi" and asking "How are you?";\n- Answering with "I\'m fine".',
+    handwriting: '- Handwritting worksheet about vocabulary - p.12 (spelling about greetings and answers).',
+    reading: '- Reading Text:\nMohamed: Hi!\nFarida: Hi!\nMohamed: How are you?\nFarida: I\'m fine, thank you!\nMohamed: How are you?\nFarida: I\'m fine!',
+    writing: '- LG1 - U2 grammar worksheet p.1.',
+    speakingTime: '- Greeting friends in class using the grammar - p.12-13.',
+    homework: '- Workbook - p.11.',
+    materials: '- Slides, handwritting worksheet, grammar worksheet, unit tests printed, colored pencils and LG1 books.',
+    observations: '- Unit 1 teste today.',
+    status: 'MINISTRADA',
+    createdAt: '2026-08-22',
+  },
+  {
+    id: 'lp_eng_3',
+    classId: 'class_eng_a',
+    className: 'Inglês Básico A (Let\'s Go 1)',
+    teacherId: 'user_teacher_1',
+    teacherName: 'Mr. João Ferelli',
+    date: '2026-09-01',
+    dateDisplay: 'set 01 (ter)',
+    dateFormatted: '01 de Setembro de 2026 (Terça-feira)',
+    unitContent: '- LG1 book - U2 - Let\'s Talk & Let\'s Learn - p. 14-16;\nShapes vocabulary: circle, square, triangle, rectangle.\nTarget Question: "What shape is this? It\'s a triangle."',
+    handwriting: '- Handwriting Book p. 14: Geometric shapes drawing and lowercase spelling tracing.',
+    reading: '- Reading Text:\n"Look at the toys! The ball is a circle. The window is a square. What color is the triangle? It is green."',
+    writing: '- Shape labels worksheet p. 2: Write the correct shape name under each illustration.',
+    speakingTime: '- Describe interactive activities with details:\nInteractive classroom hunt: "Touch something shaped like a square!" Pairs ask and tell with points.',
+    homework: '- Workbook p. 12-13 (exercises A and B).',
+    materials: '- Shape flashcards, color foam geometric shapes, workbook, colored markers, slide projector.',
+    observations: '- Alunos muito engajados na caça às formas pela sala; bom domínio das cores primárias.',
+    status: 'MINISTRADA',
+    createdAt: '2026-08-30',
+  },
+  {
+    id: 'lp_eng_4',
+    classId: 'class_eng_a',
+    className: 'Inglês Básico A (Let\'s Go 1)',
+    teacherId: 'user_teacher_1',
+    teacherName: 'Mr. João Ferelli',
+    date: '2026-09-08',
+    dateDisplay: 'set 08 (ter)',
+    dateFormatted: '08 de Setembro de 2026 (Terça-feira)',
+    unitContent: '- LG1 book - Review Units 1 & 2 - p. 18-20;\nConsolidation of greetings, feelings ("How are you? I\'m fine / happy / great") and classroom items.',
+    handwriting: '- Handwriting sheet: Sentence formation with capital letter and period.',
+    reading: '- Reading Story: "Let\'s Go Adventure: The Missing Crayons". Guided reading in small groups.',
+    writing: '- Short fill-in-the-blank mini quiz: "How are you? I\'m _____." and "What is your name?".',
+    speakingTime: '- Role-play dialogue between shopkeeper and customer buying school supplies.',
+    homework: '- Workbook p. 14-15 review pages.',
+    materials: '- Story cards, realia school objects (ruler, pencil case, scissors, eraser), slides, audio track.',
+    observations: '- Preparação para o Midterm Exam; revisão oral individual com cada aluno.',
+    status: 'PLANEJADA',
+    createdAt: '2026-09-05',
+  },
+
+  // --- FUTEBOL JUVENIL SUB-15 ---
+  {
+    id: 'lp_soc_1',
+    classId: 'class_soccer',
+    className: 'Futebol Juvenil Sub-15',
+    teacherId: 'user_teacher_1',
+    teacherName: 'Professor Lucas',
+    date: '2026-08-19',
+    dateDisplay: 'ago 19 (qua)',
+    dateFormatted: '19 de Agosto de 2026 (Quarta-feira)',
+    unitContent: '- Fundamentos Técnicos: Condução de bola com peito de pé e parte externa em pequenos espaços.',
+    handwriting: '- Prancheta tática: Desenho de linhas de passe em folha impressa de marcação.',
+    reading: '- Leitura da súmula de regras da FIFA sobre falta técnica e posicionamento de barreira.',
+    writing: '- Auto-avaliação do atleta: preenchimento de ficha de rendimento físico e metas semanais.',
+    speakingTime: '- Comunicação verbal em campo: comando de "gira", "toca", "sobe marcação" e alerta de costas.',
+    homework: '- Treino complementar de flexibilidade e hidratação guiada em casa.',
+    materials: '- 15 bolas nº 5, 30 cones coloridos, 2 jogos de coletes (laranja e verde), apito e cronômetro.',
+    observations: '- Treino realizado no Campo Sintético 01; todos os atletas presentes com chuteiras apropriadas.',
+    status: 'MINISTRADA',
+    createdAt: '2026-08-16',
+  },
+
+  // --- PRÉ-ESCOLA TURMA GIRASSOL ---
+  {
+    id: 'lp_pre_1',
+    classId: 'class_preschool_a',
+    className: 'Turma Girassol (4 a 5 anos)',
+    teacherId: 'user_teacher_1',
+    teacherName: 'Profª. Amanda Costa',
+    date: '2026-08-20',
+    dateDisplay: 'ago 20 (qui)',
+    dateFormatted: '20 de Agosto de 2026 (Quinta-feira)',
+    unitContent: '- Desenvolvimento Psicomotor & Contação de Histórias: "O Pequeno Girassol no Jardim Comunitário".',
+    handwriting: '- Coordenação motora fina: Traçado de caminhos com giz de cera grosso e massinha de modelar.',
+    reading: '- Leitura mediada do livro ilustrado com dramatização dos personagens e sons de animais.',
+    writing: '- Identificação da letra inicial do próprio nome em cartões coloridos.',
+    speakingTime: '- Roda de conversa: Cada criança compartilha o que mais gosta de fazer com seus amigos.',
+    homework: '- Desenho livre em família sobre o jardim de casa ou parque.',
+    materials: '- Livro ilustrado gigante, caixas de giz de cera, massinhas atóxicas, folhas A3.',
+    observations: '- Atividade integrada no pátio descoberto pela manhã.',
+    status: 'MINISTRADA',
+    createdAt: '2026-08-17',
+  },
+];
+
+export function getStoredLessonPlans(): ClassLessonPlan[] {
+  try {
+    const raw = localStorage.getItem(LESSON_PLANS_STORAGE_KEY);
+    if (!raw) {
+      localStorage.setItem(LESSON_PLANS_STORAGE_KEY, JSON.stringify(INITIAL_LESSON_PLANS));
+      return INITIAL_LESSON_PLANS;
+    }
+    return JSON.parse(raw);
+  } catch {
+    return INITIAL_LESSON_PLANS;
+  }
+}
+
+export function saveStoredLessonPlans(plans: ClassLessonPlan[]) {
+  try {
+    localStorage.setItem(LESSON_PLANS_STORAGE_KEY, JSON.stringify(plans));
+  } catch (e) {
+    console.error('Error saving lesson plans:', e);
+  }
+}
+
 
