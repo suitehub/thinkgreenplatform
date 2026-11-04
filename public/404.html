@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <title>Think Green Platform</title>
+    <script type="text/javascript">
+      // Single Page Apps for GitHub Pages
+      // MIT License
+      // https://github.com/rafgraph/spa-github-pages
+      // This script takes the current url and converts the path and query
+      // into just query text, and then redirects the browser to the new url
+      // with only a query and hash fragment, e.g.
+      // https://suitehub.github.io/thinkgreenplatform/contabil becomes
+      // https://suitehub.github.io/thinkgreenplatform/?/contabil
+      var pathSegmentsToKeep = 1;
+
+      var l = window.location;
+      var repoSegment = l.pathname.split('/').filter(Boolean)[0] || 'thinkgreenplatform';
+      
+      l.replace(
+        l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
+        '/' + repoSegment + '/?/' +
+        l.pathname.slice(1).split('/').slice(pathSegmentsToKeep).join('/').replace(/&/g, '~and~') +
+        (l.search ? '&' + l.search.slice(1).replace(/&/g, '~and~') : '') +
+        l.hash
+      );
+    </script>
+  </head>
+  <body>
+    <p>Redirecionando para Think Green Platform...</p>
+  </body>
+</html>

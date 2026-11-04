@@ -1,0 +1,258 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "System user account with role-based access control.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique user ID" },
+        "name": { "type": "string", "description": "Full name of the user" },
+        "email": { "type": "string", "description": "Email address" },
+        "role": { "type": "string", "description": "Primary user role" },
+        "roles": { "type": "array", "description": "Array of assigned user roles" },
+        "department": { "type": "string", "description": "Department or area" },
+        "status": { "type": "string", "description": "Account status (ACTIVE/INACTIVE)" },
+        "createdAt": { "type": "string", "description": "Timestamp ISO string" }
+      },
+      "required": ["id", "name", "email", "role"]
+    },
+    "Course": {
+      "title": "Course",
+      "description": "Academic course offered by Think Green.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Course ID" },
+        "code": { "type": "string", "description": "Course Code" },
+        "name": { "type": "string", "description": "Course Name" },
+        "category": { "type": "string", "description": "Course category" },
+        "monthlyFee": { "type": "number", "description": "Default monthly fee in EGP" },
+        "totalCourseAmount": { "type": "number", "description": "Full course price" },
+        "defaultInstallmentsCount": { "type": "number", "description": "Default installments" },
+        "isActive": { "type": "boolean", "description": "Whether course is active" }
+      },
+      "required": ["id", "code", "name"]
+    },
+    "ClassRoom": {
+      "title": "ClassRoom",
+      "description": "Classroom or course group session.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Class ID" },
+        "courseId": { "type": "string", "description": "Parent Course ID" },
+        "name": { "type": "string", "description": "Class title" },
+        "code": { "type": "string", "description": "Classroom code" },
+        "teacherId": { "type": "string", "description": "Assigned teacher ID" },
+        "teacherName": { "type": "string", "description": "Assigned teacher name" },
+        "schedule": { "type": "string", "description": "Class days and hours" },
+        "room": { "type": "string", "description": "Classroom physical space" },
+        "maxCapacity": { "type": "number", "description": "Maximum capacity" },
+        "status": { "type": "string", "description": "Status (ACTIVE/INACTIVE)" }
+      },
+      "required": ["id", "courseId", "name"]
+    },
+    "Student": {
+      "title": "Student",
+      "description": "Registered student at Think Green Community Center.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Internal document ID" },
+        "studentId": { "type": "string", "description": "Official STU00000 identifier" },
+        "name": { "type": "string", "description": "Student full name" },
+        "phone": { "type": "string", "description": "Contact phone or WhatsApp" },
+        "email": { "type": "string", "description": "Optional email" },
+        "rg": { "type": "string", "description": "National ID or RG" },
+        "birthDate": { "type": "string", "description": "Birth date" },
+        "gender": { "type": "string", "description": "Gender" },
+        "guardianName": { "type": "string", "description": "Guardian name if minor" },
+        "status": { "type": "string", "description": "Student status (ATIVO/INATIVO)" },
+        "systemAccess": { "type": "string", "description": "System access (LIBERADO/BLOQUEADO)" },
+        "documentPhotoUrl": { "type": "string", "description": "Attached ID document photo URL" },
+        "createdAt": { "type": "string", "description": "Registration date" }
+      },
+      "required": ["id", "studentId", "name", "phone"]
+    },
+    "Enrollment": {
+      "title": "Enrollment",
+      "description": "Student enrollment in a course and class.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Enrollment ID" },
+        "studentId": { "type": "string", "description": "Student STU identifier" },
+        "studentName": { "type": "string", "description": "Student name" },
+        "courseId": { "type": "string", "description": "Course ID" },
+        "courseName": { "type": "string", "description": "Course title" },
+        "classId": { "type": "string", "description": "Class ID" },
+        "className": { "type": "string", "description": "Class title" },
+        "enrollmentDate": { "type": "string", "description": "Date of enrollment" },
+        "status": { "type": "string", "description": "Enrollment status (ATIVA/CANCELADA)" }
+      },
+      "required": ["id", "studentId", "courseId", "classId"]
+    },
+    "Charge": {
+      "title": "Charge",
+      "description": "Financial installment charge for student enrollment.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Charge ID" },
+        "enrollmentId": { "type": "string", "description": "Related enrollment ID" },
+        "studentId": { "type": "string", "description": "Student STU identifier" },
+        "studentName": { "type": "string", "description": "Student name" },
+        "courseName": { "type": "string", "description": "Course name" },
+        "installmentNumber": { "type": "number", "description": "Installment sequence number" },
+        "totalInstallments": { "type": "number", "description": "Total installments in plan" },
+        "amount": { "type": "number", "description": "Amount in EGP" },
+        "dueDate": { "type": "string", "description": "Due date (YYYY-MM-DD)" },
+        "status": { "type": "string", "description": "Status (REGULAR/PAGO/EM ATRASO)" },
+        "paidAmount": { "type": "number", "description": "Paid amount" },
+        "paidAt": { "type": "string", "description": "Payment timestamp" }
+      },
+      "required": ["id", "enrollmentId", "studentId", "amount", "dueDate", "status"]
+    },
+    "PaymentReceipt": {
+      "title": "PaymentReceipt",
+      "description": "Official receipt for payment received.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Receipt ID" },
+        "receiptNumber": { "type": "string", "description": "Sequential receipt code" },
+        "studentId": { "type": "string", "description": "Student STU identifier" },
+        "studentName": { "type": "string", "description": "Student name" },
+        "courseName": { "type": "string", "description": "Course name" },
+        "amount": { "type": "number", "description": "Paid amount in EGP" },
+        "paymentMethod": { "type": "string", "description": "DINHEIRO or TRANSFERENCIA" },
+        "date": { "type": "string", "description": "Date of receipt" },
+        "issuedBy": { "type": "string", "description": "Issuer name" }
+      },
+      "required": ["id", "receiptNumber", "amount", "paymentMethod", "date"]
+    },
+    "PendingRegistration": {
+      "title": "PendingRegistration",
+      "description": "Pre-registration submitted at reception pending secretariat approval.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Pre-registration ID" },
+        "protocol": { "type": "string", "description": "Tracking protocol" },
+        "fullName": { "type": "string", "description": "Applicant full name" },
+        "phone": { "type": "string", "description": "Phone or WhatsApp" },
+        "courseId": { "type": "string", "description": "Requested course ID" },
+        "classId": { "type": "string", "description": "Requested class ID" },
+        "status": { "type": "string", "description": "Status (PENDENTE/APROVADO/REJEITADO)" },
+        "createdAt": { "type": "string", "description": "Submission timestamp" }
+      },
+      "required": ["id", "protocol", "fullName", "phone", "courseId", "status"]
+    },
+    "PendingPayment": {
+      "title": "PendingPayment",
+      "description": "Payment collected at reception pending treasury approval.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Pending payment ID" },
+        "receiptProtocol": { "type": "string", "description": "Payment protocol" },
+        "studentId": { "type": "string", "description": "Student identifier" },
+        "studentName": { "type": "string", "description": "Student name" },
+        "amount": { "type": "number", "description": "Amount in EGP" },
+        "paymentMethod": { "type": "string", "description": "DINHEIRO or TRANSFERENCIA" },
+        "status": { "type": "string", "description": "Status (PENDENTE/APROVADO/REJEITADO)" },
+        "createdAt": { "type": "string", "description": "Submission timestamp" }
+      },
+      "required": ["id", "receiptProtocol", "amount", "paymentMethod", "status"]
+    },
+    "AccountingRevenue": {
+      "title": "AccountingRevenue",
+      "description": "Institutional revenue entry in one of the 3 macro-areas.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Revenue ID" },
+        "title": { "type": "string", "description": "Title of entry" },
+        "macroArea": { "type": "string", "description": "LIXO, PRE_ESCOLA or CENTRO_COMUNITARIO" },
+        "subArea": { "type": "string", "description": "Specific sub-area category" },
+        "amount": { "type": "number", "description": "Amount in EGP" },
+        "date": { "type": "string", "description": "Date YYYY-MM-DD" },
+        "paymentMethod": { "type": "string", "description": "DINHEIRO or TRANSFERENCIA" },
+        "payerName": { "type": "string", "description": "Payer name" }
+      },
+      "required": ["id", "title", "macroArea", "subArea", "amount", "date"]
+    },
+    "AccountingExpense": {
+      "title": "AccountingExpense",
+      "description": "Institutional expense item in Think Green Expense Report.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Expense ID" },
+        "receiptNumber": { "type": "number", "description": "Sequential receipt row number" },
+        "date": { "type": "string", "description": "Date DD/MM/YYYY" },
+        "product": { "type": "string", "description": "Product or expense description" },
+        "price": { "type": "number", "description": "Amount in EGP" },
+        "budget": { "type": "string", "description": "Budget Menu" },
+        "category": { "type": "string", "description": "Budget Category" }
+      },
+      "required": ["id", "product", "price", "budget", "category"]
+    },
+    "ExpenseReport": {
+      "title": "ExpenseReport",
+      "description": "Employee or volunteer reimbursement request.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Report ID" },
+        "reportCode": { "type": "string", "description": "Code EXP-YYYY-XXX" },
+        "fullName": { "type": "string", "description": "Employee full name" },
+        "event": { "type": "string", "description": "Event or purpose of expense" },
+        "date": { "type": "string", "description": "Report date" },
+        "totalAmount": { "type": "number", "description": "Total reimbursement amount" },
+        "status": { "type": "string", "description": "PENDENTE, APROVADO or REJEITADO" },
+        "receiptPhotoUrl": { "type": "string", "description": "Receipt proof image URL" }
+      },
+      "required": ["id", "reportCode", "fullName", "totalAmount", "status"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "System user profiles"
+    },
+    "/courses/{courseId}": {
+      "schema": { "$ref": "#/entities/Course" },
+      "description": "Academic course offerings"
+    },
+    "/classes/{classId}": {
+      "schema": { "$ref": "#/entities/ClassRoom" },
+      "description": "Classrooms and session groups"
+    },
+    "/students/{studentDocId}": {
+      "schema": { "$ref": "#/entities/Student" },
+      "description": "Student master records"
+    },
+    "/enrollments/{enrollmentId}": {
+      "schema": { "$ref": "#/entities/Enrollment" },
+      "description": "Student enrollments"
+    },
+    "/charges/{chargeId}": {
+      "schema": { "$ref": "#/entities/Charge" },
+      "description": "Installment charges"
+    },
+    "/receipts/{receiptId}": {
+      "schema": { "$ref": "#/entities/PaymentReceipt" },
+      "description": "Confirmed payment receipts"
+    },
+    "/pending_registrations/{pendingId}": {
+      "schema": { "$ref": "#/entities/PendingRegistration" },
+      "description": "Reception pre-registrations"
+    },
+    "/pending_payments/{paymentId}": {
+      "schema": { "$ref": "#/entities/PendingPayment" },
+      "description": "Reception pre-payments"
+    },
+    "/accounting_revenues/{revenueId}": {
+      "schema": { "$ref": "#/entities/AccountingRevenue" },
+      "description": "Official institutional revenues"
+    },
+    "/accounting_expenses/{expenseId}": {
+      "schema": { "$ref": "#/entities/AccountingExpense" },
+      "description": "Official institutional expenses"
+    },
+    "/expense_reports/{reportId}": {
+      "schema": { "$ref": "#/entities/ExpenseReport" },
+      "description": "Staff reimbursement reports"
+    }
+  }
+}

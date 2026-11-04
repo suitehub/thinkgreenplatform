@@ -1,0 +1,117 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Default deny all access unless explicitly allowed below
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.token.role == 'ADMIN' ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'ADMIN')
+      );
+    }
+
+    // Connectivity test collection
+    match /test/{docId} {
+      allow read, write: if isValidId(docId);
+    }
+
+    // User profiles
+    match /users/{userId} {
+      allow read: if true;
+      allow write: if isValidId(userId);
+    }
+
+    // Courses and Classrooms
+    match /courses/{courseId} {
+      allow read: if true;
+      allow write: if isValidId(courseId);
+    }
+
+    match /classes/{classId} {
+      allow read: if true;
+      allow write: if isValidId(classId);
+    }
+
+    // Students master records
+    match /students/{studentDocId} {
+      allow read: if true;
+      allow create, update: if isValidId(studentDocId) &&
+        request.resource.data.name is string &&
+        request.resource.data.name.size() > 0;
+      allow delete: if isValidId(studentDocId);
+    }
+
+    // Enrollments
+    match /enrollments/{enrollmentId} {
+      allow read: if true;
+      allow write: if isValidId(enrollmentId);
+    }
+
+    // Charges & Installments
+    match /charges/{chargeId} {
+      allow read: if true;
+      allow write: if isValidId(chargeId);
+    }
+
+    // Payment Receipts
+    match /receipts/{receiptId} {
+      allow read: if true;
+      allow create, update: if isValidId(receiptId) &&
+        request.resource.data.amount is number &&
+        request.resource.data.paymentMethod is string;
+      allow delete: if isValidId(receiptId);
+    }
+
+    // Reception Pre-registrations
+    match /pending_registrations/{pendingId} {
+      allow read: if true;
+      allow write: if isValidId(pendingId);
+    }
+
+    // Reception Pre-payments
+    match /pending_payments/{paymentId} {
+      allow read: if true;
+      allow write: if isValidId(paymentId);
+    }
+
+    // Accounting Revenues
+    match /accounting_revenues/{revenueId} {
+      allow read: if true;
+      allow create, update: if isValidId(revenueId) &&
+        request.resource.data.amount is number;
+      allow delete: if isValidId(revenueId);
+    }
+
+    // Accounting Expenses
+    match /accounting_expenses/{expenseId} {
+      allow read: if true;
+      allow create, update: if isValidId(expenseId) &&
+        request.resource.data.price is number;
+      allow delete: if isValidId(expenseId);
+    }
+
+    // Expense Reports (Reimbursements)
+    match /expense_reports/{reportId} {
+      allow read: if true;
+      allow write: if isValidId(reportId);
+    }
+  }
+}

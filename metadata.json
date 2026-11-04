@@ -1,0 +1,6 @@
+{
+  "name": "Think Green Platform",
+  "description": "Sistema Integrado de Gestão do Think Green Community Center: Secretaria, Financeiro, Acadêmico, Contabilidade, AVA/LMS e Portal do Aluno.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
