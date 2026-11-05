@@ -1,3 +1,13 @@
+import { fetchCollectionStrict, subscribeCollection } from '../../../lib/firebase';
+import { isLocalWritePending, syncCollectionDiff } from '../../../lib/cloud';
+import {
+  DidacticMaterial,
+  Quiz,
+  QuizSubmission,
+  GeneralAnnouncement,
+  ClassLessonPlan,
+} from '../../../types';
+
 export interface ClassTopic {
   id: string;
   classId: string;
@@ -147,15 +157,77 @@ export const INITIAL_ANNOUNCEMENTS: ClassAnnouncement[] = [
   },
 ];
 
-const TOPICS_STORAGE_KEY = 'think_green_class_topics_clean_v2';
-const ANNOUNCEMENTS_STORAGE_KEY = 'think_green_class_announcements_clean_v2';
-const MATERIALS_STORAGE_KEY = 'think_green_didactic_materials_clean_v2';
-const QUIZZES_STORAGE_KEY = 'think_green_quizzes_clean_v2';
-const QUIZ_SUBMISSIONS_STORAGE_KEY = 'think_green_quiz_submissions_clean_v2';
-const GENERAL_ANNOUNCEMENTS_STORAGE_KEY = 'think_green_general_announcements_clean_v2';
-const LESSON_PLANS_STORAGE_KEY = 'think_green_class_lesson_plans_clean_v2';
+// Firestore collections (single source of truth)
+const TOPICS_COLLECTION = 'class_topics';
+const ANNOUNCEMENTS_COLLECTION = 'class_announcements';
+const MATERIALS_COLLECTION = 'didactic_materials';
+const QUIZZES_COLLECTION = 'quizzes';
+const QUIZ_SUBMISSIONS_COLLECTION = 'quiz_submissions';
+const GENERAL_ANNOUNCEMENTS_COLLECTION = 'general_announcements';
+const LESSON_PLANS_COLLECTION = 'lesson_plans';
 
-import { DidacticMaterial, Quiz, QuizSubmission, GeneralAnnouncement, ClassLessonPlan } from '../../../types';
+// In-memory caches hydrated from Firestore before the app renders.
+let topicsCache: ClassTopic[] = [];
+let announcementsCache: ClassAnnouncement[] = [];
+let materialsCache: DidacticMaterial[] = [];
+let quizzesCache: Quiz[] = [];
+let quizSubmissionsCache: QuizSubmission[] = [];
+let generalAnnouncementsCache: GeneralAnnouncement[] = [];
+let lessonPlansCache: ClassLessonPlan[] = [];
+
+const teacherListeners = new Set<() => void>();
+
+export function subscribeTeacherStore(listener: () => void): () => void {
+  teacherListeners.add(listener);
+  return () => {
+    teacherListeners.delete(listener);
+  };
+}
+
+function notifyTeacherStore(): void {
+  queueMicrotask(() => {
+    teacherListeners.forEach((listener) => listener());
+  });
+}
+
+function sameSnapshot(previous: unknown, next: unknown): boolean {
+  return JSON.stringify(previous) === JSON.stringify(next);
+}
+
+export interface TeacherCollections {
+  topics: ClassTopic[];
+  announcements: ClassAnnouncement[];
+  materials: DidacticMaterial[];
+  quizzes: Quiz[];
+  quizSubmissions: QuizSubmission[];
+  generalAnnouncements: GeneralAnnouncement[];
+  lessonPlans: ClassLessonPlan[];
+}
+
+export async function loadTeacherCollections(): Promise<TeacherCollections> {
+  const [topics, announcements, materials, quizzes, quizSubmissions, generalAnnouncements, lessonPlans] =
+    await Promise.all([
+      fetchCollectionStrict<ClassTopic>(TOPICS_COLLECTION).catch(() => []),
+      fetchCollectionStrict<ClassAnnouncement>(ANNOUNCEMENTS_COLLECTION).catch(() => []),
+      fetchCollectionStrict<DidacticMaterial>(MATERIALS_COLLECTION).catch(() => []),
+      fetchCollectionStrict<Quiz>(QUIZZES_COLLECTION).catch(() => []),
+      fetchCollectionStrict<QuizSubmission>(QUIZ_SUBMISSIONS_COLLECTION).catch(() => []),
+      fetchCollectionStrict<GeneralAnnouncement>(GENERAL_ANNOUNCEMENTS_COLLECTION).catch(() => []),
+      fetchCollectionStrict<ClassLessonPlan>(LESSON_PLANS_COLLECTION).catch(() => []),
+    ]);
+
+  return { topics, announcements, materials, quizzes, quizSubmissions, generalAnnouncements, lessonPlans };
+}
+
+export function hydrateTeacherData(data: Partial<TeacherCollections>): void {
+  topicsCache = data.topics ?? [];
+  announcementsCache = data.announcements ?? [];
+  materialsCache = data.materials ?? [];
+  quizzesCache = data.quizzes ?? [];
+  quizSubmissionsCache = data.quizSubmissions ?? [];
+  generalAnnouncementsCache = data.generalAnnouncements ?? [];
+  lessonPlansCache = data.lessonPlans ?? [];
+}
 
 export const INITIAL_DIDACTIC_MATERIALS: DidacticMaterial[] = [
   {
@@ -342,129 +414,75 @@ export const INITIAL_GENERAL_ANNOUNCEMENTS: GeneralAnnouncement[] = [
 ];
 
 export function getStoredTopics(): ClassTopic[] {
-  try {
-    const raw = localStorage.getItem(TOPICS_STORAGE_KEY);
-    if (!raw) {
-      localStorage.setItem(TOPICS_STORAGE_KEY, JSON.stringify([]));
-      return [];
-    }
-    return JSON.parse(raw);
-  } catch {
-    return [];
-  }
+  return topicsCache;
 }
 
 export function saveStoredTopics(topics: ClassTopic[]) {
-  try {
-    localStorage.setItem(TOPICS_STORAGE_KEY, JSON.stringify(topics));
-  } catch (e) {
-    console.error('Error saving topics:', e);
-  }
+  const previous = topicsCache;
+  topicsCache = topics;
+  syncCollectionDiff(TOPICS_COLLECTION, previous, topics).catch((e) =>
+    console.warn('[teacher] Falha ao salvar tópicos no Firestore.', e)
+  );
 }
 
 export function getStoredAnnouncements(): ClassAnnouncement[] {
-  try {
-    const raw = localStorage.getItem(ANNOUNCEMENTS_STORAGE_KEY);
-    if (!raw) {
-      localStorage.setItem(ANNOUNCEMENTS_STORAGE_KEY, JSON.stringify([]));
-      return [];
-    }
-    return JSON.parse(raw);
-  } catch {
-    return [];
-  }
+  return announcementsCache;
 }
 
 export function saveStoredAnnouncements(announcements: ClassAnnouncement[]) {
-  try {
-    localStorage.setItem(ANNOUNCEMENTS_STORAGE_KEY, JSON.stringify(announcements));
-  } catch (e) {
-    console.error('Error saving announcements:', e);
-  }
+  const previous = announcementsCache;
+  announcementsCache = announcements;
+  syncCollectionDiff(ANNOUNCEMENTS_COLLECTION, previous, announcements).catch((e) =>
+    console.warn('[teacher] Falha ao salvar avisos no Firestore.', e)
+  );
 }
 
 export function getStoredDidacticMaterials(): DidacticMaterial[] {
-  try {
-    const raw = localStorage.getItem(MATERIALS_STORAGE_KEY);
-    if (!raw) {
-      localStorage.setItem(MATERIALS_STORAGE_KEY, JSON.stringify([]));
-      return [];
-    }
-    return JSON.parse(raw);
-  } catch {
-    return [];
-  }
+  return materialsCache;
 }
 
 export function saveStoredDidacticMaterials(materials: DidacticMaterial[]) {
-  try {
-    localStorage.setItem(MATERIALS_STORAGE_KEY, JSON.stringify(materials));
-  } catch (e) {
-    console.error('Error saving didactic materials:', e);
-  }
+  const previous = materialsCache;
+  materialsCache = materials;
+  syncCollectionDiff(MATERIALS_COLLECTION, previous, materials).catch((e) =>
+    console.warn('[teacher] Falha ao salvar materiais no Firestore.', e)
+  );
 }
 
 export function getStoredQuizzes(): Quiz[] {
-  try {
-    const raw = localStorage.getItem(QUIZZES_STORAGE_KEY);
-    if (!raw) {
-      localStorage.setItem(QUIZZES_STORAGE_KEY, JSON.stringify([]));
-      return [];
-    }
-    return JSON.parse(raw);
-  } catch {
-    return [];
-  }
+  return quizzesCache;
 }
 
 export function saveStoredQuizzes(quizzes: Quiz[]) {
-  try {
-    localStorage.setItem(QUIZZES_STORAGE_KEY, JSON.stringify(quizzes));
-  } catch (e) {
-    console.error('Error saving quizzes:', e);
-  }
+  const previous = quizzesCache;
+  quizzesCache = quizzes;
+  syncCollectionDiff(QUIZZES_COLLECTION, previous, quizzes).catch((e) =>
+    console.warn('[teacher] Falha ao salvar quizzes no Firestore.', e)
+  );
 }
 
 export function getStoredQuizSubmissions(): QuizSubmission[] {
-  try {
-    const raw = localStorage.getItem(QUIZ_SUBMISSIONS_STORAGE_KEY);
-    if (!raw) {
-      localStorage.setItem(QUIZ_SUBMISSIONS_STORAGE_KEY, JSON.stringify([]));
-      return [];
-    }
-    return JSON.parse(raw);
-  } catch {
-    return [];
-  }
+  return quizSubmissionsCache;
 }
 
 export function saveStoredQuizSubmissions(submissions: QuizSubmission[]) {
-  try {
-    localStorage.setItem(QUIZ_SUBMISSIONS_STORAGE_KEY, JSON.stringify(submissions));
-  } catch (e) {
-    console.error('Error saving quiz submissions:', e);
-  }
+  const previous = quizSubmissionsCache;
+  quizSubmissionsCache = submissions;
+  syncCollectionDiff(QUIZ_SUBMISSIONS_COLLECTION, previous, submissions).catch((e) =>
+    console.warn('[teacher] Falha ao salvar respostas de quiz no Firestore.', e)
+  );
 }
 
 export function getStoredGeneralAnnouncements(): GeneralAnnouncement[] {
-  try {
-    const raw = localStorage.getItem(GENERAL_ANNOUNCEMENTS_STORAGE_KEY);
-    if (!raw) {
-      localStorage.setItem(GENERAL_ANNOUNCEMENTS_STORAGE_KEY, JSON.stringify([]));
-      return [];
-    }
-    return JSON.parse(raw);
-  } catch {
-    return [];
-  }
+  return generalAnnouncementsCache;
 }
 
 export function saveStoredGeneralAnnouncements(announcements: GeneralAnnouncement[]) {
-  try {
-    localStorage.setItem(GENERAL_ANNOUNCEMENTS_STORAGE_KEY, JSON.stringify(announcements));
-  } catch (e) {
-    console.error('Error saving general announcements:', e);
-  }
+  const previous = generalAnnouncementsCache;
+  generalAnnouncementsCache = announcements;
+  syncCollectionDiff(GENERAL_ANNOUNCEMENTS_COLLECTION, previous, announcements).catch((e) =>
+    console.warn('[teacher] Falha ao salvar comunicados gerais no Firestore.', e)
+  );
 }
 
 // =========================================================================
@@ -599,24 +617,25 @@ export const INITIAL_LESSON_PLANS: ClassLessonPlan[] = [
 ];
 
 export function getStoredLessonPlans(): ClassLessonPlan[] {
-  try {
-    const raw = localStorage.getItem(LESSON_PLANS_STORAGE_KEY);
-    if (!raw) {
-      localStorage.setItem(LESSON_PLANS_STORAGE_KEY, JSON.stringify([]));
-      return [];
-    }
-    return JSON.parse(raw);
-  } catch {
-    return [];
-  }
+  return lessonPlansCache;
 }
 
 export function saveStoredLessonPlans(plans: ClassLessonPlan[]) {
-  try {
-    localStorage.setItem(LESSON_PLANS_STORAGE_KEY, JSON.stringify(plans));
-  } catch (e) {
-    console.error('Error saving lesson plans:', e);
-  }
+  const previous = lessonPlansCache;
+  lessonPlansCache = plans;
+  syncCollectionDiff(LESSON_PLANS_COLLECTION, previous, plans).catch((e) =>
+    console.warn('[teacher] Falha ao salvar planos de aula no Firestore.', e)
+  );
+}
+
+export function resetStoredTeacherData(): void {
+  saveStoredTopics([]);
+  saveStoredAnnouncements([]);
+  saveStoredDidacticMaterials([]);
+  saveStoredQuizzes([]);
+  saveStoredQuizSubmissions([]);
+  saveStoredGeneralAnnouncements([]);
+  saveStoredLessonPlans([]);
 }
 
 

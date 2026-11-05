@@ -18,29 +18,23 @@ const KNOWN_ROUTES = [
 
 export type AppRouteName = typeof KNOWN_ROUTES[number] | '';
 
-const BASE_PATH_STORAGE_KEY = 'tg_app_base_path';
+/** In-memory only. The base path is derived from the URL on each page load. */
+let cachedBasePath: string | null = null;
 
 /**
  * Detects and returns the application base path (e.g. "/thinkgreenplatform" or "").
- * Automatically checks window.location and persists in sessionStorage.
  */
 export function getAppBasePath(): string {
   try {
     if (typeof window === 'undefined') return '';
-
-    // Check cached base path first
-    const cached = sessionStorage.getItem(BASE_PATH_STORAGE_KEY);
-    if (cached !== null) {
-      return cached;
-    }
+    if (cachedBasePath !== null) return cachedBasePath;
 
     const pathname = window.location.pathname;
 
     // Explicit check for known repo name thinkgreenplatform
     if (pathname.includes('/thinkgreenplatform')) {
-      const detected = '/thinkgreenplatform';
-      sessionStorage.setItem(BASE_PATH_STORAGE_KEY, detected);
-      return detected;
+      cachedBasePath = '/thinkgreenplatform';
+      return cachedBasePath;
     }
 
     // Split segments and detect if the first segment is a repository/subfolder
@@ -50,14 +44,13 @@ export function getAppBasePath(): string {
       const firstSegment = segments[0].toLowerCase();
       // If the first segment is NOT one of our known routes and NOT a file extension (like index.html)
       if (!KNOWN_ROUTES.includes(firstSegment as any) && !firstSegment.includes('.')) {
-        const detected = '/' + segments[0];
-        sessionStorage.setItem(BASE_PATH_STORAGE_KEY, detected);
-        return detected;
+        cachedBasePath = '/' + segments[0];
+        return cachedBasePath;
       }
     }
 
-    sessionStorage.setItem(BASE_PATH_STORAGE_KEY, '');
-    return '';
+    cachedBasePath = '';
+    return cachedBasePath;
   } catch {
     return '';
   }

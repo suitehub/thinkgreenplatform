@@ -12,106 +12,179 @@ service cloud.firestore {
       return id is string && id.size() > 0 && id.size() <= 128;
     }
 
-    function isSignedIn() {
-      return request.auth != null;
-    }
-
-    function isOwner(userId) {
-      return isSignedIn() && request.auth.uid == userId;
-    }
-
-    function isAdmin() {
-      return isSignedIn() && (
-        request.auth.token.role == 'ADMIN' ||
-        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'ADMIN')
-      );
-    }
-
-    // Connectivity test collection
+    // Connectivity test / seed marker collection
     match /test/{docId} {
       allow read, write: if isValidId(docId);
     }
 
-    // User profiles
-    match /users/{userId} {
+    // ---------------------------------------------------------------
+    // Core application state (one document per entity)
+    // ---------------------------------------------------------------
+    match /users/{docId} {
       allow read: if true;
-      allow write: if isValidId(userId);
+      allow write: if isValidId(docId);
     }
 
-    // Courses and Classrooms
-    match /courses/{courseId} {
+    match /courses/{docId} {
       allow read: if true;
-      allow write: if isValidId(courseId);
+      allow write: if isValidId(docId);
     }
 
-    match /classes/{classId} {
+    match /classes/{docId} {
       allow read: if true;
-      allow write: if isValidId(classId);
+      allow write: if isValidId(docId);
     }
 
-    // Students master records
-    match /students/{studentDocId} {
+    match /students/{docId} {
       allow read: if true;
-      allow create, update: if isValidId(studentDocId) &&
+      allow create, update: if isValidId(docId) &&
         request.resource.data.name is string &&
         request.resource.data.name.size() > 0;
-      allow delete: if isValidId(studentDocId);
+      allow delete: if isValidId(docId);
     }
 
-    // Enrollments
-    match /enrollments/{enrollmentId} {
+    match /enrollments/{docId} {
       allow read: if true;
-      allow write: if isValidId(enrollmentId);
+      allow write: if isValidId(docId);
     }
 
-    // Charges & Installments
-    match /charges/{chargeId} {
+    match /charges/{docId} {
       allow read: if true;
-      allow write: if isValidId(chargeId);
+      allow write: if isValidId(docId);
     }
 
-    // Payment Receipts
-    match /receipts/{receiptId} {
+    match /receipts/{docId} {
       allow read: if true;
-      allow create, update: if isValidId(receiptId) &&
-        request.resource.data.amount is number &&
-        request.resource.data.paymentMethod is string;
-      allow delete: if isValidId(receiptId);
+      allow write: if isValidId(docId);
     }
 
-    // Reception Pre-registrations
-    match /pending_registrations/{pendingId} {
+    match /cash_registers/{docId} {
       allow read: if true;
-      allow write: if isValidId(pendingId);
+      allow write: if isValidId(docId);
     }
 
-    // Reception Pre-payments
-    match /pending_payments/{paymentId} {
+    match /cash_movements/{docId} {
       allow read: if true;
-      allow write: if isValidId(paymentId);
+      allow write: if isValidId(docId);
     }
 
-    // Accounting Revenues
-    match /accounting_revenues/{revenueId} {
+    match /assessments/{docId} {
       allow read: if true;
-      allow create, update: if isValidId(revenueId) &&
-        request.resource.data.amount is number;
-      allow delete: if isValidId(revenueId);
+      allow write: if isValidId(docId);
     }
 
-    // Accounting Expenses
-    match /accounting_expenses/{expenseId} {
+    match /grades/{docId} {
       allow read: if true;
-      allow create, update: if isValidId(expenseId) &&
-        request.resource.data.price is number;
-      allow delete: if isValidId(expenseId);
+      allow write: if isValidId(docId);
     }
 
-    // Expense Reports (Reimbursements)
-    match /expense_reports/{reportId} {
+    match /lessons/{docId} {
       allow read: if true;
-      allow write: if isValidId(reportId);
+      allow write: if isValidId(docId);
+    }
+
+    match /assignments/{docId} {
+      allow read: if true;
+      allow write: if isValidId(docId);
+    }
+
+    match /submissions/{docId} {
+      allow read: if true;
+      allow write: if isValidId(docId);
+    }
+
+    match /attendance/{docId} {
+      allow read: if true;
+      allow write: if isValidId(docId);
+    }
+
+    match /accounting_transactions/{docId} {
+      allow read: if true;
+      allow write: if isValidId(docId);
+    }
+
+    match /audit_logs/{docId} {
+      allow read: if true;
+      allow write: if isValidId(docId);
+    }
+
+    match /notifications/{docId} {
+      allow read: if true;
+      allow write: if isValidId(docId);
+    }
+
+    match /pending_registrations/{docId} {
+      allow read: if true;
+      allow write: if isValidId(docId);
+    }
+
+    match /pending_payments/{docId} {
+      allow read: if true;
+      allow write: if isValidId(docId);
+    }
+
+    // ---------------------------------------------------------------
+    // System settings (single document: settings/main)
+    // ---------------------------------------------------------------
+    match /settings/{docId} {
+      allow read: if true;
+      allow write: if docId == 'main';
+    }
+
+    // ---------------------------------------------------------------
+    // Accounting module collections
+    // ---------------------------------------------------------------
+    match /accounting_revenues/{docId} {
+      allow read: if true;
+      allow write: if isValidId(docId);
+    }
+
+    match /accounting_expenses/{docId} {
+      allow read: if true;
+      allow write: if isValidId(docId);
+    }
+
+    match /expense_reports/{docId} {
+      allow read: if true;
+      allow write: if isValidId(docId);
+    }
+
+    // ---------------------------------------------------------------
+    // Teacher / LMS module collections
+    // ---------------------------------------------------------------
+    match /class_topics/{docId} {
+      allow read: if true;
+      allow write: if isValidId(docId);
+    }
+
+    match /class_announcements/{docId} {
+      allow read: if true;
+      allow write: if isValidId(docId);
+    }
+
+    match /didactic_materials/{docId} {
+      allow read: if true;
+      allow write: if isValidId(docId);
+    }
+
+    match /quizzes/{docId} {
+      allow read: if true;
+      allow write: if isValidId(docId);
+    }
+
+    match /quiz_submissions/{docId} {
+      allow read: if true;
+      allow write: if isValidId(docId);
+    }
+
+    match /general_announcements/{docId} {
+      allow read: if true;
+      allow write: if isValidId(docId);
+    }
+
+    match /lesson_plans/{docId} {
+      allow read: if true;
+      allow write: if isValidId(docId);
     }
   }
 }

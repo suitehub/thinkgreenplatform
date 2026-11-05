@@ -48,8 +48,6 @@ import {
   INITIAL_PENDING_PAYMENTS,
 } from './mockData';
 
-export const STORAGE_KEY = 'think_green_platform_clean_v2';
-
 export interface AppState {
   currentUser: User;
   users: User[];
@@ -93,133 +91,120 @@ export const deduplicateById = <T extends { id?: string | number }>(items: T[]):
 // Master Admin account only (all other logins and mock teachers removed)
 const cleanInitialUsers = INITIAL_USERS;
 
-export const loadInitialState = (): AppState => {
-  // Clear any legacy test data from prior development versions
-  if (typeof window !== 'undefined') {
-    try {
-      [
-        'think_green_platform_clean_v1',
-        'think_green_platform_v6_data',
-        'think_green_platform_v5_data',
-        'think_green_platform_v4_data',
-        'think_green_accounting_revenues_clean_v1',
-        'think_green_accounting_expenses_clean_v1',
-        'think_green_expense_reports_clean_v1',
-        'think_green_accounting_revenues_v1',
-        'think_green_accounting_revenues_v2',
-        'think_green_expense_reports_v1',
-        'think_green_expense_reports_v2',
-        'tg_lesson_plans_v1',
-        'tg_lesson_plans_clean_v1',
-      ].forEach((key) => localStorage.removeItem(key));
-    } catch {}
-  }
+/**
+ * Canonical default state used on the very first run (before Firestore is seeded)
+ * and whenever the remote database is unreachable.
+ */
+export const getDefaultState = (): AppState => ({
+  currentUser: cleanInitialUsers[0], // Super Admin by default
+  users: deduplicateById(cleanInitialUsers),
+  students: [],
+  courses: deduplicateById(INITIAL_COURSES),
+  classes: deduplicateById(INITIAL_CLASSES),
+  enrollments: [],
+  charges: [],
+  receipts: [],
+  cashRegisters: deduplicateById(INITIAL_CASH_REGISTERS),
+  cashMovements: [],
+  assessments: [],
+  grades: [],
+  lessons: [],
+  assignments: [],
+  submissions: [],
+  attendance: [],
+  accountingTransactions: [],
+  auditLogs: [],
+  notifications: [],
+  pendingRegistrations: [],
+  pendingPayments: [],
+  settings: INITIAL_SETTINGS,
+});
 
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      const parsed = JSON.parse(saved);
-
-      // Normalize users to guarantee roles array
-      const rawUsers: User[] = deduplicateById(parsed.users || cleanInitialUsers);
-      const normalizedUsers: User[] = rawUsers.map((u) => {
-        let userRoles: UserRole[] = Array.isArray(u.roles) && u.roles.length > 0 ? [...u.roles] : [u.role];
-        if (u.id === 'user_super_admin' && !userRoles.includes('TEACHER')) {
-          userRoles = ['SUPER_ADMIN', 'TEACHER'];
-        }
-        return {
-          ...u,
-          roles: userRoles,
-          role: u.role || userRoles[0] || 'SUPER_ADMIN',
-        };
-      });
-
-      const rawStudents: Student[] = deduplicateById(parsed.students || []);
-      const normalizedStudents: Student[] = rawStudents.map((s) => ({
-        ...s,
-        status: ((s.status as string) === 'ENCERRADO' ? 'INATIVO' : s.status) || 'ATIVO',
-        systemAccess: s.systemAccess || 'LIBERADO',
-      }));
-
-      let rawCurrentUser: User = parsed.currentUser || normalizedUsers[0] || cleanInitialUsers[0];
-      const matchedStoredUser = normalizedUsers.find((u) => u.id === rawCurrentUser.id);
-      const normalizedCurrentUser: User = matchedStoredUser
-        ? { ...matchedStoredUser, role: rawCurrentUser.role || matchedStoredUser.role }
-        : {
-            ...rawCurrentUser,
-            roles: Array.isArray(rawCurrentUser.roles) && rawCurrentUser.roles.length > 0
-              ? rawCurrentUser.roles
-              : [rawCurrentUser.role],
-          };
-
-      return {
-        currentUser: normalizedCurrentUser,
-        users: normalizedUsers,
-        students: normalizedStudents,
-        courses: deduplicateById(parsed.courses || INITIAL_COURSES),
-        classes: deduplicateById(parsed.classes || INITIAL_CLASSES),
-        enrollments: deduplicateById(parsed.enrollments || []),
-        charges: deduplicateById(parsed.charges || []),
-        receipts: deduplicateById(parsed.receipts || []),
-        cashRegisters: deduplicateById(parsed.cashRegisters || INITIAL_CASH_REGISTERS),
-        cashMovements: deduplicateById(parsed.cashMovements || []),
-        assessments: deduplicateById(parsed.assessments || []),
-        grades: deduplicateById(parsed.grades || []),
-        lessons: deduplicateById(parsed.lessons || []),
-        assignments: deduplicateById(parsed.assignments || []),
-        submissions: deduplicateById(parsed.submissions || []),
-        attendance: deduplicateById(parsed.attendance || []),
-        accountingTransactions: deduplicateById(parsed.accountingTransactions || []),
-        auditLogs: deduplicateById(parsed.auditLogs || []),
-        notifications: deduplicateById(parsed.notifications || []),
-        pendingRegistrations: deduplicateById(parsed.pendingRegistrations || []),
-        pendingPayments: deduplicateById(parsed.pendingPayments || []),
-        settings: {
-          ...INITIAL_SETTINGS,
-          ...(parsed.settings || {}),
-          rulesConfig: {
-            ...INITIAL_SETTINGS.rulesConfig,
-            ...(parsed.settings?.rulesConfig || {}),
-          },
-        },
-      };
+/**
+ * Guarantees every user has a roles array and a valid active role.
+ */
+export const normalizeUsers = (users: User[]): User[] =>
+  deduplicateById(users).map((u) => {
+    let userRoles: UserRole[] =
+      Array.isArray(u.roles) && u.roles.length > 0 ? [...u.roles] : [u.role];
+    if (u.id === 'user_super_admin' && !userRoles.includes('TEACHER')) {
+      userRoles = ['SUPER_ADMIN', 'TEACHER'];
     }
-  } catch (e) {
-    console.error('Error loading state from localStorage:', e);
-  }
+    return {
+      ...u,
+      roles: userRoles,
+      role: u.role || userRoles[0] || 'SUPER_ADMIN',
+    };
+  });
+
+/**
+ * Builds the application state from data loaded from Firestore.
+ * When a collection is missing (read failure) its default value is used.
+ */
+export const loadInitialState = (remote?: Partial<AppState> | null): AppState => {
+  const defaults = getDefaultState();
+  if (!remote) return defaults;
+
+  const remoteUsers = deduplicateById(
+    remote.users && remote.users.length > 0 ? remote.users : defaults.users
+  );
+  const normalizedUsers = normalizeUsers(remoteUsers);
+
+  const rawCurrentUser: User =
+    remote.currentUser || normalizedUsers[0] || defaults.currentUser;
+  const matchedStoredUser = normalizedUsers.find((u) => u.id === rawCurrentUser.id);
+  const normalizedCurrentUser: User = matchedStoredUser
+    ? { ...matchedStoredUser, role: rawCurrentUser.role || matchedStoredUser.role }
+    : {
+        ...rawCurrentUser,
+        roles:
+          Array.isArray(rawCurrentUser.roles) && rawCurrentUser.roles.length > 0
+            ? rawCurrentUser.roles
+            : [rawCurrentUser.role],
+      };
+
+  const rawStudents = deduplicateById(remote.students ?? defaults.students);
+  const normalizedStudents: Student[] = rawStudents.map((s) => ({
+    ...s,
+    status: ((s.status as string) === 'ENCERRADO' ? 'INATIVO' : s.status) || 'ATIVO',
+    systemAccess: s.systemAccess || 'LIBERADO',
+  }));
 
   return {
-    currentUser: cleanInitialUsers[0], // Super Admin by default
-    users: deduplicateById(cleanInitialUsers),
-    students: [],
-    courses: deduplicateById(INITIAL_COURSES),
-    classes: deduplicateById(INITIAL_CLASSES),
-    enrollments: [],
-    charges: [],
-    receipts: [],
-    cashRegisters: deduplicateById(INITIAL_CASH_REGISTERS),
-    cashMovements: [],
-    assessments: [],
-    grades: [],
-    lessons: [],
-    assignments: [],
-    submissions: [],
-    attendance: [],
-    accountingTransactions: [],
-    auditLogs: [],
-    notifications: [],
-    pendingRegistrations: [],
-    pendingPayments: [],
-    settings: INITIAL_SETTINGS,
+    currentUser: normalizedCurrentUser,
+    users: normalizedUsers,
+    students: normalizedStudents,
+    courses: deduplicateById(remote.courses ?? defaults.courses),
+    classes: deduplicateById(remote.classes ?? defaults.classes),
+    enrollments: deduplicateById(remote.enrollments ?? defaults.enrollments),
+    charges: deduplicateById(remote.charges ?? defaults.charges),
+    receipts: deduplicateById(remote.receipts ?? defaults.receipts),
+    cashRegisters: deduplicateById(remote.cashRegisters ?? defaults.cashRegisters),
+    cashMovements: deduplicateById(remote.cashMovements ?? defaults.cashMovements),
+    assessments: deduplicateById(remote.assessments ?? defaults.assessments),
+    grades: deduplicateById(remote.grades ?? defaults.grades),
+    lessons: deduplicateById(remote.lessons ?? defaults.lessons),
+    assignments: deduplicateById(remote.assignments ?? defaults.assignments),
+    submissions: deduplicateById(remote.submissions ?? defaults.submissions),
+    attendance: deduplicateById(remote.attendance ?? defaults.attendance),
+    accountingTransactions: deduplicateById(
+      remote.accountingTransactions ?? defaults.accountingTransactions
+    ),
+    auditLogs: deduplicateById(remote.auditLogs ?? defaults.auditLogs),
+    notifications: deduplicateById(remote.notifications ?? defaults.notifications),
+    pendingRegistrations: deduplicateById(
+      remote.pendingRegistrations ?? defaults.pendingRegistrations
+    ),
+    pendingPayments: deduplicateById(remote.pendingPayments ?? defaults.pendingPayments),
+    settings: {
+      ...defaults.settings,
+      ...(remote.settings || {}),
+      rulesConfig: {
+        ...defaults.settings.rulesConfig,
+        ...(remote.settings?.rulesConfig || {}),
+      },
+    },
   };
-};
-
-export const saveStateToLocalStorage = (state: AppState) => {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  } catch (e) {
-    console.error('Error saving state to localStorage:', e);
-  }
 };
 
 /**

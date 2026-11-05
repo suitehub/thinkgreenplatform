@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo, useRef } from 'react';
 import confetti from 'canvas-confetti';
 import {
   User,
@@ -42,21 +42,16 @@ export interface PlanNegotiationInput {
 import {
   AppState,
   loadInitialState,
-  saveStateToLocalStorage,
   generateNextStudentId,
   generateNextReceiptNumber,
   evaluateExamAccess,
   evaluateClassroomAccess,
   deduplicateById,
-  STORAGE_KEY,
 } from '../lib/storage';
 
-import {
-  testFirestoreConnection,
-  syncEntityToFirestore,
-  deleteEntityFromFirestore,
-  fetchCollectionFromFirestore,
-} from '../lib/firebase';
+import { getHydratedState, syncStateDiff } from '../lib/cloud';
+import { resetStoredAccountingData } from '../components/modules/accounting/accountingData';
+import { resetStoredTeacherData } from '../components/modules/teacher/teacherData';
 
 interface AppContextType {
   state: AppState;
@@ -195,63 +190,31 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [state, setState] = useState<AppState>(() => loadInitialState());
+  // State is hydrated from Firestore before the React tree mounts (see lib/bootstrap.ts).
+  const [state, setState] = useState<AppState>(() => loadInitialState(getHydratedState()));
 
-  // Save to localStorage on state changes
+  const previousStateRef = useRef<AppState>(state);
+  const didMountRef = useRef(false);
+
+  // Persist every state difference to Firestore (single source of truth).
   useEffect(() => {
-    saveStateToLocalStorage(state);
+    if (!didMountRef.current) {
+      didMountRef.current = true;
+      previousStateRef.current = state;
+      return;
+    }
+
+    const previous = previousStateRef.current;
+    previousStateRef.current = state;
+    syncStateDiff(previous, state).catch((err) => {
+      console.warn('[AppContext] Falha ao persistir alterações no Firestore.', err);
+    });
   }, [state]);
-
-  // Verify Firestore connectivity & optionally hydrate any cloud records
-  useEffect(() => {
-    testFirestoreConnection().catch(() => {});
-
-    // Hydrate remote data from Firestore collections if available
-    const hydrateRemoteCollections = async () => {
-      try {
-        const [remoteStudents, remoteCharges, remoteReceipts, remotePendingRegs, remotePendingPay] =
-          await Promise.all([
-            fetchCollectionFromFirestore<Student>('students'),
-            fetchCollectionFromFirestore<Charge>('charges'),
-            fetchCollectionFromFirestore<PaymentReceipt>('receipts'),
-            fetchCollectionFromFirestore<PendingRegistration>('pending_registrations'),
-            fetchCollectionFromFirestore<PendingPayment>('pending_payments'),
-          ]);
-
-        if (
-          remoteStudents.length > 0 ||
-          remoteCharges.length > 0 ||
-          remoteReceipts.length > 0 ||
-          remotePendingRegs.length > 0 ||
-          remotePendingPay.length > 0
-        ) {
-          setState((prev) => ({
-            ...prev,
-            students: deduplicateById([...prev.students, ...remoteStudents]),
-            charges: deduplicateById([...prev.charges, ...remoteCharges]),
-            receipts: deduplicateById([...prev.receipts, ...remoteReceipts]),
-            pendingRegistrations: deduplicateById([...prev.pendingRegistrations, ...remotePendingRegs]),
-            pendingPayments: deduplicateById([...prev.pendingPayments, ...remotePendingPay]),
-          }));
-        }
-      } catch (err) {
-        console.warn('Firestore hydration warning:', err);
-      }
-    };
-
-    hydrateRemoteCollections();
-  }, []);
 
   const currentUser = state.currentUser;
 
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
-    try {
-      const savedAuth = localStorage.getItem('think_green_auth_session');
-      return savedAuth === 'true';
-    } catch {
-      return false;
-    }
-  });
+  // Sessions live in memory only; a reload requires a new login.
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
 
   const setCurrentUser = (user: User) => {
     setState((prev) => ({ ...prev, currentUser: user }));
@@ -265,9 +228,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const user = state.currentUser || state.users[0];
       setCurrentUser(user);
       setIsAuthenticated(true);
-      try {
-        localStorage.setItem('think_green_auth_session', 'true');
-      } catch {}
       return { success: true, user, message: `Bem-vindo(a), ${user.name}!` };
     }
 
@@ -357,18 +317,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     setCurrentUser(matchedUser);
     setIsAuthenticated(true);
-    try {
-      localStorage.setItem('think_green_auth_session', 'true');
-    } catch {}
 
     return { success: true, user: matchedUser, message: `Bem-vindo(a), ${matchedUser.name}!` };
   };
 
   const logout = () => {
     setIsAuthenticated(false);
-    try {
-      localStorage.removeItem('think_green_auth_session');
-    } catch {}
   };
 
   const switchRole = (role: UserRole) => {
@@ -602,12 +556,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       charges: deduplicateById([...newCharges, ...prev.charges]),
     }));
 
-    // Seamlessly persist in Firestore
-    syncEntityToFirestore('students', newStudent).catch(() => {});
-    syncEntityToFirestore('users', newStudentUser).catch(() => {});
-    syncEntityToFirestore('enrollments', newEnrollment).catch(() => {});
-    newCharges.forEach((c) => syncEntityToFirestore('charges', c).catch(() => {}));
-
     logAudit(
       'SECRETARIAT',
       'NOVO_ALUNO_MATRICULA',
@@ -653,9 +601,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       ...prev,
       pendingRegistrations: deduplicateById([newPending, ...(prev.pendingRegistrations || [])]),
     }));
-
-    // Seamlessly persist in Firestore
-    syncEntityToFirestore('pending_registrations', newPending).catch(() => {});
 
     // Audit Log
     logAudit(
@@ -920,7 +865,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       ...prev,
       pendingRegistrations: (prev.pendingRegistrations || []).filter((p) => p.id !== pendingId),
     }));
-    deleteEntityFromFirestore('pending_registrations', pendingId).catch(() => {});
   };
 
   /**
@@ -949,9 +893,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       ...prev,
       pendingPayments: deduplicateById([newPending, ...(prev.pendingPayments || [])]),
     }));
-
-    // Seamlessly persist in Firestore
-    syncEntityToFirestore('pending_payments', newPending).catch(() => {});
 
     logAudit(
       'FINANCE',
@@ -1077,7 +1018,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       ...prev,
       pendingPayments: (prev.pendingPayments || []).filter((p) => p.id !== pendingPaymentId),
     }));
-    deleteEntityFromFirestore('pending_payments', pendingPaymentId).catch(() => {});
   };
 
   /**
@@ -1087,9 +1027,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setState((prev) => {
       const updatedStudents = prev.students.map((s) => {
         if (s.id === studentId || s.studentId === studentId) {
-          const updated = { ...s, ...data };
-          syncEntityToFirestore('students', updated).catch(() => {});
-          return updated;
+          return { ...s, ...data };
         }
         return s;
       });
@@ -1454,17 +1392,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       cashMovements: deduplicateById(newCashMovements),
       accountingTransactions: deduplicateById([newAccountingTx, ...prev.accountingTransactions]),
     }));
-
-    // Seamlessly persist receipt and updated charge to Firestore
-    syncEntityToFirestore('receipts', newReceipt).catch(() => {});
-    syncEntityToFirestore('charges', {
-      ...charge,
-      status: 'PAGO',
-      paidAmount,
-      paidAt: nowTimestamp,
-      paymentMethod,
-      receiptNumber,
-    }).catch(() => {});
 
     // Trigger visual celebratory confetti for instant feedback
     try {
@@ -2576,7 +2503,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const resetToDefaultData = () => {
-    localStorage.removeItem(STORAGE_KEY);
+    resetStoredAccountingData();
+    resetStoredTeacherData();
     setState(loadInitialState());
   };
 

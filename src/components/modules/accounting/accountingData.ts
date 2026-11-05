@@ -7,7 +7,8 @@ import {
   AccountingMacroArea,
   RevenueSubArea,
 } from '../../../types';
-import { syncEntityToFirestore, fetchCollectionFromFirestore } from '../../../lib/firebase';
+import { fetchCollectionStrict, subscribeCollection } from '../../../lib/firebase';
+import { isLocalWritePending, syncCollectionDiff } from '../../../lib/cloud';
 
 export const OFFICIAL_BUDGET_MENUS: ExpenseBudget[] = [
   'Preschool',
@@ -949,84 +950,126 @@ export const INITIAL_EXPENSE_REPORTS: StaffExpenseReport[] = [
   },
 ];
 
-// Storage keys
-const ACCOUNTING_REVENUES_STORAGE_KEY = 'think_green_accounting_revenues_clean_v2';
-const ACCOUNTING_EXPENSES_STORAGE_KEY = 'think_green_accounting_expenses_clean_v2';
-const EXPENSE_REPORTS_STORAGE_KEY = 'think_green_expense_reports_clean_v2';
+// Firestore collections (single source of truth)
+const ACCOUNTING_REVENUES_COLLECTION = 'accounting_revenues';
+const ACCOUNTING_EXPENSES_COLLECTION = 'accounting_expenses';
+const EXPENSE_REPORTS_COLLECTION = 'expense_reports';
 
-export function getStoredAccountingRevenues(): AccountingRevenue[] {
-  try {
-    const raw = localStorage.getItem(ACCOUNTING_REVENUES_STORAGE_KEY);
-    if (!raw) {
-      localStorage.setItem(ACCOUNTING_REVENUES_STORAGE_KEY, JSON.stringify([]));
-      return [];
-    }
-    return JSON.parse(raw);
-  } catch {
-    return [];
-  }
+// In-memory caches hydrated from Firestore before the app renders.
+let accountingRevenuesCache: AccountingRevenue[] = [];
+let accountingExpensesCache: AccountingExpenseItem[] = [];
+let expenseReportsCache: StaffExpenseReport[] = [];
+
+const accountingListeners = new Set<() => void>();
+
+export function subscribeAccountingStore(listener: () => void): () => void {
+  accountingListeners.add(listener);
+  return () => {
+    accountingListeners.delete(listener);
+  };
 }
 
-export function saveStoredAccountingRevenues(revenues: AccountingRevenue[]) {
-  try {
-    localStorage.setItem(ACCOUNTING_REVENUES_STORAGE_KEY, JSON.stringify(revenues));
-    // Asynchronously synchronize with Firestore collection
-    revenues.forEach((rev) => {
-      syncEntityToFirestore('accounting_revenues', rev).catch(() => {});
-    });
-  } catch (e) {
-    console.error('Error saving accounting revenues:', e);
-  }
+function notifyAccountingStore(): void {
+  queueMicrotask(() => {
+    accountingListeners.forEach((listener) => listener());
+  });
+}
+
+function sameSnapshot(previous: unknown, next: unknown): boolean {
+  return JSON.stringify(previous) === JSON.stringify(next);
+}
+
+export interface AccountingCollections {
+  revenues: AccountingRevenue[];
+  expenses: AccountingExpenseItem[];
+  reports: StaffExpenseReport[];
+}
+
+export async function loadAccountingCollections(): Promise<AccountingCollections> {
+  const [revenues, expenses, reports] = await Promise.all([
+    fetchCollectionStrict<AccountingRevenue>(ACCOUNTING_REVENUES_COLLECTION).catch(() => []),
+    fetchCollectionStrict<AccountingExpenseItem>(ACCOUNTING_EXPENSES_COLLECTION).catch(() => []),
+    fetchCollectionStrict<StaffExpenseReport>(EXPENSE_REPORTS_COLLECTION).catch(() => []),
+  ]);
+  return { revenues, expenses, reports };
+}
+
+export function hydrateAccountingData(data: Partial<AccountingCollections>): void {
+  accountingRevenuesCache = data.revenues ?? [];
+  accountingExpensesCache = data.expenses ?? [];
+  expenseReportsCache = data.reports ?? [];
+}
+
+export function getStoredAccountingRevenues(): AccountingRevenue[] {
+  return accountingRevenuesCache.slice();
+}
+
+export function saveStoredAccountingRevenues(revenues: AccountingRevenue[]): void {
+  const previous = accountingRevenuesCache;
+  const next = revenues.slice();
+  accountingRevenuesCache = next;
+  notifyAccountingStore();
+  syncCollectionDiff(ACCOUNTING_REVENUES_COLLECTION, previous, next).catch((e) =>
+    console.warn('[accounting] Falha ao salvar receitas no Firestore.', e)
+  );
 }
 
 export function getStoredAccountingExpenses(): AccountingExpenseItem[] {
-  try {
-    const raw = localStorage.getItem(ACCOUNTING_EXPENSES_STORAGE_KEY);
-    if (!raw) {
-      localStorage.setItem(ACCOUNTING_EXPENSES_STORAGE_KEY, JSON.stringify([]));
-      return [];
-    }
-    return JSON.parse(raw);
-  } catch {
-    return [];
-  }
+  return accountingExpensesCache.slice();
 }
 
-export function saveStoredAccountingExpenses(expenses: AccountingExpenseItem[]) {
-  try {
-    localStorage.setItem(ACCOUNTING_EXPENSES_STORAGE_KEY, JSON.stringify(expenses));
-    // Asynchronously synchronize with Firestore collection
-    expenses.forEach((exp) => {
-      syncEntityToFirestore('accounting_expenses', exp).catch(() => {});
-    });
-  } catch (e) {
-    console.error('Error saving accounting expenses:', e);
-  }
+export function saveStoredAccountingExpenses(expenses: AccountingExpenseItem[]): void {
+  const previous = accountingExpensesCache;
+  const next = expenses.slice();
+  accountingExpensesCache = next;
+  notifyAccountingStore();
+  syncCollectionDiff(ACCOUNTING_EXPENSES_COLLECTION, previous, next).catch((e) =>
+    console.warn('[accounting] Falha ao salvar despesas no Firestore.', e)
+  );
 }
 
 export function getStoredExpenseReports(): StaffExpenseReport[] {
-  try {
-    const raw = localStorage.getItem(EXPENSE_REPORTS_STORAGE_KEY);
-    if (!raw) {
-      localStorage.setItem(EXPENSE_REPORTS_STORAGE_KEY, JSON.stringify([]));
-      return [];
-    }
-    return JSON.parse(raw);
-  } catch {
-    return [];
-  }
+  return expenseReportsCache.slice();
 }
 
-export function saveStoredExpenseReports(reports: StaffExpenseReport[]) {
-  try {
-    localStorage.setItem(EXPENSE_REPORTS_STORAGE_KEY, JSON.stringify(reports));
-    // Asynchronously synchronize with Firestore collection
-    reports.forEach((rep) => {
-      syncEntityToFirestore('expense_reports', rep).catch(() => {});
-    });
-  } catch (e) {
-    console.error('Error saving expense reports:', e);
-  }
+export function saveStoredExpenseReports(reports: StaffExpenseReport[]): void {
+  const previous = expenseReportsCache;
+  const next = reports.slice();
+  expenseReportsCache = next;
+  notifyAccountingStore();
+  syncCollectionDiff(EXPENSE_REPORTS_COLLECTION, previous, next).catch((e) =>
+    console.warn('[accounting] Falha ao salvar reembolsos no Firestore.', e)
+  );
+}
+
+let accountingWatchStarted = false;
+
+/** Keeps the accounting caches aligned with Firestore after the first load. */
+export function startAccountingWatch(): void {
+  if (accountingWatchStarted) return;
+  accountingWatchStarted = true;
+
+  subscribeCollection<AccountingRevenue>(ACCOUNTING_REVENUES_COLLECTION, (items) => {
+    if (isLocalWritePending() || sameSnapshot(accountingRevenuesCache, items)) return;
+    accountingRevenuesCache = items;
+    notifyAccountingStore();
+  });
+  subscribeCollection<AccountingExpenseItem>(ACCOUNTING_EXPENSES_COLLECTION, (items) => {
+    if (isLocalWritePending() || sameSnapshot(accountingExpensesCache, items)) return;
+    accountingExpensesCache = items;
+    notifyAccountingStore();
+  });
+  subscribeCollection<StaffExpenseReport>(EXPENSE_REPORTS_COLLECTION, (items) => {
+    if (isLocalWritePending() || sameSnapshot(expenseReportsCache, items)) return;
+    expenseReportsCache = items;
+    notifyAccountingStore();
+  });
+}
+
+export function resetStoredAccountingData(): void {
+  saveStoredAccountingRevenues([]);
+  saveStoredAccountingExpenses([]);
+  saveStoredExpenseReports([]);
 }
 
 /**
