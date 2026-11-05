@@ -44,7 +44,7 @@ export const INITIAL_USERS: User[] = [
   {
     id: 'user_master_admin',
     name: 'Eng. Ricky Jorge Castro',
-    email: 'ricky@thinkgreen.org',
+    email: 'rickyjorgecastro@gmail.com',
     role: 'SUPER_ADMIN',
     roles: ['SUPER_ADMIN', 'SECRETARIAT', 'RECEPTION', 'FINANCE', 'ACCOUNTING', 'TEACHER', 'STUDENT'],
     department: 'Diretoria Executiva & Gestão Geral',

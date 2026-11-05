@@ -180,7 +180,7 @@ export const LoginPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => {
-                  setIdentifier('ricky@thinkgreen.org');
+                  setIdentifier('rickyjorgecastro@gmail.com');
                   setPassword('admin123');
                 }}
                 className="text-[11px] font-bold text-[#075e38] hover:underline cursor-pointer"

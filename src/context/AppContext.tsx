@@ -245,8 +245,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       matchedUser = state.users.find((u) => u.name.toLowerCase().includes(query));
     }
 
-    if (!matchedUser && (query === 'admin@thinkgreen.org' || query === 'admin')) {
-      matchedUser = state.users[0];
+    if (
+      !matchedUser &&
+      (query === 'admin@thinkgreen.org' ||
+        query === 'admin' ||
+        query === 'rickyjorgecastro@gmail.com' ||
+        query === 'ricky@thinkgreen.org')
+    ) {
+      matchedUser =
+        state.users.find(
+          (u) => u.role === 'SUPER_ADMIN' || u.roles?.includes('SUPER_ADMIN')
+        ) || state.users[0];
     }
 
     // 3. Match from student registry if student logging in with STU ID / email / name
