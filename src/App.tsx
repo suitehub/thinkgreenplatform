@@ -6,6 +6,7 @@
 import React, { useState, useEffect } from 'react';
 import { AppProvider, useApp } from './context/AppContext';
 import { LoginPage } from './components/auth/LoginPage';
+import { PendingApprovalPage } from './components/auth/PendingApprovalPage';
 import { Sidebar } from './components/layout/Sidebar';
 import { Topbar } from './components/layout/Topbar';
 import { StudentPortal } from './components/modules/student/StudentPortal';
@@ -27,34 +28,29 @@ const AuthenticatedLayout: React.FC = () => {
 
   // Sync URL on initial mount or popstate (e.g. /thinkgreenplatform/contabil, /contabil, etc.)
   useEffect(() => {
+    const assignedRoles = currentUser.roles || [];
+
     const handleUrlRoute = () => {
       try {
         const route = parseAppRoute();
+        const routeRole =
+          route === 'contabil' || route === 'accounting'
+            ? 'ACCOUNTING'
+            : route === 'secretaria'
+            ? 'SECRETARIAT'
+            : route === 'recepcao'
+            ? 'RECEPTION'
+            : route === 'financeiro'
+            ? 'FINANCE'
+            : route === 'professor'
+            ? 'TEACHER'
+            : route === 'aluno'
+            ? 'STUDENT'
+            : null;
 
-        if (route === 'contabil' || route === 'accounting') {
-          if (currentUser.role !== 'ACCOUNTING') {
-            switchRole('ACCOUNTING');
-          }
-        } else if (route === 'secretaria') {
-          if (currentUser.role !== 'SECRETARIAT') {
-            switchRole('SECRETARIAT');
-          }
-        } else if (route === 'recepcao') {
-          if (currentUser.role !== 'RECEPTION') {
-            switchRole('RECEPTION');
-          }
-        } else if (route === 'financeiro') {
-          if (currentUser.role !== 'FINANCE') {
-            switchRole('FINANCE');
-          }
-        } else if (route === 'professor') {
-          if (currentUser.role !== 'TEACHER') {
-            switchRole('TEACHER');
-          }
-        } else if (route === 'aluno') {
-          if (currentUser.role !== 'STUDENT') {
-            switchRole('STUDENT');
-          }
+        // Only navigate to modules the authenticated employee actually owns.
+        if (routeRole && assignedRoles.includes(routeRole) && currentUser.role !== routeRole) {
+          switchRole(routeRole);
         }
       } catch {
         // Safe fallback
@@ -64,7 +60,7 @@ const AuthenticatedLayout: React.FC = () => {
     handleUrlRoute();
     window.addEventListener('popstate', handleUrlRoute);
     return () => window.removeEventListener('popstate', handleUrlRoute);
-  }, []);
+  }, [currentUser.role, currentUser.roles, switchRole]);
 
   // Sync browser URL whenever user role changes preserving repository path (e.g. /thinkgreenplatform/contabil)
   useEffect(() => {
@@ -322,10 +318,26 @@ const AuthenticatedLayout: React.FC = () => {
 };
 
 const MainLayout: React.FC = () => {
-  const { isAuthenticated } = useApp();
+  const { isAuthenticated, isAuthResolved, currentUser } = useApp();
+
+  if (!isAuthResolved) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-10 h-10 border-4 border-emerald-100 border-t-[#075e38] rounded-full mx-auto mb-3 animate-spin" />
+          <p className="text-xs font-bold text-[#075e38]">Verificando sua conta Google...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!isAuthenticated) {
     return <LoginPage />;
+  }
+
+  // Employees registered through the public link wait here until a role is set.
+  if (currentUser.role === 'PENDING' || !currentUser.roles || currentUser.roles.length === 0) {
+    return <PendingApprovalPage />;
   }
 
   return <AuthenticatedLayout />;

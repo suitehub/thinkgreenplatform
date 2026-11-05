@@ -30,8 +30,6 @@ export const Topbar: React.FC<TopbarProps> = ({
 }) => {
   const {
     currentUser,
-    switchRole,
-    switchUserById,
     state,
     logout,
     resetToDefaultData,
@@ -147,34 +145,6 @@ export const Topbar: React.FC<TopbarProps> = ({
               </div>
             )}
           </div>
-
-          {/* Student Persona Quick Switcher when role is Student */}
-          {currentUser.role === 'STUDENT' && (
-            <div className="hidden sm:flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl">
-              <span className="text-[11px] font-bold text-slate-500 px-2">Aluno:</span>
-              <button
-                onClick={() => switchUserById('user_student_1')}
-                className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${
-                  currentUser.id === 'user_student_1'
-                    ? 'bg-white text-purple-800 shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                Ahmed (STU00186)
-              </button>
-              <button
-                onClick={() => switchUserById('user_student_3')}
-                className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${
-                  currentUser.id === 'user_student_3'
-                    ? 'bg-amber-100 text-amber-900 font-bold shadow-xs'
-                    : 'text-amber-700 hover:bg-amber-50'
-                }`}
-                title="Aluno com pendência financeira para testar bloqueio automático de prova"
-              >
-                Youssef (STU00045 - Pendente)
-              </button>
-            </div>
-          )}
 
           {/* Reset Demo Data Button */}
           <button

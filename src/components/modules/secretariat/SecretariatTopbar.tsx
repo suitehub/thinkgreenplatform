@@ -1,28 +1,11 @@
 import React, { useState } from 'react';
-import {
-  Bell,
-  ChevronDown,
-  Menu,
-  User,
-  Shield,
-  LogOut,
-  CheckCircle,
-  HelpCircle,
-  GraduationCap,
-  BookOpen,
-  Sparkles,
-  CreditCard,
-  BarChart3,
-  Users,
-} from 'lucide-react';
-import { User as UserType, UserRole } from '../../../types';
-import { useApp } from '../../../context/AppContext';
+import { Bell, ChevronDown, Menu, LogOut, HelpCircle } from 'lucide-react';
+import { User as UserType } from '../../../types';
 
 interface SecretariatTopbarProps {
   currentUser: UserType;
   onOpenMobileMenu: () => void;
   onOpenSupportModal: () => void;
-  onSwitchRole?: (role: UserRole) => void;
   onLogout?: () => void;
 }
 
@@ -32,10 +15,8 @@ export const SecretariatTopbar: React.FC<SecretariatTopbarProps> = ({
   onOpenSupportModal,
   onLogout,
 }) => {
-  const { switchRole, switchUserById, state } = useApp();
   const [showNotifications, setShowNotifications] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
-  const [showRoleMenu, setShowRoleMenu] = useState(false);
 
   const notifications = [
     {
@@ -90,146 +71,14 @@ export const SecretariatTopbar: React.FC<SecretariatTopbarProps> = ({
         </div>
       </div>
 
-      {/* Right: Role Switcher + Notifications Bell + User Profile */}
+      {/* Right: Notifications Bell + User Profile */}
       <div className="flex items-center gap-2.5 sm:gap-4">
-        {/* Quick Role / Vision Switcher Dropdown */}
-        <div className="relative">
-          <button
-            onClick={() => {
-              setShowRoleMenu(!showRoleMenu);
-              setShowNotifications(false);
-              setShowUserMenu(false);
-            }}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200/80 text-[#075e38] rounded-xl text-xs font-bold transition-all cursor-pointer shadow-2xs"
-            title="Alternar entre visão de Aluno, Professor, Secretária, Financeiro e Admin"
-          >
-            <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
-            <span className="hidden md:inline">Visão:</span>
-            <span className="font-black">Secretaria</span>
-            <ChevronDown className="w-3.5 h-3.5 ml-0.5 text-[#075e38]" />
-          </button>
-
-          {/* Role Switching Dropdown Menu */}
-          {showRoleMenu && (
-            <div className="absolute right-0 mt-2 w-72 bg-white rounded-2xl border border-slate-200 shadow-xl p-2.5 z-50 animate-fade-in text-xs">
-              <div className="px-3 py-2 border-b border-slate-100">
-                <p className="font-bold text-slate-900 flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5 text-[#075e38]" />
-                  Trocar Visão do Sistema
-                </p>
-                <p className="text-[11px] text-slate-500 mt-0.5">
-                  Selecione o perfil para testar o sistema:
-                </p>
-              </div>
-
-              <div className="py-2 space-y-1">
-                <button
-                  onClick={() => {
-                    setShowRoleMenu(false);
-                    switchRole('STUDENT');
-                  }}
-                  className="w-full flex items-center gap-2.5 px-3 py-2.5 text-slate-700 hover:bg-purple-50 hover:text-purple-900 rounded-xl transition-colors font-medium text-left cursor-pointer group"
-                >
-                  <div className="w-7 h-7 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
-                    <GraduationCap className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <p className="font-bold text-slate-900 leading-none">Visão do Aluno (STU)</p>
-                    <p className="text-[10px] text-slate-400 mt-0.5">Portal do Estudante & AVA</p>
-                  </div>
-                </button>
-
-                <button
-                  onClick={() => {
-                    setShowRoleMenu(false);
-                    switchRole('TEACHER');
-                  }}
-                  className="w-full flex items-center gap-2.5 px-3 py-2.5 text-slate-700 hover:bg-emerald-50 hover:text-emerald-900 rounded-xl transition-colors font-medium text-left cursor-pointer group"
-                >
-                  <div className="w-7 h-7 rounded-lg bg-emerald-100 text-[#075e38] flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
-                    <BookOpen className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <p className="font-bold text-slate-900 leading-none">Visão do Professor</p>
-                    <p className="text-[10px] text-slate-400 mt-0.5">Diário de Classe & Chamadas</p>
-                  </div>
-                </button>
-
-                <button
-                  onClick={() => {
-                    setShowRoleMenu(false);
-                    switchRole('SECRETARIAT');
-                  }}
-                  className="w-full flex items-center gap-2.5 px-3 py-2.5 bg-emerald-50/80 text-[#075e38] font-bold rounded-xl transition-colors text-left cursor-pointer"
-                >
-                  <div className="w-7 h-7 rounded-lg bg-[#075e38] text-white flex items-center justify-center flex-shrink-0">
-                    <Users className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <p className="font-bold text-[#075e38] leading-none">Visão da Secretaria</p>
-                    <p className="text-[10px] text-emerald-700 mt-0.5">Painel Ativo (Atual)</p>
-                  </div>
-                </button>
-
-                <button
-                  onClick={() => {
-                    setShowRoleMenu(false);
-                    switchRole('FINANCE');
-                  }}
-                  className="w-full flex items-center gap-2.5 px-3 py-2.5 text-slate-700 hover:bg-amber-50 hover:text-amber-900 rounded-xl transition-colors font-medium text-left cursor-pointer group"
-                >
-                  <div className="w-7 h-7 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
-                    <CreditCard className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <p className="font-bold text-slate-900 leading-none">Visão do Financeiro</p>
-                    <p className="text-[10px] text-slate-400 mt-0.5">Caixa PDV & Recibos</p>
-                  </div>
-                </button>
-
-                <button
-                  onClick={() => {
-                    setShowRoleMenu(false);
-                    switchRole('ACCOUNTING');
-                  }}
-                  className="w-full flex items-center gap-2.5 px-3 py-2.5 text-slate-700 hover:bg-blue-50 hover:text-blue-900 rounded-xl transition-colors font-medium text-left cursor-pointer group"
-                >
-                  <div className="w-7 h-7 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
-                    <BarChart3 className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <p className="font-bold text-slate-900 leading-none">Visão Contábil</p>
-                    <p className="text-[10px] text-slate-400 mt-0.5">DRE & Centros de Custo</p>
-                  </div>
-                </button>
-
-                <button
-                  onClick={() => {
-                    setShowRoleMenu(false);
-                    switchRole('SUPER_ADMIN');
-                  }}
-                  className="w-full flex items-center gap-2.5 px-3 py-2.5 text-slate-700 hover:bg-purple-50 hover:text-purple-900 rounded-xl transition-colors font-medium text-left cursor-pointer group"
-                >
-                  <div className="w-7 h-7 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
-                    <Shield className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <p className="font-bold text-slate-900 leading-none">Super Admin / Direção</p>
-                    <p className="text-[10px] text-slate-400 mt-0.5">Regras de Negócio & Auditoria</p>
-                  </div>
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-
         {/* Notification Bell with Badge */}
         <div className="relative">
           <button
             onClick={() => {
               setShowNotifications(!showNotifications);
               setShowUserMenu(false);
-              setShowRoleMenu(false);
             }}
             className="w-10 h-10 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200/70 text-slate-600 flex items-center justify-center relative transition-colors cursor-pointer"
             title="Notificações da Secretaria"
@@ -281,7 +130,6 @@ export const SecretariatTopbar: React.FC<SecretariatTopbarProps> = ({
             onClick={() => {
               setShowUserMenu(!showUserMenu);
               setShowNotifications(false);
-              setShowRoleMenu(false);
             }}
             className="flex items-center gap-3 p-1 sm:px-2.5 sm:py-1.5 rounded-2xl hover:bg-slate-50 transition-colors cursor-pointer border border-transparent hover:border-slate-200/80"
           >

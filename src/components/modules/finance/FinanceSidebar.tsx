@@ -10,12 +10,6 @@ import {
   ArrowRight,
   LogOut,
   AlertTriangle,
-  Sparkles,
-  GraduationCap,
-  BookOpen,
-  Users,
-  Shield,
-  BarChart3,
   CheckSquare,
 } from 'lucide-react';
 import { useApp } from '../../../context/AppContext';
@@ -31,7 +25,7 @@ export const FinanceSidebar: React.FC<FinanceSidebarProps> = ({
   setCurrentTab,
   onOpenSupportModal,
 }) => {
-  const { state, switchRole } = useApp();
+  const { state, logout } = useApp();
 
   const pendingReceptionCount = (state.pendingPayments || []).filter(
     (p) => p.status === 'PENDENTE'
@@ -131,63 +125,6 @@ export const FinanceSidebar: React.FC<FinanceSidebarProps> = ({
         })}
       </nav>
 
-      {/* Quick Role Vision Switcher in Sidebar (Demo) */}
-      <div className="p-3 bg-slate-50/90 rounded-2xl border border-slate-200/80 space-y-2">
-        <div className="flex items-center justify-between px-1">
-          <span className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider flex items-center gap-1">
-            <Sparkles className="w-3 h-3 text-amber-600" />
-            Ver como outro perfil
-          </span>
-        </div>
-
-        <div className="grid grid-cols-2 gap-1.5 text-[10px]">
-          <button
-            onClick={() => switchRole('STUDENT')}
-            className="px-2 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-purple-50 hover:text-purple-900 hover:border-purple-300 font-semibold text-slate-700 transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs"
-            title="Acessar Portal do Aluno"
-          >
-            <GraduationCap className="w-3 h-3 text-purple-600 flex-shrink-0" />
-            <span className="truncate">Aluno (STU)</span>
-          </button>
-
-          <button
-            onClick={() => switchRole('TEACHER')}
-            className="px-2 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-emerald-50 hover:text-emerald-900 hover:border-emerald-300 font-semibold text-slate-700 transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs"
-            title="Acessar Painel do Professor"
-          >
-            <BookOpen className="w-3 h-3 text-emerald-600 flex-shrink-0" />
-            <span className="truncate">Professor</span>
-          </button>
-
-          <button
-            onClick={() => switchRole('SECRETARIAT')}
-            className="px-2 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-emerald-50 hover:text-emerald-900 hover:border-emerald-300 font-semibold text-slate-700 transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs"
-            title="Acessar Secretaria"
-          >
-            <Users className="w-3 h-3 text-[#075e38] flex-shrink-0" />
-            <span className="truncate">Secretaria</span>
-          </button>
-
-          <button
-            onClick={() => switchRole('ACCOUNTING')}
-            className="px-2 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-blue-50 hover:text-blue-900 hover:border-blue-300 font-semibold text-slate-700 transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs"
-            title="Acessar Contábil"
-          >
-            <BarChart3 className="w-3 h-3 text-blue-600 flex-shrink-0" />
-            <span className="truncate">Contábil</span>
-          </button>
-
-          <button
-            onClick={() => switchRole('SUPER_ADMIN')}
-            className="col-span-2 px-2 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-purple-50 hover:text-purple-900 hover:border-purple-300 font-semibold text-slate-700 transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs"
-            title="Acessar Direção / Super Admin"
-          >
-            <Shield className="w-3 h-3 text-purple-600 flex-shrink-0" />
-            <span className="truncate">Administração 360°</span>
-          </button>
-        </div>
-      </div>
-
       {/* Bottom Section: Suporte Card & Logout */}
       <div className="pt-2 space-y-2 border-t border-slate-100">
         {/* Support Card */}
@@ -216,7 +153,7 @@ export const FinanceSidebar: React.FC<FinanceSidebarProps> = ({
 
         {/* Sair da conta */}
         <button
-          onClick={() => switchRole('STUDENT')}
+          onClick={logout}
           className="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold text-slate-600 hover:text-rose-600 hover:bg-rose-50/50 rounded-xl transition-colors cursor-pointer"
         >
           <LogOut className="w-4 h-4" />

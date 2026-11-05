@@ -10,7 +10,9 @@ export type UserRole =
   | 'SECRETARIAT'
   | 'ACCOUNTING'
   | 'SUPER_ADMIN'
-  | 'RECEPTION';
+  | 'RECEPTION'
+  /** Employee registered with Google but still waiting for a role assignment. */
+  | 'PENDING';
 
 export type StudentStatus = 'ATIVO' | 'INATIVO';
 export type EnrollmentStatus = 'ATIVA' | 'PENDENTE' | 'BLOQUEADA' | 'CANCELADA';
@@ -25,6 +27,8 @@ export interface User {
   name: string;
   email: string;
   studentId?: string; // STU00000 for students
+  /** Firebase Authentication UID (Google sign-in). */
+  googleUid?: string;
   role: UserRole; // Current active/primary role
   roles?: UserRole[]; // All linked roles for this user (e.g. ['SUPER_ADMIN', 'TEACHER'])
   avatarUrl?: string;

@@ -91,7 +91,6 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
 }) => {
   const {
     currentUser,
-    switchRole,
     state,
     logout,
     checkClassroomAccess,
@@ -1032,67 +1031,6 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                       <span className="inline-block mt-1.5 px-2 py-0.5 bg-emerald-50 text-emerald-800 font-bold rounded text-[10px] border border-emerald-200">
                         Docente Autorizado
                       </span>
-                    </div>
-
-                    <p className="px-2 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                      Alternar Módulo / Visão:
-                    </p>
-                    <div className="space-y-1">
-                      <button
-                        onClick={() => {
-                          switchRole('SECRETARIAT');
-                          setCurrentTab('sec_home');
-                          setIsUserMenuOpen(false);
-                        }}
-                        className="w-full text-left px-3 py-2 rounded-xl hover:bg-emerald-50 text-emerald-800 font-semibold flex items-center justify-between"
-                      >
-                        <span>Painel da Secretaria</span>
-                        <ArrowRight className="w-3.5 h-3.5 text-emerald-600" />
-                      </button>
-                      <button
-                        onClick={() => {
-                          switchRole('STUDENT');
-                          setCurrentTab('dashboard');
-                          setIsUserMenuOpen(false);
-                        }}
-                        className="w-full text-left px-3 py-2 rounded-xl hover:bg-slate-100 font-semibold text-slate-700 flex items-center justify-between"
-                      >
-                        <span>Portal do Aluno</span>
-                        <ArrowRight className="w-3.5 h-3.5 text-slate-400" />
-                      </button>
-                      <button
-                        onClick={() => {
-                          switchRole('FINANCE');
-                          setCurrentTab('finance');
-                          setIsUserMenuOpen(false);
-                        }}
-                        className="w-full text-left px-3 py-2 rounded-xl hover:bg-slate-100 font-semibold text-slate-700 flex items-center justify-between"
-                      >
-                        <span>Tesouraria & Caixa</span>
-                        <ArrowRight className="w-3.5 h-3.5 text-slate-400" />
-                      </button>
-                      <button
-                        onClick={() => {
-                          switchRole('ACCOUNTING');
-                          setCurrentTab('acc_home');
-                          setIsUserMenuOpen(false);
-                        }}
-                        className="w-full text-left px-3 py-2 rounded-xl hover:bg-emerald-50 font-semibold text-emerald-800 flex items-center justify-between"
-                      >
-                        <span>Contábil (Rony)</span>
-                        <ArrowRight className="w-3.5 h-3.5 text-emerald-600" />
-                      </button>
-                      <button
-                        onClick={() => {
-                          switchRole('SUPER_ADMIN');
-                          setCurrentTab('students');
-                          setIsUserMenuOpen(false);
-                        }}
-                        className="w-full text-left px-3 py-2 rounded-xl hover:bg-slate-100 font-semibold text-slate-700 flex items-center justify-between"
-                      >
-                        <span>Administração Geral</span>
-                        <ArrowRight className="w-3.5 h-3.5 text-slate-400" />
-                      </button>
                     </div>
 
                     <div className="pt-2 border-t border-slate-100 mt-2">

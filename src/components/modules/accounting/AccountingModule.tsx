@@ -1,7 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import {
   PieChart,
-  CreditCard,
   Layers,
   FileText,
   TrendingUp,
@@ -23,7 +22,6 @@ import {
   Download,
   Upload,
   ArrowRight,
-  ShieldCheck,
   Check,
   RotateCcw,
   ExternalLink,
@@ -32,9 +30,6 @@ import {
   Smartphone,
   Save,
   Building,
-  Building2,
-  ClipboardList,
-  GraduationCap,
   Copy,
   LogOut,
   Users,
@@ -82,7 +77,7 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
   setCurrentTab,
   standalone = false,
 }) => {
-  const { currentUser, switchRole, switchUserById, state, logout } = useApp();
+  const { currentUser, logout } = useApp();
 
   // URL sync: Sincroniza a URL com '/contabil' preservando o repositório GitHub Pages (ex: /thinkgreenplatform/contabil)
   useEffect(() => {
@@ -675,121 +670,6 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
               <LogOut className="w-3.5 h-3.5" />
               <span>Sair</span>
             </button>
-          </div>
-        </div>
-
-        {/* Quick Action Buttons to Switch Modules */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar flex-wrap">
-          {/* 1. Secretaria Geral (Secretário) - DESTACADO CONFORME PEDIDO */}
-          <button
-            onClick={() => {
-              switchRole('SECRETARIAT');
-              updateAppRoute('secretaria', { role: 'SECRETARIAT' });
-            }}
-            className="px-4 py-2.5 rounded-2xl bg-[#075e38] hover:bg-[#064e2e] text-white font-black text-xs flex items-center gap-2 shadow-sm transition-all cursor-pointer active:scale-95 ring-2 ring-emerald-400/50"
-            title="Acessar o Painel da Secretaria (Matrículas, Documentos, Ficha de Alunos e Turmas)"
-          >
-            <Building2 className="w-4 h-4 text-emerald-200" />
-            <span>🏛️ Painel da Secretaria (Secretário)</span>
-          </button>
-
-          {/* 2. Recepção */}
-          <button
-            onClick={() => {
-              switchRole('RECEPTION');
-              updateAppRoute('recepcao', { role: 'RECEPTION' });
-            }}
-            className="px-3.5 py-2.5 rounded-2xl bg-slate-100 hover:bg-emerald-50 text-slate-800 hover:text-emerald-900 border border-slate-200 font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer active:scale-95"
-            title="Acessar Painel da Recepção (Balcão de Atendimento e Pré-Registro de Pagamentos)"
-          >
-            <ClipboardList className="w-4 h-4 text-emerald-600" />
-            <span>📋 Recepção</span>
-          </button>
-
-          {/* 3. Orientação Educacional / Pedagógico */}
-          <button
-            onClick={() => {
-              switchRole('SUPER_ADMIN');
-              setCurrentTab('acad_classes');
-              updateAppRoute('orientacao', { role: 'ACADEMIC' });
-            }}
-            className="px-3.5 py-2.5 rounded-2xl bg-slate-100 hover:bg-purple-50 text-slate-800 hover:text-purple-900 border border-slate-200 font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer active:scale-95"
-            title="Acessar Orientação Educacional (Turmas por Professor, Pesos de Avaliações A1/A2)"
-          >
-            <GraduationCap className="w-4 h-4 text-purple-600" />
-            <span>🎓 Orientação Educacional</span>
-          </button>
-
-          {/* 4. Financeiro / Tesouraria */}
-          <button
-            onClick={() => {
-              switchRole('FINANCE');
-              updateAppRoute('financeiro', { role: 'FINANCE' });
-            }}
-            className="px-3.5 py-2.5 rounded-2xl bg-slate-100 hover:bg-amber-50 text-slate-800 hover:text-amber-900 border border-slate-200 font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer active:scale-95"
-            title="Acessar Painel Financeiro (Tesouraria, Aprovações da Recepção e Caixa PDV)"
-          >
-            <CreditCard className="w-4 h-4 text-amber-600" />
-            <span>💰 Financeiro (Tesouraria)</span>
-          </button>
-
-          {/* 5. Professor */}
-          <button
-            onClick={() => {
-              switchRole('TEACHER');
-              updateAppRoute('professor', { role: 'TEACHER' });
-            }}
-            className="px-3.5 py-2.5 rounded-2xl bg-slate-100 hover:bg-blue-50 text-slate-800 hover:text-blue-900 border border-slate-200 font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer active:scale-95"
-            title="Acessar Painel do Professor (Conteúdos, Chamada/Homework, Quizzes e Plano de Aula)"
-          >
-            <BookOpen className="w-4 h-4 text-blue-600" />
-            <span>👨‍🏫 Professor</span>
-          </button>
-
-          {/* 6. Aluno */}
-          <button
-            onClick={() => {
-              switchRole('STUDENT');
-              updateAppRoute('aluno', { role: 'STUDENT' });
-            }}
-            className="px-3.5 py-2.5 rounded-2xl bg-slate-100 hover:bg-indigo-50 text-slate-800 hover:text-indigo-900 border border-slate-200 font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer active:scale-95"
-            title="Acessar Portal do Estudante"
-          >
-            <GraduationCap className="w-4 h-4 text-indigo-600" />
-            <span>🎒 Aluno</span>
-          </button>
-
-          {/* 7. Super Admin 360 */}
-          <button
-            onClick={() => {
-              switchRole('SUPER_ADMIN');
-              setCurrentTab('admin_home');
-              updateAppRoute('admin', { role: 'SUPER_ADMIN' });
-            }}
-            className="px-3.5 py-2.5 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-200 font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer active:scale-95"
-            title="Acessar Administração Geral 360°"
-          >
-            <ShieldCheck className="w-4 h-4 text-slate-600" />
-            <span>👑 Admin 360°</span>
-          </button>
-
-          {/* 8. Persona Direct Selector */}
-          <div className="relative inline-block flex-shrink-0">
-            <select
-              value={currentUser.id}
-              onChange={(e) => {
-                switchUserById(e.target.value);
-              }}
-              className="px-3 py-2.5 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-2xl text-xs font-bold text-slate-800 cursor-pointer focus:outline-hidden"
-              title="Alternar para usuário específico cadastrado"
-            >
-              <option disabled value="">👤 Alternar Usuário / Persona:</option>
-              {state.users.map((u) => (
-                <option key={u.id} value={u.id}>
-                  {u.name} — {u.role}
-                </option>
-              ))}
-            </select>
           </div>
         </div>
       </div>

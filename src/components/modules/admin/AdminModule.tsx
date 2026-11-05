@@ -14,11 +14,13 @@ import {
   Sliders,
   MapPin,
   Building2,
+  UserPlus,
 } from 'lucide-react';
 import { useApp } from '../../../context/AppContext';
 import { Modal } from '../../common/Modal';
 import { AdminOverviewTab } from './AdminOverviewTab';
 import { AdminUsersTab } from './AdminUsersTab';
+import { AdminRegistrationTab } from './AdminRegistrationTab';
 import { AdminRulesTab } from './AdminRulesTab';
 import { AdminAuditTab } from './AdminAuditTab';
 import { AdminImporterTab } from './AdminImporterTab';
@@ -49,6 +51,14 @@ export const AdminModule: React.FC<AdminModuleProps> = ({ currentTab, setCurrent
       label: 'Usuários & Permissões',
       icon: Users,
       badge: state.users?.length || 0,
+    },
+    {
+      id: 'admin_registration',
+      label: 'Registro de Funcionários',
+      icon: UserPlus,
+      badge:
+        state.users?.filter((user) => user.role === 'PENDING' || !user.roles?.length).length ||
+        null,
     },
     {
       id: 'admin_rules',
@@ -148,6 +158,8 @@ export const AdminModule: React.FC<AdminModuleProps> = ({ currentTab, setCurrent
         )}
 
         {activeTab === 'admin_users' && <AdminUsersTab />}
+
+        {activeTab === 'admin_registration' && <AdminRegistrationTab />}
 
         {activeTab === 'admin_rules' && <AdminRulesTab />}
 

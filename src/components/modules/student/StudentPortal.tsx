@@ -99,7 +99,6 @@ type StudentActiveNav = 'materias' | 'aulas' | 'atividades' | 'notas' | 'frequen
 export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCurrentTab }) => {
   const {
     currentUser,
-    switchRole,
     state,
     logout,
     checkExamAccess,
@@ -852,58 +851,7 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
                   </div>
                 </div>
 
-                <div className="pt-3 border-t border-slate-100 space-y-2">
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                    Alternar Acesso (Demonstração)
-                  </p>
-                  <div className="grid grid-cols-2 gap-1.5">
-                    <button
-                      onClick={() => {
-                        switchRole('TEACHER');
-                        setIsUserMenuOpen(false);
-                      }}
-                      className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold text-center"
-                    >
-                      Professor
-                    </button>
-                    <button
-                      onClick={() => {
-                        switchRole('SECRETARIAT');
-                        setIsUserMenuOpen(false);
-                      }}
-                      className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold text-center"
-                    >
-                      Secretaria
-                    </button>
-                    <button
-                      onClick={() => {
-                        switchRole('FINANCE');
-                        setIsUserMenuOpen(false);
-                      }}
-                      className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold text-center"
-                    >
-                      Tesouraria
-                    </button>
-                    <button
-                      onClick={() => {
-                        switchRole('ACCOUNTING');
-                        setIsUserMenuOpen(false);
-                      }}
-                      className="px-2.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 rounded-xl text-xs font-bold text-center"
-                    >
-                      Contábil (Rony)
-                    </button>
-                    <button
-                      onClick={() => {
-                        switchRole('SUPER_ADMIN');
-                        setIsUserMenuOpen(false);
-                      }}
-                      className="px-2.5 py-1.5 bg-purple-100 hover:bg-purple-200 text-purple-800 rounded-xl text-xs font-semibold text-center"
-                    >
-                      Admin Geral
-                    </button>
-                  </div>
-
+                <div className="pt-3 border-t border-slate-100">
                   <button
                     onClick={() => {
                       setIsUserMenuOpen(false);

@@ -26,7 +26,7 @@ import { Modal } from '../../common/Modal';
 import { Badge } from '../../common/Badge';
 
 export const AdminUsersTab: React.FC = () => {
-  const { state, createUser, updateUser, deleteUser, toggleUserStatus, switchUserById } = useApp();
+  const { state, createUser, updateUser, deleteUser, toggleUserStatus } = useApp();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState<string>('ALL');
@@ -36,7 +36,6 @@ export const AdminUsersTab: React.FC = () => {
   const [isNewUserModalOpen, setIsNewUserModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [deletingUser, setDeletingUser] = useState<User | null>(null);
-  const [impersonateSuccess, setImpersonateSuccess] = useState<string | null>(null);
 
   // New User Form State
   const [formData, setFormData] = useState<{
@@ -85,6 +84,8 @@ export const AdminUsersTab: React.FC = () => {
         return <span key={role} className="px-2 py-0.5 rounded-md text-[11px] font-bold bg-indigo-50 text-indigo-800 border border-indigo-200">Recepção</span>;
       case 'SUPER_ADMIN':
         return <span key={role} className="px-2 py-0.5 rounded-md text-[11px] font-bold bg-purple-100 text-purple-900 border border-purple-300">Super Admin</span>;
+      case 'PENDING':
+        return <span key={role} className="px-2 py-0.5 rounded-md text-[11px] font-bold bg-amber-50 text-amber-800 border border-amber-300">Aguardando função</span>;
       default:
         return <span key={role} className="px-2 py-0.5 rounded-md text-[11px] font-bold bg-slate-100 text-slate-700">{role}</span>;
     }
@@ -110,7 +111,8 @@ export const AdminUsersTab: React.FC = () => {
 
   const toggleRoleInEdit = (roleToToggle: UserRole) => {
     if (!editingUser) return;
-    const currentRoles = editingUser.roles && editingUser.roles.length > 0 ? [...editingUser.roles] : [editingUser.role];
+    // PENDING is a waiting state, not an assignable permission.
+    const currentRoles = (editingUser.roles || []).filter((r) => r !== 'PENDING');
     let newRoles: UserRole[];
     if (currentRoles.includes(roleToToggle)) {
       if (currentRoles.length === 1) return; // Keep at least one role
@@ -118,7 +120,9 @@ export const AdminUsersTab: React.FC = () => {
     } else {
       newRoles = [...currentRoles, roleToToggle];
     }
-    const newActiveRole = newRoles.includes(editingUser.role) ? editingUser.role : newRoles[0];
+    const newActiveRole = newRoles.includes(editingUser.role)
+      ? editingUser.role
+      : newRoles[0] || 'PENDING';
     setEditingUser({
       ...editingUser,
       roles: newRoles,
@@ -180,11 +184,11 @@ export const AdminUsersTab: React.FC = () => {
   };
 
   const handleOpenEditModal = (user: User) => {
-    const userRoles = user.roles && user.roles.length > 0 ? user.roles : [user.role];
+    const userRoles = (user.roles || []).filter((r) => r !== 'PENDING');
     setEditingUser({
       ...user,
       roles: userRoles,
-      role: user.role || userRoles[0],
+      role: user.role === 'PENDING' ? 'PENDING' : user.role || userRoles[0] || 'PENDING',
     });
   };
 
@@ -192,26 +196,25 @@ export const AdminUsersTab: React.FC = () => {
     e.preventDefault();
     if (!editingUser) return;
 
-    const selectedRoles = editingUser.roles && editingUser.roles.length > 0 ? editingUser.roles : [editingUser.role];
+    const selectedRoles = (editingUser.roles || []).filter((r) => r !== 'PENDING');
+    const activeRole = selectedRoles.length
+      ? selectedRoles.includes(editingUser.role)
+        ? editingUser.role
+        : selectedRoles[0]
+      : 'PENDING';
 
     updateUser(editingUser.id, {
       name: editingUser.name,
       email: editingUser.email,
       phone: editingUser.phone,
       roles: selectedRoles,
-      role: editingUser.role || selectedRoles[0],
+      role: activeRole,
       department: editingUser.department,
       status: editingUser.status,
       studentId: editingUser.studentId,
     });
 
     setEditingUser(null);
-  };
-
-  const handleImpersonate = (user: User) => {
-    switchUserById(user.id);
-    setImpersonateSuccess(`Agora navegando como ${user.name} (${user.role})!`);
-    setTimeout(() => setImpersonateSuccess(null), 3000);
   };
 
   const handleDeleteConfirm = () => {
@@ -242,13 +245,6 @@ export const AdminUsersTab: React.FC = () => {
           Novo Usuário
         </button>
       </div>
-
-      {impersonateSuccess && (
-        <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-xs font-bold flex items-center gap-2 animate-in fade-in">
-          <CheckCircle className="w-4 h-4 text-emerald-600" />
-          {impersonateSuccess}
-        </div>
-      )}
 
       {/* Filter Bar */}
       <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col md:flex-row gap-3 items-center justify-between">
@@ -281,7 +277,9 @@ export const AdminUsersTab: React.FC = () => {
             <option value="FINANCE">Financeiro</option>
             <option value="SECRETARIAT">Secretaria</option>
             <option value="ACCOUNTING">Contabilidade</option>
+            <option value="RECEPTION">Recepção</option>
             <option value="SUPER_ADMIN">Super Admin</option>
+            <option value="PENDING">Aguardando função</option>
           </select>
 
           <select
@@ -379,14 +377,6 @@ export const AdminUsersTab: React.FC = () => {
 
                     <td className="px-4 py-3 text-right">
                       <div className="flex items-center justify-end gap-1.5">
-                        <button
-                          onClick={() => handleImpersonate(user)}
-                          className="p-1.5 text-slate-500 hover:text-purple-700 hover:bg-purple-50 rounded-lg transition-colors cursor-pointer"
-                          title={`Acessar como ${user.name}`}
-                        >
-                          <LogIn className="w-3.5 h-3.5" />
-                        </button>
-
                         <button
                           onClick={() => handleOpenEditModal(user)}
                           className="p-1.5 text-slate-500 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
@@ -607,7 +597,7 @@ export const AdminUsersTab: React.FC = () => {
             <div>
               <div className="flex items-center justify-between mb-1.5">
                 <label className="block font-bold text-slate-700">Funções Vinculadas (Multi-Função) *</label>
-                <span className="text-[11px] text-slate-500">Pode vincular mais de uma (ex: Super Admin + Professor)</span>
+                <span className="text-[11px] text-slate-500">As funções definem os módulos visíveis</span>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 bg-slate-50 p-2.5 rounded-xl border border-slate-200">
                 {rolesList.map((r) => {
@@ -645,11 +635,16 @@ export const AdminUsersTab: React.FC = () => {
                   onChange={(e) => setEditingUser({ ...editingUser, role: e.target.value as UserRole })}
                   className="w-full p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-purple-500"
                 >
-                  {(editingUser.roles && editingUser.roles.length > 0 ? editingUser.roles : [editingUser.role]).map((r) => (
-                    <option key={r} value={r}>
-                      {rolesList.find((rl) => rl.role === r)?.label || r}
-                    </option>
-                  ))}
+                  {(editingUser.roles || []).filter((r) => r !== 'PENDING').length === 0 && (
+                    <option value="PENDING">Aguardando definição</option>
+                  )}
+                  {(editingUser.roles || [])
+                    .filter((r) => r !== 'PENDING')
+                    .map((r) => (
+                      <option key={r} value={r}>
+                        {rolesList.find((rl) => rl.role === r)?.label || r}
+                      </option>
+                    ))}
                 </select>
               </div>
 

@@ -3,21 +3,14 @@ import {
   Home,
   UserPlus,
   Users,
-  GraduationCap,
   Calendar,
   FileText,
   Upload,
   Headphones,
   LogOut,
   ArrowRight,
-  Sparkles,
-  BookOpen,
-  CreditCard,
-  BarChart3,
-  Shield,
   X,
   Clock,
-  Receipt,
   Compass,
 } from 'lucide-react';
 import { Logo } from '../../common/Logo';
@@ -40,7 +33,7 @@ export const SecretariatSidebar: React.FC<SecretariatSidebarProps> = ({
   mobileOpen,
   onCloseMobile,
 }) => {
-  const { switchRole, currentUser, state } = useApp();
+  const { state } = useApp();
 
   const pendingCount = (state.pendingRegistrations || []).filter((p) => p.status === 'PENDENTE').length;
 
@@ -163,63 +156,6 @@ export const SecretariatSidebar: React.FC<SecretariatSidebarProps> = ({
               );
             })}
           </nav>
-
-          {/* Quick Role Vision Switcher in Sidebar */}
-          <div className="p-3.5 mx-3 mt-2 bg-slate-50/80 rounded-2xl border border-slate-200/70 space-y-2">
-            <div className="flex items-center justify-between px-1">
-              <span className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider flex items-center gap-1">
-                <Sparkles className="w-3 h-3 text-[#075e38]" />
-                Ver como outro perfil
-              </span>
-            </div>
-
-            <div className="grid grid-cols-2 gap-1.5 text-[10px]">
-              <button
-                onClick={() => switchRole('RECEPTION')}
-                className="px-2 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-emerald-50 hover:text-emerald-900 hover:border-emerald-300 font-semibold text-slate-700 transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs col-span-2"
-                title="Acessar Painel da Recepção"
-              >
-                <Receipt className="w-3 h-3 text-[#075e38] flex-shrink-0" />
-                <span className="truncate font-bold">Recepção (Balcão/Caixa)</span>
-              </button>
-
-              <button
-                onClick={() => switchRole('STUDENT')}
-                className="px-2 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-purple-50 hover:text-purple-900 hover:border-purple-300 font-semibold text-slate-700 transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs"
-                title="Acessar Portal do Aluno"
-              >
-                <GraduationCap className="w-3 h-3 text-purple-600 flex-shrink-0" />
-                <span className="truncate">Aluno (STU)</span>
-              </button>
-
-              <button
-                onClick={() => switchRole('TEACHER')}
-                className="px-2 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-emerald-50 hover:text-emerald-900 hover:border-emerald-300 font-semibold text-slate-700 transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs"
-                title="Acessar Painel do Professor"
-              >
-                <BookOpen className="w-3 h-3 text-emerald-600 flex-shrink-0" />
-                <span className="truncate">Professor</span>
-              </button>
-
-              <button
-                onClick={() => switchRole('FINANCE')}
-                className="px-2 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-amber-50 hover:text-amber-900 hover:border-amber-300 font-semibold text-slate-700 transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs"
-                title="Acessar Financeiro"
-              >
-                <CreditCard className="w-3 h-3 text-amber-600 flex-shrink-0" />
-                <span className="truncate">Financeiro</span>
-              </button>
-
-              <button
-                onClick={() => switchRole('SUPER_ADMIN')}
-                className="px-2 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-purple-50 hover:text-purple-900 hover:border-purple-300 font-semibold text-slate-700 transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs"
-                title="Acessar Direção / Super Admin"
-              >
-                <Shield className="w-3 h-3 text-purple-600 flex-shrink-0" />
-                <span className="truncate">Admin 360°</span>
-              </button>
-            </div>
-          </div>
         </div>
 
         {/* Bottom Section: Support Card & Logout */}

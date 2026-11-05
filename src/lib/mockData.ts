@@ -46,7 +46,7 @@ export const INITIAL_USERS: User[] = [
     name: 'Eng. Ricky Jorge Castro',
     email: 'rickyjorgecastro@gmail.com',
     role: 'SUPER_ADMIN',
-    roles: ['SUPER_ADMIN', 'SECRETARIAT', 'RECEPTION', 'FINANCE', 'ACCOUNTING', 'TEACHER', 'STUDENT'],
+    roles: ['SUPER_ADMIN'],
     department: 'Diretoria Executiva & Gestão Geral',
     status: 'ACTIVE',
     permissions: ['*'],

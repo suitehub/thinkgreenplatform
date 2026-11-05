@@ -125,15 +125,19 @@ export const getDefaultState = (): AppState => ({
  */
 export const normalizeUsers = (users: User[]): User[] =>
   deduplicateById(users).map((u) => {
-    let userRoles: UserRole[] =
-      Array.isArray(u.roles) && u.roles.length > 0 ? [...u.roles] : [u.role];
-    if (u.id === 'user_super_admin' && !userRoles.includes('TEACHER')) {
-      userRoles = ['SUPER_ADMIN', 'TEACHER'];
-    }
+    // Pending employees intentionally have no roles until a Super Admin assigns them.
+    const isPending = u.role === 'PENDING' && (!u.roles || u.roles.length === 0);
+    const userRoles: UserRole[] = isPending
+      ? []
+      : Array.isArray(u.roles) && u.roles.length > 0
+      ? [...u.roles]
+      : u.role
+      ? [u.role]
+      : [];
     return {
       ...u,
       roles: userRoles,
-      role: u.role || userRoles[0] || 'SUPER_ADMIN',
+      role: isPending ? 'PENDING' : u.role && userRoles.includes(u.role) ? u.role : userRoles[0] || 'PENDING',
     };
   });
 

@@ -47,22 +47,39 @@ import {
   evaluateExamAccess,
   evaluateClassroomAccess,
   deduplicateById,
+  normalizeUsers,
 } from '../lib/storage';
 
+import { fetchCollectionStrict } from '../lib/firebase';
+import {
+  currentFirebaseUser,
+  describeAuthError,
+  onAuthUserChanged,
+  signInWithGoogle,
+  signOutFromGoogle,
+} from '../lib/auth';
 import { getHydratedState, syncStateDiff } from '../lib/cloud';
 import { resetStoredAccountingData } from '../components/modules/accounting/accountingData';
 import { resetStoredTeacherData } from '../components/modules/teacher/teacherData';
+
+export interface GoogleLoginResult {
+  success: boolean;
+  pending?: boolean;
+  user?: User;
+  message?: string;
+}
 
 interface AppContextType {
   state: AppState;
   currentUser: User;
   setCurrentUser: (user: User) => void;
   isAuthenticated: boolean;
+  isAuthResolved: boolean;
   setIsAuthenticated: (val: boolean) => void;
-  login: (identifier?: string, password?: string) => { success: boolean; user?: User; message?: string };
+  loginWithGoogle: (options?: { register?: boolean }) => Promise<GoogleLoginResult>;
+  refreshCurrentUser: () => Promise<{ success: boolean; pending: boolean; message?: string }>;
   logout: () => void;
   switchRole: (role: UserRole) => void;
-  switchUserById: (userId: string) => void;
 
   // Domain Actions
   createStudentWithEnrollment: (
@@ -187,6 +204,15 @@ interface AppContextType {
   };
 }
 
+/** Google accounts that are always recognized as the platform owner. */
+const OWNER_EMAILS = ['rickyjorgecastro@gmail.com'];
+
+const isPendingUser = (user?: User | null): boolean =>
+  !user || user.role === 'PENDING' || !user.roles || user.roles.length === 0;
+
+const isSuperAdminUser = (user: User): boolean =>
+  user.role === 'SUPER_ADMIN' || (user.roles || []).includes('SUPER_ADMIN');
+
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -213,158 +239,270 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const currentUser = state.currentUser;
 
-  // Sessions live in memory only; a reload requires a new login.
+  // Authentication state is driven by Google (Firebase Authentication).
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [isAuthResolved, setIsAuthResolved] = useState<boolean>(false);
+
+  // Always gives async callbacks access to the latest hydrated state.
+  const stateRef = useRef(state);
+  useEffect(() => {
+    stateRef.current = state;
+  }, [state]);
 
   const setCurrentUser = (user: User) => {
     setState((prev) => ({ ...prev, currentUser: user }));
   };
 
-  const login = (identifier?: string, password?: string) => {
-    const query = (identifier || '').trim().toLowerCase();
+  const buildSessionUser = (user: User): User => {
+    const roles = Array.isArray(user.roles) ? user.roles : [];
+    const effectiveRole =
+      user.role && roles.includes(user.role) ? user.role : roles[0] || 'PENDING';
+    return { ...user, roles, role: effectiveRole };
+  };
 
-    // 1. If empty query, log in with current user / Super Admin
-    if (!query) {
-      const user = state.currentUser || state.users[0];
-      setCurrentUser(user);
-      setIsAuthenticated(true);
-      return { success: true, user, message: `Bem-vindo(a), ${user.name}!` };
+  const startSession = (user: User) => {
+    const sessionUser = buildSessionUser(user);
+    setState((prev) => ({
+      ...prev,
+      currentUser: sessionUser,
+      users: prev.users.map((u) => (u.id === sessionUser.id ? sessionUser : u)),
+    }));
+    setIsAuthenticated(true);
+  };
+
+  /**
+   * Finds (or creates) the employee record linked to a Google account.
+   * Unknown accounts only become "PENDING" when they arrive through the
+   * registration link; otherwise they must already exist in Firestore.
+   */
+  const resolveFirebaseUser = (
+    firebaseUser: { uid: string; email: string | null; displayName: string | null; photoURL: string | null },
+    options?: { register?: boolean }
+  ): { user?: User; message?: string } => {
+    const email = (firebaseUser.email || '').trim().toLowerCase();
+    if (!email) {
+      return { message: 'A conta Google não retornou um e-mail válido.' };
     }
 
-    // 2. Direct match by email, id, studentId, or partial name
-    let matchedUser = state.users.find(
-      (u) =>
-        u.email.toLowerCase() === query ||
-        u.id.toLowerCase() === query ||
-        (u.studentId && u.studentId.toLowerCase() === query) ||
-        u.name.toLowerCase() === query
-    );
+    const isOwner = OWNER_EMAILS.includes(email);
+    const users = stateRef.current.users;
+    let existing = users.find((u) => u.email.toLowerCase() === email);
 
-    // Partial name match in users
-    if (!matchedUser) {
-      matchedUser = state.users.find((u) => u.name.toLowerCase().includes(query));
+    // Legacy owner records used a different e-mail; bind them to the owner Google account.
+    if (!existing && isOwner) {
+      existing = users.find(isSuperAdminUser);
     }
 
-    if (
-      !matchedUser &&
-      (query === 'admin@thinkgreen.org' ||
-        query === 'admin' ||
-        query === 'rickyjorgecastro@gmail.com' ||
-        query === 'ricky@thinkgreen.org')
-    ) {
-      matchedUser =
-        state.users.find(
-          (u) => u.role === 'SUPER_ADMIN' || u.roles?.includes('SUPER_ADMIN')
-        ) || state.users[0];
-    }
-
-    // 3. Match from student registry if student logging in with STU ID / email / name
-    if (!matchedUser) {
-      const student = state.students.find(
-        (s) =>
-          s.studentId.toLowerCase() === query ||
-          s.email.toLowerCase() === query ||
-          s.name.toLowerCase().includes(query)
-      );
-      if (student) {
-        // Enforce student systemAccess rule: se o cadastro estiver bloqueado o aluno não pode acessar o sistema
-        if (student.systemAccess === 'BLOQUEADO') {
-          return {
-            success: false,
-            message: `Acesso ao sistema bloqueado para ${student.name} (${student.studentId}). O cadastro do aluno foi marcado como "Acesso: Bloqueado" pela secretaria. Procure o atendimento.`,
-          };
-        }
-
-        matchedUser = {
-          id: `user_student_${student.id}`,
-          name: student.name,
-          email: student.email,
-          studentId: student.studentId,
-          role: 'STUDENT',
-          roles: ['STUDENT'],
-          department: 'Aluno Think Green',
-          status: student.status === 'ATIVO' ? 'ACTIVE' : 'INACTIVE',
-          permissions: ['access_lms_student', 'submit_assignment', 'view_own_financials'],
-          createdAt: student.createdAt,
-          avatarUrl: student.avatarUrl,
+    if (!existing) {
+      if (!options?.register && !isOwner) {
+        return {
+          message:
+            'Este e-mail ainda não está cadastrado. Solicite o link de registro geral à administração.',
         };
       }
+
+      const newUser: User = {
+        id: firebaseUser.uid,
+        googleUid: firebaseUser.uid,
+        name: firebaseUser.displayName || email.split('@')[0],
+        email,
+        role: isOwner ? 'SUPER_ADMIN' : 'PENDING',
+        roles: isOwner ? ['SUPER_ADMIN'] : [],
+        status: 'ACTIVE',
+        permissions: isOwner ? ['*'] : [],
+        createdAt: new Date().toISOString().split('T')[0],
+        avatarUrl: firebaseUser.photoURL || undefined,
+        department: isOwner ? 'Diretoria Executiva & Gestão Geral' : 'Aguardando definição',
+      };
+
+      setState((prev) => ({
+        ...prev,
+        users: deduplicateById([...prev.users, newUser]),
+      }));
+      stateRef.current = {
+        ...stateRef.current,
+        users: deduplicateById([...stateRef.current.users, newUser]),
+      };
+      return { user: newUser };
     }
 
-    // 4. Role keyword shortcuts
-    if (!matchedUser) {
-      if (query.includes('admin') || query.includes('ricky') || query.includes('diretor') || query.includes('super')) {
-        matchedUser = state.users.find((u) => u.role === 'SUPER_ADMIN');
-      } else if (query.includes('sec') || query.includes('mona') || query.includes('atend')) {
-        matchedUser = state.users.find((u) => u.role === 'SECRETARIAT');
-      } else if (query.includes('fin') || query.includes('karim') || query.includes('tesour')) {
-        matchedUser = state.users.find((u) => u.role === 'FINANCE');
-      } else if (query.includes('cont') || query.includes('hisham')) {
-        matchedUser = state.users.find((u) => u.role === 'ACCOUNTING');
-      } else if (query.includes('prof') || query.includes('lucas') || query.includes('docen') || query.includes('tarek')) {
-        matchedUser = state.users.find((u) => u.role === 'TEACHER');
-      } else if (query.includes('alun') || query.includes('stu') || query.includes('ahmed') || query.includes('estud')) {
-        matchedUser = state.users.find((u) => u.role === 'STUDENT');
+    const updates: Partial<User> = { googleUid: firebaseUser.uid };
+    let changed = !existing.googleUid;
+
+    if (!existing.avatarUrl && firebaseUser.photoURL) {
+      updates.avatarUrl = firebaseUser.photoURL;
+      changed = true;
+    }
+
+    if (isOwner) {
+      if (existing.email !== email) {
+        updates.email = email;
+        changed = true;
+      }
+      if (!isSuperAdminUser(existing) || existing.role !== 'SUPER_ADMIN') {
+        updates.roles = Array.from(
+          new Set([...(existing.roles || []), 'SUPER_ADMIN'])
+        ) as UserRole[];
+        updates.role = 'SUPER_ADMIN';
+        updates.permissions = ['*'];
+        changed = true;
       }
     }
 
-    // Fallback: Default to first active super admin user
-    if (!matchedUser) {
-      matchedUser = state.currentUser || state.users[0];
-    }
+    if (!changed) return { user: existing };
 
-    // Double check if matched user is linked to a blocked student
-    if (matchedUser.studentId) {
-      const linkedStudent = state.students.find((s) => s.studentId === matchedUser?.studentId);
-      if (linkedStudent && linkedStudent.systemAccess === 'BLOQUEADO') {
+    const updatedUser: User = { ...existing, ...updates };
+    setState((prev) => ({
+      ...prev,
+      users: prev.users.map((u) => (u.id === updatedUser.id ? updatedUser : u)),
+      currentUser:
+        prev.currentUser.id === updatedUser.id ? updatedUser : prev.currentUser,
+    }));
+    stateRef.current = {
+      ...stateRef.current,
+      users: stateRef.current.users.map((u) =>
+        u.id === updatedUser.id ? updatedUser : u
+      ),
+    };
+    return { user: updatedUser };
+  };
+
+  const loginWithGoogle = async (
+    options?: { register?: boolean }
+  ): Promise<GoogleLoginResult> => {
+    try {
+      const firebaseUser = await signInWithGoogle();
+      const resolved = resolveFirebaseUser(firebaseUser, options);
+
+      if (!resolved.user) {
+        await signOutFromGoogle().catch(() => undefined);
+        return { success: false, message: resolved.message };
+      }
+
+      if (resolved.user.status === 'INACTIVE') {
+        await signOutFromGoogle().catch(() => undefined);
         return {
           success: false,
-          message: `Acesso ao sistema bloqueado para ${linkedStudent.name} (${linkedStudent.studentId}). O cadastro está marcado como "Acesso: Bloqueado" pela secretaria. Procure a administração.`,
+          message:
+            'Sua conta está inativa. Procure a administração para reativar o acesso.',
         };
       }
+
+      startSession(resolved.user);
+      const pending = isPendingUser(resolved.user);
+
+      return {
+        success: true,
+        pending,
+        user: buildSessionUser(resolved.user),
+        message: pending
+          ? 'Cadastro recebido. Aguarde a definição da sua função pela administração.'
+          : `Bem-vindo(a), ${resolved.user.name}!`,
+      };
+    } catch (error) {
+      return { success: false, message: describeAuthError(error) };
+    }
+  };
+
+  /** Re-reads the users collection so a pending employee can see a newly assigned role. */
+  const refreshCurrentUser = async (): Promise<{
+    success: boolean;
+    pending: boolean;
+    message?: string;
+  }> => {
+    const firebaseUser = currentFirebaseUser();
+    if (!firebaseUser) {
+      return {
+        success: false,
+        pending: true,
+        message: 'Sessão do Google expirada. Entre novamente.',
+      };
     }
 
-    setCurrentUser(matchedUser);
-    setIsAuthenticated(true);
+    try {
+      const remoteUsers = await fetchCollectionStrict<User>('users');
+      const users = normalizeUsers(remoteUsers);
+      stateRef.current = { ...stateRef.current, users };
+      setState((prev) => ({ ...prev, users }));
 
-    return { success: true, user: matchedUser, message: `Bem-vindo(a), ${matchedUser.name}!` };
+      const email = (firebaseUser.email || '').trim().toLowerCase();
+      let found = users.find(
+        (u) => u.email.toLowerCase() === email || u.googleUid === firebaseUser.uid
+      );
+      if (!found && OWNER_EMAILS.includes(email)) {
+        found = users.find(isSuperAdminUser);
+      }
+
+      if (!found) {
+        return {
+          success: false,
+          pending: true,
+          message: 'Seu cadastro ainda não foi localizado no banco de dados.',
+        };
+      }
+
+      if (found.status === 'INACTIVE') {
+        return {
+          success: false,
+          pending: false,
+          message: 'Sua conta está inativa. Procure a administração.',
+        };
+      }
+
+      startSession(found);
+      return { success: true, pending: isPendingUser(found) };
+    } catch (error) {
+      console.warn('[auth] Falha ao atualizar o usuário atual.', error);
+      return {
+        success: false,
+        pending: true,
+        message: 'Não foi possível consultar o banco de dados agora. Tente novamente.',
+      };
+    }
   };
 
   const logout = () => {
     setIsAuthenticated(false);
+    void signOutFromGoogle().catch((error) => {
+      console.warn('[auth] Falha ao encerrar a sessão do Google.', error);
+    });
   };
 
+  /** Switches between the roles the employee actually owns (multi-role access). */
   const switchRole = (role: UserRole) => {
-    // If the currently logged in user has this role linked in their assigned roles:
-    if (currentUser.roles && currentUser.roles.includes(role)) {
-      const updatedUser: User = { ...currentUser, role };
-      setCurrentUser(updatedUser);
-      setState((prev) => ({
-        ...prev,
-        currentUser: updatedUser,
-        users: prev.users.map((u) => (u.id === currentUser.id ? updatedUser : u)),
-      }));
-      return;
-    }
+    const assignedRoles = currentUser.roles || [];
+    if (!assignedRoles.includes(role)) return;
 
-    // Otherwise find an existing user configured with this role (or fallback)
-    const targetUser = state.users.find((u) => u.role === role || u.roles?.includes(role)) || {
-      id: `temp_${role.toLowerCase()}`,
-      name: `Usuário ${role}`,
-      email: `${role.toLowerCase()}@thinkgreen.org`,
-      role,
-      roles: [role],
-      status: 'ACTIVE',
-      permissions: ['*'],
-      createdAt: new Date().toISOString().split('T')[0],
-    };
-    setCurrentUser(targetUser);
+    const updatedUser: User = { ...currentUser, role };
+    setState((prev) => ({
+      ...prev,
+      currentUser: updatedUser,
+      users: prev.users.map((u) => (u.id === currentUser.id ? updatedUser : u)),
+    }));
   };
 
-  const switchUserById = (userId: string) => {
-    const found = state.users.find((u) => u.id === userId);
-    if (found) setCurrentUser(found);
-  };
+  // Restores the Google session after a reload (Firebase keeps the credential).
+  useEffect(() => {
+    const unsubscribe = onAuthUserChanged((firebaseUser) => {
+      if (!firebaseUser) {
+        setIsAuthenticated(false);
+        setIsAuthResolved(true);
+        return;
+      }
+
+      const resolved = resolveFirebaseUser(firebaseUser);
+      if (resolved.user && resolved.user.status !== 'INACTIVE') {
+        startSession(resolved.user);
+      } else {
+        setIsAuthenticated(false);
+      }
+      setIsAuthResolved(true);
+    });
+
+    return () => unsubscribe();
+    // resolveFirebaseUser/startSession only use refs and stable setters.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   /**
    * Helper to append AuditLog
@@ -2212,8 +2350,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setState((prev) => {
       const updatedUsers = prev.users.map((u) => {
         if (u.id === userId) {
-          const newRoles = Array.isArray(data.roles) && data.roles.length > 0 ? data.roles : (u.roles || [u.role]);
-          const newActiveRole = data.role && newRoles.includes(data.role) ? data.role : (newRoles.includes(u.role) ? u.role : newRoles[0]);
+          const newRoles = Array.isArray(data.roles)
+            ? data.roles.filter((role) => role !== 'PENDING')
+            : (u.roles || [u.role]).filter((role) => role !== 'PENDING');
+          const newActiveRole = newRoles.length === 0
+            ? 'PENDING'
+            : data.role && newRoles.includes(data.role)
+            ? data.role
+            : newRoles.includes(u.role)
+            ? u.role
+            : newRoles[0];
           return {
             ...u,
             ...data,
@@ -2227,8 +2373,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const isCurrent = prev.currentUser.id === userId;
       let updatedCurrent = prev.currentUser;
       if (isCurrent) {
-        const newRoles = Array.isArray(data.roles) && data.roles.length > 0 ? data.roles : (prev.currentUser.roles || [prev.currentUser.role]);
-        const newActiveRole = data.role && newRoles.includes(data.role) ? data.role : (newRoles.includes(prev.currentUser.role) ? prev.currentUser.role : newRoles[0]);
+        const newRoles = Array.isArray(data.roles)
+          ? data.roles.filter((role) => role !== 'PENDING')
+          : (prev.currentUser.roles || [prev.currentUser.role]).filter(
+              (role) => role !== 'PENDING'
+            );
+        const newActiveRole = newRoles.length === 0
+          ? 'PENDING'
+          : data.role && newRoles.includes(data.role)
+          ? data.role
+          : newRoles.includes(prev.currentUser.role)
+          ? prev.currentUser.role
+          : newRoles[0];
         updatedCurrent = {
           ...prev.currentUser,
           ...data,
@@ -2550,11 +2706,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       currentUser,
       setCurrentUser,
       isAuthenticated,
+      isAuthResolved,
       setIsAuthenticated,
-      login,
+      loginWithGoogle,
+      refreshCurrentUser,
       logout,
       switchRole,
-      switchUserById,
       createStudentWithEnrollment,
       updateStudent,
       addEnrollmentToStudent,
@@ -2611,7 +2768,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       checkExamAccess,
       checkClassroomAccess,
     }),
-    [state, currentUser, isAuthenticated]
+    [state, currentUser, isAuthenticated, isAuthResolved]
   );
 
   return <AppContext.Provider value={contextValue}>{children}</AppContext.Provider>;
