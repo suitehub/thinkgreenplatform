@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Bell, ChevronDown, Menu, LogOut, HelpCircle } from 'lucide-react';
 import { User as UserType } from '../../../types';
+import { AssignedModulesMenu } from '../../common/AssignedModulesMenu';
 
 interface SecretariatTopbarProps {
   currentUser: UserType;
@@ -73,6 +74,7 @@ export const SecretariatTopbar: React.FC<SecretariatTopbarProps> = ({
 
       {/* Right: Notifications Bell + User Profile */}
       <div className="flex items-center gap-2.5 sm:gap-4">
+        <AssignedModulesMenu />
         {/* Notification Bell with Badge */}
         <div className="relative">
           <button

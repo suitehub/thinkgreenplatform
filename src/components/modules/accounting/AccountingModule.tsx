@@ -61,6 +61,7 @@ import {
   syncApprovedReportsIntoExpenses,
 } from './accountingData';
 import { EmployeeReimbursementPortal } from './EmployeeReimbursementPortal';
+import { AssignedModulesMenu } from '../../common/AssignedModulesMenu';
 import { formatCurrency } from '../../../lib/storage';
 import { getAppBasePath, getFullAppUrl, updateAppRoute } from '../../../utils/urlUtils';
 
@@ -622,28 +623,23 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
       )}
 
       {/* ========================================================================= */}
-      {/* BARRA PROVISÓRIA DE TROCA DE PERFIL / MÓDULOS (ACESSO RÁPIDO DO CONTÁBIL) */}
-      {/* Permite alternar diretamente para Secretaria (Secretário), Recepção,     */}
-      {/* Orientação Educacional, Financeiro, Professor, Aluno e Super Admin.       */}
+      {/* BARRA DE SESSÃO DO PAINEL CONTÁBIL                                        */}
       {/* ========================================================================= */}
       <div className="bg-white rounded-3xl border-2 border-emerald-500/40 p-4 sm:p-5 shadow-md space-y-3.5">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 border-b border-slate-100 pb-3">
           <div className="flex items-center gap-2.5 flex-wrap">
-            <span className="px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider bg-amber-100 text-amber-900 border border-amber-300 flex items-center gap-1.5 shadow-2xs">
-              <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping" />
-              Lugar Provisório • Troca de Perfil
+            <span className="px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-900 border border-emerald-300 flex items-center gap-1.5 shadow-2xs">
+              <span className="w-2 h-2 rounded-full bg-emerald-500" />
+              Sessão Atual
             </span>
             <span className="text-xs font-bold text-slate-800">
               Perfil Atual: <strong className="text-emerald-800">{currentUser.name}</strong> ({currentUser.role})
-            </span>
-            <span className="text-slate-400 hidden sm:inline">•</span>
-            <span className="text-xs text-slate-500">
-              Alterne para acessar outras funções do sistema sem deslogar:
             </span>
           </div>
 
           {/* Rota / URL Think Green indicator */}
           <div className="flex items-center gap-2 flex-wrap">
+            <AssignedModulesMenu />
             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs font-mono font-bold shadow-2xs">
               <span className="text-emerald-600 font-black">URL Think Green:</span>
               <span className="underline font-black">{`${getAppBasePath()}/contabil`}</span>

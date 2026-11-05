@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Bell, ChevronDown, LogOut } from 'lucide-react';
 import { useApp } from '../../../context/AppContext';
 import { ThinkGardenLogo } from '../../common/ThinkGardenLogos';
+import { AssignedModulesMenu } from '../../common/AssignedModulesMenu';
 
 interface FinanceTopbarProps {
   onOpenNotifications?: () => void;
@@ -41,6 +42,7 @@ export const FinanceTopbar: React.FC<FinanceTopbarProps> = ({
 
       {/* Right: Notifications + User Profile */}
       <div className="flex items-center gap-2.5 sm:gap-3">
+        <AssignedModulesMenu />
         {/* Notifications Bell */}
         <div className="relative">
           <button

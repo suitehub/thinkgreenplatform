@@ -25,6 +25,7 @@ import {
 import { useApp } from '../../../context/AppContext';
 import { formatCurrency } from '../../../lib/storage';
 import { ReceiptModal } from '../../common/ReceiptModal';
+import { AssignedModulesMenu } from '../../common/AssignedModulesMenu';
 import { ProvisionalReceiptModal } from '../../common/ProvisionalReceiptModal';
 import { DocumentPhotoCapture } from '../../common/DocumentPhotoCapture';
 import { PaymentReceipt, PaymentMethod, EnglishAudienceLevel, Course, PendingPayment } from '../../../types';
@@ -454,6 +455,7 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
 
             {/* User & Logout */}
             <div className="flex items-center gap-2 sm:gap-3">
+              <AssignedModulesMenu />
               <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700">
                 <div className="w-6 h-6 rounded-full bg-emerald-200 text-[#075e38] flex items-center justify-center font-black text-[11px]">
                   {currentUser.name.charAt(0)}

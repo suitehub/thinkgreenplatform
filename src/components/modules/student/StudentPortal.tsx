@@ -56,6 +56,7 @@ import {
 } from 'lucide-react';
 import { useApp } from '../../../context/AppContext';
 import { Badge } from '../../common/Badge';
+import { AssignedModulesMenu } from '../../common/AssignedModulesMenu';
 import { formatCurrency } from '../../../lib/storage';
 import { ReceiptModal } from '../../common/ReceiptModal';
 import {
@@ -788,6 +789,7 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
 
           {/* Right: User Profile Pill & Notification Bell */}
           <div className="flex items-center gap-3 sm:gap-4 relative">
+            <AssignedModulesMenu />
             {/* User Profile Pill */}
             <div className="relative">
               <button

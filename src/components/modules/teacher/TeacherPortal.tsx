@@ -60,6 +60,7 @@ import {
 } from '../../common/ThinkGardenLogos';
 import { Modal } from '../../common/Modal';
 import { Badge } from '../../common/Badge';
+import { AssignedModulesMenu } from '../../common/AssignedModulesMenu';
 import { Assessment, AssessmentType, Assignment, Submission, Lesson, ClassAssessmentItem, ClassLessonPlan } from '../../../types';
 import { getDefaultAssessmentConfig } from '../../../lib/assessmentTemplates';
 import { ClassHeader, ClassSubTab } from './ClassHeader';
@@ -999,6 +1000,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
 
             {/* Right: User Profile Pill & Actions */}
             <div className="flex items-center gap-3 sm:gap-4 relative">
+              <AssignedModulesMenu />
               <div className="relative">
                 <button
                   onClick={() => {
