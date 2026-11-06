@@ -62,6 +62,13 @@ import {
   signOutFromGoogle,
 } from '../lib/auth';
 import { getHydratedState, syncStateDiff } from '../lib/cloud';
+import {
+  clearStudentSession,
+  normalizeStudentId,
+  readStudentSession,
+  saveStudentSession,
+  validateStudentLogin,
+} from '../lib/studentAuth';
 import { resetStoredAccountingData } from '../components/modules/accounting/accountingData';
 import { resetStoredTeacherData } from '../components/modules/teacher/teacherData';
 
@@ -87,6 +94,10 @@ interface AppContextType {
     register?: boolean;
   }) => Promise<AuthLoginResult>;
   sendPasswordReset: (email: string) => Promise<{ success: boolean; message: string }>;
+  loginAsStudent: (credentials: {
+    studentId: string;
+    birthDate: string;
+  }) => { success: boolean; message?: string; user?: User };
   refreshCurrentUser: () => Promise<{ success: boolean; pending: boolean; message?: string }>;
   logout: () => void;
   switchRole: (role: UserRole) => void;
@@ -249,9 +260,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const currentUser = state.currentUser;
 
-  // Authentication state is driven by Google (Firebase Authentication).
+  // Authentication state is driven by Firebase (employees) or ID + birth date (students).
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [isAuthResolved, setIsAuthResolved] = useState<boolean>(false);
+  /** Student ID of the active non-Firebase session, when there is one. */
+  const studentSessionRef = useRef<string | null>(null);
 
   // Always gives async callbacks access to the latest hydrated state.
   const stateRef = useRef(state);
@@ -278,6 +291,80 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       users: prev.users.map((u) => (u.id === sessionUser.id ? sessionUser : u)),
     }));
     setIsAuthenticated(true);
+  };
+
+  /**
+   * Builds the session user for a student. Student records created by the
+   * Secretariat have a matching User entry; older imports may not, so a
+   * session user is assembled in memory to keep the StudentPortal contract.
+   */
+  const buildStudentSessionUser = (student: Student): User => {
+    const studentId = normalizeStudentId(student.studentId);
+    const existing = stateRef.current.users.find(
+      (u) => normalizeStudentId(u.studentId) === studentId
+    );
+
+    const base: User =
+      existing ||
+      ({
+        id: `user_${student.id}`,
+        name: student.name,
+        email: student.email || `${studentId.toLowerCase()}@student.thinkgreen.org`,
+        department: 'Aluno Think Green',
+        status: 'ACTIVE',
+        permissions: ['access_lms_student', 'submit_assignment', 'view_own_financials'],
+        createdAt: student.createdAt,
+        avatarUrl: student.avatarUrl,
+      } as User);
+
+    const roles = Array.from(
+      new Set<UserRole>([...(base.roles || []), 'STUDENT'])
+    );
+
+    return {
+      ...base,
+      studentId,
+      role: 'STUDENT',
+      roles,
+      status: 'ACTIVE',
+    };
+  };
+
+  /**
+   * Student login: permanent Student ID + registered date of birth.
+   * This does not touch Firebase Authentication, so it works with the
+   * student records already stored in Firestore.
+   */
+  const loginAsStudent = (credentials: {
+    studentId: string;
+    birthDate: string;
+  }): { success: boolean; message?: string; user?: User } => {
+    const result = validateStudentLogin(
+      stateRef.current.students,
+      credentials.studentId,
+      credentials.birthDate
+    );
+
+    if (!result.student) {
+      return { success: false, message: result.error };
+    }
+
+    const sessionUser = buildStudentSessionUser(result.student);
+    studentSessionRef.current = normalizeStudentId(result.student.studentId);
+    saveStudentSession(result.student.studentId);
+
+    // A student session replaces any employee Firebase session on this device.
+    void signOutFromGoogle().catch((error) => {
+      console.warn('[auth] Falha ao encerrar a sessão do Firebase.', error);
+    });
+
+    startSession(sessionUser);
+
+    return {
+      success: true,
+      user: sessionUser,
+      message: `Bem-vindo(a), ${result.student.name}!`,
+    };
   };
 
   /**
@@ -404,6 +491,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       };
     }
 
+    // An employee signing in replaces any student session stored on this device.
+    studentSessionRef.current = null;
+    clearStudentSession();
+
     startSession(resolved.user);
     const pending = isPendingUser(resolved.user);
 
@@ -528,6 +619,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const logout = () => {
+    studentSessionRef.current = null;
+    clearStudentSession();
     setIsAuthenticated(false);
     void signOutFromGoogle().catch((error) => {
       console.warn('[auth] Falha ao encerrar a sessão do Firebase.', error);
@@ -547,13 +640,43 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }));
   };
 
-  // Restores the Google session after a reload (Firebase keeps the credential).
+  // Restores a session after a reload: Firebase keeps employee credentials and
+  // students keep their ID in sessionStorage for the current browser tab.
   useEffect(() => {
+    const storedStudentSession = readStudentSession();
+
+    if (storedStudentSession) {
+      const student = stateRef.current.students.find(
+        (item) =>
+          normalizeStudentId(item.studentId) === storedStudentSession.studentId
+      );
+
+      if (
+        student &&
+        student.status === 'ATIVO' &&
+        student.systemAccess !== 'BLOQUEADO'
+      ) {
+        studentSessionRef.current = storedStudentSession.studentId;
+        startSession(buildStudentSessionUser(student));
+      } else {
+        clearStudentSession();
+      }
+    }
+
     const unsubscribe = onAuthUserChanged((firebaseUser) => {
       if (!firebaseUser) {
-        setIsAuthenticated(false);
+        // Do not clear a valid student session just because Firebase has no user.
+        if (!studentSessionRef.current) {
+          setIsAuthenticated(false);
+        }
         setIsAuthResolved(true);
         return;
+      }
+
+      // A Firebase employee session on this device takes precedence.
+      if (studentSessionRef.current) {
+        studentSessionRef.current = null;
+        clearStudentSession();
       }
 
       const resolved = resolveFirebaseUser(firebaseUser);
@@ -2777,6 +2900,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       loginWithGoogle,
       loginWithEmail,
       sendPasswordReset,
+      loginAsStudent,
       refreshCurrentUser,
       logout,
       switchRole,
