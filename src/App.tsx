@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { AppProvider, useApp } from './context/AppContext';
 import { LoginPage } from './components/auth/LoginPage';
 import { PendingApprovalPage } from './components/auth/PendingApprovalPage';
@@ -19,6 +19,7 @@ import { EmployeeReimbursementPortal } from './components/modules/accounting/Emp
 import { AdminModule } from './components/modules/admin/AdminModule';
 import { ReceptionModule } from './components/modules/reception/ReceptionModule';
 import { parseAppRoute, updateAppRoute } from './utils/urlUtils';
+import type { UserRole } from './types';
 
 const AuthenticatedLayout: React.FC = () => {
   const { currentUser, switchRole } = useApp();
@@ -26,43 +27,58 @@ const AuthenticatedLayout: React.FC = () => {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [selectedStudentForDetail, setSelectedStudentForDetail] = useState<string | null>(null);
 
-  // Sync URL on initial mount or popstate (e.g. /thinkgreenplatform/contabil, /contabil, etc.)
+  // Always gives the URL listener access to the latest signed-in user.
+  const currentUserRef = useRef(currentUser);
   useEffect(() => {
-    const assignedRoles = currentUser.roles || [];
+    currentUserRef.current = currentUser;
+  }, [currentUser]);
 
+  /**
+   * URL -> role deep-linking.
+   *
+   * This must only run when the layout mounts or on browser back/forward.
+   * The opposite direction (role -> URL) lives in the effect below. Running both
+   * on every role change makes them fight each other: the new role updates the
+   * URL, while the still-old URL forces the previous role back, alternating
+   * between the user's modules forever.
+   */
+  useEffect(() => {
     const handleUrlRoute = () => {
-      try {
-        const route = parseAppRoute();
-        const routeRole =
-          route === 'contabil' || route === 'accounting'
-            ? 'ACCOUNTING'
-            : route === 'secretaria'
-            ? 'SECRETARIAT'
-            : route === 'recepcao'
-            ? 'RECEPTION'
-            : route === 'financeiro'
-            ? 'FINANCE'
-            : route === 'professor'
-            ? 'TEACHER'
-            : route === 'aluno'
-            ? 'STUDENT'
-            : null;
+      const route = parseAppRoute();
+      const routeRole: UserRole | null =
+        route === 'contabil' || route === 'accounting'
+          ? 'ACCOUNTING'
+          : route === 'secretaria'
+          ? 'SECRETARIAT'
+          : route === 'recepcao'
+          ? 'RECEPTION'
+          : route === 'financeiro'
+          ? 'FINANCE'
+          : route === 'professor'
+          ? 'TEACHER'
+          : route === 'aluno'
+          ? 'STUDENT'
+          : route === 'admin'
+          ? 'SUPER_ADMIN'
+          : null;
 
-        // Only navigate to modules the authenticated employee actually owns.
-        if (routeRole && assignedRoles.includes(routeRole) && currentUser.role !== routeRole) {
-          switchRole(routeRole);
-        }
-      } catch {
-        // Safe fallback
+      if (!routeRole) return;
+
+      const user = currentUserRef.current;
+      const assignedRoles = user.roles || [];
+
+      // Only navigate to modules the authenticated employee actually owns.
+      if (assignedRoles.includes(routeRole) && user.role !== routeRole) {
+        switchRole(routeRole);
       }
     };
 
     handleUrlRoute();
     window.addEventListener('popstate', handleUrlRoute);
     return () => window.removeEventListener('popstate', handleUrlRoute);
-  }, [currentUser.role, currentUser.roles, switchRole]);
+  }, [switchRole]);
 
-  // Sync browser URL whenever user role changes preserving repository path (e.g. /thinkgreenplatform/contabil)
+  // Role -> URL. This runs only when the active module changes.
   useEffect(() => {
     try {
       if (currentUser.role === 'ACCOUNTING') {
@@ -77,6 +93,8 @@ const AuthenticatedLayout: React.FC = () => {
         updateAppRoute('professor', { role: 'TEACHER' });
       } else if (currentUser.role === 'STUDENT') {
         updateAppRoute('aluno', { role: 'STUDENT' });
+      } else if (currentUser.role === 'SUPER_ADMIN') {
+        updateAppRoute('admin', { role: 'SUPER_ADMIN' });
       }
     } catch {
       // Safe fallback

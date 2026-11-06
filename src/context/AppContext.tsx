@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useMemo, useRef } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import confetti from 'canvas-confetti';
 import {
   User,
@@ -627,18 +627,25 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     });
   };
 
-  /** Switches between the roles the employee actually owns (multi-role access). */
-  const switchRole = (role: UserRole) => {
-    const assignedRoles = currentUser.roles || [];
-    if (!assignedRoles.includes(role)) return;
+  /**
+   * Switches between the roles the employee actually owns (multi-role access).
+   * Stable identity and functional update so URL listeners never act on stale
+   * user data or force extra effect cycles.
+   */
+  const switchRole = useCallback((role: UserRole) => {
+    setState((prev) => {
+      const user = prev.currentUser;
+      const assignedRoles = user.roles || [];
+      if (!assignedRoles.includes(role) || user.role === role) return prev;
 
-    const updatedUser: User = { ...currentUser, role };
-    setState((prev) => ({
-      ...prev,
-      currentUser: updatedUser,
-      users: prev.users.map((u) => (u.id === currentUser.id ? updatedUser : u)),
-    }));
-  };
+      const updatedUser: User = { ...user, role };
+      return {
+        ...prev,
+        currentUser: updatedUser,
+        users: prev.users.map((u) => (u.id === user.id ? updatedUser : u)),
+      };
+    });
+  }, []);
 
   // Restores a session after a reload: Firebase keeps employee credentials and
   // students keep their ID in sessionStorage for the current browser tab.
