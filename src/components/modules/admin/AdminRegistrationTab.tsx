@@ -131,7 +131,7 @@ export const AdminRegistrationTab: React.FC = () => {
 
   const shareWhatsApp = () => {
     const message = encodeURIComponent(
-      `Olá! Crie seu acesso à Think Green Platform com sua conta Google usando este link: ${registrationLink}`
+      `Olá! Crie seu acesso à Think Green Platform com Google ou e-mail e senha usando este link: ${registrationLink}`
     );
     window.open(`https://wa.me/?text=${message}`, '_blank', 'noopener,noreferrer');
   };
@@ -139,7 +139,7 @@ export const AdminRegistrationTab: React.FC = () => {
   const shareEmail = () => {
     const subject = encodeURIComponent('Registro de acesso — Think Green Platform');
     const body = encodeURIComponent(
-      `Olá!\n\nCrie seu acesso à Think Green Platform com sua conta Google usando o link abaixo:\n${registrationLink}\n\nApós o registro, sua função será definida pela administração.\n\nThink Green Platform`
+      `Olá!\n\nCrie seu acesso à Think Green Platform com Google ou e-mail e senha usando o link abaixo:\n${registrationLink}\n\nApós o registro, sua função será definida pela administração.\n\nThink Green Platform`
     );
     window.location.href = `mailto:?subject=${subject}&body=${body}`;
   };
@@ -152,8 +152,8 @@ export const AdminRegistrationTab: React.FC = () => {
           Registro Geral de Funcionários
         </h2>
         <p className="text-xs text-slate-500 mt-1 max-w-2xl leading-relaxed">
-          Envie este link para os funcionários. Eles criam a conta com o Google e ficam
-          aguardando a definição da função. Depois de atribuir as funções abaixo, o acesso é
+          Envie este link para os funcionários. Eles criam a conta com Google ou e-mail e senha e
+          ficam aguardando a definição da função. Depois de atribuir as funções abaixo, o acesso é
           liberado automaticamente.
         </p>
       </div>
@@ -208,10 +208,10 @@ export const AdminRegistrationTab: React.FC = () => {
         </div>
 
         <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-[11px] text-slate-600 leading-relaxed">
-          <strong>Como funciona:</strong> o funcionário entra com a conta Google, o cadastro é
-          criado como <em>Aguardando função</em> e ele vê uma tela de espera. Assim que você
-          definir uma ou mais funções, o acesso é liberado no próximo login ou na verificação
-          automática da tela de espera.
+          <strong>Como funciona:</strong> o funcionário entra com Google ou cria uma conta com
+          e-mail e senha, o cadastro é criado como <em>Aguardando função</em> e ele vê uma tela de
+          espera. Assim que você definir uma ou mais funções, o acesso é liberado no próximo login
+          ou na verificação automática da tela de espera.
         </div>
       </div>
 

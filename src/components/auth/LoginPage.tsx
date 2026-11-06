@@ -1,5 +1,17 @@
-import React, { useMemo, useState } from 'react';
-import { AlertCircle, ArrowRight, Chrome, ShieldCheck, UserPlus } from 'lucide-react';
+import React, { useState } from 'react';
+import {
+  AlertCircle,
+  ArrowRight,
+  CheckCircle2,
+  Chrome,
+  Eye,
+  EyeOff,
+  Lock,
+  Mail,
+  ShieldCheck,
+  User,
+  UserPlus,
+} from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 
 const isRegistrationLink = (): boolean => {
@@ -17,23 +29,112 @@ const isRegistrationLink = (): boolean => {
   );
 };
 
-export const LoginPage: React.FC = () => {
-  const { loginWithGoogle } = useApp();
+type LoginMethod = 'google' | 'email';
+type LoadingAction = 'google' | 'email' | 'reset' | null;
 
-  const registrationMode = useMemo(isRegistrationLink, []);
-  const [isLoading, setIsLoading] = useState(false);
+export const LoginPage: React.FC = () => {
+  const { loginWithGoogle, loginWithEmail, sendPasswordReset } = useApp();
+
+  const [registrationMode, setRegistrationMode] = useState<boolean>(() => isRegistrationLink());
+  const [method, setMethod] = useState<LoginMethod>('google');
+  const [loadingAction, setLoadingAction] = useState<LoadingAction>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [infoMessage, setInfoMessage] = useState<string | null>(null);
+
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+
+  const isLoading = loadingAction !== null;
+
+  const clearMessages = () => {
+    setErrorMessage(null);
+    setInfoMessage(null);
+  };
 
   const handleGoogleLogin = async () => {
-    setErrorMessage(null);
-    setIsLoading(true);
+    clearMessages();
+    setLoadingAction('google');
     try {
       const result = await loginWithGoogle({ register: registrationMode });
       if (!result.success) {
         setErrorMessage(result.message || 'Não foi possível entrar com o Google.');
       }
     } finally {
-      setIsLoading(false);
+      setLoadingAction(null);
+    }
+  };
+
+  const handleEmailSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    clearMessages();
+
+    const cleanEmail = email.trim().toLowerCase();
+
+    if (!cleanEmail) {
+      setErrorMessage('Informe seu e-mail.');
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
+      setErrorMessage('Informe um endereço de e-mail válido.');
+      return;
+    }
+    if (!password) {
+      setErrorMessage('Informe sua senha.');
+      return;
+    }
+    if (password.length < 6) {
+      setErrorMessage('A senha precisa ter pelo menos 6 caracteres.');
+      return;
+    }
+    if (registrationMode) {
+      if (!name.trim()) {
+        setErrorMessage('Informe seu nome completo.');
+        return;
+      }
+      if (password !== confirmPassword) {
+        setErrorMessage('As senhas não conferem. Confira os dois campos.');
+        return;
+      }
+    }
+
+    setLoadingAction('email');
+    try {
+      const result = await loginWithEmail({
+        email: cleanEmail,
+        password,
+        name: name.trim(),
+        register: registrationMode,
+      });
+
+      if (!result.success) {
+        setErrorMessage(result.message || 'Não foi possível concluir o acesso.');
+      }
+    } finally {
+      setLoadingAction(null);
+    }
+  };
+
+  const handlePasswordReset = async () => {
+    clearMessages();
+
+    if (!email.trim()) {
+      setErrorMessage('Informe seu e-mail para receber o link de redefinição.');
+      return;
+    }
+
+    setLoadingAction('reset');
+    try {
+      const result = await sendPasswordReset(email);
+      if (result.success) {
+        setInfoMessage(result.message);
+      } else {
+        setErrorMessage(result.message);
+      }
+    } finally {
+      setLoadingAction(null);
     }
   };
 
@@ -68,7 +169,7 @@ export const LoginPage: React.FC = () => {
               )}
             </div>
 
-            <div className="text-center mb-6">
+            <div className="text-center mb-5">
               <span
                 className={`inline-block mb-2 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${
                   registrationMode
@@ -83,8 +184,8 @@ export const LoginPage: React.FC = () => {
               </h1>
               <p className="text-xs sm:text-sm text-slate-500 mt-1.5 font-medium leading-relaxed">
                 {registrationMode
-                  ? 'Use sua conta Google para enviar o cadastro. A administração definirá sua função e os módulos que você poderá acessar.'
-                  : 'Entre com sua conta Google institucional para continuar.'}
+                  ? 'Crie sua conta com Google ou e-mail e senha. A administração definirá sua função e os módulos que você poderá acessar.'
+                  : 'Entre com Google ou e-mail e senha para continuar.'}
               </p>
             </div>
 
@@ -95,36 +196,209 @@ export const LoginPage: React.FC = () => {
               </div>
             )}
 
-            <button
-              type="button"
-              onClick={handleGoogleLogin}
-              disabled={isLoading}
-              className={`w-full py-3.5 px-6 active:scale-[0.99] disabled:opacity-75 text-white font-bold rounded-xl text-sm sm:text-base flex items-center justify-center gap-2.5 shadow-md transition-all cursor-pointer ${
-                registrationMode
-                  ? 'bg-purple-700 hover:bg-purple-800 shadow-purple-950/20'
-                  : 'bg-[#075e38] hover:bg-[#054a2c] shadow-emerald-950/20'
-              }`}
-            >
-              <Chrome className="w-5 h-5" />
-              <span>
-                {isLoading
-                  ? 'Conectando ao Google...'
-                  : registrationMode
-                  ? 'Registrar com Google'
-                  : 'Entrar com Google'}
-              </span>
-              <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
-            </button>
+            {infoMessage && (
+              <div className="mb-4 p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-800 font-semibold flex items-start gap-2 animate-in fade-in">
+                <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600 mt-0.5" />
+                <span className="leading-relaxed">{infoMessage}</span>
+              </div>
+            )}
+
+            {/* Method selector */}
+            <div className="grid grid-cols-2 gap-1 p-1 bg-slate-100/90 rounded-xl mb-4">
+              <button
+                type="button"
+                onClick={() => {
+                  clearMessages();
+                  setMethod('google');
+                }}
+                className={`flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  method === 'google'
+                    ? 'bg-white text-slate-900 shadow-xs'
+                    : 'text-slate-500 hover:text-slate-800'
+                }`}
+              >
+                <Chrome className="w-3.5 h-3.5" />
+                Google
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  clearMessages();
+                  setMethod('email');
+                }}
+                className={`flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  method === 'email'
+                    ? 'bg-white text-slate-900 shadow-xs'
+                    : 'text-slate-500 hover:text-slate-800'
+                }`}
+              >
+                <Mail className="w-3.5 h-3.5" />
+                E-mail e senha
+              </button>
+            </div>
+
+            {method === 'google' ? (
+              <button
+                type="button"
+                onClick={handleGoogleLogin}
+                disabled={isLoading}
+                className={`w-full py-3.5 px-6 active:scale-[0.99] disabled:opacity-75 text-white font-bold rounded-xl text-sm sm:text-base flex items-center justify-center gap-2.5 shadow-md transition-all cursor-pointer ${
+                  registrationMode
+                    ? 'bg-purple-700 hover:bg-purple-800 shadow-purple-950/20'
+                    : 'bg-[#075e38] hover:bg-[#054a2c] shadow-emerald-950/20'
+                }`}
+              >
+                <Chrome className="w-5 h-5" />
+                <span>
+                  {loadingAction === 'google'
+                    ? 'Conectando ao Google...'
+                    : registrationMode
+                    ? 'Registrar com Google'
+                    : 'Entrar com Google'}
+                </span>
+                <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
+              </button>
+            ) : (
+              <form onSubmit={handleEmailSubmit} className="space-y-3">
+                {registrationMode && (
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-600 mb-1" htmlFor="login-name">
+                      Nome completo
+                    </label>
+                    <div className="relative">
+                      <User className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                      <input
+                        id="login-name"
+                        type="text"
+                        value={name}
+                        onChange={(event) => setName(event.target.value)}
+                        placeholder="Seu nome completo"
+                        autoComplete="name"
+                        disabled={isLoading}
+                        className="w-full pl-10 pr-3.5 py-3 rounded-xl border border-slate-200 bg-white text-sm text-slate-900 placeholder:text-slate-400 focus:outline-hidden focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 transition-all"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-600 mb-1" htmlFor="login-email">
+                    E-mail
+                  </label>
+                  <div className="relative">
+                    <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                    <input
+                      id="login-email"
+                      type="email"
+                      value={email}
+                      onChange={(event) => setEmail(event.target.value)}
+                      placeholder="seuemail@exemplo.com"
+                      autoComplete="email"
+                      disabled={isLoading}
+                      className="w-full pl-10 pr-3.5 py-3 rounded-xl border border-slate-200 bg-white text-sm text-slate-900 placeholder:text-slate-400 focus:outline-hidden focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 transition-all"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-600 mb-1" htmlFor="login-password">
+                    Senha
+                  </label>
+                  <div className="relative">
+                    <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                    <input
+                      id="login-password"
+                      type={showPassword ? 'text' : 'password'}
+                      value={password}
+                      onChange={(event) => setPassword(event.target.value)}
+                      placeholder="Sua senha"
+                      autoComplete={registrationMode ? 'new-password' : 'current-password'}
+                      disabled={isLoading}
+                      className="w-full pl-10 pr-11 py-3 rounded-xl border border-slate-200 bg-white text-sm text-slate-900 placeholder:text-slate-400 focus:outline-hidden focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 transition-all"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((visible) => !visible)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-700 transition-colors cursor-pointer"
+                      title={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
+
+                {registrationMode && (
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-600 mb-1" htmlFor="login-confirm">
+                      Confirmar senha
+                    </label>
+                    <div className="relative">
+                      <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                      <input
+                        id="login-confirm"
+                        type={showPassword ? 'text' : 'password'}
+                        value={confirmPassword}
+                        onChange={(event) => setConfirmPassword(event.target.value)}
+                        placeholder="Repita a senha"
+                        autoComplete="new-password"
+                        disabled={isLoading}
+                        className="w-full pl-10 pr-3.5 py-3 rounded-xl border border-slate-200 bg-white text-sm text-slate-900 placeholder:text-slate-400 focus:outline-hidden focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 transition-all"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {!registrationMode && (
+                  <button
+                    type="button"
+                    onClick={handlePasswordReset}
+                    disabled={isLoading}
+                    className="text-[11px] font-bold text-emerald-700 hover:text-emerald-900 disabled:opacity-60 transition-colors cursor-pointer"
+                  >
+                    {loadingAction === 'reset' ? 'Enviando link...' : 'Esqueci minha senha'}
+                  </button>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className={`w-full py-3.5 px-6 active:scale-[0.99] disabled:opacity-75 text-white font-bold rounded-xl text-sm sm:text-base flex items-center justify-center gap-2.5 shadow-md transition-all cursor-pointer ${
+                    registrationMode
+                      ? 'bg-purple-700 hover:bg-purple-800 shadow-purple-950/20'
+                      : 'bg-[#075e38] hover:bg-[#054a2c] shadow-emerald-950/20'
+                  }`}
+                >
+                  {registrationMode ? <UserPlus className="w-5 h-5" /> : <ArrowRight className="w-5 h-5" />}
+                  <span>
+                    {loadingAction === 'email'
+                      ? 'Processando...'
+                      : registrationMode
+                      ? 'Criar conta com e-mail'
+                      : 'Entrar com e-mail'}
+                  </span>
+                </button>
+              </form>
+            )}
 
             <div className="mt-5 pt-4 border-t border-slate-100 text-[11px] text-slate-500 space-y-2">
               <p className="flex items-center justify-center gap-1.5 text-slate-400 font-medium">
                 <ShieldCheck className="w-3.5 h-3.5 text-[#075e38]" />
-                Autenticação segura via Google
+                Autenticação segura via Firebase
               </p>
               {registrationMode ? (
                 <p className="text-center leading-relaxed">
                   Após o registro, sua conta ficará <strong>aguardando aprovação</strong>. Assim que a
-                  administração definir sua função, o acesso será liberado.
+                  administração definir sua função, o acesso será liberado.{' '}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      clearMessages();
+                      setRegistrationMode(false);
+                    }}
+                    className="font-bold text-emerald-700 hover:text-emerald-900 cursor-pointer"
+                  >
+                    Já tenho conta
+                  </button>
                 </p>
               ) : (
                 <p className="text-center leading-relaxed">

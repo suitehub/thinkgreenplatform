@@ -55,6 +55,9 @@ import {
   currentFirebaseUser,
   describeAuthError,
   onAuthUserChanged,
+  registerWithEmailPassword,
+  requestPasswordReset,
+  signInWithEmailPassword,
   signInWithGoogle,
   signOutFromGoogle,
 } from '../lib/auth';
@@ -62,7 +65,7 @@ import { getHydratedState, syncStateDiff } from '../lib/cloud';
 import { resetStoredAccountingData } from '../components/modules/accounting/accountingData';
 import { resetStoredTeacherData } from '../components/modules/teacher/teacherData';
 
-export interface GoogleLoginResult {
+export interface AuthLoginResult {
   success: boolean;
   pending?: boolean;
   user?: User;
@@ -76,7 +79,14 @@ interface AppContextType {
   isAuthenticated: boolean;
   isAuthResolved: boolean;
   setIsAuthenticated: (val: boolean) => void;
-  loginWithGoogle: (options?: { register?: boolean }) => Promise<GoogleLoginResult>;
+  loginWithGoogle: (options?: { register?: boolean }) => Promise<AuthLoginResult>;
+  loginWithEmail: (credentials: {
+    email: string;
+    password: string;
+    name?: string;
+    register?: boolean;
+  }) => Promise<AuthLoginResult>;
+  sendPasswordReset: (email: string) => Promise<{ success: boolean; message: string }>;
   refreshCurrentUser: () => Promise<{ success: boolean; pending: boolean; message?: string }>;
   logout: () => void;
   switchRole: (role: UserRole) => void;
@@ -271,17 +281,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   /**
-   * Finds (or creates) the employee record linked to a Google account.
-   * Unknown accounts only become "PENDING" when they arrive through the
-   * registration link; otherwise they must already exist in Firestore.
+   * Finds (or creates) the employee record linked to a Firebase Authentication
+   * account (Google or e-mail/password). Unknown accounts only become "PENDING"
+   * when they arrive through the registration link; otherwise they must already
+   * exist in Firestore.
    */
   const resolveFirebaseUser = (
     firebaseUser: { uid: string; email: string | null; displayName: string | null; photoURL: string | null },
-    options?: { register?: boolean }
+    options?: { register?: boolean; displayName?: string }
   ): { user?: User; message?: string } => {
     const email = (firebaseUser.email || '').trim().toLowerCase();
     if (!email) {
-      return { message: 'A conta Google não retornou um e-mail válido.' };
+      return { message: 'A conta autenticada não retornou um e-mail válido.' };
     }
 
     const isOwner = OWNER_EMAILS.includes(email);
@@ -304,7 +315,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const newUser: User = {
         id: firebaseUser.uid,
         googleUid: firebaseUser.uid,
-        name: firebaseUser.displayName || email.split('@')[0],
+        name: options?.displayName?.trim() || firebaseUser.displayName || email.split('@')[0],
         email,
         role: isOwner ? 'SUPER_ADMIN' : 'PENDING',
         roles: isOwner ? ['SUPER_ADMIN'] : [],
@@ -367,37 +378,92 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return { user: updatedUser };
   };
 
+  /** Shared post-authentication step for Google and e-mail/password accounts. */
+  const finishFirebaseLogin = async (
+    firebaseUser: {
+      uid: string;
+      email: string | null;
+      displayName: string | null;
+      photoURL: string | null;
+    },
+    options?: { register?: boolean; displayName?: string }
+  ): Promise<AuthLoginResult> => {
+    const resolved = resolveFirebaseUser(firebaseUser, options);
+
+    if (!resolved.user) {
+      await signOutFromGoogle().catch(() => undefined);
+      return { success: false, message: resolved.message };
+    }
+
+    if (resolved.user.status === 'INACTIVE') {
+      await signOutFromGoogle().catch(() => undefined);
+      return {
+        success: false,
+        message:
+          'Sua conta está inativa. Procure a administração para reativar o acesso.',
+      };
+    }
+
+    startSession(resolved.user);
+    const pending = isPendingUser(resolved.user);
+
+    return {
+      success: true,
+      pending,
+      user: buildSessionUser(resolved.user),
+      message: pending
+        ? 'Cadastro recebido. Aguarde a definição da sua função pela administração.'
+        : `Bem-vindo(a), ${resolved.user.name}!`,
+    };
+  };
+
   const loginWithGoogle = async (
     options?: { register?: boolean }
-  ): Promise<GoogleLoginResult> => {
+  ): Promise<AuthLoginResult> => {
     try {
       const firebaseUser = await signInWithGoogle();
-      const resolved = resolveFirebaseUser(firebaseUser, options);
+      return await finishFirebaseLogin(firebaseUser, options);
+    } catch (error) {
+      return { success: false, message: describeAuthError(error) };
+    }
+  };
 
-      if (!resolved.user) {
-        await signOutFromGoogle().catch(() => undefined);
-        return { success: false, message: resolved.message };
-      }
+  const loginWithEmail = async (credentials: {
+    email: string;
+    password: string;
+    name?: string;
+    register?: boolean;
+  }): Promise<AuthLoginResult> => {
+    try {
+      const firebaseUser = credentials.register
+        ? await registerWithEmailPassword(
+            credentials.name || '',
+            credentials.email,
+            credentials.password
+          )
+        : await signInWithEmailPassword(credentials.email, credentials.password);
 
-      if (resolved.user.status === 'INACTIVE') {
-        await signOutFromGoogle().catch(() => undefined);
-        return {
-          success: false,
-          message:
-            'Sua conta está inativa. Procure a administração para reativar o acesso.',
-        };
-      }
+      return await finishFirebaseLogin(firebaseUser, {
+        register: credentials.register,
+        displayName: credentials.name,
+      });
+    } catch (error) {
+      return { success: false, message: describeAuthError(error) };
+    }
+  };
 
-      startSession(resolved.user);
-      const pending = isPendingUser(resolved.user);
+  const sendPasswordReset = async (
+    email: string
+  ): Promise<{ success: boolean; message: string }> => {
+    if (!email.trim()) {
+      return { success: false, message: 'Informe seu e-mail para recuperar a senha.' };
+    }
 
+    try {
+      await requestPasswordReset(email);
       return {
         success: true,
-        pending,
-        user: buildSessionUser(resolved.user),
-        message: pending
-          ? 'Cadastro recebido. Aguarde a definição da sua função pela administração.'
-          : `Bem-vindo(a), ${resolved.user.name}!`,
+        message: 'Enviamos um link de redefinição para o seu e-mail. Confira a caixa de entrada.',
       };
     } catch (error) {
       return { success: false, message: describeAuthError(error) };
@@ -415,7 +481,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return {
         success: false,
         pending: true,
-        message: 'Sessão do Google expirada. Entre novamente.',
+        message: 'Sessão expirada. Entre novamente.',
       };
     }
 
@@ -464,7 +530,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const logout = () => {
     setIsAuthenticated(false);
     void signOutFromGoogle().catch((error) => {
-      console.warn('[auth] Falha ao encerrar a sessão do Google.', error);
+      console.warn('[auth] Falha ao encerrar a sessão do Firebase.', error);
     });
   };
 
@@ -2709,6 +2775,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       isAuthResolved,
       setIsAuthenticated,
       loginWithGoogle,
+      loginWithEmail,
+      sendPasswordReset,
       refreshCurrentUser,
       logout,
       switchRole,

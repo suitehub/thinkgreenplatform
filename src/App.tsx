@@ -325,7 +325,7 @@ const MainLayout: React.FC = () => {
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <div className="text-center">
           <div className="w-10 h-10 border-4 border-emerald-100 border-t-[#075e38] rounded-full mx-auto mb-3 animate-spin" />
-          <p className="text-xs font-bold text-[#075e38]">Verificando sua conta Google...</p>
+          <p className="text-xs font-bold text-[#075e38]">Verificando sua conta...</p>
         </div>
       </div>
     );
