@@ -19,7 +19,6 @@ import {
   Server,
   BookOpen,
   PieChart,
-  RotateCcw,
 } from 'lucide-react';
 import { useApp } from '../../../context/AppContext';
 import { StatCard } from '../../common/StatCard';
@@ -27,13 +26,9 @@ import { Badge } from '../../common/Badge';
 
 interface AdminOverviewTabProps {
   setCurrentTab: (tab: string) => void;
-  onOpenResetModal: () => void;
 }
 
-export const AdminOverviewTab: React.FC<AdminOverviewTabProps> = ({
-  setCurrentTab,
-  onOpenResetModal,
-}) => {
+export const AdminOverviewTab: React.FC<AdminOverviewTabProps> = ({ setCurrentTab }) => {
   const { state } = useApp();
 
   const activeStudentsCount = state.students.filter((s) => s.status === 'ATIVO').length;

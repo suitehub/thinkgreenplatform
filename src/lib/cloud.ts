@@ -1,4 +1,4 @@
-import { AppState, getDefaultState } from './storage';
+import { AppState } from './storage';
 import { SystemSettings } from '../types';
 import {
   commitCollectionChanges,
@@ -38,9 +38,6 @@ export type StateCollectionKey = keyof typeof STATE_COLLECTIONS;
 
 export const SETTINGS_COLLECTION = 'settings';
 export const SETTINGS_DOC_ID = 'main';
-
-const SEED_MARKER_COLLECTION = 'test';
-const SEED_MARKER_DOC_ID = 'app_seeded';
 
 /** State loaded from Firestore before the React tree mounts. */
 let hydratedState: Partial<AppState> | null = null;
@@ -82,17 +79,10 @@ export function getHydratedState(): Partial<AppState> | null {
   return hydratedState;
 }
 
-/** Remembers whether the database has already been initialized. */
-let cloudSeeded = false;
-
-export function isCloudSeeded(force?: boolean): boolean {
-  if (force !== undefined) cloudSeeded = force;
-  return cloudSeeded;
-}
-
 /**
  * Loads every AppState collection from Firestore.
- * Collections that fail to read are omitted so the caller falls back to defaults.
+ * Collections that fail to read are omitted so the caller falls back to empty
+ * collections. Nothing is ever seeded or restored automatically.
  */
 export async function loadStateFromCloud(): Promise<Partial<AppState>> {
   const keys = Object.keys(STATE_COLLECTIONS) as StateCollectionKey[];
@@ -125,83 +115,6 @@ export async function loadStateFromCloud(): Promise<Partial<AppState>> {
   }
 
   return partial;
-}
-
-/**
- * Seeds the initial dataset the very first time the app runs against an empty
- * Firestore database. Uses a marker document so data is never overwritten later.
- */
-export async function seedCloudIfNeeded(remote: Partial<AppState>): Promise<Partial<AppState>> {
-  let markerExists = false;
-  try {
-    markerExists = Boolean(
-      await fetchDocumentStrict(SEED_MARKER_COLLECTION, SEED_MARKER_DOC_ID)
-    );
-  } catch (error) {
-    console.warn('[cloud] Não foi possível verificar o marcador de inicialização.', error);
-  }
-
-  if (markerExists) {
-    isCloudSeeded(true);
-    const hasCoreData =
-      (remote.users?.length ?? 0) > 0 ||
-      (remote.courses?.length ?? 0) > 0 ||
-      (remote.classes?.length ?? 0) > 0 ||
-      (remote.cashRegisters?.length ?? 0) > 0;
-    if (hasCoreData || remote.settings) {
-      return remote;
-    }
-    console.warn(
-      '[cloud] O marcador de inicialização existe, mas o banco está vazio. Semeando novamente.'
-    );
-  }
-
-  const seeded: Partial<AppState> = { ...remote };
-  const defaults = getDefaultState();
-  let allWritesSucceeded = true;
-
-  const collectionsToSeed: StateCollectionKey[] = ['users', 'courses', 'classes', 'cashRegisters'];
-
-  for (const key of collectionsToSeed) {
-    const remoteItems = (remote[key] as Array<unknown> | undefined) ?? [];
-    if (remoteItems.length > 0) continue;
-
-    const items = (defaults[key] as Array<{ id: string }>) || [];
-    if (items.length === 0) continue;
-    try {
-      await commitCollectionChanges(STATE_COLLECTIONS[key], items, []);
-      (seeded as Record<string, unknown>)[key] = items;
-    } catch (error) {
-      allWritesSucceeded = false;
-      console.warn(`[cloud] Não foi possível semear a coleção "${STATE_COLLECTIONS[key]}".`, error);
-    }
-  }
-
-  if (!remote.settings) {
-    try {
-      await saveDocument(SETTINGS_COLLECTION, SETTINGS_DOC_ID, defaults.settings);
-      seeded.settings = defaults.settings;
-    } catch (error) {
-      allWritesSucceeded = false;
-      console.warn('[cloud] Não foi possível gravar as configurações iniciais.', error);
-    }
-  }
-
-  // Only mark the database as initialized when every default write succeeded,
-  // otherwise the seed is retried on the next load.
-  if (allWritesSucceeded) {
-    try {
-      await saveDocument(SEED_MARKER_COLLECTION, SEED_MARKER_DOC_ID, {
-        seededAt: new Date().toISOString(),
-        source: 'initial-seed',
-      });
-      isCloudSeeded(true);
-    } catch (error) {
-      console.warn('[cloud] Não foi possível gravar o marcador de inicialização.', error);
-    }
-  }
-
-  return seeded;
 }
 
 /**

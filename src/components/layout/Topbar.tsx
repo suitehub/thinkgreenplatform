@@ -3,7 +3,6 @@ import {
   Search,
   Bell,
   Menu,
-  RotateCcw,
   Sparkles,
   CheckCircle,
   MapPin,
@@ -32,7 +31,6 @@ export const Topbar: React.FC<TopbarProps> = ({
     currentUser,
     state,
     logout,
-    resetToDefaultData,
     markNotificationRead,
     markAllNotificationsRead,
   } = useApp();
@@ -145,19 +143,6 @@ export const Topbar: React.FC<TopbarProps> = ({
               </div>
             )}
           </div>
-
-          {/* Reset Demo Data Button */}
-          <button
-            onClick={() => {
-              if (confirm('Restaurar dados originais de demonstração da Think Green Platform?')) {
-                resetToDefaultData();
-              }
-            }}
-            title="Restaurar dados originais"
-            className="p-2 rounded-xl text-slate-400 hover:text-amber-600 hover:bg-amber-50 transition-colors cursor-pointer"
-          >
-            <RotateCcw className="w-4 h-4" />
-          </button>
 
           {/* Sair / Logout */}
           <button

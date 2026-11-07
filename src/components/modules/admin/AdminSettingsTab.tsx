@@ -6,7 +6,6 @@ import {
   DollarSign,
   Award,
   CheckCircle,
-  RotateCcw,
   Download,
   Upload,
   Database,
@@ -17,11 +16,7 @@ import {
 import { useApp } from '../../../context/AppContext';
 import { Modal } from '../../common/Modal';
 
-interface AdminSettingsTabProps {
-  onOpenResetModal: () => void;
-}
-
-export const AdminSettingsTab: React.FC<AdminSettingsTabProps> = ({ onOpenResetModal }) => {
+export const AdminSettingsTab: React.FC = () => {
   const { state, updateSettings } = useApp();
 
   const [savedSuccess, setSavedSuccess] = useState(false);
@@ -87,7 +82,7 @@ export const AdminSettingsTab: React.FC<AdminSettingsTabProps> = ({ onOpenResetM
             Configurações Globais & Manutenção do Sistema
           </h2>
           <p className="text-xs text-slate-500 mt-0.5">
-            Gerencie dados institucionais da unidade, moeda corrente e operações de backup e restauração.
+            Gerencie dados institucionais da unidade, moeda corrente e operações de backup.
           </p>
         </div>
 
@@ -215,7 +210,7 @@ export const AdminSettingsTab: React.FC<AdminSettingsTabProps> = ({ onOpenResetM
           Manutenção do Banco de Dados & Backup
         </h3>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+        <div className="grid grid-cols-1 gap-4 text-xs">
           {/* Backup Download */}
           <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 flex flex-col justify-between gap-3">
             <div>
@@ -235,28 +230,6 @@ export const AdminSettingsTab: React.FC<AdminSettingsTabProps> = ({ onOpenResetM
             >
               <Download className="w-3.5 h-3.5" />
               Baixar Arquivo de Backup
-            </button>
-          </div>
-
-          {/* Reset Demo State */}
-          <div className="p-4 rounded-xl border border-rose-200 bg-rose-50/50 flex flex-col justify-between gap-3">
-            <div>
-              <h4 className="font-bold text-rose-900 flex items-center gap-1.5">
-                <RotateCcw className="w-4 h-4 text-rose-600" />
-                Restaurar Dados Padrão de Demonstração
-              </h4>
-              <p className="text-rose-700/80 text-[11px] mt-1">
-                Recarrega o banco de dados inicial do Think Green Community Center com dados oficiais de exemplo.
-              </p>
-            </div>
-
-            <button
-              type="button"
-              onClick={onOpenResetModal}
-              className="w-full py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-colors shadow-2xs"
-            >
-              <RotateCcw className="w-3.5 h-3.5" />
-              Restaurar Dados Padrão
             </button>
           </div>
         </div>

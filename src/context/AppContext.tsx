@@ -69,8 +69,6 @@ import {
   saveStudentSession,
   validateStudentLogin,
 } from '../lib/studentAuth';
-import { resetStoredAccountingData } from '../components/modules/accounting/accountingData';
-import { resetStoredTeacherData } from '../components/modules/teacher/teacherData';
 
 export interface AuthLoginResult {
   success: boolean;
@@ -212,7 +210,6 @@ interface AppContextType {
   markNotificationRead: (id: string) => void;
   markAllNotificationsRead: () => void;
   importStudentsBatch: (rows: any[]) => number;
-  resetToDefaultData: () => void;
 
   // Business Rules Checks
   checkExamAccess: (studentId: string, assessment: Assessment) => { allowed: boolean; reason?: string; requiredStage?: string; isFinancialBlock?: boolean };
@@ -2863,12 +2860,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return count;
   };
 
-  const resetToDefaultData = () => {
-    resetStoredAccountingData();
-    resetStoredTeacherData();
-    setState(loadInitialState());
-  };
-
   /**
    * 10. REAL-TIME BUSINESS RULES CHECKS
    */
@@ -2963,7 +2954,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       markNotificationRead,
       markAllNotificationsRead,
       importStudentsBatch,
-      resetToDefaultData,
       checkExamAccess,
       checkClassroomAccess,
     }),

@@ -1,5 +1,4 @@
-import { loadStateFromCloud, seedCloudIfNeeded, setHydratedState } from './cloud';
-import { migrateLegacyLocalStorage } from './legacyMigration';
+import { loadStateFromCloud, setHydratedState } from './cloud';
 import {
   hydrateAccountingData,
   loadAccountingCollections,
@@ -13,16 +12,14 @@ let bootstrapPromise: Promise<void> | null = null;
 
 /**
  * Loads every dataset from Firestore before React mounts, so all modules read
- * from a fully hydrated in-memory cache (there is no localStorage fallback).
+ * from a fully hydrated in-memory cache (there is no localStorage fallback and
+ * no demo/seed data).
  */
 export function bootstrapApp(): Promise<void> {
   if (!bootstrapPromise) {
     bootstrapPromise = (async () => {
       try {
-        let remote = await loadStateFromCloud();
-        const migrated = await migrateLegacyLocalStorage(remote);
-        remote = { ...remote, ...migrated };
-        remote = await seedCloudIfNeeded(remote);
+        const remote = await loadStateFromCloud();
         setHydratedState(remote);
       } catch (error) {
         console.error('[bootstrap] Falha ao carregar o estado do Firestore.', error);

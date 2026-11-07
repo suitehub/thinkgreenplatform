@@ -38,57 +38,136 @@ export const FinanceOverviewTab: React.FC<FinanceOverviewTabProps> = ({
 }) => {
   const { state } = useApp();
   const [cashFlowRange, setCashFlowRange] = useState('6_meses');
-  const [activeHoverPoint, setActiveHoverPoint] = useState<number | null>(null);
 
-  // Compute metrics from actual system data
+  // Compute metrics from actual system data only (no demo fallbacks).
+  const now = new Date();
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  const endOfToday = startOfToday + 24 * 60 * 60 * 1000 - 1;
+
+  const parseDate = (value?: string): Date | null => {
+    if (!value) return null;
+    const brazilian = value.match(/^(\d{2})\/(\d{2})\/(\d{4})/);
+    if (brazilian) {
+      return new Date(Number(brazilian[3]), Number(brazilian[2]) - 1, Number(brazilian[1]));
+    }
+    const parsed = new Date(value);
+    return Number.isNaN(parsed.getTime()) ? null : parsed;
+  };
+
+  const isSameMonth = (value: string | undefined, reference: Date) => {
+    const date = parseDate(value);
+    return date
+      ? date.getFullYear() === reference.getFullYear() && date.getMonth() === reference.getMonth()
+      : false;
+  };
+
   const totalCharges = state.charges;
+  const billableCharges = totalCharges.filter((c) => c.status !== 'CANCELADO');
   const paidCharges = totalCharges.filter((c) => c.status === 'PAGO');
   const overdueCharges = totalCharges.filter((c) => c.status === 'EM ATRASO');
   const pendingCharges = totalCharges.filter((c) => c.status === 'PENDENTE');
   const regularCharges = totalCharges.filter((c) => c.status === 'REGULAR' || c.status === 'PAGO');
+  const cancelledCharges = totalCharges.filter((c) => c.status === 'CANCELADO');
 
-  const totalReceivables = totalCharges.reduce((acc, c) => acc + c.amount, 0) || 160000;
-  const totalRevenueMonth =
-    paidCharges.reduce((acc, c) => acc + (c.paidAmount || c.amount), 0) || 158420;
-  const totalOverdue = overdueCharges.reduce((acc, c) => acc + c.amount, 0) || 18750;
-  const totalReceivedToday = state.receipts.reduce((acc, r) => acc + r.amount, 0) || 12680;
-  const totalUpcoming7Days = pendingCharges.reduce((acc, c) => acc + c.amount, 0) || 24310;
+  const totalReceivables = billableCharges.reduce((acc, c) => acc + c.amount, 0);
 
-  // Expenses estimation for the month
-  const totalExpensesMonth = Math.round(totalRevenueMonth * 0.266) || 42130;
+  const paidThisMonth = paidCharges.filter((c) => isSameMonth(c.paidAt || c.dueDate, now));
+  const totalRevenueMonth = paidThisMonth.reduce((acc, c) => acc + (c.paidAmount || c.amount), 0);
+
+  const previousMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const previousMonthRevenue = paidCharges
+    .filter((c) => isSameMonth(c.paidAt || c.dueDate, previousMonth))
+    .reduce((acc, c) => acc + (c.paidAmount || c.amount), 0);
+  const revenueVariation =
+    previousMonthRevenue > 0
+      ? ((totalRevenueMonth - previousMonthRevenue) / previousMonthRevenue) * 100
+      : null;
+
+  const totalOverdue = overdueCharges.reduce((acc, c) => acc + c.amount, 0);
+
+  const receiptsToday = state.receipts.filter((r) => {
+    const date = parseDate(r.date);
+    return date ? date.getTime() >= startOfToday && date.getTime() <= endOfToday : false;
+  });
+  const totalReceivedToday = receiptsToday.reduce((acc, r) => acc + r.amount, 0);
+
+  const sevenDaysAhead = endOfToday + 7 * 24 * 60 * 60 * 1000;
+  const upcomingCharges = pendingCharges.filter((c) => {
+    const date = parseDate(c.dueDate);
+    return date ? date.getTime() >= startOfToday && date.getTime() <= sevenDaysAhead : false;
+  });
+  const totalUpcoming7Days = upcomingCharges.reduce((acc, c) => acc + c.amount, 0);
+
+  // Expenses come from the real accounting ledger for the current month.
+  const totalExpensesMonth = state.accountingTransactions
+    .filter((tx) => tx.type === 'DESPESA' && isSameMonth(tx.date, now))
+    .reduce((acc, tx) => acc + tx.amount, 0);
   const netBalanceMonth = totalRevenueMonth - totalExpensesMonth;
 
   // Percentage calculations
-  const overduePercent = ((totalOverdue / (totalReceivables || 1)) * 100).toFixed(1);
-  const revenuePercentOfTotal = ((totalRevenueMonth / (totalRevenueMonth + totalExpensesMonth)) * 100).toFixed(1);
-  const expensePercentOfTotal = (100 - Number(revenuePercentOfTotal)).toFixed(1);
+  const overduePercent =
+    totalReceivables > 0 ? ((totalOverdue / totalReceivables) * 100).toFixed(1).replace('.', ',') : '0,0';
+  const totalFlowMonth = totalRevenueMonth + totalExpensesMonth;
+  const revenuePercentOfTotal =
+    totalFlowMonth > 0 ? ((totalRevenueMonth / totalFlowMonth) * 100).toFixed(1).replace('.', ',') : '0,0';
+  const expensePercentOfTotal =
+    totalFlowMonth > 0 ? ((totalExpensesMonth / totalFlowMonth) * 100).toFixed(1).replace('.', ',') : '0,0';
 
-  // 6 Months Chart Data
-  const chartMonths = [
-    { month: 'Nov/25', revenue: 105000, expense: 45000 },
-    { month: 'Dez/25', revenue: 120000, expense: 55000 },
-    { month: 'Jan/26', revenue: 172000, expense: 82000 },
-    { month: 'Fev/26', revenue: 138000, expense: 70000 },
-    { month: 'Mar/26', revenue: 132000, expense: 65000 },
-    { month: 'Abr/26', revenue: 160000, expense: 84000 },
-  ];
+  // 6 Months Chart Data derived from real receipts and accounting transactions.
+  const cashFlowMonths = Array.from({ length: 6 }, (_, index) => {
+    const reference = new Date(now.getFullYear(), now.getMonth() - (5 - index), 1);
+    const revenue = state.receipts
+      .filter((r) => isSameMonth(r.date, reference))
+      .reduce((acc, r) => acc + r.amount, 0);
+    const expense = state.accountingTransactions
+      .filter((tx) => tx.type === 'DESPESA' && isSameMonth(tx.date, reference))
+      .reduce((acc, tx) => acc + tx.amount, 0);
+    const label = new Intl.DateTimeFormat('pt-BR', { month: 'short', year: '2-digit' })
+      .format(reference)
+      .replace('.', '')
+      .replace(' de ', '/');
+    return { label: label.charAt(0).toUpperCase() + label.slice(1), revenue, expense };
+  });
 
-  // Accounts Receivable Breakdown Items
-  const inDayAmount = Math.max(totalRevenueMonth * 0.71, 112630);
-  const inDayCount = totalCharges.length > 0 ? Math.max(paidCharges.length * 5, 187) : 187;
-  const inDayPct = '70,2%';
+  const chartTop = 15;
+  const chartBottom = 145;
+  const chartLeft = 50;
+  const chartRight = 400;
+  const chartMax = Math.max(1000, ...cashFlowMonths.flatMap((m) => [m.revenue, m.expense]));
+  const chartX = (index: number) =>
+    chartLeft + (index * (chartRight - chartLeft)) / Math.max(1, cashFlowMonths.length - 1);
+  const chartY = (value: number) => chartBottom - (value / chartMax) * (chartBottom - chartTop);
+  const revenuePoints = cashFlowMonths.map((m, i) => ({ x: chartX(i), y: chartY(m.revenue) }));
+  const expensePoints = cashFlowMonths.map((m, i) => ({ x: chartX(i), y: chartY(m.expense) }));
+  const toPolyline = (points: { x: number; y: number }[]) =>
+    points.map((p) => `${p.x},${p.y}`).join(' ');
+  const compactValue = (value: number) =>
+    value >= 1000 ? `${Math.round(value / 1000)}k` : String(Math.round(value));
+
+  const donutCircumference = 2 * Math.PI * 36;
+  const donutRevenueShare = totalFlowMonth > 0 ? totalRevenueMonth / totalFlowMonth : 0;
+  const donutRevenueLength = donutCircumference * donutRevenueShare;
+  const donutExpenseLength = donutCircumference - donutRevenueLength;
+
+  // Accounts Receivable Breakdown Items (real data only)
+  const percentOfReceivables = (amount: number) =>
+    totalReceivables > 0 ? `${((amount / totalReceivables) * 100).toFixed(1).replace('.', ',')}%` : '0,0%';
+
+  const inDayAmount = regularCharges.reduce((acc, c) => acc + c.amount, 0);
+  const inDayCount = regularCharges.length;
+  const inDayPct = percentOfReceivables(inDayAmount);
 
   const upcomingAmount = totalUpcoming7Days;
-  const upcomingCount = pendingCharges.length > 0 ? pendingCharges.length : 23;
-  const upcomingPct = '15,1%';
+  const upcomingCount = upcomingCharges.length;
+  const upcomingPct = percentOfReceivables(upcomingAmount);
 
   const overdueAmount = totalOverdue;
-  const overdueCount = overdueCharges.length > 0 ? overdueCharges.length : 41;
-  const overduePct = '11,8%';
+  const overdueCount = overdueCharges.length;
+  const overduePct = percentOfReceivables(overdueAmount);
 
-  const cancelledAmount = 1320;
-  const cancelledCount = 2;
-  const cancelledPct = '0,8%';
+  const cancelledAmount = cancelledCharges.reduce((acc, c) => acc + c.amount, 0);
+  const cancelledCount = cancelledCharges.length;
+  const cancelledPct = percentOfReceivables(cancelledAmount);
 
   // Format payment methods cleanly (Dinheiro Físico ou Transferência Bancária)
   const formatPaymentMethod = (method?: string) => {
@@ -127,8 +206,20 @@ export const FinanceOverviewTab: React.FC<FinanceOverviewTabProps> = ({
           </div>
 
           <div className="flex items-center justify-between mt-3 pt-2">
-            <span className="text-xs font-bold text-emerald-600">
-              + 12,4% vs mês anterior
+            <span
+              className={`text-xs font-bold ${
+                revenueVariation === null
+                  ? 'text-slate-400'
+                  : revenueVariation >= 0
+                    ? 'text-emerald-600'
+                    : 'text-rose-500'
+              }`}
+            >
+              {revenueVariation === null
+                ? 'Sem base de comparação no mês anterior'
+                : `${revenueVariation >= 0 ? '+' : ''}${revenueVariation
+                    .toFixed(1)
+                    .replace('.', ',')}% vs mês anterior`}
             </span>
             {/* Green Sparkline Curve */}
             <svg className="w-20 h-6 overflow-visible" viewBox="0 0 80 24">
@@ -194,7 +285,7 @@ export const FinanceOverviewTab: React.FC<FinanceOverviewTabProps> = ({
 
           <div className="flex items-center justify-between mt-3 pt-2">
             <span className="text-xs font-medium text-blue-600">
-              {state.receipts.length > 0 ? state.receipts.length : 7} recebimentos
+              {receiptsToday.length} recebimentos
             </span>
             {/* Blue Sparkline Curve */}
             <svg className="w-20 h-6 overflow-visible" viewBox="0 0 80 24">
@@ -267,7 +358,7 @@ export const FinanceOverviewTab: React.FC<FinanceOverviewTabProps> = ({
                   stroke="#f1f5f9"
                   strokeWidth="18"
                 />
-                {/* Green Segment (Receitas ~78.9%) */}
+                {/* Green Segment (Receitas) */}
                 <circle
                   cx="50"
                   cy="50"
@@ -275,11 +366,10 @@ export const FinanceOverviewTab: React.FC<FinanceOverviewTabProps> = ({
                   fill="transparent"
                   stroke="#075e38"
                   strokeWidth="18"
-                  strokeDasharray="226.19"
-                  strokeDashoffset="47.5"
+                  strokeDasharray={`${donutRevenueLength} ${donutCircumference}`}
                   strokeLinecap="butt"
                 />
-                {/* Red Segment (Despesas ~21.1%) */}
+                {/* Red Segment (Despesas) */}
                 <circle
                   cx="50"
                   cy="50"
@@ -287,8 +377,8 @@ export const FinanceOverviewTab: React.FC<FinanceOverviewTabProps> = ({
                   fill="transparent"
                   stroke="#ef4444"
                   strokeWidth="18"
-                  strokeDasharray="226.19"
-                  strokeDashoffset="178.69"
+                  strokeDasharray={`${donutExpenseLength} ${donutCircumference}`}
+                  strokeDashoffset={-donutRevenueLength}
                   strokeLinecap="butt"
                 />
               </svg>
@@ -378,60 +468,65 @@ export const FinanceOverviewTab: React.FC<FinanceOverviewTabProps> = ({
           <div className="relative h-44 w-full pt-2">
             <svg className="w-full h-full" viewBox="0 0 420 160">
               {/* Y Axis Grid lines */}
-              <line x1="40" y1="10" x2="410" y2="10" stroke="#f1f5f9" strokeWidth="1" />
-              <text x="32" y="14" fill="#94a3b8" fontSize="10" textAnchor="end">200k</text>
+              {[1, 0.75, 0.5, 0.25, 0].map((step) => {
+                const y = chartBottom - step * (chartBottom - chartTop);
+                return (
+                  <g key={`grid-${step}`}>
+                    <line
+                      x1={chartLeft - 10}
+                      y1={y}
+                      x2="410"
+                      y2={y}
+                      stroke={step === 0 ? '#cbd5e1' : '#f1f5f9'}
+                      strokeWidth="1"
+                    />
+                    <text x={chartLeft - 18} y={y + 4} fill="#94a3b8" fontSize="10" textAnchor="end">
+                      {compactValue(chartMax * step)}
+                    </text>
+                  </g>
+                );
+              })}
 
-              <line x1="40" y1="45" x2="410" y2="45" stroke="#f1f5f9" strokeWidth="1" />
-              <text x="32" y="49" fill="#94a3b8" fontSize="10" textAnchor="end">150k</text>
-
-              <line x1="40" y1="80" x2="410" y2="80" stroke="#f1f5f9" strokeWidth="1" />
-              <text x="32" y="84" fill="#94a3b8" fontSize="10" textAnchor="end">100k</text>
-
-              <line x1="40" y1="115" x2="410" y2="115" stroke="#f1f5f9" strokeWidth="1" />
-              <text x="32" y="119" fill="#94a3b8" fontSize="10" textAnchor="end">50k</text>
-
-              <line x1="40" y1="145" x2="410" y2="145" stroke="#cbd5e1" strokeWidth="1" />
-              <text x="32" y="148" fill="#94a3b8" fontSize="10" textAnchor="end">0</text>
-
-              {/* X Axis Labels: Nov/25, Dez/25, Jan/26, Fev/26, Mar/26, Abr/26 */}
-              <text x="50" y="158" fill="#94a3b8" fontSize="9.5" textAnchor="middle">Nov/25</text>
-              <text x="120" y="158" fill="#94a3b8" fontSize="9.5" textAnchor="middle">Dez/25</text>
-              <text x="190" y="158" fill="#94a3b8" fontSize="9.5" textAnchor="middle">Jan/26</text>
-              <text x="260" y="158" fill="#94a3b8" fontSize="9.5" textAnchor="middle">Fev/26</text>
-              <text x="330" y="158" fill="#94a3b8" fontSize="9.5" textAnchor="middle">Mar/26</text>
-              <text x="400" y="158" fill="#94a3b8" fontSize="9.5" textAnchor="middle">Abr/26</text>
+              {/* X Axis Labels */}
+              {cashFlowMonths.map((month, index) => (
+                <text
+                  key={`month-${index}`}
+                  x={chartX(index)}
+                  y="158"
+                  fill="#94a3b8"
+                  fontSize="9.5"
+                  textAnchor="middle"
+                >
+                  {month.label}
+                </text>
+              ))}
 
               {/* Red Line (Despesas) */}
-              <path
-                d="M 50 114 C 85 110, 85 105, 120 105 C 155 105, 155 85, 190 85 C 225 85, 225 96, 260 96 C 295 96, 295 101, 330 101 C 365 101, 365 83, 400 83"
+              <polyline
+                points={toPolyline(expensePoints)}
                 fill="none"
                 stroke="#ef4444"
                 strokeWidth="2.5"
                 strokeLinecap="round"
+                strokeLinejoin="round"
               />
 
               {/* Green Line (Receitas) */}
-              <path
-                d="M 50 78 C 85 70, 85 64, 120 64 C 155 64, 155 28, 190 28 C 225 28, 225 50, 260 50 C 295 50, 295 54, 330 54 C 365 54, 365 37, 400 37"
+              <polyline
+                points={toPolyline(revenuePoints)}
                 fill="none"
                 stroke="#075e38"
                 strokeWidth="2.5"
                 strokeLinecap="round"
+                strokeLinejoin="round"
               />
 
               {/* Dots on Red Line */}
-              {[
-                { cx: 50, cy: 114 },
-                { cx: 120, cy: 105 },
-                { cx: 190, cy: 85 },
-                { cx: 260, cy: 96 },
-                { cx: 330, cy: 101 },
-                { cx: 400, cy: 83 },
-              ].map((pt, i) => (
+              {expensePoints.map((pt, i) => (
                 <circle
                   key={`red-pt-${i}`}
-                  cx={pt.cx}
-                  cy={pt.cy}
+                  cx={pt.x}
+                  cy={pt.y}
                   r="3.5"
                   fill="#ef4444"
                   stroke="#ffffff"
@@ -440,18 +535,11 @@ export const FinanceOverviewTab: React.FC<FinanceOverviewTabProps> = ({
               ))}
 
               {/* Dots on Green Line */}
-              {[
-                { cx: 50, cy: 78 },
-                { cx: 120, cy: 64 },
-                { cx: 190, cy: 28 },
-                { cx: 260, cy: 50 },
-                { cx: 330, cy: 54 },
-                { cx: 400, cy: 37 },
-              ].map((pt, i) => (
+              {revenuePoints.map((pt, i) => (
                 <circle
                   key={`green-pt-${i}`}
-                  cx={pt.cx}
-                  cy={pt.cy}
+                  cx={pt.x}
+                  cy={pt.y}
                   r="3.5"
                   fill="#075e38"
                   stroke="#ffffff"
@@ -596,8 +684,14 @@ export const FinanceOverviewTab: React.FC<FinanceOverviewTabProps> = ({
                     return (
                       <tr key={rec.id} className="hover:bg-slate-50/70 transition-colors">
                         <td className="py-3.5 pr-2">
-                          <span className="font-semibold text-slate-800 block">{rec.date}</span>
-                          <span className="text-[10px] text-slate-400">10:24</span>
+                          <span className="font-semibold text-slate-800 block">
+                            {rec.date.split(' ')[0]}
+                          </span>
+                          {rec.date.includes(' ') && (
+                            <span className="text-[10px] text-slate-400">
+                              {rec.date.split(' ').slice(1).join(' ')}
+                            </span>
+                          )}
                         </td>
                         <td className="py-3.5 pr-2">
                           <span className="font-bold text-slate-900 block">{rec.studentName}</span>
@@ -607,7 +701,7 @@ export const FinanceOverviewTab: React.FC<FinanceOverviewTabProps> = ({
                         </td>
                         <td className="py-3.5 pr-2">
                           <span className="text-slate-700 font-medium block">
-                            {rec.installmentDescription || 'Mensalidade - Maio/2026'}
+                            {rec.installmentDescription || '—'}
                           </span>
                           <span className="text-[10.5px] text-slate-400">{rec.courseName}</span>
                         </td>
@@ -635,61 +729,11 @@ export const FinanceOverviewTab: React.FC<FinanceOverviewTabProps> = ({
                     );
                   })
                 ) : (
-                  // Fallback demonstration matching exact image rows
-                  <>
-                    <tr className="hover:bg-slate-50/70">
-                      <td className="py-3.5 pr-2">
-                        <span className="font-semibold text-slate-800 block">22/05/2026</span>
-                        <span className="text-[10px] text-slate-400">10:24</span>
-                      </td>
-                      <td className="py-3.5 pr-2">
-                        <span className="font-bold text-slate-900 block">João Pedro Silva</span>
-                        <span className="text-[10px] text-slate-400">Responsável: Ana Silva</span>
-                      </td>
-                      <td className="py-3.5 pr-2">
-                        <span className="text-slate-700 font-medium block">Mensalidade - Maio/2026</span>
-                        <span className="text-[10.5px] text-slate-400">English Class - Turma 7B</span>
-                      </td>
-                      <td className="py-3.5 pr-2 font-medium text-slate-600">PIX</td>
-                      <td className="py-3.5 pr-2 font-bold text-slate-900 font-mono">EGP 480,00</td>
-                      <td className="py-3.5 pr-2">
-                        <span className="px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-full font-bold text-[10.5px] border border-emerald-200/60 inline-flex items-center">
-                          Pago
-                        </span>
-                      </td>
-                      <td className="py-3.5 text-right">
-                        <button className="p-1 text-slate-400 hover:text-slate-800">
-                          <MoreVertical className="w-4 h-4" />
-                        </button>
-                      </td>
-                    </tr>
-                    <tr className="hover:bg-slate-50/70">
-                      <td className="py-3.5 pr-2">
-                        <span className="font-semibold text-slate-800 block">22/05/2026</span>
-                        <span className="text-[10px] text-slate-400">09:15</span>
-                      </td>
-                      <td className="py-3.5 pr-2">
-                        <span className="font-bold text-slate-900 block">Maria Eduarda Santos</span>
-                        <span className="text-[10px] text-slate-400">Responsável: Carla Santos</span>
-                      </td>
-                      <td className="py-3.5 pr-2">
-                        <span className="text-slate-700 font-medium block">Mensalidade - Maio/2026</span>
-                        <span className="text-[10.5px] text-slate-400">Soccer Class - Turma 8A</span>
-                      </td>
-                      <td className="py-3.5 pr-2 font-medium text-slate-600">Transferência Bancária</td>
-                      <td className="py-3.5 pr-2 font-bold text-slate-900 font-mono">EGP 520,00</td>
-                      <td className="py-3.5 pr-2">
-                        <span className="px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-full font-bold text-[10.5px] border border-emerald-200/60 inline-flex items-center">
-                          Pago
-                        </span>
-                      </td>
-                      <td className="py-3.5 text-right">
-                        <button className="p-1 text-slate-400 hover:text-slate-800">
-                          <MoreVertical className="w-4 h-4" />
-                        </button>
-                      </td>
-                    </tr>
-                  </>
+                  <tr>
+                    <td colSpan={7} className="py-8 text-center text-slate-400 font-medium">
+                      Nenhum recebimento registrado.
+                    </td>
+                  </tr>
                 )}
               </tbody>
             </table>

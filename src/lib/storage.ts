@@ -24,29 +24,7 @@ import {
   PendingPayment,
 } from '../types';
 
-import {
-  INITIAL_USERS,
-  INITIAL_STUDENTS,
-  INITIAL_COURSES,
-  INITIAL_CLASSES,
-  INITIAL_ENROLLMENTS,
-  INITIAL_CHARGES,
-  INITIAL_RECEIPTS,
-  INITIAL_CASH_REGISTERS,
-  INITIAL_CASH_MOVEMENTS,
-  INITIAL_ASSESSMENTS,
-  INITIAL_GRADES,
-  INITIAL_LESSONS,
-  INITIAL_ASSIGNMENTS,
-  INITIAL_SUBMISSIONS,
-  INITIAL_ATTENDANCE,
-  INITIAL_ACCOUNTING_TRANSACTIONS,
-  INITIAL_AUDIT_LOGS,
-  INITIAL_NOTIFICATIONS,
-  INITIAL_SETTINGS,
-  INITIAL_PENDING_REGISTRATIONS,
-  INITIAL_PENDING_PAYMENTS,
-} from './mockData';
+import { INITIAL_SETTINGS, INITIAL_USERS } from './mockData';
 
 export interface AppState {
   currentUser: User;
@@ -92,19 +70,19 @@ export const deduplicateById = <T extends { id?: string | number }>(items: T[]):
 const cleanInitialUsers = INITIAL_USERS;
 
 /**
- * Canonical default state used on the very first run (before Firestore is seeded)
- * and whenever the remote database is unreachable.
+ * Canonical empty state. Only the platform owner account and the system
+ * settings are defaults; no demo/sample business data is loaded or restored.
  */
 export const getDefaultState = (): AppState => ({
   currentUser: cleanInitialUsers[0], // Super Admin by default
   users: deduplicateById(cleanInitialUsers),
   students: [],
-  courses: deduplicateById(INITIAL_COURSES),
-  classes: deduplicateById(INITIAL_CLASSES),
+  courses: [],
+  classes: [],
   enrollments: [],
   charges: [],
   receipts: [],
-  cashRegisters: deduplicateById(INITIAL_CASH_REGISTERS),
+  cashRegisters: [],
   cashMovements: [],
   assessments: [],
   grades: [],
