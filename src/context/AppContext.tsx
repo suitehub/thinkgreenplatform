@@ -42,7 +42,7 @@ export interface PlanNegotiationInput {
 import {
   AppState,
   loadInitialState,
-  generateNextStudentId,
+  generateRandomStudentId,
   generateNextReceiptNumber,
   evaluateExamAccess,
   evaluateClassroomAccess,
@@ -766,7 +766,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     installmentsCount: number = 4,
     negotiationData?: PlanNegotiationInput
   ) => {
-    const generatedStuId = generateNextStudentId(state.students);
+    const generatedStuId = generateRandomStudentId(state.students);
     const uniqueRand = Math.random().toString(36).substring(2, 8);
     const internalId = `stu_${Date.now()}_${uniqueRand}`;
     const course = state.courses.find((c) => c.id === courseId);
@@ -978,7 +978,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const course = state.courses.find((c) => c.id === merged.courseId);
     const classRoom = state.classes.find((cl) => cl.id === merged.classId);
 
-    const generatedStuId = generateNextStudentId(state.students);
+    const generatedStuId = generateRandomStudentId(state.students);
     const uniqueRand = Math.random().toString(36).substring(2, 8);
     const internalId = `stu_${Date.now()}_${uniqueRand}`;
     const nowStr = new Date().toISOString().split('T')[0];
@@ -2664,10 +2664,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         if (!alreadyExists) {
           assignedStuId = cleanId;
         } else {
-          assignedStuId = generateNextStudentId(currentStudents);
+          assignedStuId = generateRandomStudentId(currentStudents);
         }
       } else {
-        assignedStuId = generateNextStudentId(currentStudents);
+        assignedStuId = generateRandomStudentId(currentStudents);
       }
 
       const uniqueRand = Math.random().toString(36).substring(2, 7);

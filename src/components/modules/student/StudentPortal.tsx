@@ -306,16 +306,17 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
     }
   };
 
-  // Get student profile
-  const student =
-    state.students.find((s) => s.studentId === currentUser.studentId) ||
-    state.students[0] || {
-      id: 'student-placeholder',
-      studentId: '',
-      name: currentUser.name || 'Aluno',
-      phone: '',
-      status: 'ATIVO',
-    };
+  // Get student profile. Never fall back to another student's record: until the
+  // signed-in student is found we render a neutral placeholder.
+  const student = state.students.find(
+    (s) => s.studentId === currentUser.studentId
+  ) || {
+    id: 'student-placeholder',
+    studentId: '',
+    name: currentUser.name || 'Aluno',
+    phone: '',
+    status: 'ATIVO',
+  };
 
   // Get student's enrollments
   const studentEnrollments = state.enrollments.filter(
@@ -343,7 +344,7 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
           studentGrades.reduce((acc, curr) => acc + curr.percentage, 0) /
             studentGrades.length
         )
-      : 88;
+      : 0;
 
   // Get student's attendance
   let totalClassesAttended = 0;
@@ -359,7 +360,7 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
   const attendanceRate =
     totalClassesCounted > 0
       ? Math.round((totalClassesAttended / totalClassesCounted) * 100)
-      : 96;
+      : 0;
 
   // Assessments for student's classes
   const studentClassIds = studentEnrollments.map((e) => e.classId);
@@ -432,6 +433,54 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
         return 'Todas as Matérias';
     }
   };
+
+  // Real counters for the subject cards (no fictional numbers).
+  const getCategoryStats = (
+    filter: 'ALL' | 'SOCCER' | 'ENGLISH' | 'PRESCHOOL' | 'WOMENS_FITNESS'
+  ) => {
+    const lessonCount = studentLessons.filter((lesson) =>
+      matchesCourseFilter(filter, { classId: lesson.classId, className: lesson.className })
+    ).length;
+
+    const assignmentCount = studentAssignments.filter((assignment) =>
+      matchesCourseFilter(filter, { classId: assignment.classId, className: assignment.className })
+    ).length;
+
+    const assessmentIds = studentAssessments
+      .filter((assessment) =>
+        matchesCourseFilter(filter, {
+          classId: assessment.classId,
+          className: assessment.className,
+          courseName: assessment.courseName,
+        })
+      )
+      .map((assessment) => assessment.id);
+
+    const grades = studentGrades.filter((grade) => assessmentIds.includes(grade.assessmentId));
+    const average = grades.length
+      ? Math.round(grades.reduce((acc, grade) => acc + grade.percentage, 0) / grades.length)
+      : 0;
+
+    let attended = 0;
+    let total = 0;
+    state.attendance.forEach((att) => {
+      if (!matchesCourseFilter(filter, { classId: att.classId, className: att.className })) return;
+      const record = att.students.find((item) => item.studentId === student.studentId);
+      if (record) {
+        total += 1;
+        if (record.present) attended += 1;
+      }
+    });
+    const attendance = total ? Math.round((attended / total) * 100) : 0;
+
+    return { lessonCount, assignmentCount, average, attendance };
+  };
+
+  const allStats = getCategoryStats('ALL');
+  const soccerStats = getCategoryStats('SOCCER');
+  const englishStats = getCategoryStats('ENGLISH');
+  const preschoolStats = getCategoryStats('PRESCHOOL');
+  const womenFitStats = getCategoryStats('WOMENS_FITNESS');
 
   const filteredAverageGrade = React.useMemo(() => {
     if (selectedCourseFilter === 'ALL') return averageGrade;
@@ -517,7 +566,7 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
         }
       }
     });
-    return total > 0 ? Math.round((attended / total) * 100) : 100;
+    return total > 0 ? Math.round((attended / total) * 100) : 0;
   }, [selectedCourseFilter, state.attendance, student.studentId, attendanceRate]);
 
   // Identify Soccer & English Classes
@@ -1045,8 +1094,8 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
                 </div>
                 <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px]">
                   <span className="font-semibold text-slate-500">
-                    {activeNav === 'aulas' && '14 Aulas'}
-                    {activeNav === 'atividades' && '7 Trabalhos'}
+                    {activeNav === 'aulas' && `${allStats.lessonCount} Aulas`}
+                    {activeNav === 'atividades' && `${allStats.assignmentCount} Trabalhos`}
                     {activeNav === 'notas' && 'Média Geral'}
                     {activeNav === 'frequencia' && 'Presença'}
                   </span>
@@ -1092,10 +1141,10 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
                     {soccerClass?.name?.split(' - ')[0] || 'Sub-15'}
                   </span>
                   <span className="font-black text-[#075e38]">
-                    {activeNav === 'aulas' && '4 Aulas'}
-                    {activeNav === 'atividades' && '2 Tarefas'}
-                    {activeNav === 'notas' && '88 pts'}
-                    {activeNav === 'frequencia' && '100%'}
+                    {activeNav === 'aulas' && `${soccerStats.lessonCount} Aulas`}
+                    {activeNav === 'atividades' && `${soccerStats.assignmentCount} Tarefas`}
+                    {activeNav === 'notas' && `${soccerStats.average} pts`}
+                    {activeNav === 'frequencia' && `${soccerStats.attendance}%`}
                   </span>
                 </div>
               </button>
@@ -1133,10 +1182,10 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
                     {englishClass?.name?.split(' (')[0] || 'Básico A'}
                   </span>
                   <span className="font-black text-[#533499]">
-                    {activeNav === 'aulas' && '4 Aulas'}
-                    {activeNav === 'atividades' && '2 Tarefas'}
-                    {activeNav === 'notas' && '92 pts'}
-                    {activeNav === 'frequencia' && '100%'}
+                    {activeNav === 'aulas' && `${englishStats.lessonCount} Aulas`}
+                    {activeNav === 'atividades' && `${englishStats.assignmentCount} Tarefas`}
+                    {activeNav === 'notas' && `${englishStats.average} pts`}
+                    {activeNav === 'frequencia' && `${englishStats.attendance}%`}
                   </span>
                 </div>
               </button>
@@ -1174,10 +1223,10 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
                     {preschoolClass?.name?.split(' (')[0] || 'Girassol'}
                   </span>
                   <span className="font-black text-[#ea580c]">
-                    {activeNav === 'aulas' && '3 Aulas'}
-                    {activeNav === 'atividades' && '2 Tarefas'}
-                    {activeNav === 'notas' && '96 pts'}
-                    {activeNav === 'frequencia' && '100%'}
+                    {activeNav === 'aulas' && `${preschoolStats.lessonCount} Aulas`}
+                    {activeNav === 'atividades' && `${preschoolStats.assignmentCount} Tarefas`}
+                    {activeNav === 'notas' && `${preschoolStats.average} pts`}
+                    {activeNav === 'frequencia' && `${preschoolStats.attendance}%`}
                   </span>
                 </div>
               </button>
@@ -1215,10 +1264,10 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
                     {womenFitClass?.name?.split(' - ')[0] || 'Circuito'}
                   </span>
                   <span className="font-black text-[#be185d]">
-                    {activeNav === 'aulas' && '3 Aulas'}
-                    {activeNav === 'atividades' && '1 Meta'}
-                    {activeNav === 'notas' && '90 pts'}
-                    {activeNav === 'frequencia' && '100%'}
+                    {activeNav === 'aulas' && `${womenFitStats.lessonCount} Aulas`}
+                    {activeNav === 'atividades' && `${womenFitStats.assignmentCount} Metas`}
+                    {activeNav === 'notas' && `${womenFitStats.average} pts`}
+                    {activeNav === 'frequencia' && `${womenFitStats.attendance}%`}
                   </span>
                 </div>
               </button>

@@ -22,6 +22,8 @@ import {
   BadgePercent,
   Tag,
   Calculator,
+  Copy,
+  KeyRound,
 } from 'lucide-react';
 import { useApp } from '../../../context/AppContext';
 import { Badge } from '../../common/Badge';
@@ -150,6 +152,18 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
     enrollment: Enrollment;
   } | null>(null);
 
+  const [wizardError, setWizardError] = useState<string | null>(null);
+  const [accessCopied, setAccessCopied] = useState(false);
+
+  const personalDataReady = Boolean(
+    newStudentForm.name.trim() && newStudentForm.birthDate && newStudentForm.phone.trim()
+  );
+
+  const formatBirthDate = (iso: string) => {
+    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || '');
+    return match ? `${match[3]}/${match[2]}/${match[1]}` : iso || 'não informada';
+  };
+
   // Add Extra Course Modal state
   const [extraEnrollmentModalStudent, setExtraEnrollmentModalStudent] = useState<Student | null>(null);
   const [extraCourseId, setExtraCourseId] = useState(state.courses[1]?.id || state.courses[0]?.id);
@@ -201,6 +215,17 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
 
   const handleFinishWizard = (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!personalDataReady) {
+      setWizardError(
+        'Informe o nome completo, a data de nascimento e o telefone do aluno. A data de nascimento é a senha de acesso ao Portal do Aluno.'
+      );
+      setWizardStep(1);
+      return;
+    }
+
+    setWizardError(null);
+
     const course = state.courses.find((c) => c.id === newStudentForm.courseId);
     if (!course) return;
 
@@ -364,6 +389,13 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
               />
             ) : (
               <>
+                {wizardError && (
+                  <div className="max-w-2xl mx-auto p-3 bg-rose-50 border border-rose-200 rounded-xl text-[11px] text-rose-800 font-semibold flex items-start gap-2 animate-in fade-in">
+                    <AlertCircle className="w-4 h-4 shrink-0 text-rose-600 mt-0.5" />
+                    <span className="leading-relaxed">{wizardError}</span>
+                  </div>
+                )}
+
                 {/* Stepper Indicator */}
                 <div className="flex items-center justify-between max-w-2xl mx-auto text-xs font-bold text-slate-400">
               <div
@@ -386,7 +418,7 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
                 className={`flex items-center gap-2 cursor-pointer ${
                   wizardStep >= 2 ? 'text-[#075e38]' : ''
                 }`}
-                onClick={() => newStudentForm.name && wizardStep < 5 && setWizardStep(2)}
+                onClick={() => personalDataReady && wizardStep < 5 && setWizardStep(2)}
               >
                 <span
                   className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-black ${
@@ -402,7 +434,7 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
                 className={`flex items-center gap-2 cursor-pointer ${
                   wizardStep >= 3 ? 'text-[#075e38]' : ''
                 }`}
-                onClick={() => newStudentForm.name && wizardStep < 5 && setWizardStep(3)}
+                onClick={() => personalDataReady && wizardStep < 5 && setWizardStep(3)}
               >
                 <span
                   className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-black ${
@@ -547,8 +579,17 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
                 <div className="flex justify-end pt-4">
                   <button
                     type="button"
-                    disabled={!newStudentForm.name.trim()}
-                    onClick={() => setWizardStep(2)}
+                    disabled={!personalDataReady}
+                    onClick={() => {
+                      if (!personalDataReady) {
+                        setWizardError(
+                          'Informe o nome completo, a data de nascimento e o telefone do aluno. A data de nascimento será a senha de acesso ao Portal do Aluno.'
+                        );
+                        return;
+                      }
+                      setWizardError(null);
+                      setWizardStep(2);
+                    }}
                     className="px-6 py-2.5 bg-[#075e38] hover:bg-[#064e2e] disabled:opacity-50 text-white rounded-xl font-bold text-xs flex items-center gap-1.5 shadow-sm transition-all cursor-pointer"
                   >
                     Próximo: Escolher Curso <ArrowRight className="w-4 h-4" />
@@ -1018,7 +1059,7 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
                   </div>
 
                   <div className="p-3 bg-emerald-50/80 text-emerald-950 rounded-xl border border-emerald-200 text-[11px] leading-relaxed">
-                    <strong>Automação Imediata:</strong> Ao confirmar, o sistema gerará o ID Student permanente (STU00000), registrará o plano financeiro com parcelas livres e vinculará a turma no sistema.
+                    <strong>Automação Imediata:</strong> Ao confirmar, o sistema gera um ID Student aleatório no padrão STU#####, cria automaticamente o acesso do aluno (Portal do Aluno com ID + data de nascimento) e vincula a turma e o plano financeiro.
                   </div>
 
                   <div className="flex justify-between pt-4">
@@ -1055,13 +1096,64 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
                 </div>
 
                 <div className="p-4 bg-white rounded-2xl border border-emerald-200 shadow-2xs text-xs space-y-2">
-                  <p className="text-slate-500 font-medium">ID Student Gerado Automaticamente:</p>
+                  <p className="text-slate-500 font-medium">ID Student gerado automaticamente:</p>
                   <p className="font-mono text-2xl font-black text-[#075e38]">
                     {createdStudentResult.student.studentId}
                   </p>
                   <p className="text-[11px] text-slate-500">
                     {createdStudentResult.enrollment.courseName} • {createdStudentResult.enrollment.className}
                   </p>
+                </div>
+
+                <div className="p-4 bg-white rounded-2xl border border-slate-200 shadow-2xs text-left text-xs space-y-2.5">
+                  <div className="flex items-center gap-2 text-[#075e38] font-bold">
+                    <KeyRound className="w-4 h-4" />
+                    <span>Acesso do aluno criado automaticamente</span>
+                  </div>
+                  <p className="text-[11px] text-slate-600 leading-relaxed">
+                    O aluno entra no <strong>Portal do Aluno</strong> usando apenas estes dois dados:
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
+                    <div className="p-2.5 bg-slate-50 rounded-lg border border-slate-200">
+                      <span className="block text-slate-400 font-semibold">ID Student</span>
+                      <strong className="font-mono text-slate-900">
+                        {createdStudentResult.student.studentId}
+                      </strong>
+                    </div>
+                    <div className="p-2.5 bg-slate-50 rounded-lg border border-slate-200">
+                      <span className="block text-slate-400 font-semibold">Data de nascimento</span>
+                      <strong className="font-mono text-slate-900">
+                        {formatBirthDate(createdStudentResult.student.birthDate)}
+                      </strong>
+                    </div>
+                  </div>
+                  <p className="text-[11px] text-slate-500 leading-relaxed">
+                    Sem senha. O aluno já pode acessar os conteúdos da turma em que foi matriculado.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const s = createdStudentResult.student;
+                      navigator.clipboard
+                        .writeText(
+                          `Portal do Aluno Think Green\nID Student: ${s.studentId}\nData de nascimento: ${formatBirthDate(s.birthDate)}`
+                        )
+                        .catch(() => {});
+                      setAccessCopied(true);
+                      setTimeout(() => setAccessCopied(false), 2000);
+                    }}
+                    className="w-full py-2 px-3 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-[11px] font-bold rounded-xl border border-emerald-200 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    {accessCopied ? (
+                      <>
+                        <CheckCircle className="w-3.5 h-3.5" /> Dados copiados!
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-3.5 h-3.5" /> Copiar dados de acesso
+                      </>
+                    )}
+                  </button>
                 </div>
 
                 <div className="flex justify-center gap-3 pt-2">

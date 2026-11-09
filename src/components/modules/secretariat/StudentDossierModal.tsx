@@ -38,6 +38,8 @@ import {
   GraduationCap,
   Users,
   ChevronRight,
+  KeyRound,
+  Copy,
 } from 'lucide-react';
 import { useApp } from '../../../context/AppContext';
 import { Student, StudentDocument, Enrollment, Charge, Assessment, Grade, AttendanceRecord, PaymentReceipt } from '../../../types';
@@ -543,6 +545,40 @@ export const StudentDossierModal: React.FC<StudentDossierModalProps> = ({
                     </p>
                   </div>
                 </div>
+              </div>
+
+              {/* Student portal access */}
+              <div className="bg-white p-4 rounded-2xl border border-emerald-200 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="flex items-start gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center justify-center flex-shrink-0">
+                    <KeyRound className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-slate-900 text-sm">Acesso do Aluno (Portal do Aluno)</h3>
+                    <p className="text-[11px] text-slate-600 mt-0.5 leading-relaxed">
+                      Sem senha. O aluno entra com o ID{' '}
+                      <strong className="font-mono text-slate-900">{student.studentId}</strong> e a
+                      data de nascimento{' '}
+                      <strong className="text-slate-900">
+                        {student.birthDate || 'não cadastrada'}
+                      </strong>
+                      .
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigator.clipboard
+                      .writeText(
+                        `Portal do Aluno Think Green\nID Student: ${student.studentId}\nData de nascimento: ${student.birthDate || 'não cadastrada'}`
+                      )
+                      .catch(() => {});
+                  }}
+                  className="px-3 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-[11px] font-bold rounded-xl border border-emerald-200 transition-colors flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap"
+                >
+                  <Copy className="w-3.5 h-3.5" /> Copiar dados
+                </button>
               </div>
 
               {/* Section 2: Contatos & Localização */}

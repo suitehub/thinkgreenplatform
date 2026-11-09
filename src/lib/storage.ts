@@ -190,19 +190,29 @@ export const loadInitialState = (remote?: Partial<AppState> | null): AppState =>
 };
 
 /**
- * Generate next unique STU00000 format identifier
+ * Generates a random, unique Student ID in the permanent STU00000 pattern.
+ * The 5-digit number is random (10000-99999) and checked against every
+ * student already registered, so two enrollments never share an ID.
  */
-export const generateNextStudentId = (existingStudents: Student[]): string => {
-  const numericIds = existingStudents
-    .map((s) => {
-      const match = s.studentId?.match(/STU(\d+)/i);
-      return match ? parseInt(match[1], 10) : 0;
-    })
-    .filter((n) => !isNaN(n));
+export const generateRandomStudentId = (existingStudents: Student[]): string => {
+  const usedNumbers = new Set<number>();
 
-  const maxId = numericIds.length > 0 ? Math.max(...numericIds) : 0;
-  const nextNumber = maxId + 1;
-  return `STU${String(nextNumber).padStart(5, '0')}`;
+  (existingStudents || []).forEach((student) => {
+    const match = String(student?.studentId || '').match(/^STU(\d{5})$/i);
+    if (match) usedNumbers.add(parseInt(match[1], 10));
+  });
+
+  for (let attempt = 0; attempt < 5000; attempt += 1) {
+    const candidate = Math.floor(10000 + Math.random() * 90000);
+    if (!usedNumbers.has(candidate)) return `STU${candidate}`;
+  }
+
+  // Extremely unlikely fallback: scan the whole range for a free number.
+  for (let candidate = 10000; candidate <= 99999; candidate += 1) {
+    if (!usedNumbers.has(candidate)) return `STU${candidate}`;
+  }
+
+  return `STU${Date.now().toString().slice(-5)}`;
 };
 
 /**
