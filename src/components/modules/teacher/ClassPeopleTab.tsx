@@ -132,19 +132,24 @@ export const ClassPeopleTab: React.FC<ClassPeopleTabProps> = ({
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl bg-slate-50/70 border border-slate-100 hover:border-emerald-200 transition-colors">
           <div className="flex items-center gap-3.5">
             <div className="w-12 h-12 rounded-2xl bg-[#e8f5e9] text-[#075e38] flex items-center justify-center font-bold text-base shadow-2xs border border-emerald-200/50">
-              LS
+              {selectedClass.teacherName
+                ?.split(' ')
+                .filter(Boolean)
+                .slice(0, 2)
+                .map((part) => part.charAt(0).toUpperCase())
+                .join('') || '?'}
             </div>
             <div>
               <div className="flex items-center gap-2">
                 <h4 className="text-sm font-bold text-slate-900">
-                  {selectedClass.teacherName || 'Lucas Silva'}
+                  {selectedClass.teacherName || 'Professor não atribuído'}
                 </h4>
                 <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-[#075e38]">
                   Docente Titular
                 </span>
               </div>
               <p className="text-xs text-slate-500 mt-0.5">
-                lucas.silva@thinkgreen.org • Coordenação Pedagógica
+                Coordenação Pedagógica
               </p>
             </div>
           </div>

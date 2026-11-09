@@ -198,7 +198,7 @@ export const ClassHeader: React.FC<ClassHeaderProps> = ({
                 <div className="flex items-center gap-1.5">
                   <UserCheck className="w-3.5 h-3.5 text-emerald-300" />
                   <span>
-                    Professor: <strong className="text-white">{selectedClass.teacherName || 'Lucas Silva'}</strong>
+                    Professor: <strong className="text-white">{selectedClass.teacherName || 'Professor não atribuído'}</strong>
                   </span>
                 </div>
 

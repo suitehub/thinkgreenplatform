@@ -310,12 +310,10 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
   const student =
     state.students.find((s) => s.studentId === currentUser.studentId) ||
     state.students[0] || {
-      id: 'stu-1',
-      studentId: 'STU00000',
-      name: 'Aluno',
-      phone: '+20 10 0000 0000',
-      city: 'Cairo',
-      enrollmentDate: '2026-02-01',
+      id: 'student-placeholder',
+      studentId: '',
+      name: currentUser.name || 'Aluno',
+      phone: '',
       status: 'ATIVO',
     };
 
@@ -379,6 +377,47 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
     studentClassIds.length === 0 || studentClassIds.includes(a.classId)
   );
 
+  const matchesCourseFilter = (
+    filter: 'ALL' | 'SOCCER' | 'ENGLISH' | 'PRESCHOOL' | 'WOMENS_FITNESS',
+    source: { classId?: string; className?: string; courseName?: string }
+  ) => {
+    if (filter === 'ALL') return true;
+    const classRecord = source.classId
+      ? state.classes.find((c) => c.id === source.classId)
+      : undefined;
+    const text = [
+      source.className,
+      source.courseName,
+      classRecord?.name,
+      classRecord?.courseName,
+    ]
+      .filter(Boolean)
+      .join(' ')
+      .toLowerCase();
+    if (filter === 'SOCCER') return text.includes('futebol') || text.includes('soccer');
+    if (filter === 'ENGLISH') {
+      return (
+        text.includes('inglês') || text.includes('ingles') || text.includes('english')
+      );
+    }
+    if (filter === 'PRESCHOOL') {
+      return (
+        text.includes('preschool') ||
+        text.includes('pré-escola') ||
+        text.includes('pre-escola') ||
+        text.includes('girassol')
+      );
+    }
+    if (filter === 'WOMENS_FITNESS') {
+      return (
+        text.includes('mulher') ||
+        text.includes('fitness') ||
+        text.includes('circuito')
+      );
+    }
+    return true;
+  };
+
   const getCourseFilterLabel = (filter: 'ALL' | 'SOCCER' | 'ENGLISH' | 'PRESCHOOL' | 'WOMENS_FITNESS') => {
     switch (filter) {
       case 'SOCCER':
@@ -417,13 +456,7 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
       .map((a) => a.id);
 
     const matchingGrades = studentGrades.filter((g) => matchingAsmIds.includes(g.assessmentId));
-    if (matchingGrades.length === 0) {
-      if (selectedCourseFilter === 'SOCCER') return 88;
-      if (selectedCourseFilter === 'ENGLISH') return 92;
-      if (selectedCourseFilter === 'PRESCHOOL') return 96;
-      if (selectedCourseFilter === 'WOMENS_FITNESS') return 90;
-      return averageGrade;
-    }
+    if (matchingGrades.length === 0) return 0;
     return Math.round(matchingGrades.reduce((acc, curr) => acc + curr.percentage, 0) / matchingGrades.length);
   }, [selectedCourseFilter, studentAssessments, studentGrades, averageGrade]);
 
@@ -431,11 +464,14 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
   const isFinalGradeAllowedToView = React.useMemo(() => {
     const targetClasses = state.classes.filter((c) => {
       if (selectedCourseFilter === 'ALL') return studentClassIds.includes(c.id);
-      if (selectedCourseFilter === 'SOCCER') return c.id === 'class_soccer';
-      if (selectedCourseFilter === 'ENGLISH') return c.id === 'class_eng_a';
-      if (selectedCourseFilter === 'PRESCHOOL') return c.id === 'class_preschool_a';
-      if (selectedCourseFilter === 'WOMENS_FITNESS') return c.id === 'class_women_circuit';
-      return studentClassIds.includes(c.id);
+      return (
+        studentClassIds.includes(c.id) &&
+        matchesCourseFilter(selectedCourseFilter, {
+          classId: c.id,
+          className: c.name,
+          courseName: c.courseName,
+        })
+      );
     });
 
     if (targetClasses.length === 0) return false;
@@ -593,165 +629,71 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
     );
   };
 
-  const soccerAssignments = [
-    ...state.assignments.filter(
-      (a) =>
-        a.classId === 'class_football_sub15' ||
-        a.className?.toLowerCase().includes('futebol') ||
-        a.className?.toLowerCase().includes('soccer')
-    ),
-    {
-      id: 'asg_soc_1',
-      classId: 'class_football_sub15',
-      className: 'Futebol Juvenil Sub-15',
-      title: 'Diário de Treino & Hábitos de Sono',
-      instructions:
-        'Registre suas 7 noites de descanso e hidratação pré e pós-treino da semana para acompanhamento com a equipe física.',
-      teacherName: 'Prof. Tarek Mansour',
-      dueDate: '08/03/2026 • 23:59',
-      maxScore: 100,
-      category: 'Diário Prático',
-    },
-    {
-      id: 'asg_soc_2',
-      classId: 'class_football_sub15',
-      className: 'Futebol Juvenil Sub-15',
-      title: 'Relatório de Análise Tática - Posicionamento 4-3-3',
-      instructions:
-        'Identifique as 3 principais funções do volante de marcação na saída de bola curta e na transição defensiva.',
-      teacherName: 'Prof. Tarek Mansour',
-      dueDate: '15/03/2026 • 23:59',
-      maxScore: 100,
-      category: 'Análise Tática',
-    },
-    {
-      id: 'asg_soc_3',
-      classId: 'class_football_sub15',
-      className: 'Futebol Juvenil Sub-15',
-      title: 'Desafio Prático: Controle de Bola e Embaixadinhas',
-      instructions:
-        'Grave um vídeo curto de até 45 segundos demonstrando controle com ambos os pés e finalização em alvo.',
-      teacherName: 'Prof. Tarek Mansour',
-      dueDate: '22/03/2026 • 23:59',
-      maxScore: 100,
-      category: 'Desafio Técnico',
-    },
-  ].filter((v, i, a) => a.findIndex((t) => t.id === v.id) === i);
+  const soccerAssignments = state.assignments.filter(
+    (a) =>
+      a.classId === 'class_football_sub15' ||
+      a.className?.toLowerCase().includes('futebol') ||
+      a.className?.toLowerCase().includes('soccer')
+  );
 
-  const englishAssignments = [
-    ...state.assignments.filter(
-      (a) =>
-        a.classId === 'class_eng_a' ||
-        a.className?.toLowerCase().includes('inglês') ||
-        a.className?.toLowerCase().includes('ingles') ||
-        a.className?.toLowerCase().includes('english')
-    ),
-    {
-      id: 'asg_eng_1',
-      classId: 'class_eng_a',
-      className: 'Inglês Básico A',
-      title: 'Tarefa 04: Redação "My Community and Daily Routine"',
-      instructions:
-        'Escreva um texto de 80 a 120 palavras descrevendo sua rotina diária no Cairo e como você participa das atividades do Think Green Community Center.',
-      teacherName: 'Profª. Sarah Johnson',
-      dueDate: '10/03/2026 • 23:59',
-      maxScore: 100,
-      category: 'Redação',
-    },
-    {
-      id: 'asg_eng_2',
-      classId: 'class_eng_a',
-      className: 'Inglês Básico A',
-      title: 'Exercício 03: Present Continuous vs Simple Past',
-      instructions:
-        'Complete as 15 frases de fixação preenchendo as lacunas com a forma verbal adequada de acordo com o contexto temporal.',
-      teacherName: 'Profª. Sarah Johnson',
-      dueDate: '14/03/2026 • 23:59',
-      maxScore: 100,
-      category: 'Gramática',
-    },
-    {
-      id: 'asg_eng_3',
-      classId: 'class_eng_a',
-      className: 'Inglês Básico A',
-      title: 'Listening & Pronunciation Quiz 02',
-      instructions:
-        'Ouça o áudio da conversa na recepção do Centro e responda às 10 questões de interpretação oral.',
-      teacherName: 'Profª. Sarah Johnson',
-      dueDate: '20/03/2026 • 23:59',
-      maxScore: 100,
-      category: 'Listening',
-    },
-  ].filter((v, i, a) => a.findIndex((t) => t.id === v.id) === i);
+  const englishAssignments = state.assignments.filter(
+    (a) =>
+      a.classId === 'class_eng_a' ||
+      a.className?.toLowerCase().includes('inglês') ||
+      a.className?.toLowerCase().includes('ingles') ||
+      a.className?.toLowerCase().includes('english')
+  );
 
-  const preschoolAssignments = [
-    ...state.assignments.filter(
-      (a) =>
-        a.classId === 'class_preschool_a' ||
-        a.className?.toLowerCase().includes('preschool') ||
-        a.className?.toLowerCase().includes('pré-escola') ||
-        a.className?.toLowerCase().includes('pre-escola') ||
-        a.className?.toLowerCase().includes('girassol')
-    ),
-    {
-      id: 'asg_pre_1',
-      classId: 'class_preschool_a',
-      className: 'Turma Girassol (4 a 5 anos)',
-      title: 'Atividade de Cores & Desenho: Meu Lugar Favorito no Jardim',
-      instructions:
-        'Desenho livre utilizando lápis de cor e colagem de elementos da natureza recolhidos no Centro Comunitário.',
-      teacherName: 'Profª. Sarah Johnson',
-      dueDate: '12/03/2026 • 12:00',
-      maxScore: 100,
-      category: 'Arte & Criatividade',
-    },
-    {
-      id: 'asg_pre_2',
-      classId: 'class_preschool_a',
-      className: 'Turma Girassol (4 a 5 anos)',
-      title: 'Desafio Lúdico: Identificação dos Animais em Inglês',
-      instructions:
-        'Reconhecer e pronunciar os nomes dos 5 animaizinhos da fazenda trabalhados na historinha da semana.',
-      teacherName: 'Profª. Sarah Johnson',
-      dueDate: '19/03/2026 • 12:00',
-      maxScore: 100,
-      category: 'Bilinguismo Infantil',
-    },
-  ].filter((v, i, a) => a.findIndex((t) => t.id === v.id) === i);
+  const preschoolAssignments = state.assignments.filter(
+    (a) =>
+      a.classId === 'class_preschool_a' ||
+      a.className?.toLowerCase().includes('preschool') ||
+      a.className?.toLowerCase().includes('pré-escola') ||
+      a.className?.toLowerCase().includes('pre-escola') ||
+      a.className?.toLowerCase().includes('girassol')
+  );
 
-  const womenFitAssignments = [
-    ...state.assignments.filter(
-      (a) =>
-        a.classId === 'class_women_circuit' ||
-        a.className?.toLowerCase().includes('mulher') ||
-        a.className?.toLowerCase().includes('fitness') ||
-        a.className?.toLowerCase().includes('circuito')
-    ),
-    {
-      id: 'asg_fit_1',
-      classId: 'class_women_circuit',
-      className: 'Circuito Funcional Feminino - Manhã',
-      title: 'Registro de Metas de Saúde & Bem-Estar Semanal',
-      instructions:
-        'Preencher a ficha de acompanhamento de frequência, ingestão de água e nível de energia nos 3 dias de circuito funcional.',
-      teacherName: 'Profª. Sarah Johnson',
-      dueDate: '14/03/2026 • 20:00',
-      maxScore: 100,
-      category: 'Hábitos Saudáveis',
-    },
-    {
-      id: 'asg_fit_2',
-      classId: 'class_women_circuit',
-      className: 'Circuito Funcional Feminino - Manhã',
-      title: 'Diário de Alongamento & Mobilidade Postural',
-      instructions:
-        'Praticar os 4 exercícios de descompressão lombar e flexibilidade em casa nos dias sem treino no Centro.',
-      teacherName: 'Profª. Sarah Johnson',
-      dueDate: '21/03/2026 • 20:00',
-      maxScore: 100,
-      category: 'Mobilidade',
-    },
-  ].filter((v, i, a) => a.findIndex((t) => t.id === v.id) === i);
+  const womenFitAssignments = state.assignments.filter(
+    (a) =>
+      a.classId === 'class_women_circuit' ||
+      a.className?.toLowerCase().includes('mulher') ||
+      a.className?.toLowerCase().includes('fitness') ||
+      a.className?.toLowerCase().includes('circuito')
+  );
+
+
+  // Real lessons/tasks registered by teachers (no demo content).
+  const normalizeLessonText = (value?: string) => (value || '').toLowerCase();
+  const buildLessonRows = (classId: string, keywords: string[]) =>
+    state.lessons
+      .filter(
+        (lesson) =>
+          lesson.classId === classId ||
+          keywords.some((keyword) => normalizeLessonText(lesson.className).includes(keyword))
+      )
+      .map((lesson) => ({
+        id: lesson.id,
+        title: lesson.title,
+        desc: lesson.description,
+        teacher: lesson.teacherName || 'Professor não atribuído',
+        date: lesson.date,
+        duration: '',
+        raw: lesson,
+      }));
+
+  const soccerLessons = buildLessonRows('class_football_sub15', ['futebol', 'soccer']);
+  const englishLessons = buildLessonRows('class_eng_a', ['inglês', 'ingles', 'english']);
+  const preschoolLessons = buildLessonRows('class_preschool_a', [
+    'preschool',
+    'pré-escola',
+    'pre-escola',
+    'girassol',
+  ]);
+  const womenFitLessons = buildLessonRows('class_women_circuit', [
+    'mulher',
+    'fitness',
+    'circuito',
+  ]);
 
   const handleCopyId = () => {
     navigator.clipboard.writeText(student.studentId);
@@ -880,10 +822,11 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
               aria-label="Avisos e Notificações"
             >
               <Bell className="w-6 h-6" />
-              {/* Badge 3 in Green */}
-              <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-[#075e38] text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow-xs">
-                3
-              </span>
+              {generalAnnouncements.length > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-[#075e38] text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow-xs">
+                  {generalAnnouncements.length}
+                </span>
+              )}
             </button>
 
             {/* Notifications Flyout */}
@@ -892,7 +835,9 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
                 <div className="flex items-center justify-between pb-3 border-b border-slate-100">
                   <div className="flex items-center gap-2">
                     <Bell className="w-4 h-4 text-[#075e38]" />
-                    <span className="font-bold text-slate-900 text-sm">Avisos do Aluno (3)</span>
+                    <span className="font-bold text-slate-900 text-sm">
+                      Avisos do Aluno ({generalAnnouncements.length})
+                    </span>
                   </div>
                   <button
                     onClick={() => setIsNotifOpen(false)}
@@ -903,53 +848,34 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
                 </div>
 
                 <div className="divide-y divide-slate-100 max-h-80 overflow-y-auto">
-                  <div
-                    onClick={() => {
-                      setIsNotifOpen(false);
-                      setIsAvisosModalOpen(true);
-                    }}
-                    className="py-3 cursor-pointer hover:bg-emerald-50/50 px-2 rounded-xl transition-colors space-y-1"
-                  >
-                    <div className="flex items-center justify-between text-[11px]">
-                      <span className="font-bold text-[#075e38] uppercase">Camp Think Green 2026</span>
-                      <span className="text-slate-400">Hoje</span>
-                    </div>
-                    <p className="text-xs text-slate-700 font-medium">
-                      Inscrições abertas para o Acampamento de Verão 2026 e Oficinas de Línguas!
+                  {generalAnnouncements.length === 0 ? (
+                    <p className="py-6 text-center text-slate-400 text-xs font-medium">
+                      Nenhum aviso publicado no momento.
                     </p>
-                  </div>
-
-                  <div
-                    onClick={() => {
-                      setIsNotifOpen(false);
-                      handleNavChange('notas');
-                    }}
-                    className="py-3 cursor-pointer hover:bg-purple-50/50 px-2 rounded-xl transition-colors space-y-1"
-                  >
-                    <div className="flex items-center justify-between text-[11px]">
-                      <span className="font-bold text-purple-700 uppercase">Avaliação de Inglês</span>
-                      <span className="text-slate-400">Ontem</span>
-                    </div>
-                    <p className="text-xs text-slate-700 font-medium">
-                      A 1ª Avaliação Intermediária de Inglês está agendada. Verifique seu status financeiro para liberação.
-                    </p>
-                  </div>
-
-                  <div
-                    onClick={() => {
-                      setIsNotifOpen(false);
-                      handleNavChange('aulas');
-                    }}
-                    className="py-3 cursor-pointer hover:bg-emerald-50/50 px-2 rounded-xl transition-colors space-y-1"
-                  >
-                    <div className="flex items-center justify-between text-[11px]">
-                      <span className="font-bold text-emerald-700 uppercase">Soccer Class</span>
-                      <span className="text-slate-400">3 dias atrás</span>
-                    </div>
-                    <p className="text-xs text-slate-700 font-medium">
-                      Novo cronograma de treinos práticos e posicionamento tático disponível no AVA.
-                    </p>
-                  </div>
+                  ) : (
+                    generalAnnouncements.slice(0, 6).map((announcement) => (
+                      <div
+                        key={announcement.id}
+                        onClick={() => {
+                          setIsNotifOpen(false);
+                          setIsAvisosModalOpen(true);
+                        }}
+                        className="py-3 cursor-pointer hover:bg-emerald-50/50 px-2 rounded-xl transition-colors space-y-1"
+                      >
+                        <div className="flex items-center justify-between gap-2 text-[11px]">
+                          <span className="font-bold text-[#075e38] uppercase truncate">
+                            {announcement.title}
+                          </span>
+                          <span className="text-slate-400 flex-shrink-0">
+                            {announcement.createdAt}
+                          </span>
+                        </div>
+                        <p className="text-xs text-slate-700 font-medium line-clamp-2">
+                          {announcement.content}
+                        </p>
+                      </div>
+                    ))
+                  )}
                 </div>
               </div>
             )}
@@ -1843,14 +1769,7 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
               {/* Grid of Didactic Materials */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {didacticMaterials
-                  .filter((mat) => {
-                    if (selectedCourseFilter === 'ALL') return true;
-                    if (selectedCourseFilter === 'SOCCER') return mat.classId === 'class_soccer';
-                    if (selectedCourseFilter === 'ENGLISH') return mat.classId === 'class_eng_a';
-                    if (selectedCourseFilter === 'PRESCHOOL') return mat.classId === 'class_preschool_a';
-                    if (selectedCourseFilter === 'WOMENS_FITNESS') return mat.classId === 'class_women_circuit';
-                    return true;
-                  })
+                  .filter((mat) => matchesCourseFilter(selectedCourseFilter, mat))
                   .map((mat) => {
                     const isPdf = mat.type === 'PDF';
                     const isDrive = mat.type === 'GOOGLE_DRIVE';
@@ -2011,44 +1930,7 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
-                      {[
-                        {
-                          id: 'soc_1',
-                          title: 'Treino Tático 06: Transição Ofensiva & Compactação Defensiva',
-                          desc: 'Exercícios no campo principal com foco em passes em profundidade e recomposição rápida.',
-                          teacher: 'Prof. Tarek Mansour',
-                          date: '01/03/2026 - Seg • 15:00',
-                          duration: '50 min',
-                          tag: 'Tático',
-                        },
-                        {
-                          id: 'soc_2',
-                          title: 'Treino 05: Fundamentos de Condução e Drible em Velocidade',
-                          desc: 'Circuito com cones, mudança de direção e finalização na entrada da área.',
-                          teacher: 'Prof. Tarek Mansour',
-                          date: '26/02/2026 - Qui • 15:00',
-                          duration: '50 min',
-                          tag: 'Técnico',
-                        },
-                        {
-                          id: 'soc_3',
-                          title: 'Treino 04: Resistência Física & Circuito Aeróbico',
-                          desc: 'Testes de velocidade de 30m, saltos pliométricos e respiração controlada.',
-                          teacher: 'Prof. Tarek Mansour',
-                          date: '24/02/2026 - Ter • 15:00',
-                          duration: '50 min',
-                          tag: 'Físico',
-                        },
-                        {
-                          id: 'soc_4',
-                          title: 'Treino 03: Cobrança de Faltas, Pênaltis e Bola Parada',
-                          desc: 'Posicionamento de barreira e cobranças diretas no ângulo.',
-                          teacher: 'Prof. Tarek Mansour',
-                          date: '19/02/2026 - Qui • 15:00',
-                          duration: '50 min',
-                          tag: 'Especial',
-                        },
-                      ].map((item) => (
+                      {soccerLessons.map((item) => (
                         <tr key={item.id} className="hover:bg-slate-50/70 transition-colors">
                           <td className="py-4 px-6">
                             <div className="flex items-center gap-3">
@@ -2061,25 +1943,7 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
                                     handleNavChange('financeiro');
                                     return;
                                   }
-                                  setActiveLesson({
-                                    id: item.id,
-                                    classId: 'class_football_sub15',
-                                    className: 'Futebol Juvenil Sub-15',
-                                    title: item.title,
-                                    description: item.desc,
-                                    date: item.date.split(' - ')[0],
-                                    teacherId: 'user_teacher_2',
-                                    teacherName: item.teacher,
-                                    materials: [
-                                      {
-                                        id: 'mat_soc',
-                                        title: `Prancheta Tática - ${item.title}.pdf`,
-                                        type: 'PDF',
-                                        url: '#',
-                                        size: '1.5 MB',
-                                      },
-                                    ],
-                                  });
+                                  setActiveLesson(item.raw);
                                 }}
                                 className={`w-9 h-9 rounded-xl flex items-center justify-center cursor-pointer transition-colors flex-shrink-0 shadow-xs ${
                                   !soccerAccess.allowed
@@ -2139,25 +2003,7 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
                               ) : (
                                 <button
                                   onClick={() =>
-                                    setActiveLesson({
-                                      id: item.id,
-                                      classId: 'class_football_sub15',
-                                      className: 'Futebol Juvenil Sub-15',
-                                      title: item.title,
-                                      description: item.desc,
-                                      date: item.date.split(' - ')[0],
-                                      teacherId: 'user_teacher_2',
-                                      teacherName: item.teacher,
-                                      materials: [
-                                        {
-                                          id: 'mat_soc',
-                                          title: `Prancheta Tática - ${item.title}.pdf`,
-                                          type: 'PDF',
-                                          url: '#',
-                                          size: '1.5 MB',
-                                        },
-                                      ],
-                                    })
+                                    setActiveLesson(item.raw)
                                   }
                                   className="px-4 py-1.5 bg-[#075e38] hover:bg-[#064e2e] text-white text-xs font-bold rounded-full transition-all inline-flex items-center gap-1.5 shadow-xs cursor-pointer"
                                 >
@@ -2278,44 +2124,7 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
-                      {[
-                        {
-                          id: 'eng_1',
-                          title: 'Aula 08: Introdução às Conversas do Cotidiano & Comunidade',
-                          desc: 'Prática de diálogos no mercado local, cumprimentos formais e informais.',
-                          teacher: 'Profª. Sarah Johnson',
-                          date: '02/03/2026 - Seg • 14:00',
-                          duration: '50 min',
-                          tag: 'Conversation',
-                        },
-                        {
-                          id: 'eng_2',
-                          title: 'Aula 07: Present Continuous & Ações em Andamento',
-                          desc: 'Estruturas de sujeito + to be + verbo com -ing. Exercícios em grupo com cartões.',
-                          teacher: 'Profª. Sarah Johnson',
-                          date: '25/02/2026 - Qua • 14:00',
-                          duration: '50 min',
-                          tag: 'Grammar',
-                        },
-                        {
-                          id: 'eng_3',
-                          title: 'Aula 06: Simple Present & Daily Routines in Cairo',
-                          desc: 'Vocabulário de rotinas, horários e expressões de frequência (always, usually, never).',
-                          teacher: 'Profª. Sarah Johnson',
-                          date: '23/02/2026 - Seg • 14:00',
-                          duration: '50 min',
-                          tag: 'Vocabulary',
-                        },
-                        {
-                          id: 'eng_4',
-                          title: 'Aula 05: Reading & Comprehension: Think Green Story',
-                          desc: 'Leitura comentada sobre a fundação e impacto comunitário do centro.',
-                          teacher: 'Profª. Sarah Johnson',
-                          date: '18/02/2026 - Qua • 14:00',
-                          duration: '50 min',
-                          tag: 'Reading',
-                        },
-                      ].map((item) => (
+                      {englishLessons.map((item) => (
                         <tr key={item.id} className="hover:bg-slate-50/70 transition-colors">
                           <td className="py-4 px-6">
                             <div className="flex items-center gap-3">
@@ -2328,25 +2137,7 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
                                     handleNavChange('financeiro');
                                     return;
                                   }
-                                  setActiveLesson({
-                                    id: item.id,
-                                    classId: 'class_eng_a',
-                                    className: 'Inglês Básico A (Beginners)',
-                                    title: item.title,
-                                    description: item.desc,
-                                    date: item.date.split(' - ')[0],
-                                    teacherId: 'user_teacher_1',
-                                    teacherName: item.teacher,
-                                    materials: [
-                                      {
-                                        id: 'mat_eng',
-                                        title: `Apostila Oficial - ${item.title}.pdf`,
-                                        type: 'PDF',
-                                        url: '#',
-                                        size: '2.4 MB',
-                                      },
-                                    ],
-                                  });
+                                  setActiveLesson(item.raw);
                                 }}
                                 className={`w-9 h-9 rounded-xl flex items-center justify-center cursor-pointer transition-colors flex-shrink-0 shadow-xs ${
                                   !englishAccess.allowed
@@ -2406,25 +2197,7 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
                               ) : (
                                 <button
                                   onClick={() =>
-                                    setActiveLesson({
-                                      id: item.id,
-                                      classId: 'class_eng_a',
-                                      className: 'Inglês Básico A (Beginners)',
-                                      title: item.title,
-                                      description: item.desc,
-                                      date: item.date.split(' - ')[0],
-                                      teacherId: 'user_teacher_1',
-                                      teacherName: item.teacher,
-                                      materials: [
-                                        {
-                                          id: 'mat_eng',
-                                          title: `Apostila Oficial - ${item.title}.pdf`,
-                                          type: 'PDF',
-                                          url: '#',
-                                          size: '2.4 MB',
-                                        },
-                                      ],
-                                    })
+                                    setActiveLesson(item.raw)
                                   }
                                   className="px-4 py-1.5 bg-[#533499] hover:bg-[#432681] text-white text-xs font-bold rounded-full transition-all inline-flex items-center gap-1.5 shadow-xs cursor-pointer"
                                 >
@@ -2545,44 +2318,7 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
-                      {[
-                        {
-                          id: 'pre_1',
-                          title: 'Aula Lúdica 05: As Cores da Natureza & Cantigas em Inglês',
-                          desc: 'Atividade de estímulo à criatividade, contação de histórias com fantoches e vocabulário de cores.',
-                          teacher: 'Profª. Sarah Johnson',
-                          date: '03/03/2026 - Ter • 10:00',
-                          duration: '45 min',
-                          tag: 'Arte & Natureza',
-                        },
-                        {
-                          id: 'pre_2',
-                          title: 'Aula 04: Psicomotricidade & Jogos Coletivos no Espaço Kids',
-                          desc: 'Circuitos com obstáculos de espuma, equilíbrio e cooperação em grupo na Turma Girassol.',
-                          teacher: 'Profª. Sarah Johnson',
-                          date: '26/02/2026 - Qui • 10:00',
-                          duration: '45 min',
-                          tag: 'Psicomotricidade',
-                        },
-                        {
-                          id: 'pre_3',
-                          title: 'Aula 03: Primeiras Palavras em Inglês: Sons dos Animais & Família',
-                          desc: 'Cantigas interativas bilingues e associação de cartões ilustrativos coloridos.',
-                          teacher: 'Profª. Sarah Johnson',
-                          date: '24/02/2026 - Ter • 10:00',
-                          duration: '40 min',
-                          tag: 'Bilinguismo',
-                        },
-                        {
-                          id: 'pre_4',
-                          title: 'Aula 02: Roda de Leitura: O Jardim Secreto e Nossos Sentidos',
-                          desc: 'Exploração de texturas, cheiros de ervas aromáticas e expressão oral infantil.',
-                          teacher: 'Profª. Sarah Johnson',
-                          date: '19/02/2026 - Qui • 10:00',
-                          duration: '45 min',
-                          tag: 'Leitura',
-                        },
-                      ].map((item) => (
+                      {preschoolLessons.map((item) => (
                         <tr key={item.id} className="hover:bg-slate-50/80 transition-colors">
                           <td className="py-4 px-6">
                             <div className="flex items-center gap-3.5">
@@ -2595,25 +2331,7 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
                                     handleNavChange('financeiro');
                                     return;
                                   }
-                                  setActiveLesson({
-                                    id: item.id,
-                                    classId: 'class_preschool_a',
-                                    className: 'Turma Girassol (4 a 5 anos)',
-                                    title: item.title,
-                                    description: item.desc,
-                                    date: item.date.split(' - ')[0],
-                                    teacherId: 'user_teacher_1',
-                                    teacherName: item.teacher,
-                                    materials: [
-                                      {
-                                        id: 'mat_pre',
-                                        title: `Material Pedagógico - ${item.title}.pdf`,
-                                        type: 'PDF',
-                                        url: '#',
-                                        size: '3.2 MB',
-                                      },
-                                    ],
-                                  });
+                                  setActiveLesson(item.raw);
                                 }}
                                 className={`w-9 h-9 rounded-xl flex items-center justify-center cursor-pointer transition-colors flex-shrink-0 shadow-xs ${
                                   !preschoolAccess.allowed
@@ -2673,25 +2391,7 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
                               ) : (
                                 <button
                                   onClick={() =>
-                                    setActiveLesson({
-                                      id: item.id,
-                                      classId: 'class_preschool_a',
-                                      className: 'Turma Girassol (4 a 5 anos)',
-                                      title: item.title,
-                                      description: item.desc,
-                                      date: item.date.split(' - ')[0],
-                                      teacherId: 'user_teacher_1',
-                                      teacherName: item.teacher,
-                                      materials: [
-                                        {
-                                          id: 'mat_pre',
-                                          title: `Material Pedagógico - ${item.title}.pdf`,
-                                          type: 'PDF',
-                                          url: '#',
-                                          size: '3.2 MB',
-                                        },
-                                      ],
-                                    })
+                                    setActiveLesson(item.raw)
                                   }
                                   className="px-4 py-1.5 bg-[#c2410c] hover:bg-[#9a3412] text-white text-xs font-bold rounded-full transition-all inline-flex items-center gap-1.5 shadow-xs cursor-pointer"
                                 >
@@ -2774,44 +2474,7 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
-                      {[
-                        {
-                          id: 'fit_1',
-                          title: 'Sessão 12: Fortalecimento Postural e Treino de Alta Intensidade',
-                          desc: 'Sequência de exercícios corporais, alongamento dinâmico e respiração guiada.',
-                          teacher: 'Profª. Sarah Johnson',
-                          date: '02/03/2026 - Seg • 08:30',
-                          duration: '60 min',
-                          tag: 'Circuito Funcional',
-                        },
-                        {
-                          id: 'fit_2',
-                          title: 'Sessão 11: Core, Glúteos & Estabilidade Lombar',
-                          desc: 'Trabalho focado na musculatura profunda do abdômen e prevenção de dores articulares.',
-                          teacher: 'Profª. Sarah Johnson',
-                          date: '27/02/2026 - Sex • 08:30',
-                          duration: '55 min',
-                          tag: 'Fortalecimento Core',
-                        },
-                        {
-                          id: 'fit_3',
-                          title: 'Sessão 10: Treino Aeróbico com Cordas Navais & Steps',
-                          desc: 'Queima calórica, ritmo cardiovascular e coordenação motora com acompanhamento musical.',
-                          teacher: 'Profª. Sarah Johnson',
-                          date: '25/02/2026 - Qua • 08:30',
-                          duration: '60 min',
-                          tag: 'Cardio & Resistência',
-                        },
-                        {
-                          id: 'fit_4',
-                          title: 'Sessão 09: Mobilidade Articular, Yoga Flow & Relaxamento',
-                          desc: 'Alívio do estresse do dia a dia, postura alinhada e recuperação neuromuscular.',
-                          teacher: 'Profª. Sarah Johnson',
-                          date: '23/02/2026 - Seg • 08:30',
-                          duration: '50 min',
-                          tag: 'Mobilidade & Yoga',
-                        },
-                      ].map((item) => (
+                      {womenFitLessons.map((item) => (
                         <tr key={item.id} className="hover:bg-slate-50/80 transition-colors">
                           <td className="py-4 px-6">
                             <div className="flex items-center gap-3.5">
@@ -2824,25 +2487,7 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
                                     handleNavChange('financeiro');
                                     return;
                                   }
-                                  setActiveLesson({
-                                    id: item.id,
-                                    classId: 'class_women_circuit',
-                                    className: 'Circuito Funcional Feminino - Manhã',
-                                    title: item.title,
-                                    description: item.desc,
-                                    date: item.date.split(' - ')[0],
-                                    teacherId: 'user_teacher_1',
-                                    teacherName: item.teacher,
-                                    materials: [
-                                      {
-                                        id: 'mat_fit',
-                                        title: `Ficha de Treino - ${item.title}.pdf`,
-                                        type: 'PDF',
-                                        url: '#',
-                                        size: '1.8 MB',
-                                      },
-                                    ],
-                                  });
+                                  setActiveLesson(item.raw);
                                 }}
                                 className={`w-9 h-9 rounded-xl flex items-center justify-center cursor-pointer transition-colors flex-shrink-0 shadow-xs ${
                                   !womenFitAccess.allowed
@@ -2902,25 +2547,7 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
                               ) : (
                                 <button
                                   onClick={() =>
-                                    setActiveLesson({
-                                      id: item.id,
-                                      classId: 'class_women_circuit',
-                                      className: 'Circuito Funcional Feminino - Manhã',
-                                      title: item.title,
-                                      description: item.desc,
-                                      date: item.date.split(' - ')[0],
-                                      teacherId: 'user_teacher_1',
-                                      teacherName: item.teacher,
-                                      materials: [
-                                        {
-                                          id: 'mat_fit',
-                                          title: `Ficha de Treino - ${item.title}.pdf`,
-                                          type: 'PDF',
-                                          url: '#',
-                                          size: '1.8 MB',
-                                        },
-                                      ],
-                                    })
+                                    setActiveLesson(item.raw)
                                   }
                                   className="px-4 py-1.5 bg-[#be185d] hover:bg-[#9d174d] text-white text-xs font-bold rounded-full transition-all inline-flex items-center gap-1.5 shadow-xs cursor-pointer"
                                 >
@@ -2975,12 +2602,7 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
               {/* Quiz Cards */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {quizzes
-                  .filter((q) => {
-                    if (selectedCourseFilter === 'ALL') return true;
-                    if (selectedCourseFilter === 'ENGLISH') return q.classId === 'class_eng_a';
-                    if (selectedCourseFilter === 'SOCCER') return q.classId === 'class_soccer';
-                    return true;
-                  })
+                  .filter((q) => matchesCourseFilter(selectedCourseFilter, q))
                   .map((quiz) => {
                     const studentSub = quizSubmissions.find(
                       (s) => s.quizId === quiz.id && s.studentId === student.studentId
@@ -3128,7 +2750,7 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
                             <td className="py-4 px-4 hidden md:table-cell font-medium text-slate-700">
                               <span className="inline-flex items-center gap-1.5 bg-slate-100 px-2.5 py-1 rounded-lg text-slate-700 font-semibold">
                                 <User className="w-3 h-3 text-[#075e38]" />
-                                {asg.teacherName || 'Prof. Tarek Mansour'}
+                                {asg.teacherName || 'Professor não atribuído'}
                               </span>
                             </td>
 
@@ -3163,7 +2785,7 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
                                   onClick={() =>
                                     setViewFeedbackModal({
                                       asgTitle: asg.title,
-                                      teacherName: asg.teacherName || 'Prof. Tarek Mansour',
+                                      teacherName: asg.teacherName || 'Professor não atribuído',
                                       score: displayScore || asg.maxScore,
                                       maxScore: asg.maxScore,
                                       feedback: sub?.feedback || 'Atividade visualizada e aprovada pelo professor.',
@@ -3274,7 +2896,7 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
                             <td className="py-4 px-4 hidden md:table-cell font-medium text-slate-700">
                               <span className="inline-flex items-center gap-1.5 bg-purple-50 px-2.5 py-1 rounded-lg text-purple-900 font-semibold border border-purple-100">
                                 <User className="w-3 h-3 text-[#533499]" />
-                                {asg.teacherName || 'Profª. Sarah Johnson'}
+                                {asg.teacherName || 'Professor não atribuído'}
                               </span>
                             </td>
 
@@ -3309,7 +2931,7 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
                                   onClick={() =>
                                     setViewFeedbackModal({
                                       asgTitle: asg.title,
-                                      teacherName: asg.teacherName || 'Profª. Sarah Johnson',
+                                      teacherName: asg.teacherName || 'Professor não atribuído',
                                       score: displayScore || asg.maxScore,
                                       maxScore: asg.maxScore,
                                       feedback: sub?.feedback || 'Excelente desempenho na atividade!',
@@ -3420,7 +3042,7 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
                             <td className="py-4 px-4 hidden md:table-cell font-medium text-slate-700">
                               <span className="inline-flex items-center gap-1.5 bg-orange-50 px-2.5 py-1 rounded-lg text-orange-900 font-semibold border border-orange-100">
                                 <User className="w-3 h-3 text-[#c2410c]" />
-                                {asg.teacherName || 'Profª. Sarah Johnson'}
+                                {asg.teacherName || 'Professor não atribuído'}
                               </span>
                             </td>
 
@@ -3455,7 +3077,7 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
                                   onClick={() =>
                                     setViewFeedbackModal({
                                       asgTitle: asg.title,
-                                      teacherName: asg.teacherName || 'Profª. Sarah Johnson',
+                                      teacherName: asg.teacherName || 'Professor não atribuído',
                                       score: displayScore || asg.maxScore,
                                       maxScore: asg.maxScore,
                                       feedback: sub?.feedback || 'Parabéns pela dedicação e criatividade no trabalho infantil!',
@@ -3566,7 +3188,7 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
                             <td className="py-4 px-4 hidden md:table-cell font-medium text-slate-700">
                               <span className="inline-flex items-center gap-1.5 bg-pink-50 px-2.5 py-1 rounded-lg text-pink-900 font-semibold border border-pink-100">
                                 <User className="w-3 h-3 text-[#be185d]" />
-                                {asg.teacherName || 'Profª. Sarah Johnson'}
+                                {asg.teacherName || 'Professor não atribuído'}
                               </span>
                             </td>
 
@@ -3601,7 +3223,7 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
                                   onClick={() =>
                                     setViewFeedbackModal({
                                       asgTitle: asg.title,
-                                      teacherName: asg.teacherName || 'Profª. Sarah Johnson',
+                                      teacherName: asg.teacherName || 'Professor não atribuído',
                                       score: displayScore || asg.maxScore,
                                       maxScore: asg.maxScore,
                                       feedback: sub?.feedback || 'Excelente engajamento e cumprimento das rotinas saudáveis!',

@@ -13,13 +13,26 @@ export const FinanceTopbar: React.FC<FinanceTopbarProps> = ({
   onOpenNotifications,
   onOpenSupport,
 }) => {
-  const { currentUser, state, logout } = useApp();
+  const { currentUser, state, logout, markNotificationRead } = useApp();
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
 
   const unreadNotifications = state.notifications.filter(
-    (n) => !n.read && (n.targetRole === 'ALL' || n.targetRole === 'FINANCE' || n.targetRole === currentUser.role)
+    (n) =>
+      !n.read &&
+      (n.targetRole === 'ALL' ||
+        n.targetRole === 'FINANCE' ||
+        n.targetRole === currentUser.role ||
+        n.userId === currentUser.id)
   );
+
+  const userInitials =
+    currentUser.name
+      ?.split(' ')
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part.charAt(0).toUpperCase())
+      .join('') || '?';
 
   return (
     <header className="w-full bg-white border-b border-slate-200/80 shadow-xs px-4 sm:px-6 py-3.5 flex items-center justify-between sticky top-0 z-30">
@@ -54,9 +67,11 @@ export const FinanceTopbar: React.FC<FinanceTopbarProps> = ({
             title="Notificações do Financeiro"
           >
             <Bell className="w-5 h-5" />
-            <span className="absolute top-1 right-1 w-4 h-4 bg-[#075e38] text-white text-[9.5px] font-black rounded-full flex items-center justify-center border-2 border-white">
-              {unreadNotifications.length > 0 ? unreadNotifications.length : '8'}
-            </span>
+            {unreadNotifications.length > 0 && (
+              <span className="absolute top-1 right-1 w-4 h-4 bg-[#075e38] text-white text-[9.5px] font-black rounded-full flex items-center justify-center border-2 border-white">
+                {unreadNotifications.length}
+              </span>
+            )}
           </button>
 
           {/* Notifications Dropdown */}
@@ -65,24 +80,33 @@ export const FinanceTopbar: React.FC<FinanceTopbarProps> = ({
               <div className="flex items-center justify-between border-b border-slate-100 pb-2 mb-3">
                 <h3 className="font-bold text-xs text-slate-900">Notificações Financeiras</h3>
                 <span className="text-[10px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full">
-                  Ativas
+                  {unreadNotifications.length > 0
+                    ? `${unreadNotifications.length} nova(s)`
+                    : 'Nenhuma nova'}
                 </span>
               </div>
               <div className="space-y-2 max-h-64 overflow-y-auto text-xs">
-                <div className="p-2.5 bg-emerald-50/60 rounded-xl border border-emerald-100">
-                  <p className="font-bold text-slate-900 text-[11px]">Pagamento Recebido</p>
-                  <p className="text-slate-600 text-[11px]">
-                    Ahmed Mohamed efetuou a quitação da 2ª Parcela (EGP 480,00).
+                {unreadNotifications.length === 0 ? (
+                  <p className="py-6 text-center text-slate-400">
+                    Nenhuma notificação financeira no momento.
                   </p>
-                  <span className="text-[10px] text-slate-400 mt-1 block">Hoje às 10:24</span>
-                </div>
-                <div className="p-2.5 bg-amber-50/60 rounded-xl border border-amber-100">
-                  <p className="font-bold text-amber-900 text-[11px]">Vencimento Próximo</p>
-                  <p className="text-slate-600 text-[11px]">
-                    23 cobranças vencem nos próximos 7 dias no valor de EGP 24.310,00.
-                  </p>
-                  <span className="text-[10px] text-slate-400 mt-1 block">Ontem</span>
-                </div>
+                ) : (
+                  unreadNotifications.map((notification) => (
+                    <button
+                      key={notification.id}
+                      onClick={() => markNotificationRead(notification.id)}
+                      className="w-full text-left p-2.5 bg-slate-50 rounded-xl border border-slate-100 hover:bg-slate-100 transition-colors cursor-pointer"
+                    >
+                      <p className="font-bold text-slate-900 text-[11px]">
+                        {notification.title}
+                      </p>
+                      <p className="text-slate-600 text-[11px]">{notification.message}</p>
+                      <span className="text-[10px] text-slate-400 mt-1 block">
+                        {notification.timestamp}
+                      </span>
+                    </button>
+                  ))
+                )}
               </div>
             </div>
           )}
@@ -105,7 +129,7 @@ export const FinanceTopbar: React.FC<FinanceTopbarProps> = ({
                   className="w-full h-full object-cover"
                 />
               ) : (
-                'JA'
+                userInitials
               )}
             </div>
             <div className="text-left hidden sm:block">
@@ -117,7 +141,7 @@ export const FinanceTopbar: React.FC<FinanceTopbarProps> = ({
                   : 'Gestor Financeiro'}
               </span>
               <span className="text-xs font-bold text-slate-800 leading-tight">
-                {currentUser.name || 'Julia Albuquerque'}
+                {currentUser.name}
               </span>
             </div>
             <ChevronDown className="w-3.5 h-3.5 text-slate-400" />

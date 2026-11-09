@@ -61,7 +61,7 @@ import {
 import { Modal } from '../../common/Modal';
 import { Badge } from '../../common/Badge';
 import { AssignedModulesMenu } from '../../common/AssignedModulesMenu';
-import { Assessment, AssessmentType, Assignment, Submission, Lesson, ClassAssessmentItem, ClassLessonPlan } from '../../../types';
+import { Assessment, AssessmentType, Assignment, Submission, Lesson, ClassAssessmentItem, ClassLessonPlan, ClassRoom } from '../../../types';
 import { getDefaultAssessmentConfig } from '../../../lib/assessmentTemplates';
 import { ClassHeader, ClassSubTab } from './ClassHeader';
 import { ClassOverviewTab } from './ClassOverviewTab';
@@ -167,7 +167,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
   const teacherClasses = state.classes;
 
   const [selectedClassId, setSelectedClassId] = useState<string>(
-    initialClassId || teacherClasses[0]?.id || 'class_soccer'
+    initialClassId || teacherClasses[0]?.id || ''
   );
 
   // Class-centric workspace state (Google Classroom architecture)
@@ -199,14 +199,21 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
     setActiveNavTab('turmas');
   };
 
-  const selectedClass = state.classes.find((c) => c.id === selectedClassId) || teacherClasses[0] || {
-    id: 'class_soccer',
-    name: 'Soccer Class - 8º Ano A',
-    code: 'SOC-8A',
-    courseName: 'Academia de Futebol Think Green',
-    schedule: 'Terças e Quintas, 19:00 - 19:50',
-    room: 'Campo Sintético 01',
-  };
+  const selectedClass: ClassRoom =
+    state.classes.find((c) => c.id === selectedClassId) ||
+    teacherClasses[0] || {
+      id: '',
+      courseId: '',
+      name: 'Nenhuma turma selecionada',
+      code: '',
+      teacherId: '',
+      teacherName: '',
+      schedule: '',
+      room: '',
+      startDate: '',
+      endDate: '',
+      status: 'ACTIVE',
+    };
 
   // Students enrolled in the selected class
   const classEnrollments = state.enrollments.filter(
@@ -905,7 +912,10 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
   const totalClassesCount = state.classes.length;
   const totalStudentsCount = state.enrollments.filter((e) => e.status === 'ATIVA').length;
   const pendingSubmissionsCount = state.submissions.filter((s) => s.status === 'PENDENTE_CORRECAO').length;
-  const todayLessonsCount = state.lessons.length > 0 ? 3 : 1;
+  const teacherClassIds = new Set(state.classes.map((c) => c.id));
+  const upcomingLessons = state.lessons
+    .filter((lesson) => teacherClassIds.has(lesson.classId))
+    .slice(0, 3);
 
   return (
     <div className={counselorMode ? "text-slate-800 font-sans pb-16" : "min-h-screen bg-[#f8f9fa] text-slate-800 font-sans pb-16"}>
@@ -1015,7 +1025,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
 
                   <div className="flex flex-col pr-1">
                     <span className="text-xs sm:text-sm font-bold text-slate-800 leading-tight">
-                      {currentUser.name || 'Professor Lucas'}
+                      {currentUser.name || 'Professor'}
                     </span>
                     <span className="text-[10px] sm:text-xs text-slate-400 font-medium leading-none mt-0.5">
                       Professor
@@ -1431,7 +1441,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
 
                 <div>
                   <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
-                    Olá, {currentUser.name || 'Professor Lucas'}!
+                    Olá, {currentUser.name || 'Professor'}!
                   </h2>
                   <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
                     Aqui está um resumo das suas turmas, provas e atividades.
@@ -1514,10 +1524,10 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                 {teacherClasses.map((c) => {
                   const style = getClassCardStyle(c);
                   const enrolled = state.enrollments.filter(
-                    (e) => (e.classId === c.id || (c.id === 'class_soccer' && e.className.includes('Futebol')) || (c.id === 'class_eng_a' && e.className.includes('Inglês')) || (c.id === 'class_reading' && e.className.includes('Reading'))) && e.status === 'ATIVA'
-                  ).length || state.enrollments.filter((e) => e.classId === c.id && e.status === 'ATIVA').length || (c.id === 'class_soccer' ? 32 : c.id === 'class_eng_a' ? 28 : c.id === 'class_reading' ? 26 : 20);
-                  const examsCount = state.assessments.filter((a) => a.classId === c.id).length || (c.id === 'class_soccer' ? 2 : c.id === 'class_eng_a' ? 3 : c.id === 'class_reading' ? 1 : 1);
-                  const lessonsCount = state.lessons.filter((l) => l.classId === c.id).length || (c.id === 'class_soccer' ? 4 : c.id === 'class_eng_a' ? 6 : c.id === 'class_reading' ? 3 : 2);
+                    (e) => e.classId === c.id && e.status === 'ATIVA'
+                  ).length;
+                  const examsCount = state.assessments.filter((a) => a.classId === c.id).length;
+                  const lessonsCount = state.lessons.filter((l) => l.classId === c.id).length;
 
                   return (
                     <div 
@@ -1621,7 +1631,9 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                     </h3>
                   </div>
                   <button
-                    onClick={() => handleEnterClass(selectedClassId || 'class_soccer', 'conteudos')}
+                    onClick={() => {
+                      if (selectedClassId) handleEnterClass(selectedClassId, 'conteudos');
+                    }}
                     className="text-[11px] text-[#075e38] font-bold hover:underline cursor-pointer"
                   >
                     Ver todas
@@ -1629,98 +1641,50 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                 </div>
 
                 <div className="space-y-4">
-                  {/* Item 1: Soccer Class */}
-                  <div
-                    onClick={() => handleEnterClass('class_soccer', 'conteudos')}
-                    className="flex items-center justify-between pb-3.5 border-b border-slate-100 last:border-0 last:pb-0 cursor-pointer hover:bg-slate-50 p-2 rounded-xl transition-colors"
-                  >
-                    <div className="flex items-center gap-3 min-w-0 flex-1">
-                      <span className="w-2.5 h-2.5 rounded-full bg-[#075e38] flex-shrink-0" />
-                      <div className="text-center w-8 flex-shrink-0">
-                        <span className="text-lg font-black text-slate-900 leading-none block">
-                          19
-                        </span>
-                        <span className="text-[10px] font-bold text-slate-500 uppercase block tracking-wider mt-0.5">
-                          MAI
-                        </span>
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <h4 className="text-xs font-bold text-[#075e38] leading-tight truncate">
-                          Soccer Class
-                        </h4>
-                        <p className="text-xs text-slate-700 font-medium leading-tight truncate">
-                          Fundamentos & Triangulações
-                        </p>
-                        <span className="text-[11px] text-slate-400 font-medium flex items-center gap-1 mt-0.5">
-                          <Clock className="w-3 h-3 flex-shrink-0" />
-                          <span>19:00 - 19:50</span>
-                        </span>
-                      </div>
-                    </div>
-                    <ChevronRight className="w-4 h-4 text-slate-400 flex-shrink-0 ml-2" />
-                  </div>
-
-                  {/* Item 2: English Class */}
-                  <div
-                    onClick={() => handleEnterClass('class_eng_a', 'conteudos')}
-                    className="flex items-center justify-between pb-3.5 border-b border-slate-100 last:border-0 last:pb-0 cursor-pointer hover:bg-slate-50 p-2 rounded-xl transition-colors"
-                  >
-                    <div className="flex items-center gap-3 min-w-0 flex-1">
-                      <span className="w-2.5 h-2.5 rounded-full bg-[#533499] flex-shrink-0" />
-                      <div className="text-center w-8 flex-shrink-0">
-                        <span className="text-lg font-black text-slate-900 leading-none block">
-                          19
-                        </span>
-                        <span className="text-[10px] font-bold text-slate-500 uppercase block tracking-wider mt-0.5">
-                          MAI
-                        </span>
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <h4 className="text-xs font-bold text-[#533499] leading-tight truncate">
-                          English Class
-                        </h4>
-                        <p className="text-xs text-slate-700 font-medium leading-tight truncate">
-                          Past Continuous & Dialogues
-                        </p>
-                        <span className="text-[11px] text-slate-400 font-medium flex items-center gap-1 mt-0.5">
-                          <Clock className="w-3 h-3 flex-shrink-0" />
-                          <span>20:00 - 20:50</span>
-                        </span>
-                      </div>
-                    </div>
-                    <ChevronRight className="w-4 h-4 text-slate-400 flex-shrink-0 ml-2" />
-                  </div>
-
-                  {/* Item 3: Reading Class */}
-                  <div
-                    onClick={() => handleEnterClass('class_reading', 'conteudos')}
-                    className="flex items-center justify-between pb-1 cursor-pointer hover:bg-slate-50 p-2 rounded-xl transition-colors"
-                  >
-                    <div className="flex items-center gap-3 min-w-0 flex-1">
-                      <span className="w-2.5 h-2.5 rounded-full bg-[#2563eb] flex-shrink-0" />
-                      <div className="text-center w-8 flex-shrink-0">
-                        <span className="text-lg font-black text-slate-900 leading-none block">
-                          20
-                        </span>
-                        <span className="text-[10px] font-bold text-slate-500 uppercase block tracking-wider mt-0.5">
-                          MAI
-                        </span>
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <h4 className="text-xs font-bold text-[#2563eb] leading-tight truncate">
-                          Reading Class
-                        </h4>
-                        <p className="text-xs text-slate-700 font-medium leading-tight truncate">
-                          Short Story: Think Green
-                        </p>
-                        <span className="text-[11px] text-slate-400 font-medium flex items-center gap-1 mt-0.5">
-                          <Clock className="w-3 h-3 flex-shrink-0" />
-                          <span>18:00 - 18:50</span>
-                        </span>
-                      </div>
-                    </div>
-                    <ChevronRight className="w-4 h-4 text-slate-400 flex-shrink-0 ml-2" />
-                  </div>
+                  {upcomingLessons.length === 0 ? (
+                    <p className="py-6 text-center text-xs text-slate-400 font-medium">
+                      Nenhuma aula publicada para suas turmas.
+                    </p>
+                  ) : (
+                    upcomingLessons.map((lesson) => {
+                      const lessonClass = state.classes.find((c) => c.id === lesson.classId);
+                      const style = getClassCardStyle(lessonClass || { name: lesson.className });
+                      return (
+                        <div
+                          key={lesson.id}
+                          onClick={() => handleEnterClass(lesson.classId, 'conteudos')}
+                          className="flex items-center justify-between pb-3.5 border-b border-slate-100 last:border-0 last:pb-0 cursor-pointer hover:bg-slate-50 p-2 rounded-xl transition-colors"
+                        >
+                          <div className="flex items-center gap-3 min-w-0 flex-1">
+                            <span
+                              className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${style.borderColor.replace('border-', 'bg-')}`}
+                            />
+                            <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center flex-shrink-0">
+                              <Calendar className="w-4 h-4 text-slate-500" />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <h4
+                                className={`text-xs font-bold ${style.textColor} leading-tight truncate`}
+                              >
+                                {lesson.className || lessonClass?.name}
+                              </h4>
+                              <p className="text-xs text-slate-700 font-medium leading-tight truncate">
+                                {lesson.title}
+                              </p>
+                              <span className="text-[11px] text-slate-400 font-medium flex items-center gap-1 mt-0.5">
+                                <Clock className="w-3 h-3 flex-shrink-0" />
+                                <span className="truncate">
+                                  {lesson.date}
+                                  {lesson.teacherName ? ` • ${lesson.teacherName}` : ''}
+                                </span>
+                              </span>
+                            </div>
+                          </div>
+                          <ChevronRight className="w-4 h-4 text-slate-400 flex-shrink-0 ml-2" />
+                        </div>
+                      );
+                    })
+                  )}
                 </div>
               </div>
 
@@ -1772,7 +1736,9 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                   )}
 
                   <button
-                    onClick={() => handleEnterClass(selectedClassId || 'class_soccer', 'conteudos')}
+                    onClick={() => {
+                      if (selectedClassId) handleEnterClass(selectedClassId, 'conteudos');
+                    }}
                     className="w-full py-2 px-3 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors text-center block mt-2 cursor-pointer"
                   >
                     Ver Atividades nas Turmas

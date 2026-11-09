@@ -87,7 +87,7 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
             <div className="text-center py-8 text-slate-400">
               <Search className="w-8 h-8 mx-auto text-slate-300 mb-2 stroke-1" />
               <p className="font-semibold text-slate-600">Nenhum resultado encontrado</p>
-              <p className="text-slate-400 text-xs">Tente buscar por "STU00186", "Ahmed", "Inglês" ou "Futebol"</p>
+              <p className="text-slate-400 text-xs">Tente buscar por "STU00186", "Inglês" ou "Futebol"</p>
             </div>
           )}
 

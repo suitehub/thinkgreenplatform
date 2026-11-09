@@ -83,7 +83,7 @@ export const ClassOverviewTab: React.FC<ClassOverviewTabProps> = ({
     const newPost: ClassAnnouncement = {
       id: `ann_${Date.now()}`,
       classId: selectedClass.id,
-      authorName: 'Professor Lucas',
+      authorName: selectedClass.teacherName || 'Docente',
       authorRole: 'Docente Titular',
       title: newNoticeTitle.trim() || undefined,
       content: newNoticeText.trim(),

@@ -212,8 +212,8 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
     guardianName: '',
     notes: '',
     documentPhotoUrl: undefined,
-    courseId: state.courses[0]?.id || 'course_soccer',
-    classId: state.classes[0]?.id || 'class_soccer_u15',
+    courseId: state.courses[0]?.id || '',
+    classId: state.classes[0]?.id || '',
     englishLevel: 'CRIANCAS',
     installmentsCount: 4,
     hasDiscount: false,
@@ -351,8 +351,8 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
       guardianName: '',
       guardianPhone: '',
       notes: '',
-      courseId: state.courses[0]?.id || 'course_soccer',
-      classId: state.classes[0]?.id || 'class_soccer_u15',
+      courseId: state.courses[0]?.id || '',
+      classId: state.classes[0]?.id || '',
       englishLevel: 'CRIANCAS',
       installmentsCount: 4,
       hasDiscount: false,
@@ -589,7 +589,7 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
                       <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
                       <input
                         type="text"
-                        placeholder="Ex: Tarek, STU00001, ou telefone..."
+                        placeholder="Ex: nome do aluno, STU00001, ou telefone..."
                         value={searchStudentQuery}
                         onChange={(e) => setSearchStudentQuery(e.target.value)}
                         className="w-full pl-9 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:bg-white focus:ring-2 focus:ring-[#075e38] focus:border-transparent outline-hidden transition-all"

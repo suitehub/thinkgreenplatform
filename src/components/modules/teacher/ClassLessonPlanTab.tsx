@@ -241,8 +241,8 @@ export const ClassLessonPlanTab: React.FC<ClassLessonPlanTabProps> = ({
       id: editingPlanId || `lp_${Date.now()}`,
       classId: selectedClass.id,
       className: selectedClass.name,
-      teacherId: selectedClass.teacherId || 'user_teacher_1',
-      teacherName: selectedClass.teacherName || 'Professor Lucas',
+      teacherId: selectedClass.teacherId || '',
+      teacherName: selectedClass.teacherName || 'Professor não atribuído',
       date: formDate,
       dateDisplay: display,
       dateFormatted: formatted,
@@ -471,7 +471,7 @@ export const ClassLessonPlanTab: React.FC<ClassLessonPlanTabProps> = ({
                         Aula {idx + 1} — {plan.dateFormatted || plan.date}
                       </h3>
                       <p className="text-[11px] text-slate-500 font-medium">
-                        Docente: {plan.teacherName || selectedClass.teacherName || 'Professor Lucas'}
+                        Docente: {plan.teacherName || selectedClass.teacherName || 'Professor não atribuído'}
                       </p>
                     </div>
                   </div>
@@ -685,7 +685,7 @@ export const ClassLessonPlanTab: React.FC<ClassLessonPlanTabProps> = ({
             <div className="flex items-center gap-2">
               <FileSpreadsheet className="w-4 h-4 text-[#533499]" />
               <span className="text-xs sm:text-sm font-black">
-                Lesson Plan {selectedClass.name} — {selectedClass.teacherName || 'Mr. João Ferelli'}
+                Lesson Plan {selectedClass.name} — {selectedClass.teacherName || 'Professor não atribuído'}
               </span>
             </div>
             <span className="text-[10px] font-bold bg-white/80 px-2.5 py-1 rounded-md text-purple-900 border border-purple-200">

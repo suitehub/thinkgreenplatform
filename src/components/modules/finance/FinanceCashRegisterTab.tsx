@@ -24,7 +24,9 @@ export const FinanceCashRegisterTab: React.FC = () => {
   const [isOpenRegisterModal, setIsOpenRegisterModal] = useState(false);
   const [isCloseRegisterModal, setIsCloseRegisterModal] = useState(false);
   const [openAmount, setOpenAmount] = useState(1000);
-  const [closeActualAmount, setCloseActualAmount] = useState(activeRegister?.currentBalance || 14850);
+  const [closeActualAmount, setCloseActualAmount] = useState(
+    activeRegister?.currentBalance ?? 0
+  );
 
   const totalCollectedToday = state.receipts.reduce((acc, r) => acc + r.amount, 0);
 

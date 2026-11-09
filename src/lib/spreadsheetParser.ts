@@ -256,15 +256,3 @@ export const parseOfficialSpreadsheet = (
   return parsedStudents;
 };
 
-/**
- * Exemplo padrão oficial para teste de 1 clique
- */
-export const OFFICIAL_SPREADSHEET_SAMPLE = [
-  'STUDENT ID\tNAME\tLEVEL\tTELEPHONE\tSTART DATE\tAGE\t\tAgu\tSet\tOct\tNov\tD/J\tFeb\tMar\tApr\tMay\tJun\tJuly\tTotal',
-  'STU00001\tAmira Hassan\tLevel 1\t+20 10 9876 5432\t01/08/2026\t16\t\t500\t500\t500\t500\t500\t500\t500\t500\t0\t0\t0\t4000',
-  'STU00002\tKarim Mansour\tBeginner\t+20 11 8765 4321\t15/08/2026\t19\t\t500\t500\t500\t0\t0\t0\t0\t0\t0\t0\t0\t1500',
-  'STU00003\tNour El-Din\tIntermediate\t+20 12 7654 3210\t01/08/2026\t22\t\t500\t500\t500\t500\t500\t0\t0\t0\t0\t0\t0\t2500',
-  'STU00004\tMona Abdel\tPreschool\t+20 10 6543 2109\t01/09/2026\t6\t\t500\t500\t0\t0\t0\t0\t0\t0\t0\t0\t0\t1000',
-  'STU00005\tYoussef Ibrahim\tLevel 2\t+20 11 2233 4455\t01/08/2026\t17\t\t500\t500\t500\t500\t500\t500\t500\t500\t500\t500\t500\t5500',
-  'STU00006\tFatima Al-Sayed\tKids\t+20 12 9988 7766\t10/08/2026\t11\t\t500\t500\t500\t0\t0\t0\t0\t0\t0\t0\t0\t1500',
-].join('\n');

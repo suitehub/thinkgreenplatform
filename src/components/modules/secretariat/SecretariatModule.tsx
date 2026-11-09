@@ -430,7 +430,7 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
                     <input
                       type="text"
                       required
-                      placeholder="Ex: Tarek Mahmoud Ibrahim"
+                      placeholder="Ex: Nome completo do aluno"
                       value={newStudentForm.name || ''}
                       onChange={(e) => setNewStudentForm({ ...newStudentForm, name: e.target.value })}
                       className="w-full p-2.5 bg-white border border-slate-300 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-[#075e38] focus:border-transparent outline-hidden"

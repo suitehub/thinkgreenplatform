@@ -1998,7 +1998,7 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
                     type="text"
                     value={formRevPayer}
                     onChange={(e) => setFormRevPayer(e.target.value)}
-                    placeholder="Ex: Youssef Mansour"
+                    placeholder="Ex: Nome do fornecedor"
                     className="w-full p-2.5 border border-slate-300 rounded-xl"
                   />
                 </div>

@@ -10,7 +10,6 @@ import {
   Layers,
   Users,
   RefreshCw,
-  Sparkles,
   Calendar,
   Phone,
   DollarSign,
@@ -19,7 +18,6 @@ import {
 import { useApp } from '../../../../context/AppContext';
 import {
   parseOfficialSpreadsheet,
-  OFFICIAL_SPREADSHEET_SAMPLE,
   ACADEMIC_MONTHS_MAP,
   ParsedSpreadsheetStudent,
 } from '../../../../lib/spreadsheetParser';
@@ -37,13 +35,6 @@ export const SecretariatImportTab: React.FC = () => {
     timestamp: string;
   } | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-
-  const handleLoadSample = () => {
-    setRawText(OFFICIAL_SPREADSHEET_SAMPLE);
-    const parsed = parseOfficialSpreadsheet(OFFICIAL_SPREADSHEET_SAMPLE, selectedCourseId, selectedClassId);
-    setParsedRows(parsed);
-    setImportResult(null);
-  };
 
   const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const text = e.target.value;
@@ -72,7 +63,7 @@ export const SecretariatImportTab: React.FC = () => {
 
   const handleDownloadTemplate = () => {
     const headerLine = 'STUDENT ID\tNAME\tLEVEL\tTELEPHONE\tSTART DATE\tAGE\t\tAgu\tSet\tOct\tNov\tD/J\tFeb\tMar\tApr\tMay\tJun\tJuly\tTotal\n';
-    const sampleLine = 'STU00001\tAmira Hassan\tLevel 1\t+20 10 9876 5432\t01/08/2026\t16\t\t500\t500\t500\t500\t500\t500\t500\t500\t0\t0\t0\t4000\n';
+    const sampleLine = 'STU00001\tNOME DO ALUNO\tLevel 1\t+20 10 0000 0000\t01/08/2026\t16\t\t500\t500\t500\t500\t500\t500\t500\t500\t0\t0\t0\t4000\n';
     const content = headerLine + sampleLine;
     const blob = new Blob([content], { type: 'text/tab-separated-values;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
@@ -115,12 +106,6 @@ export const SecretariatImportTab: React.FC = () => {
             title="Baixar modelo compatível com Excel e Google Sheets"
           >
             <Download className="w-4 h-4" /> Baixar Modelo TSV
-          </button>
-          <button
-            onClick={handleLoadSample}
-            className="px-3.5 py-2 bg-purple-50 hover:bg-purple-100 border border-purple-200 text-purple-700 rounded-xl font-bold text-xs transition-colors flex items-center gap-1.5 cursor-pointer"
-          >
-            <Sparkles className="w-4 h-4 text-purple-600" /> Exemplo Pronto
           </button>
         </div>
       </div>
@@ -255,7 +240,7 @@ export const SecretariatImportTab: React.FC = () => {
             rows={7}
             value={rawText}
             onChange={handleTextChange}
-            placeholder={`Cole aqui as linhas copiadas da sua planilha do Excel ou Google Sheets...\nExemplo:\nSTU00001\tAmira Hassan\tLevel 1\t+20 10 9876 5432\t01/08/2026\t16\t\t500\t500\t500\t500\t500\t500\t500\t500\t0\t0\t0\t4000`}
+            placeholder={`Cole aqui as linhas copiadas da sua planilha do Excel ou Google Sheets...\nExemplo:\nSTU00001\tNOME DO ALUNO\tLevel 1\t+20 10 0000 0000\t01/08/2026\t16\t\t500\t500\t500\t500\t500\t500\t500\t500\t0\t0\t0\t4000`}
             className="w-full p-4 border border-slate-300 rounded-2xl font-mono text-xs focus:ring-2 focus:ring-purple-500 focus:outline-hidden bg-slate-50/50"
           />
         </div>

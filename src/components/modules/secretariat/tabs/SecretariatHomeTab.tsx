@@ -35,6 +35,16 @@ interface SecretariatHomeTabProps {
   onOpenNewStudent?: () => void;
 }
 
+const formatActivityTime = (value?: string): string => {
+  if (!value) return '';
+  const brazilian = value.match(/^(\d{2})\/(\d{2})\/(\d{4})/);
+  const date = brazilian
+    ? new Date(Number(brazilian[3]), Number(brazilian[2]) - 1, Number(brazilian[1]))
+    : new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+  return date.toLocaleDateString('pt-BR');
+};
+
 export const SecretariatHomeTab: React.FC<SecretariatHomeTabProps> = ({
   onNavigate,
   onSelectClassDetails,
@@ -152,16 +162,16 @@ export const SecretariatHomeTab: React.FC<SecretariatHomeTabProps> = ({
   }> = [];
 
   // Add recent student registrations & enrollments
-  state.students.slice(-4).reverse().forEach((stu, idx) => {
+  state.students.slice(-4).reverse().forEach((stu) => {
     const studentEnrollments = state.enrollments.filter((e) => e.studentId === stu.studentId);
-    const firstCourse = studentEnrollments[0]?.courseName || 'Curso Livre de Inglês';
+    const firstCourse = studentEnrollments[0]?.courseName || 'Curso não informado';
 
     dynamicActivities.push({
       id: `act_reg_${stu.id}`,
       type: 'user',
       title: 'Novo aluno cadastrado',
       subtitle: `${stu.name} (${stu.studentId})`,
-      time: idx === 0 ? 'Hoje, 10:24' : idx === 1 ? 'Hoje, 09:15' : 'Ontem, 16:40',
+      time: formatActivityTime(stu.createdAt),
       icon: UserPlus,
       bg: 'bg-emerald-50',
       text: 'text-[#075e38]',
@@ -173,7 +183,7 @@ export const SecretariatHomeTab: React.FC<SecretariatHomeTabProps> = ({
         type: 'enrollment',
         title: 'Matrícula realizada',
         subtitle: `${stu.name} no ${firstCourse}`,
-        time: idx === 0 ? 'Hoje, 10:30' : idx === 1 ? 'Hoje, 09:20' : 'Ontem, 16:45',
+        time: formatActivityTime(studentEnrollments[0]?.enrollmentDate),
         icon: FileText,
         bg: 'bg-purple-50',
         text: 'text-purple-600',
@@ -190,7 +200,7 @@ export const SecretariatHomeTab: React.FC<SecretariatHomeTabProps> = ({
           type: 'doc',
           title: 'Documento arquivado',
           subtitle: `${doc.title} - ${stu.name}`,
-          time: doc.uploadedAt === '2026-01-20' ? 'Hoje, 08:50' : 'Ontem, 14:20',
+          time: formatActivityTime(doc.uploadedAt),
           icon: Folder,
           bg: 'bg-blue-50',
           text: 'text-blue-600',

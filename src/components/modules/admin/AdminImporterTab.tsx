@@ -5,7 +5,6 @@ import {
   FileSpreadsheet,
   CheckCircle,
   AlertTriangle,
-  Sparkles,
   ArrowRight,
   Info,
   Layers,
@@ -16,7 +15,6 @@ import {
 import { useApp } from '../../../context/AppContext';
 import {
   parseOfficialSpreadsheet,
-  OFFICIAL_SPREADSHEET_SAMPLE,
   ACADEMIC_MONTHS_MAP,
   ParsedSpreadsheetStudent,
 } from '../../../lib/spreadsheetParser';
@@ -40,13 +38,6 @@ export const AdminImporterTab: React.FC<AdminImporterTabProps> = ({ setCurrentTa
     totalAmount: number;
     message: string;
   } | null>(null);
-
-  const handleLoadSample = () => {
-    setRawText(OFFICIAL_SPREADSHEET_SAMPLE);
-    const parsed = parseOfficialSpreadsheet(OFFICIAL_SPREADSHEET_SAMPLE, selectedCourseId, selectedClassId);
-    setParsedPreview(parsed);
-    setImportResult(null);
-  };
 
   const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const text = e.target.value;
@@ -86,7 +77,7 @@ export const AdminImporterTab: React.FC<AdminImporterTabProps> = ({ setCurrentTa
 
   const handleDownloadTemplate = () => {
     const headerLine = 'STUDENT ID\tNAME\tLEVEL\tTELEPHONE\tSTART DATE\tAGE\t\tAgu\tSet\tOct\tNov\tD/J\tFeb\tMar\tApr\tMay\tJun\tJuly\tTotal\n';
-    const sampleLine = 'STU00001\tAmira Hassan\tLevel 1\t+20 10 9876 5432\t01/08/2026\t16\t\t500\t500\t500\t500\t500\t500\t500\t500\t0\t0\t0\t4000\n';
+    const sampleLine = 'STU00001\tNOME DO ALUNO\tLevel 1\t+20 10 0000 0000\t01/08/2026\t16\t\t500\t500\t500\t500\t500\t500\t500\t500\t0\t0\t0\t4000\n';
     const content = headerLine + sampleLine;
     const blob = new Blob([content], { type: 'text/tab-separated-values;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
@@ -130,13 +121,6 @@ export const AdminImporterTab: React.FC<AdminImporterTabProps> = ({ setCurrentTa
           >
             <Download className="w-3.5 h-3.5" />
             Baixar Modelo TSV
-          </button>
-          <button
-            onClick={handleLoadSample}
-            className="px-3.5 py-2 bg-purple-50 hover:bg-purple-100 border border-purple-200 text-purple-800 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
-          >
-            <Sparkles className="w-3.5 h-3.5 text-purple-600" />
-            Carregar Dados de Teste
           </button>
         </div>
       </div>
@@ -261,7 +245,7 @@ export const AdminImporterTab: React.FC<AdminImporterTabProps> = ({ setCurrentTa
 
           <textarea
             rows={8}
-            placeholder={`Cole aqui as linhas copiadas do Google Sheets ou Excel...\nExemplo:\nSTU00001\tAmira Hassan\tLevel 1\t+20 10 9876 5432\t01/08/2026\t16\t\t500\t500\t500\t500\t500\t500\t500\t500\t0\t0\t0\t4000`}
+            placeholder={`Cole aqui as linhas copiadas do Google Sheets ou Excel...\nExemplo:\nSTU00001\tNOME DO ALUNO\tLevel 1\t+20 10 0000 0000\t01/08/2026\t16\t\t500\t500\t500\t500\t500\t500\t500\t500\t0\t0\t0\t4000`}
             value={rawText}
             onChange={handleTextChange}
             className="w-full p-3 font-mono text-xs border border-slate-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:outline-none flex-1 bg-slate-50/50"

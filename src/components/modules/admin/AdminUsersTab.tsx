@@ -414,7 +414,7 @@ export const AdminUsersTab: React.FC = () => {
             <input
               type="text"
               required
-              placeholder="Ex: Youssef Ibrahim"
+              placeholder="Ex: Nome completo do usuário"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               className="w-full p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-purple-500"
@@ -427,7 +427,7 @@ export const AdminUsersTab: React.FC = () => {
               <input
                 type="email"
                 required
-                placeholder="youssef@thinkgreen.org"
+                placeholder="usuario@thinkgreen.org"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 className="w-full p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-purple-500"

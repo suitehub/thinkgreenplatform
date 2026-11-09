@@ -1,25 +1,68 @@
 import React, { useState } from 'react';
 import {
   FileSpreadsheet,
-  Download,
   Printer,
   TrendingUp,
   TrendingDown,
-  Calendar,
-  Filter,
 } from 'lucide-react';
 import { useApp } from '../../../context/AppContext';
 import { formatCurrency } from '../../../lib/storage';
 
+const parseLocalDate = (value?: string): Date | null => {
+  if (!value) return null;
+  const brazilian = value.match(/^(\d{2})\/(\d{2})\/(\d{4})/);
+  if (brazilian) {
+    return new Date(Number(brazilian[3]), Number(brazilian[2]) - 1, Number(brazilian[1]));
+  }
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+};
+
+const isSameMonth = (value: string | undefined, reference: Date) => {
+  const date = parseLocalDate(value);
+  return date
+    ? date.getFullYear() === reference.getFullYear() && date.getMonth() === reference.getMonth()
+    : false;
+};
+
+const toMonthInputValue = (date: Date) =>
+  `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+
 export const FinanceReportsTab: React.FC = () => {
   const { state } = useApp();
-  const [selectedMonth, setSelectedMonth] = useState('2026-05');
+  const now = new Date();
+  const [selectedMonth, setSelectedMonth] = useState(() => toMonthInputValue(now));
+
+  const [year, month] = selectedMonth.split('-').map(Number);
+  const reference = new Date(year, (month || 1) - 1, 1);
+  const previousReference = new Date(year, (month || 1) - 2, 1);
 
   const totalCharges = state.charges;
   const paidCharges = totalCharges.filter((c) => c.status === 'PAGO');
-  const totalRevenue = paidCharges.reduce((acc, c) => acc + (c.paidAmount || c.amount), 0) || 158420;
-  const totalExpenses = Math.round(totalRevenue * 0.266) || 42130;
+  const paidInMonth = paidCharges.filter((c) => isSameMonth(c.paidAt || c.dueDate, reference));
+  const paidPreviousMonth = paidCharges.filter((c) =>
+    isSameMonth(c.paidAt || c.dueDate, previousReference)
+  );
+
+  const totalRevenue = paidInMonth.reduce((acc, c) => acc + (c.paidAmount || c.amount), 0);
+  const previousRevenue = paidPreviousMonth.reduce(
+    (acc, c) => acc + (c.paidAmount || c.amount),
+    0
+  );
+
+  const totalExpenses = state.accountingTransactions
+    .filter((tx) => tx.type === 'DESPESA' && isSameMonth(tx.date, reference))
+    .reduce((acc, tx) => acc + tx.amount, 0);
+
   const netIncome = totalRevenue - totalExpenses;
+
+  const revenueVariation =
+    previousRevenue > 0 ? ((totalRevenue - previousRevenue) / previousRevenue) * 100 : null;
+  const expenseRatio = totalRevenue > 0 ? (totalExpenses / totalRevenue) * 100 : null;
+  const netMargin =
+    totalRevenue > 0 ? (netIncome / totalRevenue) * 100 : null;
+
+  const formatPercent = (value: number) => `${value.toFixed(1).replace('.', ',')}%`;
 
   const handlePrint = () => {
     window.print();
@@ -40,6 +83,12 @@ export const FinanceReportsTab: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2.5">
+          <input
+            type="month"
+            value={selectedMonth}
+            onChange={(e) => e.target.value && setSelectedMonth(e.target.value)}
+            className="px-3 py-2 bg-white border border-slate-200 rounded-xl font-semibold text-xs text-slate-700 shadow-2xs"
+          />
           <button
             onClick={handlePrint}
             className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold text-xs transition-colors flex items-center gap-1.5 cursor-pointer"
@@ -56,8 +105,19 @@ export const FinanceReportsTab: React.FC = () => {
           <p className="text-2xl font-black font-mono text-emerald-950">
             {formatCurrency(totalRevenue, 'EGP')}
           </p>
-          <span className="text-[11px] text-emerald-700 font-semibold flex items-center gap-1">
-            <TrendingUp className="w-3.5 h-3.5" /> +12.4% vs mês anterior
+          <span
+            className={`text-[11px] font-semibold flex items-center gap-1 ${
+              revenueVariation === null
+                ? 'text-slate-500'
+                : revenueVariation >= 0
+                  ? 'text-emerald-700'
+                  : 'text-rose-600'
+            }`}
+          >
+            <TrendingUp className="w-3.5 h-3.5" />
+            {revenueVariation === null
+              ? 'Sem base de comparação no mês anterior'
+              : `${revenueVariation >= 0 ? '+' : ''}${formatPercent(revenueVariation)} vs mês anterior`}
           </span>
         </div>
 
@@ -67,7 +127,10 @@ export const FinanceReportsTab: React.FC = () => {
             {formatCurrency(totalExpenses, 'EGP')}
           </p>
           <span className="text-[11px] text-rose-700 font-semibold flex items-center gap-1">
-            <TrendingDown className="w-3.5 h-3.5" /> 26.6% da receita
+            <TrendingDown className="w-3.5 h-3.5" />
+            {expenseRatio === null
+              ? 'Sem receita realizada no período'
+              : `${formatPercent(expenseRatio)} da receita`}
           </span>
         </div>
 
@@ -77,7 +140,9 @@ export const FinanceReportsTab: React.FC = () => {
             {formatCurrency(netIncome, 'EGP')}
           </p>
           <span className="text-[11px] text-slate-300 font-semibold">
-            Margem Líquida: 73.4%
+            {netMargin === null
+              ? 'Sem receita realizada no período'
+              : `Margem Líquida: ${formatPercent(netMargin)}`}
           </span>
         </div>
       </div>
@@ -99,29 +164,56 @@ export const FinanceReportsTab: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {state.courses.map((course) => {
-                const courseCharges = state.charges.filter((c) => c.courseName === course.name);
-                const coursePaid = courseCharges.filter((c) => c.status === 'PAGO');
-                const prev = courseCharges.reduce((acc, c) => acc + c.amount, 0) || course.price * 8;
-                const real = coursePaid.reduce((acc, c) => acc + c.amount, 0) || prev * 0.85;
-                const rate = prev > 0 ? ((real / prev) * 100).toFixed(0) : '100';
+              {state.courses.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="px-4 py-8 text-center text-slate-400 font-medium">
+                    Nenhum curso cadastrado.
+                  </td>
+                </tr>
+              ) : (
+                state.courses.map((course) => {
+                  const courseEnrollments = state.enrollments.filter(
+                    (e) => e.courseId === course.id && e.status === 'ATIVO'
+                  );
+                  const coursePaidInMonth = paidInMonth.filter(
+                    (c) => c.courseName === course.name
+                  );
+                  const expected = courseEnrollments.reduce(
+                    (acc, e) => acc + (e.paymentPlan?.totalAmount || 0),
+                    0
+                  );
+                  const realized = coursePaidInMonth.reduce(
+                    (acc, c) => acc + (c.paidAmount || c.amount),
+                    0
+                  );
+                  const rate = expected > 0 ? (realized / expected) * 100 : null;
 
-                return (
-                  <tr key={course.id} className="hover:bg-slate-50/70">
-                    <td className="px-4 py-3.5 font-bold text-slate-900">{course.name}</td>
-                    <td className="px-4 py-3.5 text-slate-700">18 alunos</td>
-                    <td className="px-4 py-3.5 font-mono text-slate-600">{formatCurrency(prev, 'EGP')}</td>
-                    <td className="px-4 py-3.5 font-bold font-mono text-emerald-800">
-                      {formatCurrency(real, 'EGP')}
-                    </td>
-                    <td className="px-4 py-3.5">
-                      <span className="px-2 py-0.5 bg-emerald-50 text-emerald-800 rounded font-bold text-[11px] border border-emerald-200">
-                        {rate}%
-                      </span>
-                    </td>
-                  </tr>
-                );
-              })}
+                  return (
+                    <tr key={course.id} className="hover:bg-slate-50/70">
+                      <td className="px-4 py-3.5 font-bold text-slate-900">{course.name}</td>
+                      <td className="px-4 py-3.5 text-slate-700">
+                        {courseEnrollments.length}{' '}
+                        {courseEnrollments.length === 1 ? 'aluno' : 'alunos'}
+                      </td>
+                      <td className="px-4 py-3.5 font-mono text-slate-600">
+                        {formatCurrency(expected, 'EGP')}
+                      </td>
+                      <td className="px-4 py-3.5 font-bold font-mono text-emerald-800">
+                        {formatCurrency(realized, 'EGP')}
+                      </td>
+                      <td className="px-4 py-3.5">
+                        {rate === null || !Number.isFinite(rate) ? (
+                          <span className="text-slate-400 font-semibold">—</span>
+                        ) : (
+                          <span className="px-2 py-0.5 bg-emerald-50 text-emerald-800 rounded font-bold text-[11px] border border-emerald-200">
+                            {rate.toFixed(0)}%
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
             </tbody>
           </table>
         </div>
