@@ -4,6 +4,17 @@
     <meta charset="utf-8">
     <title>Think Green Platform</title>
     <script type="text/javascript">
+      // Uses the same tab icon as the app, resolved from the repository segment.
+      (function () {
+        var segment = window.location.pathname.split('/').filter(Boolean)[0] || 'thinkgreenplatform';
+        var icon = document.createElement('link');
+        icon.rel = 'icon';
+        icon.type = 'image/png';
+        icon.href = '/' + segment + '/TGCCLOGO_1000x1000.png';
+        document.head.appendChild(icon);
+      }());
+    </script>
+    <script type="text/javascript">
       // Single Page Apps for GitHub Pages
       // MIT License
       // https://github.com/rafgraph/spa-github-pages
