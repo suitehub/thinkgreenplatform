@@ -413,7 +413,9 @@ export const SecretariatClassesTab: React.FC = () => {
                 (e) => e.classId === cls.id && e.status === 'ATIVA'
               );
               const course = courseOptions.find((c) => c.id === cls.courseId);
-              const occupancyRate = Math.round((enrolledStudents.length / cls.maxCapacity) * 100);
+              const capacity = cls.maxCapacity ?? cls.capacity ?? 0;
+              const occupancyRate =
+                capacity > 0 ? Math.round((enrolledStudents.length / capacity) * 100) : 0;
               const hasTeacher = cls.teacherId && !cls.teacherName.toLowerCase().includes('sem professor');
 
               return (
@@ -501,7 +503,7 @@ export const SecretariatClassesTab: React.FC = () => {
                       <div className="flex justify-between text-[11px] font-medium text-slate-600 mb-1">
                         <span>Ocupação</span>
                         <span className="font-mono font-bold">
-                          {enrolledStudents.length} / {cls.maxCapacity} alunos ({occupancyRate}%)
+                          {enrolledStudents.length} / {capacity || '—'} alunos ({occupancyRate}%)
                         </span>
                       </div>
                       <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
@@ -618,7 +620,7 @@ export const SecretariatClassesTab: React.FC = () => {
                         </td>
                         <td className="px-4 py-3">
                           <span className="font-mono font-semibold text-slate-800">
-                            {enrolledStudents.length} / {cls.maxCapacity}
+                            {enrolledStudents.length} / {cls.maxCapacity ?? cls.capacity ?? '—'}
                           </span>
                         </td>
                         <td className="px-4 py-3">
