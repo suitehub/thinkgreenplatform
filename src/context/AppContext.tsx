@@ -180,6 +180,8 @@ interface AppContextType {
   toggleFinalGradeRelease: (classId: string, isReleased?: boolean) => void;
   assignTeacherToClass: (classId: string, teacherId: string, teacherName: string) => void;
   unassignTeacherFromClass: (classId: string) => void;
+  /** Returns the course record, creating it when a standard program is used for the first time. */
+  ensureCourse: (course: Course) => Course;
   updateCourse: (courseId: string, data: Partial<Course>) => void;
   updateCourseFee: (
     courseId: string,
@@ -2045,6 +2047,39 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return newCls;
   };
 
+  /**
+   * Returns the course record for a program, creating it on first use. The
+   * class form offers the standard programs (Preschool, Soccer, English,
+   * Women's Fitness) even before any course record exists in Firestore, so the
+   * record is written only when the Secretariat actually links a class to it.
+   */
+  const ensureCourse = (data: Course): Course => {
+    const existing = stateRef.current.courses.find(
+      (course) => course.id === data.id || course.category === data.category
+    );
+    if (existing) return existing;
+
+    setState((prev) => {
+      const alreadyExists = prev.courses.find(
+        (course) => course.id === data.id || course.category === data.category
+      );
+      if (alreadyExists) return prev;
+      return { ...prev, courses: deduplicateById([data, ...prev.courses]) };
+    });
+
+    logAudit(
+      'SECRETARIAT',
+      'CRIAR_CURSO',
+      'Course',
+      data.id,
+      undefined,
+      `${data.name} (${data.code})`,
+      'Curso base vinculado automaticamente ao cadastrar uma turma.'
+    );
+
+    return data;
+  };
+
   const updateClass = (classId: string, data: Partial<ClassRoom>) => {
     const existing = state.classes.find((c) => c.id === classId);
     if (!existing) return;
@@ -2934,6 +2969,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       toggleFinalGradeRelease,
       assignTeacherToClass,
       unassignTeacherFromClass,
+      ensureCourse,
       updateCourse,
       updateCourseFee,
       createLesson,
