@@ -913,11 +913,18 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
     classEnrollments.some((e) => e.studentId === s.studentId) || s.assignmentTitle.includes(selectedClass.name)
   );
 
-  // Dynamic Dashboard Stats
-  const totalClassesCount = state.classes.length;
-  const totalStudentsCount = state.enrollments.filter((e) => e.status === 'ATIVA').length;
-  const pendingSubmissionsCount = state.submissions.filter((s) => s.status === 'PENDENTE_CORRECAO').length;
-  const teacherClassIds = new Set(state.classes.map((c) => c.id));
+  // Dynamic Dashboard Stats (only the teacher's own classes)
+  const teacherClassIds = new Set(teacherClasses.map((c) => c.id));
+  const totalClassesCount = teacherClasses.length;
+  const totalStudentsCount = state.enrollments.filter(
+    (e) => e.status === 'ATIVA' && teacherClassIds.has(e.classId)
+  ).length;
+  const teacherAssignmentIds = new Set(
+    state.assignments.filter((a) => teacherClassIds.has(a.classId)).map((a) => a.id)
+  );
+  const pendingSubmissionsCount = state.submissions.filter(
+    (s) => s.status === 'PENDENTE_CORRECAO' && teacherAssignmentIds.has(s.assignmentId)
+  ).length;
   const upcomingLessons = state.lessons
     .filter((lesson) => teacherClassIds.has(lesson.classId))
     .slice(0, 3);
@@ -2917,7 +2924,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                     onChange={(e) => setExamFilterClass(e.target.value)}
                     className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-bold text-slate-800 focus:ring-2 focus:ring-[#075e38] focus:bg-white focus:outline-hidden"
                   >
-                    <option value="ALL">Todas as Turmas ({state.classes.length})</option>
+                    <option value="ALL">Todas as Turmas ({teacherClasses.length})</option>
                     {teacherClasses.map((c) => (
                       <option key={c.id} value={c.id}>
                         {c.name}
