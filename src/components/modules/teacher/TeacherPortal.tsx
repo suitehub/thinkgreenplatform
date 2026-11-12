@@ -163,8 +163,13 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
   // Carousel page state
   const [carouselIndex, setCarouselIndex] = useState(0);
 
-  // Classes list
-  const teacherClasses = state.classes;
+  // Only classes linked to the signed-in teacher (counselors keep full read access)
+  const teacherClasses = React.useMemo(() => {
+    if (counselorMode) return state.classes;
+    const teacherId = currentUser?.id;
+    if (!teacherId) return [];
+    return state.classes.filter((cls) => cls.teacherId === teacherId);
+  }, [state.classes, counselorMode, currentUser?.id]);
 
   const [selectedClassId, setSelectedClassId] = useState<string>(
     initialClassId || teacherClasses[0]?.id || ''
