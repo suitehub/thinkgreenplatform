@@ -471,6 +471,8 @@ export interface DidacticMaterial {
   url: string; // File URL, Google Drive link, or YouTube/video embed link
   fileName?: string;
   fileSize?: string;
+  /** When false, students can view the material but cannot download it. */
+  allowDownload?: boolean;
   teacherId?: string;
   teacherName?: string;
   createdAt: string;

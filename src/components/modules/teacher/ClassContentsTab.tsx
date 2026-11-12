@@ -78,6 +78,12 @@ interface ClassContentsTabProps {
   onEditAssessment?: (assessment: Assessment) => void;
 }
 
+const formatFileSize = (bytes: number) => {
+  if (bytes >= 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  if (bytes >= 1024) return `${Math.round(bytes / 1024)} KB`;
+  return `${bytes} B`;
+};
+
 export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
   selectedClass,
   classLessons,
@@ -118,6 +124,7 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
   const [materialFileName, setMaterialFileName] = useState('');
   const [materialFileSize, setMaterialFileSize] = useState('2.5 MB');
   const [materialTopicId, setMaterialTopicId] = useState('');
+  const [materialAllowDownload, setMaterialAllowDownload] = useState(false);
 
   // Quizzes State
   const [quizzes, setQuizzes] = useState<Quiz[]>(() => getStoredQuizzes());
@@ -233,10 +240,11 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
     setMaterialTitle('');
     setMaterialDesc('');
     setMaterialType('PDF');
-    setMaterialUrl('https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf');
-    setMaterialFileName('Apostila_Apoio_ThinkGreen.pdf');
-    setMaterialFileSize('2.4 MB');
+    setMaterialUrl('');
+    setMaterialFileName('');
+    setMaterialFileSize('');
     setMaterialTopicId(classTopics[0]?.id || '');
+    setMaterialAllowDownload(false);
     setIsMaterialModalOpen(true);
   };
 
@@ -247,9 +255,28 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
     setMaterialType(material.type);
     setMaterialUrl(material.url);
     setMaterialFileName(material.fileName || '');
-    setMaterialFileSize(material.fileSize || '2.0 MB');
+    setMaterialFileSize(material.fileSize || '');
     setMaterialTopicId(material.topicId || classTopics[0]?.id || '');
+    setMaterialAllowDownload(Boolean(material.allowDownload));
     setIsMaterialModalOpen(true);
+  };
+
+  /** Reads a local file from the computer into a size-limited data URL. */
+  const readLocalFile = (
+    file: File,
+    maxKb: number,
+    onLoaded: (dataUrl: string, fileName: string, sizeLabel: string) => void
+  ) => {
+    if (file.size > maxKb * 1024) {
+      alert(
+        `Arquivo muito grande (${formatFileSize(file.size)}). O limite é ${maxKb} KB para armazenamento interno. Comprima o arquivo ou use um link.`
+      );
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () =>
+      onLoaded(String(reader.result || ''), file.name, formatFileSize(file.size));
+    reader.readAsDataURL(file);
   };
 
   const handleSaveMaterial = (e: React.FormEvent) => {
@@ -269,6 +296,7 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
               fileName: materialFileName.trim() || undefined,
               fileSize: materialFileSize.trim() || undefined,
               topicId: materialTopicId || undefined,
+              allowDownload: materialAllowDownload,
             }
           : m
       );
@@ -283,7 +311,8 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
         type: materialType,
         url: materialUrl.trim() || '#',
         fileName: materialFileName.trim() || (materialType === 'PDF' ? 'Documento_Didatico.pdf' : undefined),
-        fileSize: materialFileSize.trim() || '2.1 MB',
+        fileSize: materialFileSize.trim() || undefined,
+        allowDownload: materialAllowDownload,
         teacherId: currentUser.id,
         teacherName: currentUser.name,
         createdAt: new Date().toISOString().split('T')[0],
@@ -1241,6 +1270,33 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
                 />
               </div>
 
+              {/* Upload from the teacher's computer */}
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Enviar arquivo do computador (PDF, DOC, PPT, imagem)
+                </label>
+                <input
+                  type="file"
+                  accept=".pdf,.doc,.docx,.ppt,.pptx,.txt,.png,.jpg,.jpeg"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    readLocalFile(file, 700, (dataUrl, name, size) => {
+                      setMaterialUrl(dataUrl);
+                      setMaterialFileName(name);
+                      setMaterialFileSize(size);
+                      if (/\.pdf$/i.test(name)) setMaterialType('PDF');
+                      if (!materialTitle.trim()) setMaterialTitle(name.replace(/\.[^.]+$/, ''));
+                    });
+                    e.target.value = '';
+                  }}
+                  className="w-full text-xs text-slate-700 file:mr-3 file:px-3 file:py-2 file:rounded-lg file:border-0 file:bg-[#075e38] file:text-white file:text-xs file:font-bold file:cursor-pointer border border-slate-300 rounded-xl p-1.5 bg-white"
+                />
+                <p className="text-[10px] text-slate-400 mt-1">
+                  O arquivo fica disponível na plataforma (limite 700 KB). Para arquivos maiores, use um link abaixo.
+                </p>
+              </div>
+
               {/* URL Link */}
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">
@@ -1251,7 +1307,7 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
                     : 'Link do Vídeo (YouTube, Vimeo ou MP4)'} *
                 </label>
                 <input
-                  type="url"
+                  type="text"
                   required
                   placeholder={
                     materialType === 'PDF'
@@ -1264,6 +1320,11 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
                   onChange={(e) => setMaterialUrl(e.target.value)}
                   className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs sm:text-sm font-mono text-slate-900 focus:ring-2 focus:ring-[#075e38]/20 focus:outline-hidden"
                 />
+                <p className="text-[10px] text-slate-400 mt-1">
+                  {materialUrl.startsWith('data:')
+                    ? `Arquivo do computador anexado: ${materialFileName || 'arquivo'}`
+                    : 'Ou cole um link se o arquivo já estiver na nuvem.'}
+                </p>
               </div>
 
               {/* File details for PDF / Drive */}
@@ -1311,6 +1372,22 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
                   className="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs text-slate-900 focus:outline-hidden"
                 />
               </div>
+
+              {/* Download permission */}
+              <label className="flex items-start gap-3 p-3.5 rounded-xl bg-amber-50 border border-amber-200 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={materialAllowDownload}
+                  onChange={(e) => setMaterialAllowDownload(e.target.checked)}
+                  className="mt-0.5 rounded text-[#075e38] focus:ring-[#075e38]"
+                />
+                <span className="text-xs font-semibold text-amber-950">
+                  Disponibilizar download para o aluno
+                  <span className="block text-[11px] font-normal text-amber-800/80 mt-0.5">
+                    Desmarcado, o aluno só pode visualizar o arquivo na plataforma (download bloqueado).
+                  </span>
+                </span>
+              </label>
 
               <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
                 <button
@@ -1444,17 +1521,46 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
                           className="w-full px-3 py-1.5 rounded-xl bg-white border border-indigo-200 text-xs text-slate-900 focus:outline-hidden"
                         />
                       </div>
-                      <div>
+                      <div className="sm:col-span-2">
                         <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                          URL do Arquivo de Áudio (MP3 / OGG)
+                          Enviar áudio do computador (MP3, OGG, WAV, M4A)
                         </label>
                         <input
-                          type="url"
+                          type="file"
+                          accept="audio/*,.mp3,.ogg,.wav,.m4a"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (!file) return;
+                            readLocalFile(file, 600, (dataUrl, name) => {
+                              setQuizAudioUrl(dataUrl);
+                              if (!quizAudioTitle.trim() || quizAudioTitle.startsWith('Listening')) {
+                                setQuizAudioTitle(name.replace(/\.[^.]+$/, ''));
+                              }
+                            });
+                            e.target.value = '';
+                          }}
+                          className="w-full text-xs text-slate-700 file:mr-3 file:px-3 file:py-1.5 file:rounded-lg file:border-0 file:bg-indigo-600 file:text-white file:text-xs file:font-bold file:cursor-pointer border border-indigo-200 rounded-xl p-1.5 bg-white"
+                        />
+                        <p className="text-[10px] text-slate-400 mt-1">
+                          O áudio é embutido no quiz (limite 600 KB). Para faixas maiores, use o link abaixo.
+                        </p>
+                      </div>
+                      <div className="sm:col-span-2">
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                          Ou URL do Arquivo de Áudio (MP3 / OGG)
+                        </label>
+                        <input
+                          type="text"
                           placeholder="https://.../audio.mp3"
-                          value={quizAudioUrl}
+                          value={quizAudioUrl.startsWith('data:') ? '' : quizAudioUrl}
                           onChange={(e) => setQuizAudioUrl(e.target.value)}
                           className="w-full px-3 py-1.5 rounded-xl bg-white border border-indigo-200 text-xs font-mono text-slate-900 focus:outline-hidden"
                         />
+                        {quizAudioUrl.startsWith('data:') && (
+                          <p className="text-[10px] text-emerald-700 mt-1 font-semibold">
+                            Arquivo de áudio do computador anexado.
+                          </p>
+                        )}
                       </div>
                     </div>
 

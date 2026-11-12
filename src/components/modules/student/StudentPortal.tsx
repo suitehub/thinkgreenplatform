@@ -1705,13 +1705,9 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
                                   </div>
                                 </div>
 
-                                <button
-                                  onClick={() => alert(`Baixando documento: ${mat.title}`)}
-                                  className="px-3.5 py-1.5 bg-[#075e38] hover:bg-[#064e2e] text-white rounded-lg text-xs font-bold transition-colors flex-shrink-0 flex items-center gap-1.5 cursor-pointer shadow-2xs"
-                                >
-                                  <Download className="w-3.5 h-3.5" />
-                                  <span>Baixar</span>
-                                </button>
+                                <span className="text-[10px] font-bold text-slate-400 border border-slate-200 rounded-lg px-2.5 py-1 flex-shrink-0">
+                                  Somente visualização
+                                </span>
                               </div>
                             ))}
                         </div>
@@ -1767,14 +1763,9 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
                     Documento didático digital carregado e pronto para estudo.
                   </span>
                   <div className="flex items-center gap-2">
-                    {activeLesson.materials?.length > 0 && (
-                      <button
-                        onClick={() => alert(`Baixando anexos da aula: ${activeLesson.title}`)}
-                        className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#075e38] hover:bg-[#064e2e] text-white rounded-xl font-bold transition-colors shadow-2xs cursor-pointer"
-                      >
-                        <Download className="w-4 h-4" /> Baixar Documento / Apostila
-                      </button>
-                    )}
+                    <span className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-slate-100 text-slate-500 border border-slate-200 rounded-xl font-bold text-[11px]">
+                      <Lock className="w-3.5 h-3.5" /> Download desabilitado — apenas leitura
+                    </span>
                     <button
                       onClick={() => setActiveLesson(null)}
                       className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold transition-colors border border-slate-200 cursor-pointer"
@@ -1811,7 +1802,7 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
                 </div>
 
                 <p className="text-xs text-slate-500 max-w-sm">
-                  Materiais didáticos disponibilizados pelos professores para download, estudo na nuvem e acompanhamento das aulas.
+                  Materiais didáticos disponibilizados pelos professores para estudo, consulta na nuvem e acompanhamento das aulas.
                 </p>
               </div>
 
@@ -2078,12 +2069,13 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
                                   <div className="absolute right-0 mt-1 w-48 bg-white rounded-xl shadow-xl border border-slate-200 p-1.5 z-30 text-left animate-in fade-in">
                                     <button
                                       onClick={() => {
-                                        alert(`Baixando material complementar de: ${item.title}`);
+                                        navigator.clipboard.writeText(window.location.href);
+                                        alert('Link da aula copiado!');
                                         setActiveActionDropdown(null);
                                       }}
                                       className="w-full px-3 py-2 text-xs text-slate-700 hover:bg-slate-50 rounded-lg flex items-center gap-2"
                                     >
-                                      <Download className="w-3.5 h-3.5 text-[#075e38]" /> Baixar Prancheta PDF
+                                      <ExternalLink className="w-3.5 h-3.5 text-[#075e38]" /> Copiar link da aula
                                     </button>
                                     <button
                                       onClick={() => {
@@ -2272,12 +2264,13 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
                                   <div className="absolute right-0 mt-1 w-48 bg-white rounded-xl shadow-xl border border-slate-200 p-1.5 z-30 text-left animate-in fade-in">
                                     <button
                                       onClick={() => {
-                                        alert(`Baixando apostila em PDF de: ${item.title}`);
+                                        navigator.clipboard.writeText(window.location.href);
+                                        alert('Link da aula copiado!');
                                         setActiveActionDropdown(null);
                                       }}
                                       className="w-full px-3 py-2 text-xs text-slate-700 hover:bg-slate-50 rounded-lg flex items-center gap-2"
                                     >
-                                      <Download className="w-3.5 h-3.5 text-[#533499]" /> Baixar Apostila PDF
+                                      <ExternalLink className="w-3.5 h-3.5 text-[#533499]" /> Copiar link
                                     </button>
                                     <button
                                       onClick={() => {
@@ -4222,11 +4215,17 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
                     <div className="bg-white p-2.5 rounded-xl border border-purple-200/70 shadow-2xs">
                       <audio
                         controls
+                        controlsList="nodownload noplaybackrate"
+                        disablePictureInPicture
+                        onContextMenu={(e) => e.preventDefault()}
                         className="w-full h-10 accent-[#533499]"
                         src={activeQuizModal.audioUrl}
                       >
                         Seu navegador não suporta a tag de áudio HTML5.
                       </audio>
+                      <p className="text-[10px] text-slate-400 mt-1 text-center">
+                        Reprodução liberada apenas para ouvir durante o quiz — download desabilitado.
+                      </p>
                     </div>
                   </div>
                 )}
@@ -4448,15 +4447,27 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
                   <p className="text-xs text-slate-500">
                     Documento digital formatado e otimizado para visualização e impressão.
                   </p>
-                  <button
-                    onClick={() => {
-                      alert(`Iniciando download da apostila: ${activeMaterialModal.title}.pdf`);
-                    }}
-                    className="px-5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-xl transition-all shadow-xs inline-flex items-center gap-2 cursor-pointer"
-                  >
-                    <Download className="w-4 h-4" />
-                    <span>Baixar Arquivo PDF Completo</span>
-                  </button>
+                  {activeMaterialModal.allowDownload ? (
+                    <button
+                      onClick={() => {
+                        const link = document.createElement('a');
+                        link.href = activeMaterialModal.url;
+                        link.download = activeMaterialModal.fileName || `${activeMaterialModal.title}.pdf`;
+                        link.target = '_blank';
+                        link.rel = 'noreferrer';
+                        link.click();
+                      }}
+                      className="px-5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-xl transition-all shadow-xs inline-flex items-center gap-2 cursor-pointer"
+                    >
+                      <Download className="w-4 h-4" />
+                      <span>Baixar Arquivo PDF Completo</span>
+                    </button>
+                  ) : (
+                    <div className="inline-flex items-center gap-2 px-4 py-2.5 bg-slate-200 text-slate-600 font-bold text-xs rounded-xl border border-slate-300">
+                      <Lock className="w-4 h-4" />
+                      <span>Download bloqueado pelo professor — disponível apenas para visualização</span>
+                    </div>
+                  )}
                 </div>
               )}
 
