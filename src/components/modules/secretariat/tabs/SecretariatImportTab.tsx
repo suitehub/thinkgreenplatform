@@ -18,6 +18,7 @@ import {
 import { useApp } from '../../../../context/AppContext';
 import {
   parseOfficialSpreadsheet,
+  resolveClassByLevel,
   ACADEMIC_MONTHS_MAP,
   ParsedSpreadsheetStudent,
 } from '../../../../lib/spreadsheetParser';
@@ -36,11 +37,46 @@ export const SecretariatImportTab: React.FC = () => {
   } | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
 
+  const parseAndResolve = (
+    text: string,
+    courseId: string,
+    classId: string
+  ) => {
+    const parsed = parseOfficialSpreadsheet(text, courseId, classId);
+
+    // Conta alunos já matriculados para distribuir turmas do mesmo nível
+    const usage: Record<string, number> = {};
+    state.enrollments.forEach((enr) => {
+      if (enr.status === 'ATIVA') usage[enr.classId] = (usage[enr.classId] || 0) + 1;
+    });
+
+    return parsed.map((row) => {
+      const matched = resolveClassByLevel(row.level, state.classes, usage);
+      if (!matched) return row;
+      usage[matched.id] = (usage[matched.id] || 0) + 1;
+      return {
+        ...row,
+        classId: matched.id,
+        className: matched.name,
+        courseId: matched.courseId || row.courseId,
+      };
+    });
+  };
+
   const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const text = e.target.value;
     setRawText(text);
-    const parsed = parseOfficialSpreadsheet(text, selectedCourseId, selectedClassId);
-    setParsedRows(parsed);
+    setParsedRows(parseAndResolve(text, selectedCourseId, selectedClassId));
+  };
+
+  const handleCourseChange = (courseId: string) => {
+    setSelectedCourseId(courseId);
+    if (rawText.trim()) setParsedRows(parseAndResolve(rawText, courseId, selectedClassId));
+  };
+
+  const handleClassChange = (classId: string) => {
+    setSelectedClassId(classId);
+    if (rawText.trim()) setParsedRows(parseAndResolve(rawText, selectedCourseId, classId));
   };
 
   const handleExecuteImport = () => {
@@ -193,12 +229,20 @@ export const SecretariatImportTab: React.FC = () => {
       {/* Main Configuration & Input Form */}
       <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-6">
         {/* Optional Defaults for Course and Class */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-4 border-b border-slate-100 text-xs">
+        <div className="space-y-3 pb-4 border-b border-slate-100 text-xs">
+          <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-[11px] text-emerald-900 font-semibold leading-relaxed">
+            <span className="flex items-center gap-1.5 font-bold">
+              <Layers className="w-4 h-4 text-emerald-700" /> Turma identificada automaticamente pelo LEVEL
+            </span>
+            A planilha não precisa da coluna de turma: o sistema compara o LEVEL de cada aluno (A1, A2, A2+, B1, B2, C1...) com o nível das turmas já cadastradas e vincula o aluno à turma correspondente. Se existirem várias turmas do mesmo nível (ex.: A2 (A) e A2 (B)), os alunos são distribuídos equilibrando a quantidade de matriculados. Os campos abaixo só são usados quando o nível não bater com nenhuma turma.
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block font-bold text-slate-700 mb-1">Curso Padrão (se não identificado pelo Nível):</label>
+            <label className="block font-bold text-slate-700 mb-1">Curso Padrão (quando o nível não bater com nenhuma turma):</label>
             <select
               value={selectedCourseId}
-              onChange={(e) => setSelectedCourseId(e.target.value)}
+              onChange={(e) => handleCourseChange(e.target.value)}
               className="w-full p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-purple-500 bg-white"
             >
               {state.courses.map((course) => (
@@ -210,10 +254,10 @@ export const SecretariatImportTab: React.FC = () => {
           </div>
 
           <div>
-            <label className="block font-bold text-slate-700 mb-1">Turma Padrão:</label>
+            <label className="block font-bold text-slate-700 mb-1">Turma Padrão (fallback):</label>
             <select
               value={selectedClassId}
-              onChange={(e) => setSelectedClassId(e.target.value)}
+              onChange={(e) => handleClassChange(e.target.value)}
               className="w-full p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-purple-500 bg-white"
             >
               {state.classes.map((cls) => (
@@ -223,6 +267,7 @@ export const SecretariatImportTab: React.FC = () => {
               ))}
             </select>
           </div>
+        </div>
         </div>
 
         <div>
@@ -274,6 +319,7 @@ export const SecretariatImportTab: React.FC = () => {
                     <th className="px-3 py-2.5">STUDENT ID</th>
                     <th className="px-3 py-2.5">NAME</th>
                     <th className="px-3 py-2.5">LEVEL</th>
+                    <th className="px-3 py-2.5">TURMA (AUTO)</th>
                     <th className="px-3 py-2.5">TELEPHONE</th>
                     <th className="px-3 py-2.5">START DATE</th>
                     <th className="px-3 py-2.5">AGE</th>
@@ -297,6 +343,15 @@ export const SecretariatImportTab: React.FC = () => {
                         <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
                           {row.level}
                         </span>
+                      </td>
+                      <td className="px-3 py-2">
+                        {row.className ? (
+                          <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
+                            {row.className.split('|')[0].trim()}
+                          </span>
+                        ) : (
+                          <span className="text-[10px] text-slate-400 italic">Turma padrão</span>
+                        )}
                       </td>
                       <td className="px-3 py-2 text-slate-600 font-mono text-[11px]">{row.phone}</td>
                       <td className="px-3 py-2 text-slate-600 font-mono text-[11px]">{row.startDate}</td>

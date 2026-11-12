@@ -42,6 +42,7 @@ export interface ParsedSpreadsheetStudent {
   studentId?: string; // STU00000 informado na planilha
   name: string;
   level: string; // Ex: Beginner, Level 1, Intermediate
+  className?: string; // Turma resolvida automaticamente pelo nível
   phone: string;
   startDate: string; // Ex: 01/08/2026
   age?: number; // Idade
@@ -99,6 +100,38 @@ export const evaluateCellPayment = (val: string, defaultAmount: number = 500): {
   }
 
   return { isPaid: false, amount: defaultAmount };
+};
+
+/**
+ * Extrai o nível de um nome de turma: "A2+ (B) | Nov. to Feb. 2027" -> "A2+"
+ */
+export const extractClassLevel = (className: string): string =>
+  className
+    .split('|')[0]
+    .replace(/\(.*?\)/g, '')
+    .trim()
+    .toUpperCase()
+    .replace(/\s+/g, '');
+
+/**
+ * Encontra a turma cujo nível bate com o nível do aluno.
+ * Quando há mais de uma turma do mesmo nível (ex.: A2 (A) e A2 (B)),
+ * escolhe a que tem menos alunos matriculados, equilibrando as turmas.
+ */
+export const resolveClassByLevel = <T extends { id: string; name: string; courseId?: string }>(
+  level: string,
+  classList: T[],
+  usage: Record<string, number> = {}
+): T | undefined => {
+  const target = (level || '').trim().toUpperCase().replace(/\s+/g, '');
+  if (!target) return undefined;
+
+  const matches = classList.filter((cls) => extractClassLevel(cls.name) === target);
+  if (matches.length === 0) return undefined;
+
+  return matches.reduce((best, current) =>
+    (usage[current.id] || 0) < (usage[best.id] || 0) ? current : best
+  );
 };
 
 /**
