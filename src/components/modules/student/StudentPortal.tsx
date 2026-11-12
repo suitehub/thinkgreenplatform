@@ -569,34 +569,36 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
     return total > 0 ? Math.round((attended / total) * 100) : 0;
   }, [selectedCourseFilter, state.attendance, student.studentId, attendanceRate]);
 
-  // Identify Soccer & English Classes
+  // Classes vinculadas ao aluno: apenas as turmas em que ele está matriculado
+  const myClasses = state.classes.filter((c) => studentClassIds.includes(c.id));
+
   const soccerEnrollment = studentEnrollments.find(
     (e) =>
       e.courseName.toLowerCase().includes('futebol') ||
       e.courseName.toLowerCase().includes('soccer')
-  ) || studentEnrollments[0];
+  );
 
-  const soccerClass = state.classes.find(
+  const soccerClass = myClasses.find(
     (c) =>
       c.id === soccerEnrollment?.classId ||
       c.name.toLowerCase().includes('futebol') ||
       c.name.toLowerCase().includes('soccer')
-  ) || state.classes[0];
+  );
 
   const englishEnrollment = studentEnrollments.find(
     (e) =>
       e.courseName.toLowerCase().includes('inglês') ||
       e.courseName.toLowerCase().includes('ingles') ||
       e.courseName.toLowerCase().includes('english')
-  ) || studentEnrollments[1] || studentEnrollments[0];
+  );
 
-  const englishClass = state.classes.find(
+  const englishClass = myClasses.find(
     (c) =>
       c.id === englishEnrollment?.classId ||
       c.name.toLowerCase().includes('inglês') ||
       c.name.toLowerCase().includes('ingles') ||
       c.name.toLowerCase().includes('english')
-  ) || state.classes[1] || state.classes[0];
+  );
 
   const soccerAccess = soccerClass
     ? checkClassroomAccess(student.studentId, soccerClass.id)
@@ -614,12 +616,12 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
       e.courseName.toLowerCase().includes('girassol')
   ) || studentEnrollments.find((e) => e.courseId === 'course_preschool');
 
-  const preschoolClass = state.classes.find(
+  const preschoolClass = myClasses.find(
     (c) =>
       c.id === preschoolEnrollment?.classId ||
       c.courseId === 'course_preschool' ||
       c.name.toLowerCase().includes('girassol')
-  ) || state.classes.find((c) => c.courseId === 'course_preschool') || state.classes[2] || state.classes[0];
+  );
 
   const preschoolAccess = preschoolClass
     ? checkClassroomAccess(student.studentId, preschoolClass.id)
@@ -632,12 +634,12 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
       e.courseName.toLowerCase().includes('circuito')
   ) || studentEnrollments.find((e) => e.courseId === 'course_women_fit');
 
-  const womenFitClass = state.classes.find(
+  const womenFitClass = myClasses.find(
     (c) =>
       c.id === womenFitEnrollment?.classId ||
       c.courseId === 'course_women_fit' ||
       c.name.toLowerCase().includes('circuito')
-  ) || state.classes.find((c) => c.courseId === 'course_women_fit') || state.classes[3] || state.classes[0];
+  );
 
   const womenFitAccess = womenFitClass
     ? checkClassroomAccess(student.studentId, womenFitClass.id)
@@ -1065,6 +1067,7 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
             {/* Grid of Subject Cards with Distinctive Icons */}
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
               {/* 1. TODAS AS MATÉRIAS */}
+              {myClasses.length > 0 && (
               <button
                 type="button"
                 onClick={() => setSelectedCourseFilter('ALL')}
@@ -1107,8 +1110,10 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
                   </span>
                 </div>
               </button>
+              )}
 
               {/* 2. SOCCER CLASS */}
+              {soccerClass && (
               <button
                 type="button"
                 onClick={() => setSelectedCourseFilter('SOCCER')}
@@ -1148,8 +1153,10 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
                   </span>
                 </div>
               </button>
+              )}
 
               {/* 3. ENGLISH CLASS */}
+              {englishClass && (
               <button
                 type="button"
                 onClick={() => setSelectedCourseFilter('ENGLISH')}
@@ -1189,8 +1196,10 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
                   </span>
                 </div>
               </button>
+              )}
 
               {/* 4. PRESCHOOL */}
+              {preschoolClass && (
               <button
                 type="button"
                 onClick={() => setSelectedCourseFilter('PRESCHOOL')}
@@ -1230,8 +1239,10 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
                   </span>
                 </div>
               </button>
+              )}
 
               {/* 5. FITNESS MULHERES */}
+              {womenFitClass && (
               <button
                 type="button"
                 onClick={() => setSelectedCourseFilter('WOMENS_FITNESS')}
@@ -1271,6 +1282,7 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
                   </span>
                 </div>
               </button>
+              )}
             </div>
 
             {/* Active filter notification banner */}
@@ -1312,6 +1324,7 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
             {/* Left Column: Stack of Course Cards (7 cols or ~68%) */}
             <div className="lg:col-span-8 space-y-6">
               {/* CARD 1: SOCCER CLASS (GREEN GRADIENT) */}
+              {soccerClass && (
               <div className="bg-gradient-to-r from-[#075e38] via-[#065432] to-[#043d24] rounded-3xl p-6 sm:p-8 text-white relative overflow-hidden shadow-lg hover:shadow-xl transition-all">
                 {/* Background Leaf Watermark */}
                 <div className="absolute right-0 top-0 bottom-0 pointer-events-none flex items-center justify-end pr-4 text-[#0ea862]/20">
@@ -1346,8 +1359,10 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
                   </div>
                 </div>
               </div>
+              )}
 
               {/* CARD 2: ENGLISH CLASS (PURPLE GRADIENT) */}
+              {englishClass && (
               <div className="bg-gradient-to-r from-[#533499] via-[#462986] to-[#34186c] rounded-3xl p-6 sm:p-8 text-white relative overflow-hidden shadow-lg hover:shadow-xl transition-all">
                 {/* Background Book Watermark */}
                 <div className="absolute right-0 top-0 bottom-0 pointer-events-none flex items-center justify-end pr-4 text-[#8a63ee]/20">
@@ -1382,8 +1397,10 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
                   </div>
                 </div>
               </div>
+              )}
 
               {/* CARD 3: PRESCHOOL (ORANGE GRADIENT) */}
+              {preschoolClass && (
               <div className="bg-gradient-to-r from-[#ea580c] via-[#c2410c] to-[#9a3412] rounded-3xl p-6 sm:p-8 text-white relative overflow-hidden shadow-lg hover:shadow-xl transition-all">
                 {/* Background Sun Watermark */}
                 <div className="absolute right-0 top-0 bottom-0 pointer-events-none flex items-center justify-end pr-4 text-[#fb923c]/20">
@@ -1418,8 +1435,10 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
                   </div>
                 </div>
               </div>
+              )}
 
               {/* CARD 4: FITNESS FEMININO & BEM-ESTAR (PINK GRADIENT) */}
+              {womenFitClass && (
               <div className="bg-gradient-to-r from-[#db2777] via-[#be185d] to-[#9d174d] rounded-3xl p-6 sm:p-8 text-white relative overflow-hidden shadow-lg hover:shadow-xl transition-all">
                 {/* Background Heart Watermark */}
                 <div className="absolute right-0 top-0 bottom-0 pointer-events-none flex items-center justify-end pr-4 text-[#f472b6]/20">
@@ -1454,6 +1473,7 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
                   </div>
                 </div>
               </div>
+              )}
             </div>
 
             {/* Right Column: AVISOS CARD (4 cols or ~32%) */}
@@ -1906,7 +1926,7 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
             </div>
 
             {/* 1. SOCCER CLASS SECTION */}
-            {(selectedCourseFilter === 'ALL' || selectedCourseFilter === 'SOCCER') && (
+            {soccerClass && (selectedCourseFilter === 'ALL' || selectedCourseFilter === 'SOCCER') && (
               <div className="bg-white rounded-3xl overflow-hidden border border-slate-200/80 shadow-xs">
                 {/* Header Banner */}
                 <div className="bg-gradient-to-r from-[#075e38] via-[#065432] to-[#043d24] p-6 sm:p-8 text-white relative overflow-hidden">
@@ -2101,7 +2121,7 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
             )}
 
             {/* 2. ENGLISH CLASS SECTION */}
-            {(selectedCourseFilter === 'ALL' || selectedCourseFilter === 'ENGLISH') && (
+            {englishClass && (selectedCourseFilter === 'ALL' || selectedCourseFilter === 'ENGLISH') && (
               <div className="bg-white rounded-3xl overflow-hidden border border-slate-200/80 shadow-xs">
                 {/* Header Banner */}
                 <div className="bg-gradient-to-r from-[#533499] via-[#462986] to-[#34186c] p-6 sm:p-8 text-white relative overflow-hidden">
@@ -2296,7 +2316,7 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
             )}
 
             {/* 3. PRESCHOOL SECTION */}
-            {(selectedCourseFilter === 'ALL' || selectedCourseFilter === 'PRESCHOOL') && (
+            {preschoolClass && (selectedCourseFilter === 'ALL' || selectedCourseFilter === 'PRESCHOOL') && (
               <div className="bg-white rounded-3xl overflow-hidden border border-slate-200/80 shadow-xs">
                 {/* Header Banner */}
                 <div className="bg-gradient-to-r from-[#ea580c] via-[#c2410c] to-[#9a3412] p-6 sm:p-8 text-white relative overflow-hidden">
@@ -2452,7 +2472,7 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
             )}
 
             {/* 4. ACADEMIA & FITNESS FEMININO SECTION */}
-            {(selectedCourseFilter === 'ALL' || selectedCourseFilter === 'WOMENS_FITNESS') && (
+            {womenFitClass && (selectedCourseFilter === 'ALL' || selectedCourseFilter === 'WOMENS_FITNESS') && (
               <div className="bg-white rounded-3xl overflow-hidden border border-slate-200/80 shadow-xs">
                 {/* Header Banner */}
                 <div className="bg-gradient-to-r from-[#db2777] via-[#be185d] to-[#9d174d] p-6 sm:p-8 text-white relative overflow-hidden">
@@ -2725,7 +2745,7 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
             </div>
 
             {/* 1. SOCCER CLASS ATIVIDADES */}
-            {(selectedCourseFilter === 'ALL' || selectedCourseFilter === 'SOCCER') && (
+            {soccerClass && (selectedCourseFilter === 'ALL' || selectedCourseFilter === 'SOCCER') && (
               <div className="bg-white rounded-3xl overflow-hidden border border-slate-200/80 shadow-xs">
                 {/* Header Banner */}
                 <div className="bg-gradient-to-r from-[#075e38] via-[#065432] to-[#043d24] p-6 sm:p-8 text-white relative overflow-hidden">
@@ -2871,7 +2891,7 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
             )}
 
             {/* 2. ENGLISH CLASS ATIVIDADES */}
-            {(selectedCourseFilter === 'ALL' || selectedCourseFilter === 'ENGLISH') && (
+            {englishClass && (selectedCourseFilter === 'ALL' || selectedCourseFilter === 'ENGLISH') && (
               <div className="bg-white rounded-3xl overflow-hidden border border-slate-200/80 shadow-xs">
                 {/* Header Banner */}
                 <div className="bg-gradient-to-r from-[#533499] via-[#462986] to-[#34186c] p-6 sm:p-8 text-white relative overflow-hidden">
@@ -3017,7 +3037,7 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
             )}
 
             {/* 3. PRESCHOOL ATIVIDADES */}
-            {(selectedCourseFilter === 'ALL' || selectedCourseFilter === 'PRESCHOOL') && (
+            {preschoolClass && (selectedCourseFilter === 'ALL' || selectedCourseFilter === 'PRESCHOOL') && (
               <div className="bg-white rounded-3xl overflow-hidden border border-slate-200/80 shadow-xs">
                 {/* Header Banner */}
                 <div className="bg-gradient-to-r from-[#ea580c] via-[#c2410c] to-[#9a3412] p-6 sm:p-8 text-white relative overflow-hidden">
@@ -3163,7 +3183,7 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
             )}
 
             {/* 4. ACADEMIA & FITNESS FEMININO ATIVIDADES */}
-            {(selectedCourseFilter === 'ALL' || selectedCourseFilter === 'WOMENS_FITNESS') && (
+            {womenFitClass && (selectedCourseFilter === 'ALL' || selectedCourseFilter === 'WOMENS_FITNESS') && (
               <div className="bg-white rounded-3xl overflow-hidden border border-slate-200/80 shadow-xs">
                 {/* Header Banner */}
                 <div className="bg-gradient-to-r from-[#db2777] via-[#be185d] to-[#9d174d] p-6 sm:p-8 text-white relative overflow-hidden">
