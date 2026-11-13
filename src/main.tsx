@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
 import './index.css';
 import { bootstrapApp } from './lib/bootstrap';
+import { getAppBasePath } from './utils/urlUtils';
 
 const container = document.getElementById('root')!;
 
@@ -22,6 +23,16 @@ const renderApp = () => {
     </StrictMode>
   );
 };
+
+// PWA: registra o service worker (todos os cargos usam o mesmo app instalável)
+if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    const base = getAppBasePath();
+    navigator.serviceWorker
+      .register(`${base}/sw.js`, { scope: `${base}/` })
+      .catch(() => undefined);
+  });
+}
 
 // Render only after Firestore has hydrated the in-memory caches, but never
 // block the UI forever if the network is unreachable.

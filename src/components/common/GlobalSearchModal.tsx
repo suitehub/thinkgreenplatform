@@ -1,8 +1,18 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Search, User, BookOpen, Receipt, FileText, CheckCircle, ArrowRight } from 'lucide-react';
+import {
+  Search,
+  User,
+  BookOpen,
+  Receipt,
+  ArrowRight,
+  Download,
+  Smartphone,
+  Share,
+} from 'lucide-react';
 import { Modal } from './Modal';
 import { useApp } from '../../context/AppContext';
 import { Badge } from './Badge';
+import { usePwaInstall } from '../../lib/pwa';
 
 interface GlobalSearchModalProps {
   isOpen: boolean;
@@ -19,10 +29,13 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
 }) => {
   const { state } = useApp();
   const [query, setQuery] = useState('');
+  const { canInstall, isStandalone, isIos, install } = usePwaInstall();
+  const [showIosHelp, setShowIosHelp] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
       setQuery('');
+      setShowIosHelp(false);
     }
   }, [isOpen]);
 
@@ -65,6 +78,18 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
     searchResults.receipts.length +
     searchResults.lessons.length;
 
+  const installQuery = /(app|aplicativo|instalar|baixar|pwa|download)/i.test(query);
+  const showInstallOption = !isStandalone && canInstall && (!query.trim() || installQuery);
+
+  const handleInstall = async () => {
+    if (isIos) {
+      setShowIosHelp(true);
+      return;
+    }
+    const result = await install();
+    if (result === 'unavailable') setShowIosHelp(true);
+  };
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="lg" showCloseButton={false}>
       <div className="space-y-4">
@@ -80,6 +105,44 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
             className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:outline-hidden focus:ring-2 focus:ring-purple-500 focus:bg-white transition-all font-medium"
           />
         </div>
+
+        {/* Install App (PWA) */}
+        {showInstallOption && (
+          <div className="rounded-xl border border-emerald-200 bg-gradient-to-r from-emerald-50 to-teal-50 p-3">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-[#075e38] text-white flex items-center justify-center shrink-0">
+                  <Smartphone className="w-5 h-5" />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-emerald-900">Baixar o aplicativo Think Green</p>
+                  <p className="text-[11px] text-emerald-800">
+                    Instale no celular ou computador e abra direto pela tela inicial, como um app.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={handleInstall}
+                className="shrink-0 inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-[#075e38] hover:bg-[#064a2c] text-white text-xs font-bold transition-colors cursor-pointer"
+              >
+                <Download className="w-3.5 h-3.5" />
+                Baixar app
+              </button>
+            </div>
+
+            {showIosHelp && (
+              <div className="mt-3 pt-3 border-t border-emerald-200 text-[11px] text-emerald-900 space-y-1">
+                <p className="font-bold flex items-center gap-1.5">
+                  <Share className="w-3.5 h-3.5" /> No iPhone/iPad (Safari):
+                </p>
+                <p>1. Toque em <strong>Compartilhar</strong> (ícone de quadrado com seta).</p>
+                <p>2. Escolha <strong>Adicionar à Tela de Início</strong>.</p>
+                <p>3. Confirme em <strong>Adicionar</strong> — o ícone do Think Green aparece na tela inicial.</p>
+                <p className="pt-1 text-emerald-700">No Chrome/Edge: menu ⋮ → <strong>Instalar aplicativo</strong>.</p>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Results List */}
         <div className="max-h-[60vh] overflow-y-auto space-y-4 text-xs">

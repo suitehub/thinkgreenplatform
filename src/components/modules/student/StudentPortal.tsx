@@ -58,6 +58,7 @@ import { useApp } from '../../../context/AppContext';
 import { Badge } from '../../common/Badge';
 import { AssignedModulesMenu } from '../../common/AssignedModulesMenu';
 import { formatCurrency } from '../../../lib/storage';
+import { usePwaInstall } from '../../../lib/pwa';
 import { ReceiptModal } from '../../common/ReceiptModal';
 import {
   ThinkGardenLogo,
@@ -106,6 +107,18 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
     checkClassroomAccess,
     submitAssignment,
   } = useApp();
+
+  const { canInstall, isStandalone, isIos, install } = usePwaInstall();
+  const [showInstallHelp, setShowInstallHelp] = useState(false);
+
+  const handleInstallApp = async () => {
+    if (isIos) {
+      setShowInstallHelp(true);
+      return;
+    }
+    const result = await install();
+    if (result === 'unavailable') setShowInstallHelp(true);
+  };
 
   // Local active tab state mapped from parent or default to 'materias'
   const [activeNav, setActiveNav] = useState<StudentActiveNav>('materias');
@@ -846,7 +859,25 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
                   </div>
                 </div>
 
-                <div className="pt-3 border-t border-slate-100">
+                <div className="pt-3 border-t border-slate-100 space-y-2">
+                  {!isStandalone && canInstall && (
+                    <>
+                      <button
+                        onClick={handleInstallApp}
+                        className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 transition-colors cursor-pointer"
+                      >
+                        <Download className="w-3.5 h-3.5" />
+                        <span>Baixar o aplicativo</span>
+                      </button>
+                      {showInstallHelp && (
+                        <p className="text-[10px] text-slate-500 leading-relaxed bg-slate-50 rounded-lg p-2">
+                          {isIos
+                            ? 'No iPhone/iPad (Safari): toque em Compartilhar e escolha "Adicionar à Tela de Início".'
+                            : 'Abra o menu do navegador (⋮) e escolha "Instalar aplicativo".'}
+                        </p>
+                      )}
+                    </>
+                  )}
                   <button
                     onClick={() => {
                       setIsUserMenuOpen(false);

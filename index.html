@@ -4,8 +4,37 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Think Green Platform</title>
-    <link rel="icon" type="image/png" href="./TGCCLOGO_1000x1000.png" />
-    <link rel="apple-touch-icon" href="./TGCCLOGO_1000x1000.png" />
+    <link id="tg-favicon" rel="icon" type="image/png" href="./TGCCLOGO_1000x1000.png" />
+    <link id="tg-manifest" rel="manifest" href="./manifest.webmanifest" />
+    <meta name="theme-color" content="#075e38" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Think Green" />
+    <link id="tg-apple-icon-192" rel="apple-touch-icon" sizes="192x192" href="./TGCCLOGO_192x192.png" />
+    <link id="tg-apple-icon-1000" rel="apple-touch-icon" href="./TGCCLOGO_1000x1000.png" />
+    <link id="tg-startup" rel="apple-touch-startup-image" href="./TGCCLOGO_1000x1000.png" />
+    <script type="text/javascript">
+      // Corrige caminhos do PWA em subdiretórios (GitHub Pages) e rotas /secretaria, /aluno, etc.
+      (function () {
+        var known = ['contabil','accounting','secretaria','recepcao','financeiro','professor','aluno','orientacao','admin'];
+        var segments = window.location.pathname.split('/').filter(Boolean);
+        var base = '';
+        if (segments.length > 0) {
+          var first = segments[0].toLowerCase();
+          if (known.indexOf(first) === -1 && first.indexOf('.') === -1) base = '/' + segments[0];
+        }
+        var set = function (id, file) {
+          var el = document.getElementById(id);
+          if (el) el.setAttribute('href', base + '/' + file);
+        };
+        set('tg-favicon', 'TGCCLOGO_1000x1000.png');
+        set('tg-manifest', 'manifest.webmanifest');
+        set('tg-apple-icon-192', 'TGCCLOGO_192x192.png');
+        set('tg-apple-icon-1000', 'TGCCLOGO_1000x1000.png');
+        set('tg-startup', 'TGCCLOGO_1000x1000.png');
+      })();
+    </script>
     <meta name="description" content="Sistema Integrado de Gestão do Think Green Community Center: Secretaria, Financeiro, Acadêmico, Contabilidade, AVA/LMS e Portal do Aluno." />
     <meta property="og:title" content="Think Green Platform" />
     <meta property="og:description" content="Sistema Integrado de Gestão do Think Green Community Center: Secretaria, Financeiro, Acadêmico, Contabilidade, AVA/LMS e Portal do Aluno." />
