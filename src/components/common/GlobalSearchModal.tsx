@@ -29,7 +29,7 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
 }) => {
   const { state } = useApp();
   const [query, setQuery] = useState('');
-  const { canInstall, isStandalone, isIos, install } = usePwaInstall();
+  const { isStandalone, isIos, install } = usePwaInstall();
   const [showIosHelp, setShowIosHelp] = useState(false);
 
   useEffect(() => {
@@ -79,7 +79,7 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
     searchResults.lessons.length;
 
   const installQuery = /(app|aplicativo|instalar|baixar|pwa|download)/i.test(query);
-  const showInstallOption = !isStandalone && canInstall && (!query.trim() || installQuery);
+  const showInstallOption = !isStandalone && (!query.trim() || installQuery);
 
   const handleInstall = async () => {
     if (isIos) {

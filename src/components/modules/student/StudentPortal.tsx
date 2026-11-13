@@ -108,7 +108,7 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
     submitAssignment,
   } = useApp();
 
-  const { canInstall, isStandalone, isIos, install } = usePwaInstall();
+  const { isStandalone, isIos, install } = usePwaInstall();
   const [showInstallHelp, setShowInstallHelp] = useState(false);
 
   const handleInstallApp = async () => {
@@ -860,7 +860,7 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
                 </div>
 
                 <div className="pt-3 border-t border-slate-100 space-y-2">
-                  {!isStandalone && canInstall && (
+                  {!isStandalone && (
                     <>
                       <button
                         onClick={handleInstallApp}
