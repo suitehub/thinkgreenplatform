@@ -4322,4 +4322,4 @@ Exemplo:
       <p style="font-size:14px;font-weight:600;margin:0">Carregando dados seguros...</p>
       <style>@keyframes tgspin{to{transform:rotate(360deg)}}</style>
     </div>
-  </div>`;const UY=()=>{gO.createRoot(nR).render(e.jsx(j.StrictMode,{children:e.jsx(VY,{})}))};"serviceWorker"in navigator&&window.addEventListener("load",()=>{const a=bb();navigator.serviceWorker.register(`${a}/sw.js`,{scope:`${a}/`}).catch(()=>{})});const HY=new Promise(a=>setTimeout(a,2e4));Promise.race([GY(),HY]).finally(UY);
+  </div>`;const UY=()=>{gO.createRoot(nR).render(e.jsx(j.StrictMode,{children:e.jsx(VY,{})}))};if("serviceWorker"in navigator){const a=bb();navigator.serviceWorker.register(`${a}/sw.js`,{scope:`${a}/`}).catch(()=>{})}const HY=new Promise(a=>setTimeout(a,2e4));Promise.race([GY(),HY]).finally(UY);
