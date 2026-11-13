@@ -26,12 +26,10 @@ const renderApp = () => {
 
 // PWA: registra o service worker (todos os cargos usam o mesmo app instalável)
 if (import.meta.env.PROD && 'serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    const base = getAppBasePath();
-    navigator.serviceWorker
-      .register(`${base}/sw.js`, { scope: `${base}/` })
-      .catch(() => undefined);
-  });
+  const base = getAppBasePath();
+  navigator.serviceWorker
+    .register(`${base}/sw.js`, { scope: `${base}/` })
+    .catch(() => undefined);
 }
 
 // Render only after Firestore has hydrated the in-memory caches, but never
