@@ -98,8 +98,8 @@ export const SecretariatImportTab: React.FC = () => {
   };
 
   const handleDownloadTemplate = () => {
-    const headerLine = 'STUDENT ID\tNAME\tLEVEL\tTELEPHONE\tSTART DATE\tAGE\t\tAgu\tSet\tOct\tNov\tD/J\tFeb\tMar\tApr\tMay\tJun\tJuly\tTotal\n';
-    const sampleLine = 'STU00001\tNOME DO ALUNO\tLevel 1\t+20 10 0000 0000\t01/08/2026\t16\t\t500\t500\t500\t500\t500\t500\t500\t500\t0\t0\t0\t4000\n';
+    const headerLine = 'Timestamp\tSTU_ID\tName\tDate of birth\tGender\tEmail\tCountry Code\tPhone number\tStudent ID\tIsParent\tResponsible Email\tResponsible ID\tFather Name\tMother Name\tLevel\n';
+    const sampleLine = '01/08/2026 10:00\tSTU00001\tNOME DO ALUNO\t07/12/2014\tFemale\taluno@thinkgreen.org\t20\t1142048695\t31401300000000\tYes\t\t\tPai do Aluno\tMãe do Aluno\tA1\n';
     const content = headerLine + sampleLine;
     const blob = new Blob([content], { type: 'text/tab-separated-values;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
@@ -124,14 +124,14 @@ export const SecretariatImportTab: React.FC = () => {
               Secretaria • Ordem Oficial de Planilha
             </span>
             <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
-              11 Meses Acadêmicos (Agu → July)
+              Layout Student Management (Level na última coluna)
             </span>
           </div>
           <h2 className="text-xl font-bold text-slate-900 mt-1">
             Importador de Planilha do Centro Comunitário
           </h2>
           <p className="text-xs text-slate-500">
-            Estrutura configurada para ler: <span className="font-mono font-semibold text-slate-700">STUDENT ID, NAME, LEVEL, TELEPHONE, START DATE, AGE, [Mensalidades Agu..July], Total</span>.
+            Estrutura configurada para ler: <span className="font-mono font-semibold text-slate-700">Timestamp, STU_ID, Name, Date of birth, Gender, Email, Country Code, Phone number, Student ID, IsParent, Responsible Email, Responsible ID, Father Name, Mother Name, Level</span>.
           </p>
         </div>
 
@@ -152,22 +152,21 @@ export const SecretariatImportTab: React.FC = () => {
           <span className="text-[11px] font-bold text-purple-300 uppercase tracking-wider flex items-center gap-1.5">
             <FileSpreadsheet className="w-4 h-4 text-purple-400" /> Ordem Exata das Colunas da Planilha
           </span>
-          <span className="text-[10px] text-slate-400 font-mono">18 Colunas Mapeadas</span>
+          <span className="text-[10px] text-slate-400 font-mono">15 Colunas Mapeadas</span>
         </div>
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-[11px] font-mono no-scrollbar">
-          <span className="px-2 py-1 bg-purple-500/20 text-purple-300 rounded border border-purple-400/30 shrink-0 font-bold">1. STUDENT ID</span>
-          <span className="px-2 py-1 bg-purple-500/20 text-purple-300 rounded border border-purple-400/30 shrink-0 font-bold">2. NAME</span>
-          <span className="px-2 py-1 bg-blue-500/20 text-blue-300 rounded border border-blue-400/30 shrink-0">3. LEVEL</span>
-          <span className="px-2 py-1 bg-blue-500/20 text-blue-300 rounded border border-blue-400/30 shrink-0">4. TELEPHONE</span>
-          <span className="px-2 py-1 bg-blue-500/20 text-blue-300 rounded border border-blue-400/30 shrink-0">5. START DATE</span>
-          <span className="px-2 py-1 bg-blue-500/20 text-blue-300 rounded border border-blue-400/30 shrink-0">6. AGE</span>
-          <span className="px-2 py-1 bg-slate-800 text-slate-400 rounded border border-slate-700 shrink-0">7. [Vazio]</span>
-          {ACADEMIC_MONTHS_MAP.map((m, idx) => (
-            <span key={m.key} className="px-2 py-1 bg-emerald-500/20 text-emerald-300 rounded border border-emerald-400/30 shrink-0">
-              {idx + 8}. {m.label}
+          {['Timestamp', 'STU_ID', 'Name', 'Date of birth', 'Gender', 'Email', 'Country Code', 'Phone number', 'Student ID', 'IsParent', 'Responsible Email', 'Responsible ID', 'Father Name', 'Mother Name', 'Level'].map((label, idx) => (
+            <span
+              key={label}
+              className={`px-2 py-1 rounded border shrink-0 ${
+                label === 'Level'
+                  ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/30 font-bold'
+                  : 'bg-blue-500/20 text-blue-300 border border-blue-400/30'
+              }`}
+            >
+              {idx + 1}. {label}
             </span>
           ))}
-          <span className="px-2 py-1 bg-amber-500/20 text-amber-300 rounded border border-amber-400/30 shrink-0 font-bold">19. Total</span>
         </div>
       </div>
 
@@ -184,10 +183,10 @@ export const SecretariatImportTab: React.FC = () => {
 
         <div className="p-4 bg-emerald-50/70 border border-emerald-200 rounded-2xl space-y-1">
           <span className="text-xs font-bold text-emerald-900 flex items-center gap-1.5">
-            <Layers className="w-4 h-4 text-emerald-700" /> 11 Mensalidades & Recibos
+            <Layers className="w-4 h-4 text-emerald-700" /> Mensalidades & Recibos
           </span>
           <p className="text-[11px] text-emerald-800 leading-relaxed">
-            Valores preenchidos em cada mês geram recibos automáticos para a Tesouraria e lançamentos de Receita no Contábil.
+            Quando a planilha trouxer colunas de meses (Agu..July), os valores geram recibos automáticos para a Tesouraria e lançamentos de Receita no Contábil.
           </p>
         </div>
 
@@ -213,7 +212,7 @@ export const SecretariatImportTab: React.FC = () => {
                 Importação Concluída com Sucesso!
               </h4>
               <p className="text-xs text-emerald-800">
-                {importResult.count} alunos foram cadastrados, receberam os 11 meses de carnê e {importResult.totalAmount.toLocaleString()} EGP foram conciliados em recibos.
+                {importResult.count} alunos foram cadastrados e vinculados automaticamente às turmas pelo LEVEL. {importResult.totalAmount > 0 && `${importResult.totalAmount.toLocaleString()} EGP foram conciliados em recibos.`}
               </p>
             </div>
           </div>
@@ -285,7 +284,7 @@ export const SecretariatImportTab: React.FC = () => {
             rows={7}
             value={rawText}
             onChange={handleTextChange}
-            placeholder={`Cole aqui as linhas copiadas da sua planilha do Excel ou Google Sheets...\nExemplo:\nSTU00001\tNOME DO ALUNO\tLevel 1\t+20 10 0000 0000\t01/08/2026\t16\t\t500\t500\t500\t500\t500\t500\t500\t500\t0\t0\t0\t4000`}
+            placeholder={`Cole aqui as linhas copiadas da sua planilha do Excel ou Google Sheets...\nExemplo:\n01/08/2026 10:00\tSTU00001\tNOME DO ALUNO\t07/12/2014\tFemale\taluno@thinkgreen.org\t20\t1142048695\t31401300000000\tYes\t\t\tPai do Aluno\tMãe do Aluno\tA1`}
             className="w-full p-4 border border-slate-300 rounded-2xl font-mono text-xs focus:ring-2 focus:ring-purple-500 focus:outline-hidden bg-slate-50/50"
           />
         </div>
@@ -320,6 +319,7 @@ export const SecretariatImportTab: React.FC = () => {
                     <th className="px-3 py-2.5">NAME</th>
                     <th className="px-3 py-2.5">LEVEL</th>
                     <th className="px-3 py-2.5">TURMA (AUTO)</th>
+                    <th className="px-3 py-2.5">DATE OF BIRTH</th>
                     <th className="px-3 py-2.5">TELEPHONE</th>
                     <th className="px-3 py-2.5">START DATE</th>
                     <th className="px-3 py-2.5">AGE</th>
@@ -353,6 +353,7 @@ export const SecretariatImportTab: React.FC = () => {
                           <span className="text-[10px] text-slate-400 italic">Turma padrão</span>
                         )}
                       </td>
+                      <td className="px-3 py-2 text-slate-600 font-mono text-[11px]">{row.birthDate || '—'}</td>
                       <td className="px-3 py-2 text-slate-600 font-mono text-[11px]">{row.phone}</td>
                       <td className="px-3 py-2 text-slate-600 font-mono text-[11px]">{row.startDate}</td>
                       <td className="px-3 py-2 text-slate-600 text-center">{row.age ? `${row.age} anos` : '—'}</td>
@@ -411,7 +412,7 @@ export const SecretariatImportTab: React.FC = () => {
                   </>
                 ) : (
                   <>
-                    <Upload className="w-4 h-4" /> Importar {parsedRows.length} Aluno(s) com 11 Meses de Carnê
+                    <Upload className="w-4 h-4" /> Importar {parsedRows.length} Aluno(s) e vincular às turmas
                   </>
                 )}
               </button>

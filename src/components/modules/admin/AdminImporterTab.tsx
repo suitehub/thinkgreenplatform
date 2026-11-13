@@ -15,6 +15,7 @@ import {
 import { useApp } from '../../../context/AppContext';
 import {
   parseOfficialSpreadsheet,
+  resolveClassByLevel,
   ACADEMIC_MONTHS_MAP,
   ParsedSpreadsheetStudent,
 } from '../../../lib/spreadsheetParser';
@@ -39,11 +40,24 @@ export const AdminImporterTab: React.FC<AdminImporterTabProps> = ({ setCurrentTa
     message: string;
   } | null>(null);
 
+  const parseAndResolve = (text: string, courseId: string, classId: string) => {
+    const parsed = parseOfficialSpreadsheet(text, courseId, classId);
+    const usage: Record<string, number> = {};
+    state.enrollments.forEach((enr) => {
+      if (enr.status === 'ATIVA') usage[enr.classId] = (usage[enr.classId] || 0) + 1;
+    });
+    return parsed.map((row) => {
+      const matched = resolveClassByLevel(row.level, state.classes, usage);
+      if (!matched) return row;
+      usage[matched.id] = (usage[matched.id] || 0) + 1;
+      return { ...row, classId: matched.id, className: matched.name, courseId: matched.courseId || row.courseId };
+    });
+  };
+
   const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const text = e.target.value;
     setRawText(text);
-    const parsed = parseOfficialSpreadsheet(text, selectedCourseId, selectedClassId);
-    setParsedPreview(parsed);
+    setParsedPreview(parseAndResolve(text, selectedCourseId, selectedClassId));
   };
 
   const handleExecuteImport = () => {
@@ -76,8 +90,8 @@ export const AdminImporterTab: React.FC<AdminImporterTabProps> = ({ setCurrentTa
   };
 
   const handleDownloadTemplate = () => {
-    const headerLine = 'STUDENT ID\tNAME\tLEVEL\tTELEPHONE\tSTART DATE\tAGE\t\tAgu\tSet\tOct\tNov\tD/J\tFeb\tMar\tApr\tMay\tJun\tJuly\tTotal\n';
-    const sampleLine = 'STU00001\tNOME DO ALUNO\tLevel 1\t+20 10 0000 0000\t01/08/2026\t16\t\t500\t500\t500\t500\t500\t500\t500\t500\t0\t0\t0\t4000\n';
+    const headerLine = 'Timestamp\tSTU_ID\tName\tDate of birth\tGender\tEmail\tCountry Code\tPhone number\tStudent ID\tIsParent\tResponsible Email\tResponsible ID\tFather Name\tMother Name\tLevel\n';
+    const sampleLine = '01/08/2026 10:00\tSTU00001\tNOME DO ALUNO\t07/12/2014\tFemale\taluno@thinkgreen.org\t20\t1142048695\t31401300000000\tYes\t\t\tPai do Aluno\tMãe do Aluno\tA1\n';
     const content = headerLine + sampleLine;
     const blob = new Blob([content], { type: 'text/tab-separated-values;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
@@ -110,7 +124,7 @@ export const AdminImporterTab: React.FC<AdminImporterTabProps> = ({ setCurrentTa
             Migração de Planilhas (Google Sheets / Excel / CSV)
           </h2>
           <p className="text-xs text-slate-500 mt-0.5">
-            Ordem oficial: <span className="font-mono text-slate-700 font-semibold">STUDENT ID, NAME, LEVEL, TELEPHONE, START DATE, AGE, [Agu..July], Total</span>.
+            Layout: <span className="font-mono text-slate-700 font-semibold">Timestamp, STU_ID, Name, Date of birth, Gender, Email, Country Code, Phone number, Student ID, IsParent, Responsible Email, Responsible ID, Father Name, Mother Name, Level</span>. A turma é vinculada automaticamente pelo LEVEL.
           </p>
         </div>
 
@@ -131,22 +145,21 @@ export const AdminImporterTab: React.FC<AdminImporterTabProps> = ({ setCurrentTa
           <span className="text-[11px] font-bold text-purple-300 uppercase tracking-wider flex items-center gap-1.5">
             <FileSpreadsheet className="w-4 h-4 text-purple-400" /> Ordem Oficial das Colunas
           </span>
-          <span className="text-[10px] text-slate-400 font-mono">18 Colunas Identificadas</span>
+          <span className="text-[10px] text-slate-400 font-mono">15 Colunas Identificadas</span>
         </div>
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-[11px] font-mono no-scrollbar">
-          <span className="px-2 py-1 bg-purple-500/20 text-purple-300 rounded border border-purple-400/30 shrink-0 font-bold">1. STUDENT ID</span>
-          <span className="px-2 py-1 bg-purple-500/20 text-purple-300 rounded border border-purple-400/30 shrink-0 font-bold">2. NAME</span>
-          <span className="px-2 py-1 bg-blue-500/20 text-blue-300 rounded border border-blue-400/30 shrink-0">3. LEVEL</span>
-          <span className="px-2 py-1 bg-blue-500/20 text-blue-300 rounded border border-blue-400/30 shrink-0">4. TELEPHONE</span>
-          <span className="px-2 py-1 bg-blue-500/20 text-blue-300 rounded border border-blue-400/30 shrink-0">5. START DATE</span>
-          <span className="px-2 py-1 bg-blue-500/20 text-blue-300 rounded border border-blue-400/30 shrink-0">6. AGE</span>
-          <span className="px-2 py-1 bg-slate-800 text-slate-400 rounded border border-slate-700 shrink-0">7. [Vazio]</span>
-          {ACADEMIC_MONTHS_MAP.map((m, idx) => (
-            <span key={m.key} className="px-2 py-1 bg-emerald-500/20 text-emerald-300 rounded border border-emerald-400/30 shrink-0">
-              {idx + 8}. {m.label}
+          {['Timestamp', 'STU_ID', 'Name', 'Date of birth', 'Gender', 'Email', 'Country Code', 'Phone number', 'Student ID', 'IsParent', 'Responsible Email', 'Responsible ID', 'Father Name', 'Mother Name', 'Level'].map((label, idx) => (
+            <span
+              key={label}
+              className={`px-2 py-1 rounded border shrink-0 ${
+                label === 'Level'
+                  ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/30 font-bold'
+                  : 'bg-blue-500/20 text-blue-300 border border-blue-400/30'
+              }`}
+            >
+              {idx + 1}. {label}
             </span>
           ))}
-          <span className="px-2 py-1 bg-amber-500/20 text-amber-300 rounded border border-amber-400/30 shrink-0 font-bold">19. Total</span>
         </div>
       </div>
 
@@ -245,7 +258,7 @@ export const AdminImporterTab: React.FC<AdminImporterTabProps> = ({ setCurrentTa
 
           <textarea
             rows={8}
-            placeholder={`Cole aqui as linhas copiadas do Google Sheets ou Excel...\nExemplo:\nSTU00001\tNOME DO ALUNO\tLevel 1\t+20 10 0000 0000\t01/08/2026\t16\t\t500\t500\t500\t500\t500\t500\t500\t500\t0\t0\t0\t4000`}
+            placeholder={`Cole aqui as linhas copiadas do Google Sheets ou Excel...\nExemplo:\n01/08/2026 10:00\tSTU00001\tNOME DO ALUNO\t07/12/2014\tFemale\taluno@thinkgreen.org\t20\t1142048695\t31401300000000\tYes\t\t\tPai do Aluno\tMãe do Aluno\tA1`}
             value={rawText}
             onChange={handleTextChange}
             className="w-full p-3 font-mono text-xs border border-slate-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:outline-none flex-1 bg-slate-50/50"
@@ -308,6 +321,7 @@ export const AdminImporterTab: React.FC<AdminImporterTabProps> = ({ setCurrentTa
                   <th className="px-3 py-2.5">STUDENT ID</th>
                   <th className="px-3 py-2.5">NAME</th>
                   <th className="px-3 py-2.5">LEVEL</th>
+                  <th className="px-3 py-2.5">TURMA (AUTO)</th>
                   <th className="px-3 py-2.5">TELEPHONE</th>
                   <th className="px-3 py-2.5">START DATE</th>
                   <th className="px-3 py-2.5">AGE</th>
@@ -331,6 +345,15 @@ export const AdminImporterTab: React.FC<AdminImporterTabProps> = ({ setCurrentTa
                       <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
                         {item.level}
                       </span>
+                    </td>
+                    <td className="px-3 py-2">
+                      {item.className ? (
+                        <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
+                          {item.className.split('|')[0].trim()}
+                        </span>
+                      ) : (
+                        <span className="text-[10px] text-slate-400 italic">Turma padrão</span>
+                      )}
                     </td>
                     <td className="px-3 py-2 font-mono text-slate-600 text-[11px]">{item.phone}</td>
                     <td className="px-3 py-2 font-mono text-slate-600 text-[11px]">{item.startDate}</td>

@@ -2722,6 +2722,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         nationalId: row.nationalId || row.rg || '',
         birthDate: row.birthDate || (row.age ? `${2026 - Number(row.age)}-01-01` : ''),
         gender: row.gender || 'MASCULINO',
+        guardianName: row.guardianName || undefined,
+        guardianPhone: row.guardianPhone || undefined,
         city: row.city || 'Cairo',
         status: 'ATIVO',
         notes: `Importado de planilha em ${nowStr}. Nível: ${row.level || 'Padrão'}. Telefone: ${row.phone || 'N/A'}. Início: ${row.startDate || '01/08/2026'}.`,
@@ -2758,7 +2760,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         state.classes.find((cl) => cl.courseId === matchedCourse.id) ||
         state.classes[0];
 
-      const installmentsCount = row.months && Array.isArray(row.months) ? row.months.length : 4;
+      const installmentsCount = row.months && Array.isArray(row.months) ? row.months.length : 0;
       const totalPlanAmount = matchedCourse.monthlyFee * installmentsCount;
 
       const enrollment: Enrollment = {
@@ -2845,7 +2847,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             notes: `Mensalidade ${m.label}`,
           });
         });
-      } else {
+      } else if (!row.skipCharges) {
         // Fallback for simple rows with single paid flag or standard 4 installments
         for (let i = 1; i <= 4; i++) {
           const chargeId = `chg_${enrollment.id}_${i}`;

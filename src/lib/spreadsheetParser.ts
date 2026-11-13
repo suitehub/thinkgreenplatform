@@ -48,6 +48,12 @@ export interface ParsedSpreadsheetStudent {
   age?: number; // Idade
   email?: string;
   city?: string;
+  birthDate?: string; // YYYY-MM-DD
+  gender?: string;
+  nationalId?: string;
+  guardianName?: string;
+  guardianPhone?: string;
+  skipCharges?: boolean; // Layout de cadastro (sem colunas de mensalidades)
   months: MonthPaymentStatus[];
   declaredTotal?: number;
   computedTotalPaid: number;
@@ -135,6 +141,135 @@ export const resolveClassByLevel = <T extends { id: string; name: string; course
 };
 
 /**
+ * Layout "Data" (Student Management): Timestamp | STU_ID | Name | Date of birth |
+ * Gender | Email | Country Code | Phone number | Student ID | IsParent |
+ * Responsible Email | Responsible ID | Father Name | Mother Name | Level
+ */
+const REGISTRY_HEADER_TOKENS = [
+  'timestamp',
+  'stu_id',
+  'name',
+  'date of birth',
+  'gender',
+  'email',
+  'country code',
+  'phone number',
+  'student id',
+  'isparent',
+  'responsible email',
+  'responsible id',
+  'father name',
+  'mother name',
+  'level',
+];
+
+const isRegistryLayout = (text: string): boolean => {
+  const lines = text
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter(Boolean)
+    .slice(0, 3);
+  if (lines.length === 0) return false;
+
+  if (lines.some((l) => /date of birth|stu_id|responsible email|mother name|father name/i.test(l))) {
+    return true;
+  }
+
+  const sep = lines[0].includes('\t') ? '\t' : lines[0].includes(';') ? ';' : ',';
+  const parts = lines[0].split(sep).map((p) => p.trim());
+  return parts.length >= 15 && /^(male|female|masculino|feminino)$/i.test(parts[4] || '');
+};
+
+const toIsoDate = (value: string): string => {
+  const raw = (value || '').trim().split(' ')[0];
+  if (!raw) return '';
+  if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) return raw;
+  const m = raw.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})$/);
+  if (m) return `${m[3]}-${m[2].padStart(2, '0')}-${m[1].padStart(2, '0')}`;
+  return raw;
+};
+
+const parseStudentRegistrySpreadsheet = (
+  text: string,
+  defaultCourseId?: string,
+  defaultClassId?: string
+): ParsedSpreadsheetStudent[] => {
+  const students: ParsedSpreadsheetStudent[] = [];
+
+  text
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter(Boolean)
+    .forEach((line) => {
+      const sep = line.includes('\t') ? '\t' : line.includes(';') ? ';' : ',';
+      const p = line.split(sep).map((cell) => cell.trim());
+
+      // Ignora cabeçalho
+      if (
+        REGISTRY_HEADER_TOKENS.includes((p[0] || '').toLowerCase()) ||
+        REGISTRY_HEADER_TOKENS.includes((p[1] || '').toLowerCase())
+      ) {
+        return;
+      }
+
+      const studentId = (p[1] || '').toUpperCase();
+      const name = p[2] || '';
+      if (!studentId && !name) return;
+
+      const birthDate = toIsoDate(p[3] || '');
+      const birthYear = birthDate ? parseInt(birthDate.slice(0, 4), 10) : NaN;
+      const age = !isNaN(birthYear) ? new Date().getFullYear() - birthYear : undefined;
+
+      const genderRaw = (p[4] || '').toLowerCase();
+      const gender =
+        genderRaw.startsWith('f') || genderRaw === 'feminino'
+          ? 'FEMININO'
+          : genderRaw.startsWith('m') || genderRaw === 'masculino'
+          ? 'MASCULINO'
+          : 'OUTRO';
+
+      const countryCode = (p[6] || '').replace(/\D/g, '');
+      const phoneNumber = (p[7] || '').replace(/\s+/g, '');
+      const phone = phoneNumber ? (countryCode ? `+${countryCode} ${phoneNumber}` : phoneNumber) : '';
+
+      const cleanEmail =
+        (p[5] || '').trim() ||
+        `${name
+          .toLowerCase()
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .replace(/[^a-z0-9]/g, '.')}@thinkgreen.org`;
+
+      const fatherName = p[12] || '';
+      const motherName = p[13] || '';
+
+      students.push({
+        studentId,
+        name: name || `Aluno ${studentId}`,
+        level: p[14] || '',
+        phone,
+        startDate: (p[0] || '').split(' ')[0],
+        age,
+        email: cleanEmail,
+        city: 'Cairo',
+        birthDate,
+        gender,
+        nationalId: p[8] || '',
+        guardianName: fatherName || motherName,
+        months: [],
+        skipCharges: true,
+        declaredTotal: 0,
+        computedTotalPaid: 0,
+        totalPendingAmount: 0,
+        courseId: defaultCourseId,
+        classId: defaultClassId,
+      });
+    });
+
+  return students;
+};
+
+/**
  * Processa texto colado do Google Sheets / Excel / CSV na ordem oficial solicitada:
  * STUDENT ID | NAME | LEVEL | TELEPHONE | START DATE | AGE | [BLANK] | Agu | Set | Oct | Nov | D/J | Feb | Mar | Apr | May | Jun | July | Total
  */
@@ -145,6 +280,11 @@ export const parseOfficialSpreadsheet = (
   fallbackFee: number = 500
 ): ParsedSpreadsheetStudent[] => {
   if (!text || !text.trim()) return [];
+
+  // Novo layout (Student Management): cadastro com Level na última coluna
+  if (isRegistryLayout(text)) {
+    return parseStudentRegistrySpreadsheet(text, defaultCourseId, defaultClassId);
+  }
 
   const lines = text
     .split(/\r?\n/)
