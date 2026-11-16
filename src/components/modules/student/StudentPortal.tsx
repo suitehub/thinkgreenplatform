@@ -59,6 +59,7 @@ import { Badge } from '../../common/Badge';
 import { AssignedModulesMenu } from '../../common/AssignedModulesMenu';
 import { formatCurrency } from '../../../lib/storage';
 import { usePwaInstall } from '../../../lib/pwa';
+import { MediaAudioPlayer } from '../../common/MediaAudioPlayer';
 import { ReceiptModal } from '../../common/ReceiptModal';
 import {
   ThinkGardenLogo,
@@ -4264,16 +4265,7 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({ currentTab, setCur
                     </p>
 
                     <div className="bg-white p-2.5 rounded-xl border border-purple-200/70 shadow-2xs">
-                      <audio
-                        controls
-                        controlsList="nodownload noplaybackrate"
-                        disablePictureInPicture
-                        onContextMenu={(e) => e.preventDefault()}
-                        className="w-full h-10 accent-[#533499]"
-                        src={activeQuizModal.audioUrl}
-                      >
-                        Seu navegador não suporta a tag de áudio HTML5.
-                      </audio>
+                      <MediaAudioPlayer src={activeQuizModal.audioUrl} className="w-full h-10" />
                       <p className="text-[10px] text-slate-400 mt-1 text-center">
                         Reprodução liberada apenas para ouvir durante o quiz — download desabilitado.
                       </p>

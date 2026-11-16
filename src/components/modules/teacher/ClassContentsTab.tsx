@@ -49,6 +49,8 @@ import {
   QuizSubmission,
 } from '../../../types';
 import { useApp } from '../../../context/AppContext';
+import { MediaAudioPlayer } from '../../common/MediaAudioPlayer';
+import { isMediaRef, deleteMedia, uploadMediaFile } from '../../../lib/mediaStorage';
 import {
   ClassTopic,
   getStoredTopics,
@@ -138,6 +140,8 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
     'https://commondatastorage.googleapis.com/codeskulptor-assets/Epoq-Lepidoptera.ogg'
   );
   const [quizAudioTitle, setQuizAudioTitle] = useState('Listening Dialogue — Unit Conversation');
+  const [quizAudioUploading, setQuizAudioUploading] = useState(false);
+  const [quizAudioProgress, setQuizAudioProgress] = useState(0);
   const [quizTopicId, setQuizTopicId] = useState('');
   const [quizTimeLimit, setQuizTimeLimit] = useState<number>(20);
   const [quizDueDate, setQuizDueDate] = useState<string>(
@@ -277,6 +281,25 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
     reader.onload = () =>
       onLoaded(String(reader.result || ''), file.name, formatFileSize(file.size));
     reader.readAsDataURL(file);
+  };
+
+  const handleQuizAudioUpload = async (file: File) => {
+    setQuizAudioUploading(true);
+    setQuizAudioProgress(0);
+    try {
+      const previous = quizAudioUrl;
+      const uploaded = await uploadMediaFile(file, setQuizAudioProgress);
+      if (isMediaRef(previous)) void deleteMedia(previous).catch(() => undefined);
+      setQuizAudioUrl(uploaded.ref);
+      if (!quizAudioTitle.trim() || quizAudioTitle.startsWith('Listening')) {
+        setQuizAudioTitle(file.name.replace(/\.[^.]+$/, ''));
+      }
+    } catch (error) {
+      alert(error instanceof Error ? error.message : 'Falha ao enviar o áudio.');
+    } finally {
+      setQuizAudioUploading(false);
+      setQuizAudioProgress(0);
+    }
   };
 
   const handleSaveMaterial = (e: React.FormEvent) => {
@@ -1531,18 +1554,16 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
                           onChange={(e) => {
                             const file = e.target.files?.[0];
                             if (!file) return;
-                            readLocalFile(file, 600, (dataUrl, name) => {
-                              setQuizAudioUrl(dataUrl);
-                              if (!quizAudioTitle.trim() || quizAudioTitle.startsWith('Listening')) {
-                                setQuizAudioTitle(name.replace(/\.[^.]+$/, ''));
-                              }
-                            });
+                            void handleQuizAudioUpload(file);
                             e.target.value = '';
                           }}
+                          disabled={quizAudioUploading}
                           className="w-full text-xs text-slate-700 file:mr-3 file:px-3 file:py-1.5 file:rounded-lg file:border-0 file:bg-indigo-600 file:text-white file:text-xs file:font-bold file:cursor-pointer border border-indigo-200 rounded-xl p-1.5 bg-white"
                         />
                         <p className="text-[10px] text-slate-400 mt-1">
-                          O áudio é embutido no quiz (limite 600 KB). Para faixas maiores, use o link abaixo.
+                          {quizAudioUploading
+                            ? `Enviando áudio... ${quizAudioProgress}%`
+                            : 'O áudio fica salvo na plataforma em partes (limite 50 MB). Para faixas maiores, use o link abaixo.'}
                         </p>
                       </div>
                       <div className="sm:col-span-2">
@@ -1552,11 +1573,11 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
                         <input
                           type="text"
                           placeholder="https://.../audio.mp3"
-                          value={quizAudioUrl.startsWith('data:') ? '' : quizAudioUrl}
+                          value={quizAudioUrl.startsWith('data:') || isMediaRef(quizAudioUrl) ? '' : quizAudioUrl}
                           onChange={(e) => setQuizAudioUrl(e.target.value)}
                           className="w-full px-3 py-1.5 rounded-xl bg-white border border-indigo-200 text-xs font-mono text-slate-900 focus:outline-hidden"
                         />
-                        {quizAudioUrl.startsWith('data:') && (
+                        {(quizAudioUrl.startsWith('data:') || isMediaRef(quizAudioUrl)) && (
                           <p className="text-[10px] text-emerald-700 mt-1 font-semibold">
                             Arquivo de áudio do computador anexado.
                           </p>
@@ -1571,9 +1592,7 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
                           <Headphones className="w-4 h-4 text-indigo-600" />
                           <span>Player de Teste:</span>
                         </div>
-                        <audio controls src={quizAudioUrl} className="h-8 max-w-xs flex-1">
-                          Seu navegador não suporta reprodução de áudio.
-                        </audio>
+                        <MediaAudioPlayer src={quizAudioUrl} className="h-8 max-w-xs flex-1" />
                       </div>
                     )}
                   </div>
@@ -1808,9 +1827,7 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
                 <p className="text-xs text-indigo-100/90">
                   Ouça a gravação de áudio com atenção antes de responder às questões.
                 </p>
-                <audio controls src={previewQuiz.audioUrl} className="w-full mt-2">
-                  Seu navegador não suporta áudio.
-                </audio>
+                <MediaAudioPlayer src={previewQuiz.audioUrl} className="w-full mt-2" />
               </div>
             )}
 
