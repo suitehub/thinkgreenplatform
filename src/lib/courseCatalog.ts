@@ -108,7 +108,7 @@ export function buildCourseOptions(courses: Course[]): Course[] {
   const missingStandard = STANDARD_COURSES.filter(
     (course) => !existingCategories.has(course.category)
   );
-  return [...courses, ...missingStandard];
+  return [...courses, ...missingStandard].filter((course) => course.id !== 'course_none');
 }
 
 /** A user is a teacher when the TEACHER role is assigned, primary or extra. */
