@@ -33,7 +33,7 @@ const STATUS_LABELS: Record<string, string> = {
   PENDENTE_ENTREGA: 'Pending Delivery',
   AGUARDANDO_VISTO: 'Awaiting Approval',
   EM_ATRASO: 'Overdue',
-  EM ATRASO: 'Overdue',
+  'EM ATRASO': 'Overdue',
   ATRASADO: 'Overdue',
   CANCELADO: 'Cancelled',
   CANCELADA: 'Cancelled',
