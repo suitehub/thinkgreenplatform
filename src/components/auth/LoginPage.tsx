@@ -179,14 +179,6 @@ export const LoginPage: React.FC = () => {
     }
   };
 
-  const heroIcon = registrationMode ? (
-    <UserPlus className="w-6 h-6 stroke-[2.2]" />
-  ) : isStudentPortal ? (
-    <GraduationCap className="w-6 h-6 stroke-[2.2]" />
-  ) : (
-    <ShieldCheck className="w-6 h-6 stroke-[2.2]" />
-  );
-
   const heroBadge = registrationMode
     ? 'Registro de Funcionário'
     : isStudentPortal
@@ -248,15 +240,17 @@ export const LoginPage: React.FC = () => {
 
         <div className="w-full flex items-center justify-center p-4 sm:p-10 md:p-14 bg-transparent min-h-screen overflow-y-auto">
           <div className="w-full max-w-[420px] py-6 sm:py-8 flex flex-col justify-center bg-white/70 backdrop-blur-xl rounded-3xl px-5 shadow-2xl sm:px-7 lg:bg-transparent lg:backdrop-blur-none lg:rounded-none lg:px-0 lg:py-8 lg:shadow-none">
-            <div
-              className={`w-14 h-14 rounded-2xl flex items-center justify-center mx-auto shadow-xs mb-4 border ${
-                registrationMode
-                  ? 'bg-purple-50 border-purple-100 text-purple-700'
-                  : 'bg-emerald-50 border-emerald-100 text-[#075e38]'
-              }`}
-            >
-              {heroIcon}
-            </div>
+            {registrationMode ? (
+              <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto shadow-xs mb-4 border bg-purple-50 border-purple-100 text-purple-700">
+                <UserPlus className="w-6 h-6 stroke-[2.2]" />
+              </div>
+            ) : (
+              <img
+                src={`${import.meta.env.BASE_URL}TGCCLOGO.png`}
+                alt="Think Green Platform"
+                className="h-16 w-auto object-contain mx-auto mb-4 drop-shadow-sm"
+              />
+            )}
 
             <div className="text-center mb-5">
               <span
