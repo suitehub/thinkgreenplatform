@@ -203,25 +203,51 @@ export const LoginPage: React.FC = () => {
 
   return (
     <div className="relative min-h-screen w-full flex overflow-hidden font-sans bg-slate-950 select-none">
+      {/* Celular: preenchimento total da tela com o vídeo desfocado */}
       <video
         autoPlay
         loop
         muted
         playsInline
         preload="auto"
-        className="fixed inset-0 w-full h-full object-cover object-center pointer-events-none z-0"
+        aria-hidden="true"
+        className="lg:hidden fixed inset-0 w-full h-full object-cover object-center scale-110 blur-lg opacity-70 pointer-events-none z-0"
+      >
+        <source src={`${import.meta.env.BASE_URL}login.mp4`} type="video/mp4" />
+      </video>
+
+      {/* Celular: vídeo inteiro, centralizado e com blur leve (welcome visível sem corte) */}
+      <video
+        autoPlay
+        loop
+        muted
+        playsInline
+        preload="auto"
+        className="lg:hidden fixed inset-0 w-full h-full object-contain object-center blur-[2px] pointer-events-none z-0"
+      >
+        <source src={`${import.meta.env.BASE_URL}login.mp4`} type="video/mp4" />
+      </video>
+
+      {/* Desktop: vídeo cobrindo o fundo */}
+      <video
+        autoPlay
+        loop
+        muted
+        playsInline
+        preload="auto"
+        className="hidden lg:block fixed inset-0 w-full h-full object-cover object-center pointer-events-none z-0"
       >
         <source src={`${import.meta.env.BASE_URL}login.mp4`} type="video/mp4" />
       </video>
 
       {/* Escurecimento leve no celular para o vídeo ficar visível atrás do cartão de login */}
-      <div className="fixed inset-0 z-0 bg-slate-950/30 lg:bg-transparent pointer-events-none" />
+      <div className="fixed inset-0 z-0 bg-slate-950/20 lg:bg-transparent pointer-events-none" />
 
       <div className="relative z-10 w-full min-h-screen grid grid-cols-1 lg:grid-cols-2">
         <div className="hidden lg:block w-full h-full" />
 
         <div className="w-full flex items-center justify-center p-4 sm:p-10 md:p-14 bg-transparent min-h-screen overflow-y-auto">
-          <div className="w-full max-w-[420px] py-6 sm:py-8 flex flex-col justify-center bg-white/95 backdrop-blur-md rounded-3xl px-5 shadow-2xl sm:px-7 lg:bg-transparent lg:backdrop-blur-none lg:rounded-none lg:px-0 lg:py-8 lg:shadow-none">
+          <div className="w-full max-w-[420px] py-6 sm:py-8 flex flex-col justify-center bg-white/70 backdrop-blur-xl rounded-3xl px-5 shadow-2xl sm:px-7 lg:bg-transparent lg:backdrop-blur-none lg:rounded-none lg:px-0 lg:py-8 lg:shadow-none">
             <div
               className={`w-14 h-14 rounded-2xl flex items-center justify-center mx-auto shadow-xs mb-4 border ${
                 registrationMode
