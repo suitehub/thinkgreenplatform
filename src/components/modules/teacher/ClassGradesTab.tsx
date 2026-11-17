@@ -42,7 +42,7 @@ export const ClassGradesTab: React.FC<ClassGradesTabProps> = ({
   onOpenExamDetails,
   onToggleFinalGradeRelease,
 }) => {
-  // Mode: 'gradebook' (table matrix) or 'grading' (direct entry form for selected assessment)
+  // Mode: 'gradebook' (table matrix) or 'grading' (direct entry form for the selected assessment)
   const [viewMode, setViewMode] = useState<'gradebook' | 'grading'>('gradebook');
   const [selectedAssessmentId, setSelectedAssessmentId] = useState<string>(
     assessments[0]?.id || ''
@@ -53,7 +53,7 @@ export const ClassGradesTab: React.FC<ClassGradesTabProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [savedSuccessToast, setSavedSuccessToast] = useState(false);
 
-  // Requirement 4: Final Exam and Final Grade Release state
+  // Requirement 4: Final Exam and final grade release state
   const finalExam = assessments.find(
     (a) =>
       a.type === 'PROVA_FINAL' ||
@@ -191,18 +191,18 @@ export const ClassGradesTab: React.FC<ClassGradesTabProps> = ({
         <div className="p-4 bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-2xl text-xs font-bold flex items-center justify-between shadow-xs animate-in fade-in">
           <div className="flex items-center gap-2">
             <CheckCircle className="w-5 h-5 text-emerald-600 flex-shrink-0" />
-            <span>Notas salvas com sucesso! O boletim escolar do aluno e os relatórios pedagógicos foram atualizados.</span>
+            <span>Grades saved successfully! The student report card and academic reports have been updated.</span>
           </div>
           <button
             onClick={() => setSavedSuccessToast(false)}
             className="text-emerald-700 hover:text-emerald-900 text-xs"
           >
-            Dispensar
+            Dismiss
           </button>
         </div>
       )}
 
-      {/* Requirement 4: Controle de exibição da média final */}
+      {/* Requirement 4: Final average visibility control */}
       <div
         className={`p-5 sm:p-6 rounded-3xl border transition-all flex flex-col md:flex-row md:items-center justify-between gap-4 ${
           isFinalGradeReleased
@@ -230,24 +230,24 @@ export const ClassGradesTab: React.FC<ClassGradesTabProps> = ({
                 }`}
               >
                 {isFinalGradeReleased
-                  ? 'Média Final Liberada para os Alunos'
-                  : 'Média Final Oculta / Em Andamento para os Alunos'}
+                  ? 'Final Average Released to Students'
+                  : 'Final Average Hidden / In Progress for Students'}
               </span>
               {finalExam && (
                 <span className="text-[11px] font-bold text-slate-600 bg-white px-2 py-0.5 rounded border border-slate-200">
-                  {finalExam.title}: {finalExamGradesCount}/{students.length} notas lançadas
+                  {finalExam.title}: {finalExamGradesCount}/{students.length} grades entered
                 </span>
               )}
             </div>
             <h4 className="text-sm font-bold text-slate-900">
               {isFinalGradeReleased
-                ? 'Os alunos matriculados visualizam a média final fechada no boletim escolar.'
-                : 'A média final está protegida: alunos visualizam o status "Em andamento" para evitar interpretação precipitada de médias parciais.'}
+                ? 'Enrolled students can see the finalized final average on their report card.'
+                : 'The final average is protected: students see an "In progress" status to avoid premature interpretation of partial averages.'}
             </h4>
             <p className="text-xs text-slate-600">
               {isFinalGradeReleased
-                ? 'Caso precise revisar ou alterar notas, você pode suspender a liberação a qualquer momento.'
-                : 'A exibição da média final no portal do aluno deve ocorrer apenas quando as avaliações necessárias estiverem concluídas, as notas lançadas e liberadas pelo professor.'}
+                ? 'If you need to review or change grades, you can suspend the release at any time.'
+                : 'The final average should only be shown in the student portal once the required assessments are complete, the grades entered and released by the teacher.'}
             </p>
           </div>
         </div>
@@ -259,7 +259,7 @@ export const ClassGradesTab: React.FC<ClassGradesTabProps> = ({
               if (!isFinalGradeReleased && finalExam && finalExamGradesCount < students.length) {
                 if (
                   !confirm(
-                    `Atenção: O exame final "${finalExam.title}" ainda possui notas pendentes (${finalExamGradesCount}/${students.length} lançadas).\n\nDeseja liberar a média final aos alunos mesmo assim?`
+                    `Warning: The final exam "${finalExam.title}" still has pending grades (${finalExamGradesCount}/${students.length} entered).\n\nDo you still want to release the final average to students?`
                   )
                 ) {
                   return;
@@ -276,31 +276,31 @@ export const ClassGradesTab: React.FC<ClassGradesTabProps> = ({
             {isFinalGradeReleased ? (
               <>
                 <Lock className="w-4 h-4 text-amber-600" />
-                <span>Suspender Liberação (Ocultar Média)</span>
+                <span>Suspend Release (Hide Average)</span>
               </>
             ) : (
               <>
                 <CheckCircle className="w-4 h-4 text-emerald-200" />
-                <span>Liberar Média Final para Alunos</span>
+                <span>Release Final Average to Students</span>
               </>
             )}
           </button>
         </div>
       </div>
 
-      {/* Control Header & Mode Switcher */}
+      {/* Control header and mode switcher */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-3xl border border-slate-200/70 shadow-xs">
         <div>
           <div className="flex items-center gap-2">
             <Star className="w-5 h-5 text-[#075e38]" />
             <h3 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight">
-              {viewMode === 'gradebook' ? 'Livro Geral de Notas (Gradebook)' : 'Lançamento de Notas por Avaliação'}
+              {viewMode === 'gradebook' ? 'General Gradebook' : 'Enter Grades by Assessment'}
             </h3>
           </div>
           <p className="text-xs text-slate-500 mt-0.5">
             {viewMode === 'gradebook'
-              ? 'Tabela integrada comparando avaliações, atividades e média geral dos estudantes da turma.'
-              : 'Selecione a avaliação bimestral para lançar ou atualizar notas individuais com feedback pedagógico.'}
+              ? 'Integrated table comparing assessments, assignments and the overall class average.'
+              : 'Select the term assessment to enter or update individual grades with academic feedback.'}
           </p>
         </div>
 
@@ -313,7 +313,7 @@ export const ClassGradesTab: React.FC<ClassGradesTabProps> = ({
                 : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
             }`}
           >
-            Visão Geral (Grade)
+            Overview (Gradebook)
           </button>
           <button
             onClick={() => setViewMode('grading')}
@@ -323,23 +323,23 @@ export const ClassGradesTab: React.FC<ClassGradesTabProps> = ({
                 : 'bg-emerald-50 hover:bg-emerald-100 text-[#075e38] border border-emerald-200'
             }`}
           >
-            Lançar Notas
+            Enter Grades
           </button>
         </div>
       </div>
 
       {/* ========================================================================= */}
-      {/* MODE 1: GRADEBOOK TABLE MATRIX (Google Classroom Gradebook Model)         */}
+      {/* MODE 1: GRADEBOOK TABLE MATRIX (Google Classroom gradebook model)        */}
       {/* ========================================================================= */}
       {viewMode === 'gradebook' && (
         <div className="bg-white rounded-3xl border border-slate-200/70 shadow-xs overflow-hidden">
-          {/* Table Search & Filter Bar */}
+          {/* Table search and filter bar */}
           <div className="p-4 sm:p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="relative w-full sm:max-w-xs">
               <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
-                placeholder="Filtrar aluno por nome..."
+                placeholder="Filter students by name..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-9 pr-3.5 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-[#075e38]/20"
@@ -348,23 +348,23 @@ export const ClassGradesTab: React.FC<ClassGradesTabProps> = ({
 
             <div className="flex items-center gap-2">
               <span className="text-xs text-slate-500 font-medium">
-                {filteredStudents.length} alunos listados
+                {filteredStudents.length} students listed
               </span>
             </div>
           </div>
 
-          {/* Matrix Scrollable Table */}
+          {/* Scrollable matrix table */}
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-xs">
               <thead>
                 <tr className="bg-slate-50/80 border-b border-slate-200/80 text-slate-700">
                   <th className="p-4 font-bold min-w-[200px] sticky left-0 bg-slate-50 z-10">
-                    Estudante
+                    Student
                   </th>
                   <th className="p-4 font-black text-[#075e38] min-w-[110px] text-center bg-emerald-50/50">
-                    Média Geral
+                    Overall Average
                   </th>
-                  {/* Dynamic Assessment Columns */}
+                  {/* Dynamic assessment columns */}
                   {assessments.map((exam) => (
                     <th
                       key={exam.id}
@@ -373,23 +373,23 @@ export const ClassGradesTab: React.FC<ClassGradesTabProps> = ({
                         setSelectedAssessmentId(exam.id);
                         setViewMode('grading');
                       }}
-                      title="Clique para lançar notas desta prova"
+                      title="Click to enter grades for this exam"
                     >
                       <div className="flex items-center gap-1.5">
                         <Award className="w-3.5 h-3.5 text-purple-600 flex-shrink-0" />
                         <span className="truncate">{exam.title}</span>
                       </div>
                       <span className="text-[10px] text-slate-400 font-normal block mt-0.5">
-                        {exam.date} • Peso {exam.weight}% • Máx: {exam.maxScore}
+                        {exam.date} • Weight {exam.weight}% • Max: {exam.maxScore}
                       </span>
                     </th>
                   ))}
-                  {/* Graded Assignments Columns */}
+                  {/* Graded assignment columns */}
                   {assignments.map((assign) => (
                     <th key={assign.id} className="p-4 font-bold min-w-[140px]">
                       <span className="truncate block">{assign.title}</span>
                       <span className="text-[10px] text-slate-400 font-normal block mt-0.5">
-                        Atividade • Máx: {assign.maxScore}
+                        Assignment • Max: {assign.maxScore}
                       </span>
                     </th>
                   ))}
@@ -401,7 +401,7 @@ export const ClassGradesTab: React.FC<ClassGradesTabProps> = ({
 
                   return (
                     <tr key={st.id} className="hover:bg-slate-50/60 transition-colors">
-                      {/* Student Name Sticky Column */}
+                      {/* Student name sticky column */}
                       <td className="p-4 font-bold text-slate-900 sticky left-0 bg-white group-hover:bg-slate-50 z-10 shadow-xs">
                         <div className="flex items-center gap-2.5">
                           <div className="w-7 h-7 rounded-lg bg-emerald-100 text-[#075e38] flex items-center justify-center font-bold text-[11px] flex-shrink-0">
@@ -420,7 +420,7 @@ export const ClassGradesTab: React.FC<ClassGradesTabProps> = ({
                         </div>
                       </td>
 
-                      {/* Média Geral Cell */}
+                      {/* Overall average cell */}
                       <td className="p-4 text-center font-black bg-emerald-50/20">
                         <span
                           className={`inline-block px-2.5 py-1 rounded-full text-xs ${
@@ -433,7 +433,7 @@ export const ClassGradesTab: React.FC<ClassGradesTabProps> = ({
                         </span>
                       </td>
 
-                      {/* Assessment Grade Cells */}
+                      {/* Assessment grade cells */}
                       {assessments.map((exam) => {
                         const gradeRec = grades.find(
                           (g) => g.assessmentId === exam.id && g.studentId === st.id
@@ -466,7 +466,7 @@ export const ClassGradesTab: React.FC<ClassGradesTabProps> = ({
                         );
                       })}
 
-                      {/* Assignment Grade Cells */}
+                      {/* Assignment grade cells */}
                       {assignments.map((assign) => {
                         const sub = submissions.find(
                           (s) => s.assignmentId === assign.id && s.studentId === st.id
@@ -485,7 +485,7 @@ export const ClassGradesTab: React.FC<ClassGradesTabProps> = ({
                               </div>
                             ) : sub ? (
                               <span className="text-blue-600 font-medium text-[11px] bg-blue-50 px-2 py-0.5 rounded">
-                                Entregue
+                                Submitted
                               </span>
                             ) : (
                               <span className="text-slate-300 font-semibold text-xs">
@@ -505,15 +505,15 @@ export const ClassGradesTab: React.FC<ClassGradesTabProps> = ({
       )}
 
       {/* ========================================================================= */}
-      {/* MODE 2: DIRECT ASSESSMENT GRADING VIEW (Lançamento de Notas)              */}
+      {/* MODE 2: DIRECT ASSESSMENT GRADING VIEW (grade entry)                     */}
       {/* ========================================================================= */}
       {viewMode === 'grading' && (
         <div className="bg-white rounded-3xl border border-slate-200/70 shadow-xs p-6 sm:p-7 space-y-6">
-          {/* Assessment Selection Bar */}
+          {/* Assessment selection bar */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-purple-50/50 border border-purple-100">
             <div className="space-y-1">
               <span className="text-[11px] font-bold text-purple-700 uppercase tracking-wider">
-                Selecionar Avaliação para Lançamento:
+                Select Assessment for Grade Entry:
               </span>
               <div className="relative">
                 <select
@@ -523,7 +523,7 @@ export const ClassGradesTab: React.FC<ClassGradesTabProps> = ({
                 >
                   {assessments.map((exam) => (
                     <option key={exam.id} value={exam.id}>
-                      {exam.title} (Data: {exam.date} • Peso: {exam.weight}%)
+                      {exam.title} (Date: {exam.date} • Weight: {exam.weight}%)
                     </option>
                   ))}
                 </select>
@@ -534,11 +534,11 @@ export const ClassGradesTab: React.FC<ClassGradesTabProps> = ({
             {activeAssessment && (
               <div className="flex items-center gap-4 text-xs">
                 <div className="text-right">
-                  <span className="text-slate-500 block">Nota Máxima</span>
-                  <strong className="text-slate-900 text-sm font-black">{activeAssessment.maxScore} pontos</strong>
+                  <span className="text-slate-500 block">Maximum Grade</span>
+                  <strong className="text-slate-900 text-sm font-black">{activeAssessment.maxScore} points</strong>
                 </div>
                 <div className="text-right">
-                  <span className="text-slate-500 block">Peso Bimestral</span>
+                  <span className="text-slate-500 block">Term Weight</span>
                   <strong className="text-purple-700 text-sm font-black">{activeAssessment.weight}%</strong>
                 </div>
                 <button
@@ -546,21 +546,21 @@ export const ClassGradesTab: React.FC<ClassGradesTabProps> = ({
                   className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#075e38] hover:bg-[#064e2e] text-white font-bold text-xs shadow-xs transition-colors cursor-pointer ml-2"
                 >
                   <Save className="w-4 h-4" />
-                  <span>Salvar Todas as Notas</span>
+                  <span>Save All Grades</span>
                 </button>
               </div>
             )}
           </div>
 
-          {/* Students Grading Form Table */}
+          {/* Student grading form table */}
           {activeAssessment ? (
             <div className="divide-y divide-slate-100">
               <div className="hidden sm:grid grid-cols-12 gap-3 py-2 px-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                <div className="col-span-4">Aluno</div>
-                <div className="col-span-2 text-center">Nota Atual</div>
-                <div className="col-span-2 text-center">Nova Nota</div>
-                <div className="col-span-3">Feedback Pedagógico</div>
-                <div className="col-span-1 text-right">Ação</div>
+                <div className="col-span-4">Student</div>
+                <div className="col-span-2 text-center">Current Grade</div>
+                <div className="col-span-2 text-center">New Grade</div>
+                <div className="col-span-3">Academic Feedback</div>
+                <div className="col-span-1 text-right">Action</div>
               </div>
 
               {filteredStudents.map((st) => {
@@ -574,7 +574,7 @@ export const ClassGradesTab: React.FC<ClassGradesTabProps> = ({
                     key={st.id}
                     className="py-3.5 px-3 hover:bg-slate-50/70 transition-colors flex flex-col sm:grid sm:grid-cols-12 gap-3 items-start sm:items-center rounded-2xl"
                   >
-                    {/* Aluno info */}
+                    {/* Student info */}
                     <div className="sm:col-span-4 flex items-center gap-3">
                       <div className="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center font-bold text-xs flex-shrink-0">
                         {st.name
@@ -593,17 +593,17 @@ export const ClassGradesTab: React.FC<ClassGradesTabProps> = ({
                       </div>
                     </div>
 
-                    {/* Nota Atual */}
+                    {/* Current grade */}
                     <div className="sm:col-span-2 text-center w-full sm:w-auto">
-                      <span className="text-xs text-slate-400 sm:hidden">Nota Atual: </span>
+                      <span className="text-xs text-slate-400 sm:hidden">Current Grade: </span>
                       <span className="text-xs font-bold text-slate-700">
-                        {currentGrade ? `${currentGrade.score} / ${activeAssessment.maxScore}` : 'Não lançada'}
+                        {currentGrade ? `${currentGrade.score} / ${activeAssessment.maxScore}` : 'Not entered'}
                       </span>
                     </div>
 
-                    {/* Nova Nota Input */}
+                    {/* New grade input */}
                     <div className="sm:col-span-2 flex items-center justify-center gap-1.5 w-full sm:w-auto">
-                      <span className="text-xs text-slate-400 sm:hidden">Nova Nota: </span>
+                      <span className="text-xs text-slate-400 sm:hidden">New Grade: </span>
                       <input
                         type="number"
                         min={0}
@@ -621,11 +621,11 @@ export const ClassGradesTab: React.FC<ClassGradesTabProps> = ({
                       <span className="text-[11px] text-slate-400">/ {activeAssessment.maxScore}</span>
                     </div>
 
-                    {/* Feedback Input */}
+                    {/* Feedback input */}
                     <div className="sm:col-span-3 w-full">
                       <input
                         type="text"
-                        placeholder="Observação ou feedback ao estudante..."
+                        placeholder="Note or feedback for the student..."
                         value={draft.feedback}
                         onChange={(e) => {
                           setBatchDraftGrades({
@@ -637,14 +637,14 @@ export const ClassGradesTab: React.FC<ClassGradesTabProps> = ({
                       />
                     </div>
 
-                    {/* Save Action */}
+                    {/* Save action */}
                     <div className="sm:col-span-1 text-right w-full sm:w-auto self-end sm:self-center">
                       <button
                         onClick={() => handleSaveSingleGrade(st.id, st.name)}
                         className="px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-[#075e38] text-[#075e38] hover:text-white text-xs font-bold transition-all border border-emerald-200 cursor-pointer"
-                        title="Salvar nota deste aluno"
+                        title="Save this student's grade"
                       >
-                        Salvar
+                        Save
                       </button>
                     </div>
                   </div>
@@ -653,7 +653,7 @@ export const ClassGradesTab: React.FC<ClassGradesTabProps> = ({
             </div>
           ) : (
             <p className="text-xs text-slate-400 text-center py-8">
-              Nenhuma avaliação selecionada ou cadastrada nesta turma.
+              No assessment selected or registered for this class.
             </p>
           )}
         </div>

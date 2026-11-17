@@ -66,7 +66,7 @@ export const FinanceModule: React.FC<FinanceModuleProps> = ({
 
         {/* Dynamic Workspace Container */}
         <main className="flex-1 min-w-0">
-          {/* TAB 1: PAINEL GERAL (OVERVIEW DASHBOARD) */}
+          {/* TAB 1: GENERAL OVERVIEW (OVERVIEW DASHBOARD) */}
           {(activeTab === 'fin_overview' ||
             activeTab === 'fin_home' ||
             activeTab === 'finance' ||
@@ -79,12 +79,12 @@ export const FinanceModule: React.FC<FinanceModuleProps> = ({
             />
           )}
 
-          {/* TAB: VALIDAÇÃO DE PAGAMENTOS DA RECEPÇÃO (RONY / TESOURARIA) */}
+          {/* TAB: RECEPTION PAYMENT VALIDATION (RONY / TREASURY) */}
           {activeTab === 'fin_reception_approvals' && (
             <FinanceReceptionApprovalsTab />
           )}
 
-          {/* TAB 2: MENSALIDADES & COBRANÇAS */}
+          {/* TAB 2: TUITION & CHARGES */}
           {activeTab === 'fin_charges' && (
             <FinanceChargesTab
               onOpenQuickPaymentModal={(chg) => setActivePaymentCharge(chg)}
@@ -93,22 +93,22 @@ export const FinanceModule: React.FC<FinanceModuleProps> = ({
             />
           )}
 
-          {/* TAB 3: CONTROLE DE CAIXA */}
+          {/* TAB 3: CASH REGISTER CONTROL */}
           {activeTab === 'fin_cash_register' && <FinanceCashRegisterTab />}
 
-          {/* TAB 4: RECIBOS EMITIDOS */}
+          {/* TAB 4: ISSUED RECEIPTS */}
           {activeTab === 'fin_receipts' && (
             <FinanceReceiptsTab onViewReceipt={(rec) => setSelectedReceipt(rec)} />
           )}
 
-          {/* TAB 5: INADIMPLÊNCIA & STATUS */}
+          {/* TAB 5: OVERDUE & STATUS */}
           {activeTab === 'fin_inadimplencia' && (
             <FinanceOverdueTab
               onOpenQuickPaymentModal={(chg) => setActivePaymentCharge(chg)}
             />
           )}
 
-          {/* TAB 6: RELATÓRIOS FINANCEIROS */}
+          {/* TAB 6: FINANCIAL REPORTS */}
           {activeTab === 'fin_reports' && <FinanceReportsTab />}
         </main>
       </div>
@@ -131,7 +131,7 @@ export const FinanceModule: React.FC<FinanceModuleProps> = ({
         onClose={() => setSelectedReceipt(null)}
       />
 
-      {/* New Charge / Carnê Modal */}
+      {/* New Charge / Installment Plan Modal */}
       <NewChargeModal
         isOpen={isNewChargeModalOpen}
         onClose={() => setIsNewChargeModalOpen(false)}

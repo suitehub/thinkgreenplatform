@@ -99,7 +99,7 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
     ? state.students.find((s) => s.studentId === inspectStudent.studentId) || inspectStudent
     : null;
 
-  // 3-Step "Novo Aluno" Wizard State
+  // 3-Step "New Student" Wizard State
   const [wizardStep, setWizardStep] = useState(1);
   const [newStudentForm, setNewStudentForm] = useState<{
     name: string;
@@ -144,7 +144,7 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
     enableNegotiation: false,
     discountType: 'PERCENT' as 'PERCENT' | 'FIXED',
     discountValue: 10,
-    discountReason: 'Acordo na Secretaria / Bolsa Familiar',
+    discountReason: "Registrar's Office Agreement / Family Scholarship",
   });
 
   const [createdStudentResult, setCreatedStudentResult] = useState<{
@@ -161,7 +161,7 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
 
   const formatBirthDate = (iso: string) => {
     const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || '');
-    return match ? `${match[3]}/${match[2]}/${match[1]}` : iso || 'não informada';
+    return match ? `${match[3]}/${match[2]}/${match[1]}` : iso || 'not provided';
   };
 
   // Add Extra Course Modal state
@@ -218,7 +218,7 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
 
     if (!personalDataReady) {
       setWizardError(
-        'Informe o nome completo, a data de nascimento e o telefone do aluno. A data de nascimento é a senha de acesso ao Portal do Aluno.'
+        'Enter the student\'s full name, birth date and phone number. The birth date is the password for the Student Portal.'
       );
       setWizardStep(1);
       return;
@@ -327,10 +327,10 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
               <div>
                 <h2 className="text-base sm:text-lg font-black text-slate-900 flex items-center gap-2">
                   <UserPlus className="w-5 h-5 text-[#075e38]" />
-                  Cadastro de Novo Aluno & Matrícula Automática
+                  New Student Registration & Automatic Enrollment
                 </h2>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  Geração instantânea do STU ID, criação do plano de parcelas e vínculo na turma.
+                  Instant STU ID generation, installment plan creation and class assignment.
                 </p>
               </div>
 
@@ -338,11 +338,11 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
                 onClick={() => setCurrentTab('sec_students')}
                 className="text-xs font-bold text-slate-600 hover:text-slate-900 underline"
               >
-                Voltar à Lista de Alunos
+                Back to Student List
               </button>
             </div>
 
-            {/* Bloco para acessar a Fila de Pendentes da Recepção */}
+            {/* Block for accessing the Front Desk Pending Queue */}
             <div className="bg-gradient-to-r from-amber-50 to-orange-50/60 border border-amber-300 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-2xs">
               <div className="flex items-start gap-3">
                 <div className="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center flex-shrink-0 shadow-sm">
@@ -351,14 +351,14 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
                 <div>
                   <div className="flex items-center gap-2 flex-wrap">
                     <h3 className="text-sm font-black text-slate-900">
-                      Fila de Cadastros Pendentes da Recepção
+                      Front Desk Pending Registrations Queue
                     </h3>
                     <span className="px-2.5 py-0.5 rounded-full text-xs font-black bg-amber-200 text-amber-900 border border-amber-300">
-                      {pendingCount} {pendingCount === 1 ? 'pendente' : 'pendentes'}
+                      {pendingCount} pending
                     </span>
                   </div>
                   <p className="text-xs text-slate-600 mt-0.5">
-                    Alunos pré-cadastrados no balcão que aguardam homologação da Secretaria para aprovar, editar ou reprovar.
+                    Students pre-registered at the front desk awaiting approval from the Registrar's Office to approve, edit or reject.
                   </p>
                 </div>
               </div>
@@ -376,8 +376,8 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
                   <Clock className="w-4 h-4" />
                   <span>
                     {showPendingQueueInWizard
-                      ? 'Voltar ao Formulário Direto'
-                      : `Acessar Fila de Pendentes (${pendingCount})`}
+                      ? 'Back to Direct Form'
+                      : `Open Pending Queue (${pendingCount})`}
                   </span>
                 </button>
               </div>
@@ -411,7 +411,7 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
                 >
                   1
                 </span>
-                <span>Dados Pessoais</span>
+                <span>Personal Data</span>
               </div>
               <div className="w-12 h-0.5 bg-slate-200" />
               <div
@@ -427,7 +427,7 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
                 >
                   2
                 </span>
-                <span>Curso & Turma</span>
+                <span>Course & Class</span>
               </div>
               <div className="w-12 h-0.5 bg-slate-200" />
               <div
@@ -443,7 +443,7 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
                 >
                   3
                 </span>
-                <span>Plano Financeiro</span>
+                <span>Payment Plan</span>
               </div>
             </div>
 
@@ -451,18 +451,18 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
             {wizardStep === 1 && (
               <div className="space-y-4 max-w-2xl mx-auto text-xs">
                 <div className="p-3 bg-emerald-50/70 border border-emerald-100 rounded-xl text-emerald-950 text-[11px]">
-                  <strong>Dados Cadastrais Oficiais:</strong> Preencha as informações do estudante com atenção para emissão da ficha e conformidade com os registros escolares.
+                  <strong>Official Registration Data:</strong> Carefully complete the student's information for the dossier issue and compliance with school records.
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="sm:col-span-2">
                     <label className="block font-bold text-slate-700 mb-1">
-                      Nome Completo do Aluno *
+                      Student Full Name *
                     </label>
                     <input
                       type="text"
                       required
-                      placeholder="Ex: Nome completo do aluno"
+                      placeholder="Ex: Student full name"
                       value={newStudentForm.name || ''}
                       onChange={(e) => setNewStudentForm({ ...newStudentForm, name: e.target.value })}
                       className="w-full p-2.5 bg-white border border-slate-300 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-[#075e38] focus:border-transparent outline-hidden"
@@ -471,7 +471,7 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
 
                   <div>
                     <label className="block font-bold text-slate-700 mb-1">
-                      Data de Nascimento *
+                      Date of Birth *
                     </label>
                     <input
                       type="date"
@@ -485,44 +485,44 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
                   </div>
 
                   <div>
-                    <label className="block font-bold text-slate-700 mb-1">Gênero *</label>
+                    <label className="block font-bold text-slate-700 mb-1">Gender *</label>
                     <select
                       value={newStudentForm.gender || 'MASCULINO'}
                       onChange={(e) => setNewStudentForm({ ...newStudentForm, gender: e.target.value })}
                       className="w-full p-2.5 border border-slate-300 rounded-xl text-xs font-semibold bg-white focus:ring-2 focus:ring-[#075e38] focus:border-transparent outline-hidden"
                     >
-                      <option value="MASCULINO">Masculino</option>
-                      <option value="FEMININO">Feminino</option>
-                      <option value="OUTRO">Outro / Prefiro não informar</option>
+                      <option value="MASCULINO">Male</option>
+                      <option value="FEMININO">Female</option>
+                      <option value="OUTRO">Other / Prefer not to say</option>
                     </select>
                   </div>
 
                   <div>
                     <label className="block font-bold text-slate-700 mb-1">
-                      RG (Registro Geral / Identidade)
+                      ID Number (National ID / Passport)
                     </label>
                     <input
                       type="text"
-                      placeholder="Ex: 12.345.678-9 ou ID Nacional"
+                      placeholder="Ex: 12.345.678-9 or National ID"
                       value={newStudentForm.rg || ''}
                       onChange={(e) => setNewStudentForm({ ...newStudentForm, rg: e.target.value })}
                       className="w-full p-2.5 border border-slate-300 rounded-xl text-xs font-mono focus:ring-2 focus:ring-[#075e38] focus:border-transparent outline-hidden"
                     />
                   </div>
 
-                  {/* Foto do Documento (ID) Diretamente Embaixo do RG */}
+                  {/* Document Photo (ID) Directly Below the ID Number */}
                   <div className="sm:col-span-2 p-3 bg-slate-50/90 rounded-xl border border-slate-200">
                     <DocumentPhotoCapture
                       value={newStudentForm.documentPhotoUrl}
                       onChange={(photo) => setNewStudentForm({ ...newStudentForm, documentPhotoUrl: photo })}
-                      label="Foto do Documento (RG / ID)"
-                      helperText="Não obrigatório. Anexe uma imagem ou tire uma foto com a câmera. Será arquivada diretamente nos documentos da ficha do aluno."
+                      label="Document Photo (ID)"
+                      helperText="Optional. Attach an image or take a photo with the camera. It will be filed directly in the student's dossier documents."
                     />
                   </div>
 
                   <div>
                     <label className="block font-bold text-slate-700 mb-1">
-                      Telefone / WhatsApp *
+                      Phone / WhatsApp *
                     </label>
                     <input
                       type="text"
@@ -536,11 +536,11 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
 
                   <div>
                     <label className="block font-bold text-slate-700 mb-1">
-                      Email de Contato <span className="text-slate-400 font-normal">(Opcional)</span>
+                      Contact Email <span className="text-slate-400 font-normal">(Optional)</span>
                     </label>
                     <input
                       type="email"
-                      placeholder="aluno@email.com (opcional)"
+                      placeholder="student@email.com (optional)"
                       value={newStudentForm.email || ''}
                       onChange={(e) => setNewStudentForm({ ...newStudentForm, email: e.target.value })}
                       className="w-full p-2.5 border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-[#075e38] focus:border-transparent outline-hidden"
@@ -549,11 +549,11 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
 
                   <div className="sm:col-span-2">
                     <label className="block font-bold text-slate-700 mb-1">
-                      Nome do Responsável <span className="text-slate-400 font-normal">(se menor de idade - opcional)</span>
+                      Guardian Name <span className="text-slate-400 font-normal">(if underage - optional)</span>
                     </label>
                     <input
                       type="text"
-                      placeholder="Ex: Mahmoud Ibrahim (pai/mãe)"
+                      placeholder="Ex: Mahmoud Ibrahim (parent/guardian)"
                       value={newStudentForm.guardianName || ''}
                       onChange={(e) =>
                         setNewStudentForm({ ...newStudentForm, guardianName: e.target.value })
@@ -564,11 +564,11 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
 
                   <div className="sm:col-span-2">
                     <label className="block font-bold text-slate-700 mb-1">
-                      Observações Médicas / Restrições
+                      Medical Notes / Restrictions
                     </label>
                     <input
                       type="text"
-                      placeholder="Alergias, restrições físicas ou observações pertinentes..."
+                      placeholder="Allergies, physical restrictions or relevant notes..."
                       value={newStudentForm.notes || ''}
                       onChange={(e) => setNewStudentForm({ ...newStudentForm, notes: e.target.value })}
                       className="w-full p-2.5 border border-slate-300 rounded-xl text-xs"
@@ -583,7 +583,7 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
                     onClick={() => {
                       if (!personalDataReady) {
                         setWizardError(
-                          'Informe o nome completo, a data de nascimento e o telefone do aluno. A data de nascimento será a senha de acesso ao Portal do Aluno.'
+                          'Enter the student\'s full name, birth date and phone number. The birth date will be the password for the Student Portal.'
                         );
                         return;
                       }
@@ -592,7 +592,7 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
                     }}
                     className="px-6 py-2.5 bg-[#075e38] hover:bg-[#064e2e] disabled:opacity-50 text-white rounded-xl font-bold text-xs flex items-center gap-1.5 shadow-sm transition-all cursor-pointer"
                   >
-                    Próximo: Escolher Curso <ArrowRight className="w-4 h-4" />
+                    Next: Choose Course <ArrowRight className="w-4 h-4" />
                   </button>
                 </div>
               </div>
@@ -603,10 +603,10 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <label className="block font-bold text-slate-700 text-xs">
-                      Selecione o Curso / Frente de Ensino *
+                      Select the Course / Teaching Track *
                     </label>
                     <span className="text-[11px] text-slate-400">
-                      Valores exibidos em valor inteiro do curso
+                      Amounts shown as the full course value
                     </span>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -645,7 +645,7 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
                               <p className="text-sm font-black text-slate-900">{course.name}</p>
                               {isEng && (
                                 <span className="text-[10px] font-bold text-purple-700 bg-purple-100 px-1.5 py-0.5 rounded border border-purple-200">
-                                  3 Níveis
+                                  3 Levels
                                 </span>
                               )}
                             </div>
@@ -655,13 +655,13 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
                           <div className="mt-3 pt-2 border-t border-slate-100">
                             {isEng ? (
                               <div className="space-y-0.5 text-[10px] text-purple-900 font-semibold">
-                                <p>🧒 Crianças: 2.000 EGP (4x 500)</p>
+                                <p>🧒 Kids: 2.000 EGP (4x 500)</p>
                                 <p>🎒 Teens: 1.500 EGP (3x 500)</p>
-                                <p>🧑 Adulto: 1.800 EGP (3x 600)</p>
+                                <p>🧑 Adult: 1.800 EGP (3x 600)</p>
                               </div>
                             ) : (
                               <div>
-                                <span className="text-[10px] text-slate-400 block">Valor Inteiro Total</span>
+                                <span className="text-[10px] text-slate-400 block">Full Total Amount</span>
                                 <p className="text-xs font-mono font-bold text-emerald-800">
                                   {formatCurrency(totalVal, 'EGP')}{' '}
                                   <span className="text-[10px] text-slate-500 font-normal">
@@ -678,7 +678,7 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
                 </div>
 
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">Selecione a Turma & Horário *</label>
+                  <label className="block font-bold text-slate-700 mb-1">Select Class & Schedule *</label>
                   <select
                     value={newStudentForm.classId || ''}
                     onChange={(e) => setNewStudentForm({ ...newStudentForm, classId: e.target.value })}
@@ -700,14 +700,14 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
                     onClick={() => setWizardStep(1)}
                     className="px-4 py-2 border border-slate-300 rounded-xl font-semibold text-slate-700 hover:bg-slate-50 cursor-pointer"
                   >
-                    Voltar
+                    Back
                   </button>
                   <button
                     type="button"
                     onClick={() => setWizardStep(3)}
                     className="px-6 py-2.5 bg-[#075e38] hover:bg-[#064e2e] text-white rounded-xl font-bold flex items-center gap-1.5 shadow-sm cursor-pointer"
                   >
-                    Próximo: Plano Financeiro & Negociação <ArrowRight className="w-4 h-4" />
+                    Next: Payment Plan & Negotiation <ArrowRight className="w-4 h-4" />
                   </button>
                 </div>
               </div>
@@ -735,33 +735,33 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
                 <form onSubmit={handleFinishWizard} className="space-y-4 max-w-2xl mx-auto text-xs">
                   {/* Student & Course Academic Summary */}
                   <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-3">
-                    <p className="font-bold text-slate-800 text-sm">Resumo da Nova Matrícula:</p>
+                    <p className="font-bold text-slate-800 text-sm">New Enrollment Summary:</p>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-slate-600">
                       <p>
-                        Aluno: <strong className="text-slate-900">{newStudentForm.name}</strong>
+                        Student: <strong className="text-slate-900">{newStudentForm.name}</strong>
                       </p>
                       <p>
-                        RG / Doc:{' '}
+                        ID / Doc:{' '}
                         <strong className="text-slate-900 font-mono">
-                          {newStudentForm.rg || 'Não informado'}
+                          {newStudentForm.rg || 'Not provided'}
                         </strong>
                       </p>
                       <p>
-                        Telefone:{' '}
+                        Phone:{' '}
                         <strong className="text-slate-900">{newStudentForm.phone}</strong>
                       </p>
                       <p>
-                        Curso:{' '}
+                        Course:{' '}
                         <strong className="text-slate-900">{activeCourse?.name}</strong>
                       </p>
                       <p>
-                        Turma:{' '}
+                        Class:{' '}
                         <strong className="text-slate-900">
                           {state.classes.find((c) => c.id === newStudentForm.classId)?.name}
                         </strong>
                       </p>
                       <p>
-                        Valor Inteiro Base:{' '}
+                        Base Full Amount:{' '}
                         <strong className="text-emerald-800 font-mono">
                           {formatCurrency(baseTotal, 'EGP')}
                         </strong>
@@ -773,7 +773,7 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
                   {isEng && (
                     <div className="p-3.5 bg-purple-50 border border-purple-200 rounded-xl space-y-2">
                       <label className="block font-bold text-purple-950 text-xs">
-                        Nível / Faixa Etária do Curso de Inglês *
+                        English Course Level / Age Group *
                       </label>
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                         <button
@@ -792,8 +792,8 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
                               : 'border-purple-200 bg-white text-slate-700 hover:bg-purple-100/50'
                           }`}
                         >
-                          <p className="font-bold text-xs">🧒 Crianças (Kids)</p>
-                          <p className="text-[10px] opacity-90 mt-0.5">Padrão: 4 Parcelas</p>
+                          <p className="font-bold text-xs">🧒 Kids</p>
+                          <p className="text-[10px] opacity-90 mt-0.5">Default: 4 Installments</p>
                           <p className="font-mono font-bold text-xs mt-1">2.000 EGP (4x 500)</p>
                         </button>
 
@@ -813,8 +813,8 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
                               : 'border-purple-200 bg-white text-slate-700 hover:bg-purple-100/50'
                           }`}
                         >
-                          <p className="font-bold text-xs">🎒 Adolescentes (Teens)</p>
-                          <p className="text-[10px] opacity-90 mt-0.5">Padrão: 3 Parcelas</p>
+                          <p className="font-bold text-xs">🎒 Teens</p>
+                          <p className="text-[10px] opacity-90 mt-0.5">Default: 3 Installments</p>
                           <p className="font-mono font-bold text-xs mt-1">1.500 EGP (3x 500)</p>
                         </button>
 
@@ -834,8 +834,8 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
                               : 'border-purple-200 bg-white text-slate-700 hover:bg-purple-100/50'
                           }`}
                         >
-                          <p className="font-bold text-xs">🧑 Adulto (Adults)</p>
-                          <p className="text-[10px] opacity-90 mt-0.5">Padrão: 3 Parcelas</p>
+                          <p className="font-bold text-xs">🧑 Adults</p>
+                          <p className="text-[10px] opacity-90 mt-0.5">Default: 3 Installments</p>
                           <p className="font-mono font-bold text-xs mt-1">1.800 EGP (3x 600)</p>
                         </button>
                       </div>
@@ -846,12 +846,12 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
                   <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
                     <div className="flex items-center justify-between">
                       <label className="block font-bold text-slate-800 text-xs">
-                        Número de Parcelas do Aluno (Opção Livre)
+                        Number of Student Installments (Free Choice)
                       </label>
                       <span className="text-[11px] text-slate-500 font-medium">
                         {newStudentForm.installmentsCount === 1
-                          ? 'À Vista'
-                          : `Dividido em ${newStudentForm.installmentsCount} parcelas`}
+                          ? 'Pay in Full'
+                          : `Split into ${newStudentForm.installmentsCount} installments`}
                       </span>
                     </div>
 
@@ -873,13 +873,13 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
                               : 'bg-white border border-slate-300 text-slate-700 hover:bg-slate-100'
                           }`}
                         >
-                          {num === 1 ? '1x (À Vista)' : `${num}x`}
+                          {num === 1 ? '1x (Pay in Full)' : `${num}x`}
                         </button>
                       ))}
                     </div>
 
                     <div className="flex items-center gap-2 pt-1">
-                      <span className="text-slate-500 text-[11px]">Ou digite a quantidade desejada:</span>
+                      <span className="text-slate-500 text-[11px]">Or type the desired quantity:</span>
                       <input
                         type="number"
                         min={1}
@@ -896,7 +896,7 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
                         }}
                         className="w-20 p-1.5 bg-white border border-slate-300 rounded-lg text-center font-mono font-bold text-xs"
                       />
-                      <span className="text-slate-500 text-[11px]">parcelas</span>
+                      <span className="text-slate-500 text-[11px]">installments</span>
                     </div>
                   </div>
 
@@ -914,12 +914,12 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
                         />
                         <span className="font-bold text-amber-950 text-xs flex items-center gap-1">
                           <BadgePercent className="w-3.5 h-3.5 text-amber-600" />
-                          Aplicar Negociação / Conceder Desconto ao Aluno
+                          Apply Negotiation / Grant Discount to Student
                         </span>
                       </label>
                       {newStudentForm.enableNegotiation && (
                         <span className="text-[10px] font-bold text-amber-800 bg-amber-100 px-2 py-0.5 rounded-full">
-                          Negociação Ativada
+                          Negotiation Enabled
                         </span>
                       )}
                     </div>
@@ -929,7 +929,7 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
                         <div className="grid grid-cols-2 gap-2">
                           <div>
                             <label className="block text-[10px] font-bold text-amber-900 mb-1">
-                              Formato do Desconto
+                              Discount Format
                             </label>
                             <div className="grid grid-cols-2 gap-1">
                               <button
@@ -943,7 +943,7 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
                                     : 'bg-white border border-amber-200 text-amber-900'
                                 }`}
                               >
-                                Porcentagem (%)
+                                Percentage (%)
                               </button>
                               <button
                                 type="button"
@@ -956,7 +956,7 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
                                     : 'bg-white border border-amber-200 text-amber-900'
                                 }`}
                               >
-                                Valor Fixo (EGP)
+                                Fixed Amount (EGP)
                               </button>
                             </div>
                           </div>
@@ -964,8 +964,8 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
                           <div>
                             <label className="block text-[10px] font-bold text-amber-900 mb-1">
                               {newStudentForm.discountType === 'PERCENT'
-                                ? 'Porcentagem de Desconto (%)'
-                                : 'Valor a Abater (EGP)'}
+                                ? 'Discount Percentage (%)'
+                                : 'Amount to Deduct (EGP)'}
                             </label>
                             <input
                               type="number"
@@ -985,7 +985,7 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
 
                         <div>
                           <label className="block text-[10px] font-bold text-amber-900 mb-1">
-                            Motivo / Justificativa da Negociação
+                            Reason / Justification for Negotiation
                           </label>
                           <input
                             type="text"
@@ -993,16 +993,16 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
                             onChange={(e) =>
                               setNewStudentForm({ ...newStudentForm, discountReason: e.target.value })
                             }
-                            placeholder="Ex: Bolsa Social, Desconto Irmãos, Acordo de Balcão"
+                            placeholder="Ex: Social Scholarship, Sibling Discount, Front Desk Agreement"
                             className="w-full p-2 bg-white border border-amber-300 rounded-xl text-xs"
                           />
                           <div className="flex flex-wrap gap-1 mt-1.5">
                             {[
-                              'Desconto Irmãos',
-                              'Bolsa Familiar Comunitária',
-                              'Pagamento Antecipado',
-                              'Parceria Social',
-                              'Acordo Balcão Secretaria',
+                              'Sibling Discount',
+                              'Community Family Scholarship',
+                              'Early Payment',
+                              'Social Partnership',
+                              "Registrar's Office Front Desk Agreement",
                             ].map((chip) => (
                               <button
                                 key={chip}
@@ -1024,7 +1024,7 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
                   {/* Financial Total Box */}
                   <div className="p-3.5 bg-emerald-50 border border-emerald-200 rounded-xl space-y-1.5 text-xs">
                     <div className="flex items-center justify-between text-slate-600">
-                      <span>Valor Inteiro Original:</span>
+                      <span>Original Full Amount:</span>
                       <span className="font-mono font-bold text-slate-800">
                         {formatCurrency(baseTotal, 'EGP')}
                       </span>
@@ -1032,34 +1032,34 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
 
                     {newStudentForm.enableNegotiation && discountAmt > 0 && (
                       <div className="flex items-center justify-between text-amber-700">
-                        <span>Desconto Concedido:</span>
+                        <span>Discount Granted:</span>
                         <span className="font-mono font-bold">
                           -{formatCurrency(discountAmt, 'EGP')} (
                           {newStudentForm.discountType === 'PERCENT'
                             ? `${newStudentForm.discountValue}%`
-                            : 'Fixo'}
+                            : 'Fixed'}
                           )
                         </span>
                       </div>
                     )}
 
                     <div className="pt-1.5 border-t border-emerald-200 flex items-center justify-between font-bold text-emerald-950 text-sm">
-                      <span>Total Final do Plano ({effInstallments} parcelas):</span>
+                      <span>Final Plan Total ({effInstallments} installments):</span>
                       <span className="font-mono font-black text-emerald-900 text-base">
                         {formatCurrency(finalTotal, 'EGP')}
                       </span>
                     </div>
 
                     <div className="flex items-center justify-between text-emerald-900 font-bold text-xs">
-                      <span>Valor de Cada Parcela:</span>
+                      <span>Amount per Installment:</span>
                       <span className="font-mono font-black bg-white px-2.5 py-1 rounded-lg border border-emerald-200 text-sm text-emerald-950">
-                        {formatCurrency(installmentAmount, 'EGP')} / mês
+                        {formatCurrency(installmentAmount, 'EGP')} / month
                       </span>
                     </div>
                   </div>
 
                   <div className="p-3 bg-emerald-50/80 text-emerald-950 rounded-xl border border-emerald-200 text-[11px] leading-relaxed">
-                    <strong>Automação Imediata:</strong> Ao confirmar, o sistema gera um ID Student aleatório no padrão STU#####, cria automaticamente o acesso do aluno (Portal do Aluno com ID + data de nascimento) e vincula a turma e o plano financeiro.
+                    <strong>Immediate Automation:</strong> On confirmation, the system generates a random STU##### Student ID, automatically creates the student's access (Student Portal with ID + birth date) and links the class and payment plan.
                   </div>
 
                   <div className="flex justify-between pt-4">
@@ -1068,13 +1068,13 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
                       onClick={() => setWizardStep(2)}
                       className="px-4 py-2 border border-slate-300 rounded-xl font-semibold text-slate-700 hover:bg-slate-50 cursor-pointer"
                     >
-                      Voltar
+                      Back
                     </button>
                     <button
                       type="submit"
                       className="px-6 py-2.5 bg-[#075e38] hover:bg-[#064e2e] text-white rounded-xl font-black flex items-center gap-1.5 shadow-sm cursor-pointer"
                     >
-                      <CheckCircle className="w-4 h-4" /> Gerar STU ID & Concluir Matrícula
+                      <CheckCircle className="w-4 h-4" /> Generate STU ID & Complete Enrollment
                     </button>
                   </div>
                 </form>
@@ -1088,7 +1088,7 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
                 </div>
                 <div>
                   <span className="text-xs font-bold uppercase tracking-wider text-emerald-800">
-                    Matrícula Concluída com Sucesso!
+                    Enrollment Completed Successfully!
                   </span>
                   <h3 className="text-xl font-black text-slate-900 mt-1">
                     {createdStudentResult.student.name}
@@ -1096,7 +1096,7 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
                 </div>
 
                 <div className="p-4 bg-white rounded-2xl border border-emerald-200 shadow-2xs text-xs space-y-2">
-                  <p className="text-slate-500 font-medium">ID Student gerado automaticamente:</p>
+                  <p className="text-slate-500 font-medium">Student ID generated automatically:</p>
                   <p className="font-mono text-2xl font-black text-[#075e38]">
                     {createdStudentResult.student.studentId}
                   </p>
@@ -1108,27 +1108,27 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
                 <div className="p-4 bg-white rounded-2xl border border-slate-200 shadow-2xs text-left text-xs space-y-2.5">
                   <div className="flex items-center gap-2 text-[#075e38] font-bold">
                     <KeyRound className="w-4 h-4" />
-                    <span>Acesso do aluno criado automaticamente</span>
+                    <span>Student access created automatically</span>
                   </div>
                   <p className="text-[11px] text-slate-600 leading-relaxed">
-                    O aluno entra no <strong>Portal do Aluno</strong> usando apenas estes dois dados:
+                    The student signs in to the <strong>Student Portal</strong> using only these two items:
                   </p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
                     <div className="p-2.5 bg-slate-50 rounded-lg border border-slate-200">
-                      <span className="block text-slate-400 font-semibold">ID Student</span>
+                      <span className="block text-slate-400 font-semibold">Student ID</span>
                       <strong className="font-mono text-slate-900">
                         {createdStudentResult.student.studentId}
                       </strong>
                     </div>
                     <div className="p-2.5 bg-slate-50 rounded-lg border border-slate-200">
-                      <span className="block text-slate-400 font-semibold">Data de nascimento</span>
+                      <span className="block text-slate-400 font-semibold">Birth date</span>
                       <strong className="font-mono text-slate-900">
                         {formatBirthDate(createdStudentResult.student.birthDate)}
                       </strong>
                     </div>
                   </div>
                   <p className="text-[11px] text-slate-500 leading-relaxed">
-                    Sem senha. O aluno já pode acessar os conteúdos da turma em que foi matriculado.
+                    No password. The student can already access the content of the class they are enrolled in.
                   </p>
                   <button
                     type="button"
@@ -1136,7 +1136,7 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
                       const s = createdStudentResult.student;
                       navigator.clipboard
                         .writeText(
-                          `Portal do Aluno Think Green\nID Student: ${s.studentId}\nData de nascimento: ${formatBirthDate(s.birthDate)}`
+                          `Think Green Student Portal\nStudent ID: ${s.studentId}\nBirth date: ${formatBirthDate(s.birthDate)}`
                         )
                         .catch(() => {});
                       setAccessCopied(true);
@@ -1146,11 +1146,11 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
                   >
                     {accessCopied ? (
                       <>
-                        <CheckCircle className="w-3.5 h-3.5" /> Dados copiados!
+                        <CheckCircle className="w-3.5 h-3.5" /> Data copied!
                       </>
                     ) : (
                       <>
-                        <Copy className="w-3.5 h-3.5" /> Copiar dados de acesso
+                        <Copy className="w-3.5 h-3.5" /> Copy access data
                       </>
                     )}
                   </button>
@@ -1161,7 +1161,7 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
                     onClick={() => setCurrentTab('sec_students')}
                     className="px-6 py-2.5 bg-[#075e38] text-white rounded-xl font-bold text-xs hover:bg-[#064e2e] shadow-sm cursor-pointer"
                   >
-                    Ir para Lista de Alunos
+                    Go to Student List
                   </button>
                 </div>
               </div>
@@ -1175,7 +1175,7 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
       case 'sec_students':
         return (
           <div className="bg-white p-6 rounded-2xl border border-slate-100/90 shadow-[0_2px_8px_rgba(0,0,0,0.03)] space-y-5">
-            {/* Top Metric Filter Cards: Total Histórico vs Ativos */}
+            {/* Top Metric Filter Cards: Total History vs Active */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <button
                 type="button"
@@ -1188,17 +1188,17 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
               >
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] font-black uppercase tracking-wider text-slate-500">
-                    Total que Já Passaram no Projeto
+                    Total Ever Enrolled in the Program
                   </span>
                   <span className="text-[10px] font-bold text-[#075e38] bg-white px-2 py-0.5 rounded-md border border-emerald-100">
-                    Histórico Geral
+                    Full History
                   </span>
                 </div>
                 <div className="flex items-baseline gap-2 mt-1">
                   <span className="text-2xl font-black text-slate-900">{state.students.length}</span>
-                  <span className="text-xs text-slate-500">alunos registrados</span>
+                  <span className="text-xs text-slate-500">registered students</span>
                 </div>
-                <p className="text-[10px] text-slate-400 mt-1">Clique para ver todos os alunos do histórico</p>
+                <p className="text-[10px] text-slate-400 mt-1">Click to see all students in the history</p>
               </button>
 
               <button
@@ -1212,19 +1212,19 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
               >
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] font-black uppercase tracking-wider text-emerald-800">
-                    Alunos Ativos no Momento
+                    Currently Active Students
                   </span>
                   <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-md">
-                    Cursando
+                    Enrolled
                   </span>
                 </div>
                 <div className="flex items-baseline gap-2 mt-1">
                   <span className="text-2xl font-black text-emerald-900">
                     {state.students.filter((s) => s.status === 'ATIVO').length}
                   </span>
-                  <span className="text-xs text-slate-500">matriculados ativos</span>
+                  <span className="text-xs text-slate-500">active enrollments</span>
                 </div>
-                <p className="text-[10px] text-slate-400 mt-1">Clique para filtrar apenas ativos</p>
+                <p className="text-[10px] text-slate-400 mt-1">Click to filter active only</p>
               </button>
 
               <button
@@ -1238,19 +1238,19 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
               >
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] font-black uppercase tracking-wider text-slate-500">
-                    Concluídos / Inativos
+                    Completed / Inactive
                   </span>
                   <span className="text-[10px] font-bold text-slate-600 bg-slate-200 px-2 py-0.5 rounded-md">
-                    Histórico Passado
+                    Past History
                   </span>
                 </div>
                 <div className="flex items-baseline gap-2 mt-1">
                   <span className="text-2xl font-black text-slate-700">
                     {state.students.filter((s) => s.status === 'INATIVO').length}
                   </span>
-                  <span className="text-xs text-slate-500">inativos / encerrados</span>
+                  <span className="text-xs text-slate-500">inactive / closed</span>
                 </div>
-                <p className="text-[10px] text-slate-400 mt-1">Clique para filtrar concluídos/inativos</p>
+                <p className="text-[10px] text-slate-400 mt-1">Click to filter completed/inactive</p>
               </button>
             </div>
 
@@ -1258,10 +1258,10 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
               <div>
                 <h2 className="text-base font-black text-slate-900 flex items-center gap-2">
                   <Users className="w-5 h-5 text-[#075e38]" />
-                  Alunos & Matrículas ({filteredStudents.length} {filterStatus === 'ALL' ? 'no histórico geral' : filterStatus === 'ATIVO' ? 'ativos' : 'inativos'})
+                  Students & Enrollments ({filteredStudents.length} {filterStatus === 'ALL' ? 'in the full history' : filterStatus === 'ATIVO' ? 'active' : 'inactive'})
                 </h2>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  Identificador permanente STU00000 — 1 Aluno para Múltiplas Matrículas
+                  Permanent identifier STU00000 — 1 Student for Multiple Enrollments
                 </p>
               </div>
 
@@ -1271,7 +1271,7 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
                   <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
                   <input
                     type="text"
-                    placeholder="Buscar STU, nome ou RG..."
+                    placeholder="Search STU, name or ID..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="pl-9 pr-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-[#075e38] focus:border-transparent outline-hidden w-48 sm:w-56"
@@ -1283,7 +1283,7 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
                   onChange={(e) => setFilterCourse(e.target.value)}
                   className="px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-700"
                 >
-                  <option value="ALL">Todos os Cursos</option>
+                  <option value="ALL">All Courses</option>
                   {state.courses.map((c) => (
                     <option key={c.id} value={c.id}>
                       {c.name}
@@ -1296,9 +1296,9 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
                   onChange={(e) => setFilterStatus(e.target.value)}
                   className="px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-700"
                 >
-                  <option value="ALL">Todos no Histórico ({state.students.length})</option>
-                  <option value="ATIVO">Alunos Ativos ({state.students.filter(s => s.status === 'ATIVO').length})</option>
-                  <option value="INATIVO">Concluídos / Inativos ({state.students.filter(s => s.status === 'INATIVO').length})</option>
+                  <option value="ALL">All in History ({state.students.length})</option>
+                  <option value="ATIVO">Active Students ({state.students.filter(s => s.status === 'ATIVO').length})</option>
+                  <option value="INATIVO">Completed / Inactive ({state.students.filter(s => s.status === 'INATIVO').length})</option>
                 </select>
 
                 <button
@@ -1309,7 +1309,7 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
                   }}
                   className="px-4 py-2 bg-[#075e38] hover:bg-[#064e2e] text-white rounded-xl font-bold text-xs flex items-center gap-1.5 shadow-sm transition-colors cursor-pointer"
                 >
-                  <Plus className="w-4 h-4" /> Novo Aluno
+                  <Plus className="w-4 h-4" /> New Student
                 </button>
               </div>
             </div>
@@ -1319,14 +1319,14 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
               <table className="w-full text-left text-xs">
                 <thead className="bg-slate-50/80 text-slate-500 font-bold uppercase tracking-wider border-b border-slate-100">
                   <tr>
-                    <th className="px-4 py-3">ID Student</th>
-                    <th className="px-4 py-3">Aluno</th>
-                    <th className="px-4 py-3">RG / Nasc</th>
-                    <th className="px-4 py-3">Cursos Matriculados</th>
-                    <th className="px-4 py-3">Turmas</th>
+                    <th className="px-4 py-3">Student ID</th>
+                    <th className="px-4 py-3">Student</th>
+                    <th className="px-4 py-3">ID / Birth</th>
+                    <th className="px-4 py-3">Enrolled Courses</th>
+                    <th className="px-4 py-3">Classes</th>
                     <th className="px-4 py-3">Status</th>
-                    <th className="px-4 py-3">Financeiro</th>
-                    <th className="px-4 py-3 text-right">Ações</th>
+                    <th className="px-4 py-3">Financial</th>
+                    <th className="px-4 py-3 text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -1368,10 +1368,10 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
                         </td>
                         <td className="px-4 py-3.5 text-slate-600">
                           <p className="font-mono text-[11px] font-bold text-slate-800">
-                            {stu.rg || 'Não informado'}
+                            {stu.rg || 'Not provided'}
                           </p>
                           <p className="text-[10px] text-slate-400">
-                            {stu.birthDate || 'Sem data'}
+                            {stu.birthDate || 'No date'}
                           </p>
                         </td>
                         <td className="px-4 py-3.5">
@@ -1387,7 +1387,7 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
                           </div>
                         </td>
                         <td className="px-4 py-3.5 text-slate-600">
-                          {enrollments.map((e) => e.className).join(', ') || 'Sem turma'}
+                          {enrollments.map((e) => e.className).join(', ') || 'No class'}
                         </td>
                         <td className="px-4 py-3.5">
                           <Badge status={stu.status} />
@@ -1406,16 +1406,16 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
                             <button
                               onClick={() => setInspectStudent(stu)}
                               className="px-3 py-1.5 text-xs font-bold text-[#075e38] bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors flex items-center gap-1 cursor-pointer"
-                              title="Ver Ficha Completa do Aluno"
+                              title="View Full Student Dossier"
                             >
-                              <Eye className="w-3.5 h-3.5" /> Ficha
+                              <Eye className="w-3.5 h-3.5" /> Dossier
                             </button>
                             <button
                               onClick={() => setExtraEnrollmentModalStudent(stu)}
                               className="px-2.5 py-1.5 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors flex items-center gap-1 cursor-pointer"
-                              title="Adicionar Novo Curso a este Aluno"
+                              title="Add a New Course to this Student"
                             >
-                              <Plus className="w-3.5 h-3.5" /> +Curso
+                              <Plus className="w-3.5 h-3.5" /> +Course
                             </button>
                           </div>
                         </td>
@@ -1436,7 +1436,7 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
         );
 
       case 'sec_enrollments':
-        // Matrículas está unificada na aba Alunos conforme solicitado
+      // Enrollments are unified in the Students tab as requested
         setCurrentTab('sec_students');
         return null;
 
@@ -1494,7 +1494,7 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
         </main>
       </div>
 
-      {/* 3. MODALS (Ficha 360, Extra Course, Support) */}
+      {/* 3. MODALS (Dossier 360, Extra Course, Support) */}
       {currentInspectedStudent && (
         <StudentDossierModal
           student={currentInspectedStudent}
@@ -1511,12 +1511,12 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
         <Modal
           isOpen={!!extraEnrollmentModalStudent}
           onClose={() => setExtraEnrollmentModalStudent(null)}
-          title={`Adicionar Novo Curso para ${extraEnrollmentModalStudent.name}`}
-          subtitle={`Mantendo o mesmo ID Student: ${extraEnrollmentModalStudent.studentId}`}
+          title={`Add New Course for ${extraEnrollmentModalStudent.name}`}
+          subtitle={`Keeping the same Student ID: ${extraEnrollmentModalStudent.studentId}`}
         >
           <form onSubmit={handleAddExtraEnrollment} className="space-y-4 text-xs">
             <div>
-              <label className="block font-bold text-slate-700 mb-1">Selecione o Novo Curso</label>
+              <label className="block font-bold text-slate-700 mb-1">Select the New Course</label>
               <select
                 value={extraCourseId}
                 onChange={(e) => {
@@ -1534,7 +1534,7 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
                   const isEng = isEnglishCourseObj(c);
                   return (
                     <option key={c.id} value={c.id}>
-                      {c.name} {isEng ? '(3 Níveis Etários)' : `(${formatCurrency(c.totalCourseAmount || c.monthlyFee * 4, 'EGP')} total)`}
+                      {c.name} {isEng ? '(3 Age Levels)' : `(${formatCurrency(c.totalCourseAmount || c.monthlyFee * 4, 'EGP')} total)`}
                     </option>
                   );
                 })}
@@ -1549,7 +1549,7 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
                   {isEng && (
                     <div className="p-3 bg-purple-50 border border-purple-200 rounded-xl space-y-2">
                       <label className="block font-bold text-purple-950 text-xs">
-                        Nível do Curso de Inglês *
+                        English Course Level *
                       </label>
                       <div className="grid grid-cols-3 gap-2">
                         <button
@@ -1564,7 +1564,7 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
                               : 'border-purple-200 bg-white text-slate-700'
                           }`}
                         >
-                          <p className="text-xs">🧒 Crianças</p>
+                          <p className="text-xs">🧒 Kids</p>
                           <p className="text-[10px] font-mono mt-0.5">2.000 EGP (4x)</p>
                         </button>
                         <button
@@ -1594,7 +1594,7 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
                               : 'border-purple-200 bg-white text-slate-700'
                           }`}
                         >
-                          <p className="text-xs">🧑 Adulto</p>
+                          <p className="text-xs">🧑 Adults</p>
                           <p className="text-[10px] font-mono mt-0.5">1.800 EGP (3x)</p>
                         </button>
                       </div>
@@ -1602,7 +1602,7 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
                   )}
 
                   <div>
-                    <label className="block font-bold text-slate-700 mb-1">Selecione a Turma</label>
+                    <label className="block font-bold text-slate-700 mb-1">Select Class</label>
                     <select
                       value={extraClassId}
                       onChange={(e) => setExtraClassId(e.target.value)}
@@ -1620,7 +1620,7 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
 
                   <div>
                     <label className="block font-bold text-slate-700 mb-1">
-                      Quantidade de Parcelas (Livre Escolha)
+                      Number of Installments (Free Choice)
                     </label>
                     <div className="flex items-center gap-2">
                       <div className="flex flex-wrap gap-1">
@@ -1635,7 +1635,7 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
                                 : 'bg-slate-100 border border-slate-300 text-slate-700'
                             }`}
                           >
-                            {n === 1 ? '1x à vista' : `${n}x`}
+                            {n === 1 ? '1x in full' : `${n}x`}
                           </button>
                         ))}
                       </div>
@@ -1652,9 +1652,9 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
 
                   <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-between text-xs">
                     <div>
-                      <span className="text-emerald-900 font-bold block">Valor Inteiro Total:</span>
+                      <span className="text-emerald-900 font-bold block">Full Total Amount:</span>
                       <span className="text-[10px] text-slate-500">
-                        {extraInstallmentsCount} parcelas de{' '}
+                        {extraInstallmentsCount} installments of{' '}
                         {formatCurrency(
                           Math.round(
                             getCourseBaseTotal(selCourse!, isEng ? extraEnglishLevel : undefined) /
@@ -1681,13 +1681,13 @@ export const SecretariatModule: React.FC<SecretariatModuleProps> = ({
                 onClick={() => setExtraEnrollmentModalStudent(null)}
                 className="px-4 py-2 border border-slate-300 rounded-xl font-semibold text-slate-700 hover:bg-slate-50 cursor-pointer"
               >
-                Cancelar
+                Cancel
               </button>
               <button
                 type="submit"
                 className="px-5 py-2 bg-[#075e38] hover:bg-[#064e2e] text-white rounded-xl font-bold cursor-pointer shadow-xs"
               >
-                Confirmar Matrícula
+                Confirm Enrollment
               </button>
             </div>
           </form>

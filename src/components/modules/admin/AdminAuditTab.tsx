@@ -53,7 +53,7 @@ export const AdminAuditTab: React.FC = () => {
   };
 
   const handleExportCSV = () => {
-    const headers = ['ID', 'Data/Hora', 'Usuário', 'Papel', 'Módulo', 'Ação', 'Entidade', 'ID Entidade', 'Detalhes'];
+    const headers = ['ID', 'Date/Time', 'User', 'Role', 'Module', 'Action', 'Entity', 'Entity ID', 'Details'];
     const rows = filteredLogs.map((l) => [
       l.id,
       `"${l.timestamp}"`,
@@ -78,15 +78,15 @@ export const AdminAuditTab: React.FC = () => {
   const getModuleBadge = (mod: string) => {
     switch (mod) {
       case 'SECRETARIAT':
-        return <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-teal-50 text-teal-800 border border-teal-200">SECRETARIA</span>;
+        return <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-teal-50 text-teal-800 border border-teal-200">SECRETARIAT</span>;
       case 'FINANCE':
-        return <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200">FINANCEIRO</span>;
+        return <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200">FINANCE</span>;
       case 'ACADEMIC':
-        return <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-sky-50 text-sky-800 border border-sky-200">ACADÊMICO</span>;
+        return <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-sky-50 text-sky-800 border border-sky-200">ACADEMIC</span>;
       case 'ACCOUNTING':
-        return <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-800 border border-blue-200">CONTÁBIL</span>;
+        return <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-800 border border-blue-200">ACCOUNTING</span>;
       case 'LMS':
-        return <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-50 text-purple-800 border border-purple-200">AVA / LMS</span>;
+        return <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-50 text-purple-800 border border-purple-200">LMS</span>;
       case 'ADMIN':
         return <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-100 text-purple-950 border border-purple-300">ADMIN</span>;
       default:
@@ -101,10 +101,10 @@ export const AdminAuditTab: React.FC = () => {
         <div>
           <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
             <FileText className="w-5 h-5 text-amber-600" />
-            Trilha Imutável de Auditoria (Audit Logs)
+            Immutable Audit Trail (Audit Logs)
           </h2>
           <p className="text-xs text-slate-500 mt-0.5">
-            Registro cronológico e imutável de todas as ações sensíveis realizadas no Think Green.
+            Chronological, immutable record of all sensitive actions performed in Think Green.
           </p>
         </div>
 
@@ -112,16 +112,16 @@ export const AdminAuditTab: React.FC = () => {
           <button
             onClick={handleExportCSV}
             className="px-3.5 py-2 border border-slate-200 hover:bg-slate-100 text-slate-700 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
-            title="Exportar registros filtrados em CSV"
+            title="Export filtered records to CSV"
           >
             <Download className="w-3.5 h-3.5 text-slate-500" />
-            Exportar CSV
+            Export CSV
           </button>
 
           <button
             onClick={handleExportJSON}
             className="px-3.5 py-2 bg-purple-50 hover:bg-purple-100 border border-purple-200 text-purple-800 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
-            title="Download completo dos logs em formato JSON"
+            title="Full log download in JSON format"
           >
             <Download className="w-3.5 h-3.5 text-purple-600" />
             Backup JSON
@@ -136,7 +136,7 @@ export const AdminAuditTab: React.FC = () => {
           <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
-            placeholder="Buscar operador, ação, entidade ou detalhes..."
+            placeholder="Search operator, action, entity or details..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:bg-white transition-all"
@@ -150,13 +150,13 @@ export const AdminAuditTab: React.FC = () => {
             onChange={(e) => setModuleFilter(e.target.value)}
             className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-purple-500"
           >
-            <option value="ALL">Todos os Módulos ({logs.length})</option>
-            <option value="SECRETARIAT">Secretaria</option>
-            <option value="FINANCE">Financeiro</option>
-            <option value="ACADEMIC">Acadêmico</option>
-            <option value="ACCOUNTING">Contábil</option>
-            <option value="LMS">AVA / LMS</option>
-            <option value="ADMIN">Administração</option>
+            <option value="ALL">All Modules ({logs.length})</option>
+            <option value="SECRETARIAT">Secretariat</option>
+            <option value="FINANCE">Finance</option>
+            <option value="ACADEMIC">Academic</option>
+            <option value="ACCOUNTING">Accounting</option>
+            <option value="LMS">LMS</option>
+            <option value="ADMIN">Administration</option>
           </select>
 
           <select
@@ -164,12 +164,12 @@ export const AdminAuditTab: React.FC = () => {
             onChange={(e) => setRoleFilter(e.target.value)}
             className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-purple-500"
           >
-            <option value="ALL">Todos os Papéis</option>
-            <option value="STUDENT">Aluno</option>
-            <option value="TEACHER">Professor</option>
-            <option value="FINANCE">Financeiro</option>
-            <option value="SECRETARIAT">Secretaria</option>
-            <option value="ACCOUNTING">Contabilidade</option>
+            <option value="ALL">All Roles</option>
+            <option value="STUDENT">Student</option>
+            <option value="TEACHER">Teacher</option>
+            <option value="FINANCE">Finance</option>
+            <option value="SECRETARIAT">Secretariat</option>
+            <option value="ACCOUNTING">Accounting</option>
             <option value="SUPER_ADMIN">Super Admin</option>
           </select>
 
@@ -182,7 +182,7 @@ export const AdminAuditTab: React.FC = () => {
               }}
               className="px-2.5 py-1.5 text-xs text-rose-600 hover:bg-rose-50 rounded-lg transition-colors font-semibold"
             >
-              Limpar Filtros
+              Clear Filters
             </button>
           )}
         </div>
@@ -194,20 +194,20 @@ export const AdminAuditTab: React.FC = () => {
           <table className="w-full text-left text-xs">
             <thead className="bg-slate-50 text-slate-500 font-bold uppercase tracking-wider border-b border-slate-200">
               <tr>
-                <th className="px-4 py-3">Data / Hora</th>
-                <th className="px-4 py-3">Operador</th>
-                <th className="px-4 py-3">Módulo</th>
-                <th className="px-4 py-3">Ação Registrada</th>
-                <th className="px-4 py-3">Entidade Afetada</th>
-                <th className="px-4 py-3">Detalhes / Payload</th>
-                <th className="px-4 py-3 text-right">Inspecionar</th>
+                <th className="px-4 py-3">Date / Time</th>
+                <th className="px-4 py-3">Operator</th>
+                <th className="px-4 py-3">Module</th>
+                <th className="px-4 py-3">Action Logged</th>
+                <th className="px-4 py-3">Affected Entity</th>
+                <th className="px-4 py-3">Details / Payload</th>
+                <th className="px-4 py-3 text-right">Inspect</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {filteredLogs.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="px-4 py-8 text-center text-slate-400">
-                    Nenhum log encontrado com os parâmetros informados.
+                    No logs found for the given parameters.
                   </td>
                 </tr>
               ) : (
@@ -249,7 +249,7 @@ export const AdminAuditTab: React.FC = () => {
                       <button
                         onClick={() => setSelectedLogForDetail(log)}
                         className="p-1.5 text-slate-500 hover:text-purple-700 hover:bg-purple-50 rounded-lg transition-colors cursor-pointer"
-                        title="Ver detalhes completos do log"
+                        title="View full log details"
                       >
                         <Eye className="w-3.5 h-3.5" />
                       </button>
@@ -262,36 +262,36 @@ export const AdminAuditTab: React.FC = () => {
         </div>
       </div>
 
-      {/* Modal: Detalhes do Log */}
+      {/* Modal: Log Details */}
       {selectedLogForDetail && (
         <Modal
           isOpen={true}
           onClose={() => setSelectedLogForDetail(null)}
-          title={`Detalhes da Ação: ${selectedLogForDetail.action}`}
+          title={`Action Details: ${selectedLogForDetail.action}`}
         >
           <div className="space-y-4 text-xs">
             <div className="grid grid-cols-2 gap-3 p-3 bg-slate-50 rounded-xl border border-slate-200 font-medium">
               <div>
-                <span className="text-slate-400 block text-[10px]">Data e Hora:</span>
+                <span className="text-slate-400 block text-[10px]">Date and Time:</span>
                 <span className="font-mono text-slate-900 font-bold">{selectedLogForDetail.timestamp}</span>
               </div>
               <div>
-                <span className="text-slate-400 block text-[10px]">Operador:</span>
+                <span className="text-slate-400 block text-[10px]">Operator:</span>
                 <span className="text-slate-900 font-bold">{selectedLogForDetail.userName} ({selectedLogForDetail.role})</span>
               </div>
               <div>
-                <span className="text-slate-400 block text-[10px]">Módulo:</span>
+                <span className="text-slate-400 block text-[10px]">Module:</span>
                 <span className="text-slate-900 font-bold">{selectedLogForDetail.module}</span>
               </div>
               <div>
-                <span className="text-slate-400 block text-[10px]">Entidade:</span>
+                <span className="text-slate-400 block text-[10px]">Entity:</span>
                 <span className="text-slate-900 font-bold">{selectedLogForDetail.entityType} ({selectedLogForDetail.entityId})</span>
               </div>
             </div>
 
             {selectedLogForDetail.details && (
               <div>
-                <label className="block font-bold text-slate-700 mb-1">Descrição / Detalhes:</label>
+                <label className="block font-bold text-slate-700 mb-1">Description / Details:</label>
                 <div className="p-3 bg-slate-100 rounded-xl font-mono text-[11px] text-slate-800 break-words">
                   {typeof selectedLogForDetail.details === 'string'
                     ? selectedLogForDetail.details
@@ -302,7 +302,7 @@ export const AdminAuditTab: React.FC = () => {
 
             {selectedLogForDetail.newValue && (
               <div>
-                <label className="block font-bold text-slate-700 mb-1">Novo Valor / Payload:</label>
+                <label className="block font-bold text-slate-700 mb-1">New Value / Payload:</label>
                 <div className="p-3 bg-slate-100 rounded-xl font-mono text-[11px] text-slate-800 break-words max-h-48 overflow-y-auto">
                   {typeof selectedLogForDetail.newValue === 'string'
                     ? selectedLogForDetail.newValue
@@ -313,7 +313,7 @@ export const AdminAuditTab: React.FC = () => {
 
             {selectedLogForDetail.previousValue && (
               <div>
-                <label className="block font-bold text-slate-700 mb-1">Valor Anterior:</label>
+                <label className="block font-bold text-slate-700 mb-1">Previous Value:</label>
                 <div className="p-3 bg-slate-100 rounded-xl font-mono text-[11px] text-slate-800 break-words">
                   {typeof selectedLogForDetail.previousValue === 'string'
                     ? selectedLogForDetail.previousValue
@@ -327,7 +327,7 @@ export const AdminAuditTab: React.FC = () => {
                 onClick={() => setSelectedLogForDetail(null)}
                 className="px-4 py-2 bg-purple-700 hover:bg-purple-800 text-white rounded-xl font-bold cursor-pointer"
               >
-                Fechar
+                Close
               </button>
             </div>
           </div>

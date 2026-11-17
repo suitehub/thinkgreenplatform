@@ -148,6 +148,29 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
     }
   }, [initialNavTab]);
 
+  const EXAM_TYPE_LABELS: Record<string, string> = {
+    PROVA_1: 'Exam 1',
+    PROVA_FINAL: 'Final Exam',
+    TRABALHO: 'Assignment',
+    QUIZ: 'Quiz',
+    EXERCICIO: 'Exercise',
+    'EXERCÍCIO': 'Exercise',
+  };
+
+  const CATEGORY_LABELS: Record<string, string> = {
+    REDACAO: 'Essay',
+    'REDAÇÃO': 'Essay',
+    EXERCICIO: 'Exercise',
+    'EXERCÍCIO': 'Exercise',
+    PROJETO: 'Project',
+    DIARIO: 'Journal',
+    'DIÁRIO': 'Journal',
+    PRATICA: 'Practice',
+    'PRÁTICA': 'Practice',
+    TRABALHO: 'Assignment',
+    DESAFIO: 'Challenge',
+  };
+
   const handleSelectNavTab = (tab: TeacherNavTab) => {
     setActiveNavTab(tab);
     if (!counselorMode) {
@@ -209,7 +232,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
     teacherClasses[0] || {
       id: '',
       courseId: '',
-      name: 'Nenhuma turma selecionada',
+      name: 'No class selected',
       code: '',
       teacherId: '',
       teacherName: '',
@@ -226,7 +249,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
   );
 
   // =========================================================================
-  // 0. LESSON PLANS STATE (PLANOS DE AULA - EXCEL REFERENCE)
+  // 0. LESSON PLANS STATE (EXCEL REFERENCE)
   // =========================================================================
   const [lessonPlans, setLessonPlans] = useState<ClassLessonPlan[]>(() => getStoredLessonPlans());
 
@@ -248,7 +271,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
   };
 
   // =========================================================================
-  // 1. ATTENDANCE STATE (CHAMADAS)
+  // 1. ATTENDANCE STATE
   // =========================================================================
   const [attendanceDate, setAttendanceDate] = useState<string>(
     new Date().toISOString().split('T')[0]
@@ -275,9 +298,9 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
     const monday = new Date(baseDate);
     monday.setDate(baseDate.getDate() + diffToMonday);
 
-    const weekDayNames = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'];
-    const weekDayShorts = ['SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB', 'DOM'];
-    const months = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+    const weekDayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    const weekDayShorts = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const todayStr = new Date().toISOString().split('T')[0];
 
     const days: {
@@ -408,7 +431,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
       note: attendanceList[enr.studentId]?.note || '',
     }));
 
-    saveAttendance(selectedClass.id, attendanceDate, records, 'Chamada e controle de homework realizados via Diário Eletrônico');
+    saveAttendance(selectedClass.id, attendanceDate, records, 'Attendance and homework control completed via the Electronic Attendance Register');
     setAttendanceSaved(true);
     setTimeout(() => setAttendanceSaved(false), 3000);
   };
@@ -477,17 +500,17 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
     if (parts.length !== 3) return dateStr;
     const [year, month, day] = parts;
     const months = [
-      'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
-      'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
     ];
     const d = new Date(Number(year), Number(month) - 1, Number(day));
     const weekDays = [
-      'Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira',
-      'Quinta-feira', 'Sexta-feira', 'Sábado'
+      'Sunday', 'Monday', 'Tuesday', 'Wednesday',
+      'Thursday', 'Friday', 'Saturday'
     ];
     const weekDay = weekDays[d.getDay()] || '';
     const monthName = months[Number(month) - 1] || '';
-    return `${weekDay}, ${day} de ${monthName} de ${year}`;
+    return `${weekDay}, ${monthName} ${day}, ${year}`;
   };
 
   const getDayDetails = (dateStr: string) => {
@@ -496,8 +519,8 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
     if (parts.length !== 3) return { day: '', month: '', weekDay: '' };
     const [year, month, day] = parts;
     const d = new Date(Number(year), Number(month) - 1, Number(day));
-    const weekDays = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'];
-    const months = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+    const weekDays = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     return {
       day,
       month: months[Number(month) - 1] || '',
@@ -600,7 +623,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
   ).length;
 
   // =========================================================================
-  // 2. PROVAS / ASSESSMENTS STATE & MODALS
+  // 2. EXAMS / ASSESSMENTS STATE & MODALS
   // =========================================================================
   const [isExamModalOpen, setIsExamModalOpen] = useState(false);
   const [selectedExamForDetails, setSelectedExamForDetails] = useState<Assessment | null>(null);
@@ -678,9 +701,9 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
       maxScore: Number(examMaxScore) || 100,
       weight: Number(examWeight) || 30,
       requiredPaymentStage: examRequiredStage,
-      description: examContent ? examContent.substring(0, 120) : `Avaliação oficial vinculada aos critérios da turma: ${examTitle} (${examWeight}%)`,
-      content: examContent || `Avaliação curricular oficial Think Green: ${examTitle}. Peso configurado: ${examWeight}%.`,
-      instructions: examInstructions || 'Avaliação presencial/curricular vinculada aos critérios aprovados pela Orientação Educacional.',
+      description: examContent ? examContent.substring(0, 120) : `Official assessment linked to the class criteria: ${examTitle} (${examWeight}%)`,
+      content: examContent || `Official Think Green curriculum assessment: ${examTitle}. Configured weight: ${examWeight}%.`,
+      instructions: examInstructions || 'In-person/curriculum assessment linked to the criteria approved by the Educational Guidance team.',
       status: 'AGENDADA',
     });
 
@@ -702,7 +725,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
   });
 
   // =========================================================================
-  // 3. NOTAS (GRADES) STATE & ACTIONS
+  // 3. GRADES STATE & ACTIONS
   // =========================================================================
   const classAssessments = state.assessments.filter((a) => a.classId === selectedClass?.id);
   const [selectedAssessmentId, setSelectedAssessmentId] = useState<string>(
@@ -744,7 +767,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
   const handleSaveSingleGrade = (studentId: string) => {
     if (!currentAssessment) return;
     const score = gradeInputs[studentId] ?? 0;
-    const feedback = feedbackInputs[studentId] || 'Participação avaliada com sucesso.';
+    const feedback = feedbackInputs[studentId] || 'Participation successfully assessed.';
     saveGrade(currentAssessment.id, studentId, score, feedback);
     setGradeSaved(true);
     setTimeout(() => setGradeSaved(false), 2500);
@@ -755,7 +778,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
     const batch = classEnrollments.map((enr) => ({
       studentId: enr.studentId,
       score: gradeInputs[enr.studentId] ?? 0,
-      feedback: feedbackInputs[enr.studentId] || 'Desempenho avaliado pelo docente.',
+      feedback: feedbackInputs[enr.studentId] || 'Performance assessed by the teacher.',
     }));
 
     saveBatchGrades(currentAssessment.id, batch);
@@ -764,12 +787,12 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
   };
 
   // =========================================================================
-  // 4. AULAS & ATIVIDADES STATE
+  // 4. LESSONS & ASSIGNMENTS STATE
   // =========================================================================
   const [isLessonModalOpen, setIsLessonModalOpen] = useState(false);
   const [newLessonTitle, setNewLessonTitle] = useState('');
   const [newLessonDesc, setNewLessonDesc] = useState('');
-  const [newLessonPdf, setNewLessonPdf] = useState('Apostila_Oficial_ThinkGreen.pdf');
+  const [newLessonPdf, setNewLessonPdf] = useState('ThinkGreen_Official_Workbook.pdf');
   const [newLessonLink, setNewLessonLink] = useState('');
   const [newLessonLinkTitle, setNewLessonLinkTitle] = useState('');
 
@@ -789,7 +812,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
     if (newLessonLink.trim()) {
       materialsList.push({
         id: `mat_${Date.now()}_link`,
-        title: newLessonLinkTitle.trim() || 'Link Complementar de Estudo',
+        title: newLessonLinkTitle.trim() || 'Supplementary Study Link',
         type: 'LINK',
         url: newLessonLink.trim(),
       });
@@ -806,7 +829,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
       materials: materialsList.length > 0 ? materialsList : [
         {
           id: `mat_${Date.now()}`,
-          title: 'Documento_Pedagogico.pdf',
+          title: 'Pedagogical_Document.pdf',
           type: 'PDF',
           url: '#',
           size: '1.2 MB',
@@ -816,13 +839,13 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
     setIsLessonModalOpen(false);
     setNewLessonTitle('');
     setNewLessonDesc('');
-    setNewLessonPdf('Apostila_Oficial_ThinkGreen.pdf');
+    setNewLessonPdf('ThinkGreen_Official_Workbook.pdf');
     setNewLessonLink('');
     setNewLessonLinkTitle('');
   };
 
   // =========================================================================
-  // 4. ATIVIDADES & TAREFAS STATE & ACTIONS
+  // 4. ASSIGNMENTS & TASKS STATE & ACTIONS
   // =========================================================================
   const [selectedAssignmentForReview, setSelectedAssignmentForReview] = useState<Assignment | null>(null);
   const [assignmentClassFilter, setAssignmentClassFilter] = useState('ALL');
@@ -869,13 +892,13 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
     setNewAsgTitle('');
     setNewAsgInstructions('');
     setSelectedAssignmentForReview(created);
-    showActivityToast(`Atividade "${created.title}" criada com sucesso! Você já pode acompanhar quem fez, dar feedback e visto.`);
+    showActivityToast(`Assignment "${created.title}" created successfully! You can now track who submitted, give feedback and mark it as reviewed.`);
   };
 
-  // Manual Submission / Visto Presencial Modal
+  // Manual Submission / In-Person Review Modal
   const [isManualModalOpen, setIsManualModalOpen] = useState(false);
   const [manualTarget, setManualTarget] = useState<{ studentId: string; studentName: string; assignmentId: string; assignmentTitle: string } | null>(null);
-  const [manualFeedback, setManualFeedback] = useState('Atividade validada em sala de aula pelo professor.');
+  const [manualFeedback, setManualFeedback] = useState('Assignment validated in class by the teacher.');
   const [manualScore, setManualScore] = useState(100);
 
   const handleSaveManualVisto = (e: React.FormEvent) => {
@@ -892,16 +915,16 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
 
     setIsManualModalOpen(false);
     setManualTarget(null);
-    showActivityToast(`Visto presencial registrado com sucesso para ${manualTarget.studentName}!`);
+    showActivityToast(`In-person review successfully recorded for ${manualTarget.studentName}!`);
   };
 
-  // Quick Action: Dar como Visto para submissão existente
+  // Quick Action: Mark an existing submission as reviewed
   const handleQuickMarkAsSeen = (submission: Submission) => {
-    const feedback = quickFeedbacks[submission.id] || submission.feedback || 'Atividade visualizada e validada pelo professor.';
+    const feedback = quickFeedbacks[submission.id] || submission.feedback || 'Assignment reviewed and validated by the teacher.';
     const score = quickScores[submission.id] !== undefined ? quickScores[submission.id] : (submission.score !== undefined ? submission.score : 100);
     
     markSubmissionSeen(submission.id, feedback, score);
-    showActivityToast(`Visto atribuído com sucesso para ${submission.studentName}!`);
+    showActivityToast(`Review successfully assigned to ${submission.studentName}!`);
   };
 
   // Modal Correction
@@ -944,20 +967,20 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                   className="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-black flex items-center gap-2 transition-all cursor-pointer border border-white/20 shadow-xs"
                 >
                   <ArrowLeft className="w-4 h-4" />
-                  <span>Voltar às Turmas</span>
+                  <span>Back to Classes</span>
                 </button>
               )}
 
               <div>
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-amber-400 text-slate-950 uppercase tracking-wide">
-                    Supervisão Pedagógica
+                    Pedagogical Supervision
                   </span>
                   <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-white/20 text-emerald-100 font-mono">
                     {selectedClass.code}
                   </span>
                   <span className="text-[11px] text-emerald-200">
-                    Visão Idêntica ao Painel do Professor
+                    Same View as the Teacher Panel
                   </span>
                 </div>
 
@@ -965,8 +988,8 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                   {selectedClass.name}
                 </h1>
                 <p className="text-xs text-emerald-100/90 mt-0.5">
-                  Curso: <span className="font-semibold text-white">{selectedClass.courseName}</span> • Professor:{' '}
-                  <span className="font-semibold text-white">{selectedClass.teacherName || 'Docente Responsável'}</span> • {selectedClass.schedule} • {selectedClass.room}
+                  Course: <span className="font-semibold text-white">{selectedClass.courseName}</span> • Teacher:{' '}
+                  <span className="font-semibold text-white">{selectedClass.teacherName || 'Teacher in Charge'}</span> • {selectedClass.schedule} • {selectedClass.room}
                 </p>
               </div>
             </div>
@@ -975,10 +998,10 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
             <div className="flex items-center gap-3 bg-black/25 p-2.5 rounded-2xl border border-white/10 self-start lg:self-auto">
               <div className="text-right hidden sm:block">
                 <p className="text-[10px] font-black text-emerald-200 uppercase tracking-wider">
-                  Trocar de Turma
+                  Switch Class
                 </p>
                 <p className="text-[11px] text-emerald-100">
-                  {teacherClasses.length} turmas disponíveis
+                  {teacherClasses.length} classes available
                 </p>
               </div>
 
@@ -999,7 +1022,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                   onClick={onBackToCounselor}
                   className="px-3 py-2 bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs rounded-xl transition-all cursor-pointer shadow-xs whitespace-nowrap"
                 >
-                  Grade de Turmas
+                  Class Grid
                 </button>
               )}
             </div>
@@ -1013,10 +1036,10 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
               <ThinkGardenLogo />
             </div>
 
-            {/* Center: PAINEL DO PROFESSOR Title */}
+            {/* Center: TEACHER PANEL Title */}
             <div className="text-center hidden md:block">
               <h1 className="text-base sm:text-xl font-bold tracking-[0.22em] text-slate-900 uppercase">
-                PAINEL DO PROFESSOR
+                TEACHER PANEL
               </h1>
             </div>
 
@@ -1037,10 +1060,10 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
 
                   <div className="flex flex-col pr-1">
                     <span className="text-xs sm:text-sm font-bold text-slate-800 leading-tight">
-                      {currentUser.name || 'Professor'}
+                      {currentUser.name || 'Teacher'}
                     </span>
                     <span className="text-[10px] sm:text-xs text-slate-400 font-medium leading-none mt-0.5">
-                      Professor
+                      Teacher
                     </span>
                   </div>
 
@@ -1053,7 +1076,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                       <p className="font-bold text-slate-900 text-sm">{currentUser.name}</p>
                       <p className="text-slate-400 text-[11px]">{currentUser.email}</p>
                       <span className="inline-block mt-1.5 px-2 py-0.5 bg-emerald-50 text-emerald-800 font-bold rounded text-[10px] border border-emerald-200">
-                        Docente Autorizado
+                        Authorized Teacher
                       </span>
                     </div>
 
@@ -1066,7 +1089,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                         className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-bold text-rose-600 hover:bg-rose-50 border border-rose-100 transition-colors cursor-pointer"
                       >
                         <LogOut className="w-3.5 h-3.5" />
-                        <span>Sair do Sistema</span>
+                        <span>Sign Out</span>
                       </button>
                     </div>
                   </div>
@@ -1084,19 +1107,19 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
           <div className="p-4 bg-emerald-50 text-emerald-900 border border-emerald-200 rounded-2xl text-xs font-bold flex items-center justify-between shadow-xs animate-in fade-in slide-in-from-top-2">
             <div className="flex items-center gap-2.5">
               <CheckCircle className="w-5 h-5 text-emerald-600 flex-shrink-0" />
-              <span>Nova Prova cadastrada com sucesso! O conteúdo e nota máxima já estão vinculados à turma e ao portal do aluno.</span>
+              <span>A new exam has been registered successfully! The content and maximum grade are already linked to the class and the student portal.</span>
             </div>
             <button
               onClick={() => handleEnterClass(examClassId || selectedClass.id, 'conteudos')}
               className="px-3 py-1 bg-[#075e38] text-white rounded-lg text-[11px] font-bold hover:bg-[#064e2e] cursor-pointer"
             >
-              Ver na Turma
+              View in Class
             </button>
           </div>
         )}
 
         {/* ========================================================================= */}
-        {/* TAB 1: TURMAS (CLASS-CENTRIC WORKSPACE - GOOGLE CLASSROOM ARCHITECTURE)    */}
+        {/* TAB 1: CLASSES (CLASS-CENTRIC WORKSPACE - GOOGLE CLASSROOM ARCHITECTURE)    */}
         {/* ========================================================================= */}
         {activeNavTab === 'turmas' && isInsideClassWorkspace && selectedClass && (
           <div className="space-y-6">
@@ -1128,7 +1151,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
               counselorMode={counselorMode}
             />
 
-            {/* SUB-TAB 1: VISÃO GERAL (Mural, Avisos, Atalhos, Indicadores) */}
+            {/* SUB-TAB 1: OVERVIEW (Wall, Notices, Shortcuts, Indicators) */}
             {classWorkspaceSubTab === 'visao_geral' && (
               <ClassOverviewTab
                 selectedClass={selectedClass}
@@ -1161,7 +1184,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
               />
             )}
 
-            {/* SUB-TAB 2: CONTEÚDOS (Classwork com Tópicos, Materiais, Tarefas e Provas) */}
+            {/* SUB-TAB 2: CONTENT (Classwork with Topics, Materials, Assignments and Exams) */}
             {classWorkspaceSubTab === 'conteudos' && (
               <ClassContentsTab
                 selectedClass={selectedClass}
@@ -1192,7 +1215,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
               />
             )}
 
-            {/* SUB-TAB: PLANO DE AULA (LESSON PLAN - BASEADO NO MODELO EXCEL) */}
+            {/* SUB-TAB: LESSON PLAN (BASED ON THE EXCEL TEMPLATE) */}
             {classWorkspaceSubTab === 'plano_aula' && (
               <ClassLessonPlanTab
                 selectedClass={selectedClass}
@@ -1202,7 +1225,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
               />
             )}
 
-            {/* SUB-TAB 3: PESSOAS (Professores e Alunos com Desempenho e Histórico) */}
+            {/* SUB-TAB 3: STUDENTS (Teachers and Students with Performance and History) */}
             {classWorkspaceSubTab === 'pessoas' && (
               <ClassPeopleTab
                 selectedClass={selectedClass}
@@ -1216,7 +1239,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
               />
             )}
 
-            {/* SUB-TAB 4: NOTAS (Quadro de Notas / Gradebook e Lançamento por Avaliação) */}
+            {/* SUB-TAB 4: GRADES (Gradebook and Entry by Assessment) */}
             {classWorkspaceSubTab === 'notas' && (
               <ClassGradesTab
                 selectedClass={selectedClass}
@@ -1249,7 +1272,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
               />
             )}
 
-            {/* SUB-TAB 5: CHAMADA / FREQUÊNCIA DA TURMA (Com Registro de Homework - Req. 2) */}
+            {/* SUB-TAB 5: ATTENDANCE (With Homework Recording - Req. 2) */}
             {classWorkspaceSubTab === 'chamada' && (
               <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200/80 shadow-xs space-y-6">
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-100 pb-4">
@@ -1259,10 +1282,10 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                     </div>
                     <div>
                       <h3 className="text-base sm:text-lg font-bold text-slate-900">
-                        Diário Eletrônico de Chamadas & Homework — {selectedClass.name}
+                        Electronic Attendance & Homework Log — {selectedClass.name}
                       </h3>
                       <p className="text-xs text-slate-500">
-                        Lançamento de presenças e registro de homework independente por aluno
+                        Record attendance and homework independently for each student
                       </p>
                     </div>
                   </div>
@@ -1273,22 +1296,22 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                       onClick={() => handleMarkAllPresent(true)}
                       className="px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-[#075e38] text-xs font-bold border border-emerald-200 transition-colors cursor-pointer"
                     >
-                      Todos Presentes
+                      Mark All Present
                     </button>
                     <button
                       type="button"
                       onClick={() => handleMarkAllHomework('completed')}
                       className="px-3 py-1.5 rounded-xl bg-teal-50 hover:bg-teal-100 text-teal-800 text-xs font-bold border border-teal-200 transition-colors cursor-pointer"
                     >
-                      Todos Fezeram HW
+                      Mark All Completed HW
                     </button>
                     <button
                       type="button"
                       onClick={() => handleMarkAllHomework('no_homework')}
                       className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold border border-slate-300 transition-colors cursor-pointer"
-                      title="Primeira aula de nível ou aula pós-prova (não penaliza nem entra no cálculo)"
+                      title="First lesson of a level or a post-exam lesson (does not penalize or count toward the calculation)"
                     >
-                      Sem Homework Hoje
+                      No Homework Today
                     </button>
                     <button
                       type="button"
@@ -1296,7 +1319,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                       className="px-4 py-2 rounded-xl bg-[#075e38] hover:bg-[#064e2e] text-white text-xs font-bold shadow-xs transition-colors cursor-pointer flex items-center gap-1.5"
                     >
                       <Save className="w-4 h-4" />
-                      <span>Salvar Chamada</span>
+                      <span>Save Attendance</span>
                     </button>
                   </div>
                 </div>
@@ -1304,7 +1327,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                 {attendanceSaved && (
                   <div className="p-4 bg-emerald-50 text-emerald-900 border border-emerald-200 rounded-2xl text-xs font-bold flex items-center gap-2">
                     <CheckCircle className="w-4 h-4 text-emerald-600" />
-                    <span>Chamada e registros de homework da turma salvos com sucesso!</span>
+                    <span>Class attendance and homework records saved successfully!</span>
                   </div>
                 )}
 
@@ -1312,7 +1335,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                 <div className="flex flex-wrap items-center justify-between gap-3 bg-slate-50 p-3.5 rounded-2xl border border-slate-200/70">
                   <div className="flex items-center gap-2">
                     <Calendar className="w-4 h-4 text-slate-500" />
-                    <span className="text-xs font-bold text-slate-700">Data da Chamada:</span>
+                    <span className="text-xs font-bold text-slate-700">Attendance Date:</span>
                     <input
                       type="date"
                       value={attendanceDate}
@@ -1324,20 +1347,20 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                   {/* Presence and Homework counters */}
                   <div className="flex flex-wrap items-center gap-2.5 text-xs font-bold">
                     <span className="text-emerald-700 bg-emerald-100/70 px-2.5 py-1 rounded-lg">
-                      {presentCount} Presentes
+                      {presentCount} Present
                     </span>
                     <span className="text-rose-700 bg-rose-100/70 px-2.5 py-1 rounded-lg">
-                      {absentCount} Ausentes
+                      {absentCount} Absent
                     </span>
                     <span className="text-slate-300">|</span>
-                    <span className="text-teal-800 bg-teal-100/80 px-2.5 py-1 rounded-lg border border-teal-200" title="Alunos que fizeram o homework">
-                      ✓ {homeworkDoneCount} Fez HW
+                    <span className="text-teal-800 bg-teal-100/80 px-2.5 py-1 rounded-lg border border-teal-200" title="Students who completed the homework">
+                      ✓ {homeworkDoneCount} Completed HW
                     </span>
-                    <span className="text-amber-800 bg-amber-100/80 px-2.5 py-1 rounded-lg border border-amber-200" title="Alunos que não fizeram o homework (entra no cálculo)">
-                      ✗ {homeworkNotDoneCount} Não fez HW
+                    <span className="text-amber-800 bg-amber-100/80 px-2.5 py-1 rounded-lg border border-amber-200" title="Students who did not complete the homework (counts toward the calculation)">
+                      ✗ {homeworkNotDoneCount} Missed HW
                     </span>
-                    <span className="text-slate-600 bg-slate-200/80 px-2.5 py-1 rounded-lg border border-slate-300" title="Aulas sem tarefa (não penaliza nem entra na média)">
-                      — {homeworkNoneCount} Sem HW
+                    <span className="text-slate-600 bg-slate-200/80 px-2.5 py-1 rounded-lg border border-slate-300" title="Lessons without an assignment (does not penalize or count toward the average)">
+                      — {homeworkNoneCount} No HW
                     </span>
                   </div>
                 </div>
@@ -1366,7 +1389,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                               {enr.studentName}
                             </span>
                             <span className="text-[10px] text-slate-400 font-mono">
-                              Matrícula: {enr.studentId}
+                              Enrollment: {enr.studentId}
                             </span>
                           </div>
                         </div>
@@ -1386,9 +1409,9 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                                   ? 'bg-emerald-600 text-white shadow-2xs'
                                   : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200'
                               }`}
-                              title="Fez o homework"
+                              title="Completed the homework"
                             >
-                              ✓ Fez
+                              ✓ Done
                             </button>
                             <button
                               type="button"
@@ -1398,9 +1421,9 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                                   ? 'bg-amber-600 text-white shadow-2xs'
                                   : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200'
                               }`}
-                              title="Não fez o homework (computado na nota)"
+                              title="Did not complete the homework (counted in the grade)"
                             >
-                              ✗ Não fez
+                              ✗ Missed
                             </button>
                             <button
                               type="button"
@@ -1410,9 +1433,9 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                                   ? 'bg-slate-700 text-white shadow-2xs'
                                   : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200'
                               }`}
-                              title="Não houve homework nesta aula (não penaliza nem entra no cálculo)"
+                              title="There was no homework for this lesson (does not penalize or count toward the calculation)"
                             >
-                              — Não houve
+                              — None Assigned
                             </button>
                           </div>
 
@@ -1426,7 +1449,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                                 : 'bg-slate-100 text-slate-400 hover:bg-slate-200'
                             }`}
                           >
-                            {isPresent ? '✓ Presente' : 'Ausente'}
+                            {isPresent ? '✓ Present' : 'Absent'}
                           </button>
                         </div>
                       </div>
@@ -1439,11 +1462,11 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
         )}
 
         {/* ========================================================================= */}
-        {/* TAB 1: TURMAS (MAIN DASHBOARD VIEW - LISTA DE TODAS AS TURMAS)            */}
+        {/* TAB 1: CLASSES (MAIN DASHBOARD VIEW - LIST OF ALL CLASSES)              */}
         {/* ========================================================================= */}
         {activeNavTab === 'turmas' && !isInsideClassWorkspace && (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-            {/* LEFT COLUMN: GREETING + STATS + MINHAS TURMAS */}
+            {/* LEFT COLUMN: GREETING + STATS + MY CLASSES */}
             <div className="lg:col-span-8 bg-white rounded-3xl border border-slate-200/70 shadow-xs p-6 sm:p-8 space-y-6 sm:space-y-7">
               {/* Top Greeting Block */}
               <div className="flex items-center gap-4 sm:gap-5">
@@ -1453,17 +1476,17 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
 
                 <div>
                   <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
-                    Olá, {currentUser.name || 'Professor'}!
+                    Hello, {currentUser.name || 'Teacher'}!
                   </h2>
                   <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-                    Aqui está um resumo das suas turmas, provas e atividades.
+                    Here is a summary of your classes, exams, and activities.
                   </p>
                 </div>
               </div>
 
               {/* 4 Stat Pills Row */}
               <div className="bg-[#f8fafc] rounded-2xl p-4 sm:p-5 border border-slate-200/60 grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-                {/* Stat 1: Turmas */}
+                {/* Stat 1: Classes */}
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#dcfce7] text-[#16a34a] flex items-center justify-center flex-shrink-0">
                     <Users className="w-5 h-5" />
@@ -1473,12 +1496,12 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                       {totalClassesCount}
                     </span>
                     <span className="text-[11px] sm:text-xs text-slate-500 font-medium block">
-                      Turmas
+                      Classes
                     </span>
                   </div>
                 </div>
 
-                {/* Stat 2: Alunos */}
+                {/* Stat 2: Students */}
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#f3e8ff] text-[#9333ea] flex items-center justify-center flex-shrink-0">
                     <Users className="w-5 h-5" />
@@ -1488,12 +1511,12 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                       {totalStudentsCount}
                     </span>
                     <span className="text-[11px] sm:text-xs text-slate-500 font-medium block">
-                      Alunos
+                      Students
                     </span>
                   </div>
                 </div>
 
-                {/* Stat 3: Atividades pendentes */}
+                {/* Stat 3: Pending activities */}
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#ffedd5] text-[#ea580c] flex items-center justify-center flex-shrink-0">
                     <FileEdit className="w-5 h-5" />
@@ -1503,12 +1526,12 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                       {pendingSubmissionsCount}
                     </span>
                     <span className="text-[11px] sm:text-xs text-slate-500 font-medium block leading-tight">
-                      Atividades pendentes
+                      Pending activities
                     </span>
                   </div>
                 </div>
 
-                {/* Stat 4: Provas / Avaliações */}
+                {/* Stat 4: Exams / Assessments */}
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#e0f2fe] text-[#0284c7] flex items-center justify-center flex-shrink-0">
                     <Award className="w-5 h-5" />
@@ -1518,16 +1541,16 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                       {state.assessments.length}
                     </span>
                     <span className="text-[11px] sm:text-xs text-slate-500 font-medium block">
-                      Provas cadastradas
+                      Registered exams
                     </span>
                   </div>
                 </div>
               </div>
 
-              {/* Section Header: MINHAS TURMAS */}
+              {/* Section Header: MY CLASSES */}
               <div className="flex items-center justify-between pt-1">
                 <h3 className="text-sm sm:text-base font-black tracking-wider text-slate-900 uppercase">
-                  MINHAS TURMAS
+                  MY CLASSES
                 </h3>
               </div>
 
@@ -1562,9 +1585,9 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                             </h4>
                             <span 
                               className="text-xs text-slate-500 font-medium truncate block mt-0.5"
-                              title={`${c.code ? `${c.code} • ` : ''}${c.courseName || 'Curso'}`}
+                              title={`${c.code ? `${c.code} • ` : ''}${c.courseName || 'Course'}`}
                             >
-                              {c.code ? `${c.code} • ` : ''}{c.courseName || 'Curso'}
+                              {c.code ? `${c.code} • ` : ''}{c.courseName || 'Course'}
                             </span>
                           </div>
                         </div>
@@ -1573,15 +1596,15 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                         <div className="space-y-1.5 text-xs text-slate-600 my-3.5">
                           <div className="flex items-center gap-2">
                             <Users className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
-                            <span className="truncate">{enrolled} alunos matriculados</span>
+                            <span className="truncate">{enrolled} enrolled students</span>
                           </div>
                           <div className="flex items-center gap-2">
                             <Award className={`w-3.5 h-3.5 ${style.accentColor} flex-shrink-0`} />
-                            <span className="truncate">{examsCount} {examsCount === 1 ? 'avaliação' : 'avaliações'}</span>
+                            <span className="truncate">{examsCount} {examsCount === 1 ? 'assessment' : 'assessments'}</span>
                           </div>
                           <div className="flex items-center gap-2">
                             <PlaySquare className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
-                            <span className="truncate">{lessonsCount} {lessonsCount === 1 ? 'aula cadastrada' : 'aulas cadastradas'}</span>
+                            <span className="truncate">{lessonsCount} {lessonsCount === 1 ? 'lesson created' : 'lessons created'}</span>
                           </div>
                         </div>
                       </div>
@@ -1597,7 +1620,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                           className={`w-full py-2.5 px-3 rounded-xl ${style.btnBg} text-white font-bold text-xs flex items-center justify-center gap-2 shadow-xs transition-colors cursor-pointer`}
                         >
                           <BookOpen className="w-3.5 h-3.5 flex-shrink-0" />
-                          <span className="truncate">Acessar Ambiente da Turma</span>
+                          <span className="truncate">Enter Class Environment</span>
                           <ArrowRight className="w-3.5 h-3.5 flex-shrink-0" />
                         </button>
                         <div className="grid grid-cols-2 gap-2">
@@ -1610,7 +1633,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                             className={`py-1.5 px-2 rounded-lg border ${style.btnBorder} ${style.btnText} text-slate-700 font-bold text-[11px] flex items-center justify-center gap-1.5 transition-colors cursor-pointer`}
                           >
                             <CalendarCheck className={`w-3 h-3 ${style.accentColor} flex-shrink-0`} />
-                            <span className="truncate">Chamada</span>
+                            <span className="truncate">Attendance</span>
                           </button>
                           <button
                             type="button"
@@ -1621,7 +1644,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                             className={`py-1.5 px-2 rounded-lg border ${style.btnBorder} ${style.btnText} text-slate-700 font-bold text-[11px] flex items-center justify-center gap-1.5 transition-colors cursor-pointer`}
                           >
                             <BookMarked className="w-3 h-3 text-slate-500 flex-shrink-0" />
-                            <span className="truncate">Conteúdos</span>
+                            <span className="truncate">Content</span>
                           </button>
                         </div>
                       </div>
@@ -1631,15 +1654,15 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
               </div>
             </div>
 
-            {/* RIGHT COLUMN: PRÓXIMAS AULAS & ATIVIDADES PENDENTES */}
+            {/* RIGHT COLUMN: UPCOMING LESSONS & PENDING ACTIVITIES */}
             <div className="lg:col-span-4 space-y-6">
-              {/* Card 1: PRÓXIMAS AULAS */}
+              {/* Card 1: UPCOMING LESSONS */}
               <div className="bg-white rounded-3xl border border-slate-200/70 shadow-xs p-6">
                 <div className="flex items-center justify-between mb-5">
                   <div className="flex items-center gap-2">
                     <CalendarCheck className="w-4 h-4 text-slate-700" />
                     <h3 className="text-xs sm:text-sm font-black tracking-wider text-slate-900 uppercase">
-                      PRÓXIMAS AULAS
+                      UPCOMING LESSONS
                     </h3>
                   </div>
                   <button
@@ -1648,14 +1671,14 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                     }}
                     className="text-[11px] text-[#075e38] font-bold hover:underline cursor-pointer"
                   >
-                    Ver todas
+                    View all
                   </button>
                 </div>
 
                 <div className="space-y-4">
                   {upcomingLessons.length === 0 ? (
                     <p className="py-6 text-center text-xs text-slate-400 font-medium">
-                      Nenhuma aula publicada para suas turmas.
+                      No lessons published for your classes.
                     </p>
                   ) : (
                     upcomingLessons.map((lesson) => {
@@ -1700,17 +1723,17 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                 </div>
               </div>
 
-              {/* Card 2: ATIVIDADES PENDENTES */}
+              {/* Card 2: PENDING ACTIVITIES */}
               <div className="bg-white rounded-3xl border border-slate-200/70 shadow-xs p-6">
                 <div className="flex items-center justify-between mb-5">
                   <div className="flex items-center gap-2">
                     <FileEdit className="w-4 h-4 text-slate-700" />
                     <h3 className="text-xs sm:text-sm font-black tracking-wider text-slate-900 uppercase">
-                      ATIVIDADES PENDENTES
+                      PENDING ACTIVITIES
                     </h3>
                   </div>
                   <span className="text-[11px] font-extrabold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
-                    {pendingSubmissionsCount} para corrigir
+                    {pendingSubmissionsCount} to grade
                   </span>
                 </div>
 
@@ -1724,7 +1747,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                         onClick={() => {
                           setCorrectingSub(sub);
                           setScoreInput(95);
-                          setFeedbackText('Bom trabalho!');
+                          setFeedbackText('Good job!');
                         }}
                         className="p-3 bg-slate-50 rounded-2xl border border-slate-100 hover:border-amber-300 transition-colors cursor-pointer space-y-1"
                       >
@@ -1734,7 +1757,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                         </div>
                         <p className="text-[11px] text-slate-600 font-medium truncate">{sub.assignmentTitle}</p>
                         <span className="inline-block text-[10px] text-amber-700 font-bold bg-amber-100/60 px-2 py-0.5 rounded">
-                          Clique para avaliar
+                          Click to grade
                         </span>
                       </div>
                     ))}
@@ -1742,8 +1765,8 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                   {pendingSubmissionsCount === 0 && (
                     <div className="text-center py-6 text-slate-400 text-xs">
                       <CheckCircle className="w-8 h-8 text-emerald-500 mx-auto mb-1 opacity-80" />
-                      <p className="font-bold text-slate-600">Tudo em dia!</p>
-                      <p className="text-[11px]">Nenhuma atividade pendente de correção.</p>
+                      <p className="font-bold text-slate-600">All caught up!</p>
+                      <p className="text-[11px]">No activities pending grading.</p>
                     </div>
                   )}
 
@@ -1753,7 +1776,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                     }}
                     className="w-full py-2 px-3 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors text-center block mt-2 cursor-pointer"
                   >
-                    Ver Atividades nas Turmas
+                    View Activities in Classes
                   </button>
                 </div>
               </div>
@@ -1762,7 +1785,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
         )}
 
         {/* ========================================================================= */}
-        {/* TAB 2: CHAMADAS (DIÁRIO ELETRÔNICO DE FREQUÊNCIA - COM VISÃO SEMANAL)     */}
+        {/* TAB 2: ATTENDANCE (ELECTRONIC ATTENDANCE LOG - WITH WEEKLY VIEW)         */}
         {/* ========================================================================= */}
         {activeNavTab === 'chamadas' && (
           <div className="space-y-6 sm:space-y-8">
@@ -1776,16 +1799,16 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                     </span>
                     <div>
                       <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-                        Diário Oficial de Chamadas & Frequência
+                        Official Attendance & Frequency Log
                       </h2>
                       <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-                        Selecione a turma, alterne entre o lançamento diário ou a grade semanal e confirme a presença dos alunos.
+                        Select a class, switch between daily entry or the weekly grid, and confirm student attendance.
                       </p>
                     </div>
                   </div>
                 </div>
 
-                {/* View Mode Toggle Switcher (Diária vs Semanal) */}
+                {/* View Mode Toggle Switcher (Daily vs Weekly) */}
                 <div className="flex items-center p-1 bg-slate-100 rounded-2xl border border-slate-200">
                   <button
                     onClick={() => setAttendanceViewMode('diaria')}
@@ -1796,7 +1819,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                     }`}
                   >
                     <ClipboardList className="w-4 h-4" />
-                    <span>Lançamento Diário</span>
+                    <span>Daily Entry</span>
                   </button>
                   <button
                     onClick={() => setAttendanceViewMode('semanal')}
@@ -1807,70 +1830,70 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                     }`}
                   >
                     <Calendar className="w-4 h-4" />
-                    <span>Visualização Semanal</span>
+                    <span>Weekly View</span>
                   </button>
                 </div>
               </div>
 
               {/* Status Overview Cards */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-                {/* 1. Turma Selecionada */}
+                {/* 1. Selected Class */}
                 <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 flex items-center gap-3.5">
                   <div className="p-2 rounded-xl bg-white border border-slate-200 shadow-2xs flex-shrink-0">
                     {renderClassBadge(selectedClass.name, selectedClass.courseName)}
                   </div>
                   <div className="min-w-0">
                     <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider block">
-                      Turma Selecionada
+                      Selected Class
                     </span>
                     <p className="text-xs sm:text-sm font-extrabold text-slate-900 truncate">
                       {selectedClass.name}
                     </p>
                     <span className="text-[11px] text-slate-500 font-medium">
-                      {classEnrollments.length} alunos matriculados
+                      {classEnrollments.length} enrolled students
                     </span>
                   </div>
                 </div>
 
-                {/* 2. Data da Chamada */}
+                {/* 2. Attendance Date */}
                 <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 flex items-center gap-3.5">
                   <div className="w-11 h-11 rounded-xl bg-emerald-50 text-[#075e38] flex items-center justify-center flex-shrink-0 border border-emerald-100">
                     <Calendar className="w-5 h-5" />
                   </div>
                   <div className="min-w-0">
                     <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider block">
-                      Data da Chamada
+                      Attendance Date
                     </span>
                     <p className="text-xs sm:text-sm font-extrabold text-slate-900 truncate">
                       {formatPortugueseDate(attendanceDate)}
                     </p>
                     {currentAttendance ? (
                       <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700">
-                        <Check className="w-3 h-3 text-emerald-600" /> Preenchida no sistema
+                        <Check className="w-3 h-3 text-emerald-600" /> Recorded in the system
                       </span>
                     ) : (
                       <span className="inline-flex items-center gap-1 text-[10px] font-bold text-slate-500">
-                        <MinusCircle className="w-3 h-3 text-slate-400" /> Não preenchida
+                        <MinusCircle className="w-3 h-3 text-slate-400" /> Not recorded
                       </span>
                     )}
                   </div>
                 </div>
 
-                {/* 3. Contagem de Presença */}
+                {/* 3. Attendance Count */}
                 <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 flex items-center gap-3.5">
                   <div className="w-11 h-11 rounded-xl bg-purple-50 text-purple-700 flex items-center justify-center flex-shrink-0 border border-purple-100">
                     <Users className="w-5 h-5" />
                   </div>
                   <div className="min-w-0">
                     <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider block">
-                      Frequência Marcada
+                      Attendance Marked
                     </span>
                     <div className="flex items-center gap-2 mt-0.5">
                       <span className="text-xs font-bold px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 border border-emerald-200">
-                        {presentCount} Presentes
+                        {presentCount} Present
                       </span>
                       <span className="text-xs font-bold px-2 py-0.5 rounded-md bg-rose-100 text-rose-800 border border-rose-200">
-                        {absentCount} Ausentes
+                        {absentCount} Absent
                       </span>
                     </div>
                   </div>
@@ -1879,7 +1902,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
             </div>
 
             {/* ===================================================================== */}
-            {/* 1. SELEÇÃO DAS TURMAS (ESTILO CARTOES COMO ESTAVA ANTES)              */}
+            {/* 1. CLASS SELECTION (CARD STYLE AS BEFORE)                        */}
             {/* ===================================================================== */}
             <div className="bg-white p-6 sm:p-8 rounded-3xl border-2 border-slate-200/80 shadow-xs space-y-4">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
@@ -1888,15 +1911,15 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                     <span className="w-6 h-6 rounded-full bg-[#075e38] text-white text-xs flex items-center justify-center font-bold">
                       1
                     </span>
-                    <span>SELEÇÃO DA TURMA (CLIQUE PARA TROCAR)</span>
+                    <span>CLASS SELECTION (CLICK TO SWITCH)</span>
                   </h3>
                   <p className="text-xs text-slate-500 mt-0.5">
-                    Escolha abaixo qual turma você deseja visualizar e fazer a chamada:
+                    Choose below which class you want to view and take attendance for:
                   </p>
                 </div>
 
                 <div className="text-xs text-slate-500 font-medium">
-                  Total: <strong className="text-slate-800">{teacherClasses.length} turmas</strong> sob sua responsabilidade
+                  Total: <strong className="text-slate-800">{teacherClasses.length} classes</strong> under your responsibility
                 </div>
               </div>
 
@@ -1923,7 +1946,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                       {/* Selected Badge */}
                       {isSelected && (
                         <span className="absolute -top-2.5 right-4 bg-[#075e38] text-white text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full shadow-xs flex items-center gap-1">
-                          <Check className="w-3 h-3 stroke-[3]" /> TURMA SELECIONADA
+                          <Check className="w-3 h-3 stroke-[3]" /> CLASS SELECTED
                         </span>
                       )}
 
@@ -1941,10 +1964,10 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                             {c.name}
                           </h4>
                           <p className="text-xs text-slate-600 font-medium truncate mt-0.5">
-                            {c.courseName || 'Curso'}
+                            {c.courseName || 'Course'}
                           </p>
                           <p className="text-[11px] text-slate-400 mt-0.5 truncate">
-                            {c.room || 'Sala'} • {c.schedule || 'Horário'}
+                            {c.room || 'Room'} • {c.schedule || 'Schedule'}
                           </p>
                         </div>
                       </div>
@@ -1952,17 +1975,17 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                       <div className="pt-2 border-t border-slate-100 flex items-center justify-between gap-2 text-[11px]">
                         <span className="font-bold text-slate-600 flex items-center gap-1">
                           <Users className="w-3.5 h-3.5 text-slate-400" />
-                          {enrolledCount} alunos
+                          {enrolledCount} students
                         </span>
 
                         {/* Status indicators */}
                         {hasAttendanceToday ? (
                           <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200 flex items-center gap-1">
-                            <CheckCircle2 className="w-3 h-3 text-emerald-600" /> Hoje Feita
+                            <CheckCircle2 className="w-3 h-3 text-emerald-600" /> Done Today
                           </span>
                         ) : (
                           <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-200 flex items-center gap-1">
-                            <MinusCircle className="w-3 h-3 text-slate-400" /> Hoje Pendente
+                            <MinusCircle className="w-3 h-3 text-slate-400" /> Pending Today
                           </span>
                         )}
                       </div>
@@ -1973,11 +1996,11 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
             </div>
 
             {/* ===================================================================== */}
-            {/* VISUALIZAÇÃO 1: MODO DIÁRIO (LANÇAMENTO COM O ÚNICO SALVAR AO FINAL)  */}
+            {/* VIEW 1: DAILY MODE (SINGLE ENTRY WITH A SINGLE SAVE AT THE END)   */}
             {/* ===================================================================== */}
             {attendanceViewMode === 'diaria' && (
               <>
-                {/* 2. DATA DA CHAMADA & CALENDÁRIO COM CORRETO E CINZA */}
+                {/* 2. ATTENDANCE DATE & CALENDAR WITH CHECK AND GRAY */}
                 <div className="bg-white p-6 sm:p-8 rounded-3xl border-2 border-slate-200/80 shadow-xs space-y-5">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
                     <div>
@@ -1985,10 +2008,10 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                         <span className="w-6 h-6 rounded-full bg-[#075e38] text-white text-xs flex items-center justify-center font-bold">
                           2
                         </span>
-                        <span>DATA DA CHAMADA & DIAS REGISTRADOS</span>
+                        <span>ATTENDANCE DATE & RECORDED DAYS</span>
                       </h3>
                       <p className="text-xs text-slate-500 mt-0.5">
-                        Selecione a data no calendário. Dias com chamada já feita exibem um <strong>correto verde (✓)</strong> e dias não preenchidos exibem um <strong>indicador cinza (•)</strong>.
+                        Select a date on the calendar. Days with attendance already taken show a <strong>green check (✓)</strong>, and unfilled days show a <strong>gray indicator (•)</strong>.
                       </p>
                     </div>
 
@@ -1996,14 +2019,14 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                     <div className="flex items-center gap-2 flex-wrap text-xs">
                       <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 font-bold">
                         <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                        <span>✓ Preenchida</span>
+                        <span>✓ Recorded</span>
                       </span>
                       <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 border border-slate-200 text-slate-600 font-bold">
                         <MinusCircle className="w-4 h-4 text-slate-400" />
-                        <span>• Não preenchida (Cinza)</span>
+                        <span>• Not recorded (gray)</span>
                       </span>
                       <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-100/60 border border-[#075e38] text-[#075e38] font-bold">
-                        <span>🎯 Data Ativa</span>
+                        <span>🎯 Active Date</span>
                       </span>
                     </div>
                   </div>
@@ -2013,7 +2036,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                     <div className="flex flex-wrap items-center gap-3">
                       <div>
                         <label className="block text-[10px] font-black uppercase text-slate-500 mb-1">
-                          Escolher Data Específica:
+                          Choose Specific Date:
                         </label>
                         <div className="flex items-center gap-2">
                           <input
@@ -2030,28 +2053,28 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                           onClick={setAttendanceToToday}
                           className="px-3 py-2 rounded-xl bg-white border border-slate-300 text-slate-700 font-bold text-xs hover:bg-slate-100 transition-colors shadow-2xs cursor-pointer"
                         >
-                          Hoje
+                          Today
                         </button>
                         <button
                           onClick={setAttendanceToYesterday}
                           className="px-3 py-2 rounded-xl bg-white border border-slate-300 text-slate-700 font-bold text-xs hover:bg-slate-100 transition-colors shadow-2xs cursor-pointer"
                         >
-                          Ontem
+                          Yesterday
                         </button>
                         <button
                           onClick={() => shiftAttendanceDate(-1)}
                           className="px-2.5 py-2 rounded-xl bg-white border border-slate-300 text-slate-700 font-bold text-xs hover:bg-slate-100 transition-colors shadow-2xs flex items-center gap-1 cursor-pointer"
-                          title="Dia Anterior"
+                          title="Previous Day"
                         >
                           <ChevronLeft className="w-3.5 h-3.5" />
-                          <span>Anterior</span>
+                          <span>Previous</span>
                         </button>
                         <button
                           onClick={() => shiftAttendanceDate(1)}
                           className="px-2.5 py-2 rounded-xl bg-white border border-slate-300 text-slate-700 font-bold text-xs hover:bg-slate-100 transition-colors shadow-2xs flex items-center gap-1 cursor-pointer"
-                          title="Próximo Dia"
+                          title="Next Day"
                         >
-                          <span>Próximo</span>
+                          <span>Next</span>
                           <ChevronRight className="w-3.5 h-3.5" />
                         </button>
                       </div>
@@ -2061,7 +2084,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                     <div className="flex items-center gap-3">
                       <div className="text-right">
                         <span className="text-[10px] font-black uppercase text-slate-400 block">
-                          Data Selecionada no Momento:
+                          Currently Selected Date:
                         </span>
                         <span className="text-xs sm:text-sm font-black text-slate-900">
                           {formatPortugueseDate(attendanceDate)}
@@ -2074,10 +2097,10 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                   <div>
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-xs font-bold text-slate-600">
-                        Selecione um dia abaixo para visualizar ou preencher a chamada:
+                        Select a day below to view or fill in attendance:
                       </span>
                       <span className="text-[11px] text-slate-400">
-                        ← Deslize para ver mais dias →
+                        ← Swipe to see more days →
                       </span>
                     </div>
 
@@ -2110,7 +2133,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                             {/* Selected Tag */}
                             {isSelected && (
                               <span className="absolute -top-2.5 bg-[#075e38] text-white text-[9px] font-black uppercase px-2 py-0.2 rounded-full shadow-xs">
-                                Ativa
+                                Active
                               </span>
                             )}
 
@@ -2129,7 +2152,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                               </span>
                               {isToday && (
                                 <span className="bg-amber-100 text-amber-900 text-[8px] font-extrabold px-1 rounded">
-                                  Hoje
+                                  Today
                                 </span>
                               )}
                             </div>
@@ -2156,28 +2179,28 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                             <div className="w-full pt-2 border-t border-slate-200/60 mt-1 flex flex-col items-center">
                               {isFilled ? (
                                 <div className="flex flex-col items-center gap-0.5">
-                                  {/* O CORRETO (Verde com Check) */}
+                                  {/* THE CORRECT ONE (Green with Check) */}
                                   <div className="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center shadow-xs">
                                     <Check className="w-3.5 h-3.5 stroke-[3]" />
                                   </div>
                                   <span className="text-[10px] font-extrabold text-emerald-700 mt-0.5 leading-tight">
-                                    Preenchida
+                                    Recorded
                                   </span>
                                   <span className="text-[9px] text-emerald-800 font-semibold leading-tight">
-                                    {attRecord.students.filter((s) => s.present).length} pres.
+                                    {attRecord.students.filter((s) => s.present).length} present
                                   </span>
                                 </div>
                               ) : (
                                 <div className="flex flex-col items-center gap-0.5">
-                                  {/* A COISA CINZA (Indicador cinza de não preenchido) */}
+                                  {/* THE GRAY ONE (Gray indicator for not recorded) */}
                                   <div className="w-6 h-6 rounded-full bg-slate-300 border border-slate-400/50 text-slate-600 flex items-center justify-center shadow-xs">
                                     <MinusCircle className="w-3.5 h-3.5 text-slate-500" />
                                   </div>
                                   <span className="text-[10px] font-bold text-slate-500 mt-0.5 leading-tight">
-                                    Não preenchida
+                                    Not recorded
                                   </span>
                                   <span className="text-[9px] text-slate-400 font-medium leading-tight">
-                                    Pendente
+                                    Pending
                                   </span>
                                 </div>
                               )}
@@ -2188,7 +2211,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                     </div>
                   </div>
 
-                  {/* Banner do Status da Data Ativa (Sem botão salvar no meio) */}
+                  {/* Active Date Status Banner (No save button in the middle) */}
                   {currentAttendance ? (
                     <div className="p-4 rounded-2xl bg-emerald-50 border-2 border-emerald-300 text-emerald-950 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                       <div className="flex items-center gap-3">
@@ -2197,21 +2220,21 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                         </div>
                         <div>
                           <h4 className="font-extrabold text-sm text-emerald-900 flex items-center gap-2">
-                            <span>Chamada PREENCHIDA para {formatPortugueseDate(attendanceDate)}</span>
+                            <span>Attendance RECORDED for {formatPortugueseDate(attendanceDate)}</span>
                             <span className="px-2 py-0.5 rounded-full bg-emerald-200 text-emerald-900 text-[10px] font-black uppercase">
-                              Gravada no Sistema
+                              Saved in the System
                             </span>
                           </h4>
                           <p className="text-xs text-emerald-800 mt-0.5">
-                            Salva por <strong>{currentAttendance.teacherName || 'Professor'}</strong> •{' '}
-                            <strong>{currentAttendance.students.filter((s) => s.present).length}</strong> presentes de{' '}
-                            <strong>{currentAttendance.students.length}</strong> alunos.
+                            Saved by <strong>{currentAttendance.teacherName || 'Teacher'}</strong> •{' '}
+                            <strong>{currentAttendance.students.filter((s) => s.present).length}</strong> present out of{' '}
+                            <strong>{currentAttendance.students.length}</strong> students.
                           </p>
                         </div>
                       </div>
 
                       <div className="text-xs font-semibold text-emerald-800 bg-emerald-100/80 px-3 py-1.5 rounded-xl border border-emerald-200 self-start sm:self-auto">
-                        Modo Edição: altere as presenças abaixo e clique no botão de salvar ao final da lista.
+                        Edit Mode: change the attendance below and click the save button at the end of the list.
                       </div>
                     </div>
                   ) : (
@@ -2222,13 +2245,13 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                         </div>
                         <div>
                           <h4 className="font-extrabold text-sm text-slate-900 flex items-center gap-2">
-                            <span>Chamada NÃO PREENCHIDA para {formatPortugueseDate(attendanceDate)}</span>
+                            <span>Attendance NOT RECORDED for {formatPortugueseDate(attendanceDate)}</span>
                             <span className="px-2 py-0.5 rounded-full bg-slate-200 text-slate-700 text-[10px] font-black uppercase">
-                              Pendente
+                              Pending
                             </span>
                           </h4>
                           <p className="text-xs text-slate-500 mt-0.5">
-                            Nenhum registro de frequência foi salvo para este dia ainda. Marque os alunos na lista abaixo e clique em <strong>Salvar Chamada</strong> no final.
+                            No attendance record has been saved for this day yet. Mark the students in the list below and click <strong>Save Attendance</strong> at the end.
                           </p>
                         </div>
                       </div>
@@ -2236,37 +2259,37 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                   )}
                 </div>
 
-                {/* 3. LISTA DE ALUNOS & ÚNICO BOTÃO DE SALVAR AO FINAL */}
+                {/* 3. STUDENT LIST & SINGLE SAVE BUTTON AT THE END */}
                 <div className="bg-white p-6 sm:p-8 rounded-3xl border-2 border-slate-200/80 shadow-xs space-y-6">
-                  {/* Header and Bulk Actions (SEM BOTÃO DE SALVAR AQUI) */}
+                  {/* Header and Bulk Actions (NO SAVE BUTTON HERE) */}
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-5">
                     <div>
                       <h3 className="text-sm sm:text-base font-black text-slate-900 uppercase tracking-wide flex items-center gap-2">
                         <span className="w-6 h-6 rounded-full bg-[#075e38] text-white text-xs flex items-center justify-center font-bold">
                           3
                         </span>
-                        <span>LISTA DE ALUNOS DA TURMA ({selectedClass.name})</span>
+                        <span>CLASS STUDENT LIST ({selectedClass.name})</span>
                       </h3>
                       <p className="text-xs text-slate-500 mt-0.5">
-                        Data da Frequência: <strong>{formatPortugueseDate(attendanceDate)}</strong>
+                        Attendance Date: <strong>{formatPortugueseDate(attendanceDate)}</strong>
                       </p>
                     </div>
 
                     {/* Bulk Actions */}
                     <div className="flex items-center gap-2 flex-wrap">
                       <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl border border-slate-200">
-                        <span className="text-[10px] font-bold text-slate-500 uppercase px-1">Presença:</span>
+                        <span className="text-[10px] font-bold text-slate-500 uppercase px-1">Attendance:</span>
                         <button
                           onClick={() => handleMarkAllPresent(true)}
                           className="px-2.5 py-1 bg-emerald-100 text-emerald-800 hover:bg-emerald-200 rounded-lg font-bold text-xs transition-colors shadow-2xs cursor-pointer border border-emerald-200"
                         >
-                          Todos Presentes
+                          Mark All Present
                         </button>
                         <button
                           onClick={() => handleMarkAllPresent(false)}
                           className="px-2.5 py-1 bg-slate-200 text-slate-700 hover:bg-slate-300 rounded-lg font-bold text-xs transition-colors shadow-2xs cursor-pointer border border-slate-300"
                         >
-                          Todos Ausentes
+                          Mark All Absent
                         </button>
                       </div>
 
@@ -2278,14 +2301,14 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                           onClick={() => handleMarkAllHomework('completed')}
                           className="px-2.5 py-1 bg-emerald-600 text-white hover:bg-emerald-700 rounded-lg font-bold text-xs transition-colors shadow-2xs cursor-pointer"
                         >
-                          Todos Fez
+                          Mark All Done
                         </button>
                         <button
                           onClick={() => handleMarkAllHomework('no_homework')}
                           className="px-2.5 py-1 bg-slate-200 text-slate-700 hover:bg-slate-300 rounded-lg font-bold text-xs transition-colors shadow-2xs cursor-pointer border border-slate-300"
-                          title="Aula sem lição de casa (ex: 1ª aula ou pós-prova - não desconta nem penaliza)"
+                          title="Lesson without homework (e.g., first lesson or post-exam - does not deduct or penalize)"
                         >
-                          Sem Homework
+                          No Homework
                         </button>
                       </div>
                     </div>
@@ -2299,11 +2322,11 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                       </div>
                       <div>
                         <p className="font-black text-emerald-950">
-                          ✓ Chamada salva com sucesso para {selectedClass.name}!
+                          ✓ Attendance saved successfully for {selectedClass.name}!
                         </p>
                         <p className="text-xs text-emerald-800 font-semibold mt-0.5">
-                          Data registrada: {formatPortugueseDate(attendanceDate)} • {presentCount} presentes de{' '}
-                          {classEnrollments.length} alunos sincronizados no portal.
+                          Date recorded: {formatPortugueseDate(attendanceDate)} • {presentCount} present out of{' '}
+                          {classEnrollments.length} students synced in the portal.
                         </p>
                       </div>
                     </div>
@@ -2313,9 +2336,9 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                   {classEnrollments.length === 0 ? (
                     <div className="text-center py-12 text-slate-400 bg-slate-50 rounded-2xl border border-slate-200">
                       <Users className="w-10 h-10 mx-auto text-slate-300 mb-2" />
-                      <p className="font-bold text-slate-600 text-sm">Nenhum aluno matriculado nesta turma</p>
+                      <p className="font-bold text-slate-600 text-sm">No students enrolled in this class</p>
                       <p className="text-xs text-slate-400 mt-1">
-                        Selecione outra turma no passo 1 acima para fazer a chamada.
+                        Select another class in step 1 above to take attendance.
                       </p>
                     </div>
                   ) : (
@@ -2355,12 +2378,12 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                                   </p>
                                   {!classroomAccess.allowed && (
                                     <span className="px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-rose-200 text-rose-900 inline-flex items-center gap-0.5">
-                                      <Lock className="w-2.5 h-2.5" /> BLOQUEIO FINANCEIRO
+                                      <Lock className="w-2.5 h-2.5" /> FINANCIAL HOLD
                                     </span>
                                   )}
                                 </div>
                                 <p className="font-mono text-[10px] text-slate-400">
-                                  Matrícula: {enr.studentId}
+                                  Enrollment: {enr.studentId}
                                 </p>
                                 {!classroomAccess.allowed && (
                                   <p className="text-[10px] text-rose-700 font-semibold mt-0.5 leading-tight">
@@ -2371,7 +2394,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                             </div>
 
                             <div className="flex items-center gap-2 self-end sm:self-center">
-                              {/* Registro de Homework (Ajuste 2: Fez / Não fez / Não houve) */}
+                              {/* Homework Record (Adjustment 2: Done / Missed / None Assigned) */}
                               <div className="flex flex-col gap-1">
                                 <span className="text-[10px] font-black uppercase text-slate-500 flex items-center gap-1">
                                   <BookOpen className="w-3 h-3 text-[#075e38]" /> Homework:
@@ -2385,9 +2408,9 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                                         ? 'bg-emerald-600 text-white shadow-2xs'
                                         : 'text-slate-600 hover:text-slate-900'
                                     }`}
-                                    title="Fez o homework (pontua na média)"
+                                    title="Completed the homework (counts toward the average)"
                                   >
-                                    ✓ Fez
+                                    ✓ Done
                                   </button>
                                   <button
                                     type="button"
@@ -2397,9 +2420,9 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                                         ? 'bg-rose-600 text-white shadow-2xs'
                                         : 'text-slate-600 hover:text-slate-900'
                                     }`}
-                                    title="Não fez o homework"
+                                    title="Did not complete the homework"
                                   >
-                                    ✗ Não fez
+                                    ✗ Missed
                                   </button>
                                   <button
                                     type="button"
@@ -2409,17 +2432,17 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                                         ? 'bg-amber-600 text-white shadow-2xs'
                                         : 'text-slate-600 hover:text-slate-900'
                                     }`}
-                                    title="Não houve homework nesta aula (ex: 1ª aula ou pós-prova — não penaliza nem entra no cálculo)"
+                                    title="No homework for this lesson (e.g., first lesson or post-exam — does not penalize or count toward the calculation)"
                                   >
-                                    — Não houve
+                                    — None Assigned
                                   </button>
                                 </div>
                               </div>
 
-                              {/* Observação rápida */}
+                              {/* Quick note */}
                               <input
                                 type="text"
-                                placeholder="Observação..."
+                                placeholder="Note..."
                                 value={studentNote}
                                 onChange={(e) =>
                                   setAttendanceList((prev) => ({
@@ -2433,13 +2456,13 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                                 className="w-24 sm:w-28 px-2.5 py-1.5 bg-white border border-slate-200 rounded-xl text-xs text-slate-700 focus:border-[#075e38] focus:ring-1 focus:ring-[#075e38] focus:outline-hidden"
                               />
 
-                              {/* Toggle Presente / Ausente */}
+                              {/* Toggle Present / Absent */}
                               <button
                                 onClick={() => {
                                   if (!classroomAccess.allowed && !isPresent) {
                                     if (
                                       !confirm(
-                                        `⚠️ ALERTA DE BLOQUEIO FINANCEIRO:\n\nO aluno ${enr.studentName} (${enr.studentId}) possui pendência de parcela da etapa escolar.\n\nMotivo: ${classroomAccess.reason}\n\nDeseja registrar presença mesmo assim?`
+                                        `⚠️ FINANCIAL HOLD ALERT:\n\nStudent ${enr.studentName} (${enr.studentId}) has an outstanding school-stage installment payment.\n\nReason: ${classroomAccess.reason}\n\nDo you want to record attendance anyway?`
                                       )
                                     ) {
                                       return;
@@ -2460,12 +2483,12 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                                 {isPresent ? (
                                   <>
                                     <Check className="w-3.5 h-3.5 stroke-[3]" />
-                                    <span>Presente</span>
+                                    <span>Present</span>
                                   </>
                                 ) : (
                                   <>
                                     <X className="w-3.5 h-3.5 stroke-[3]" />
-                                    <span>Ausente</span>
+                                    <span>Absent</span>
                                   </>
                                 )}
                               </button>
@@ -2477,7 +2500,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                   )}
 
                   {/* ===================================================================== */}
-                  {/* ÚNICO BOTÃO DE SALVAR CHAMADA: AO FINAL DA LISTA DE NOMES             */}
+                  {/* SINGLE SAVE ATTENDANCE BUTTON: AT THE END OF THE NAME LIST      */}
                   {/* ===================================================================== */}
                   <div className="pt-6 border-t-2 border-slate-200/90 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-50/90 p-5 sm:p-6 rounded-3xl border border-slate-200 shadow-xs">
                     <div className="flex items-center gap-3.5">
@@ -2486,36 +2509,36 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                       </div>
                       <div>
                         <h4 className="text-base font-black text-slate-900 tracking-tight">
-                          Gravar Frequência da Turma
+                          Save Class Attendance
                         </h4>
                         <p className="text-xs text-slate-500 font-medium mt-0.5">
-                          Turma: <strong className="text-slate-800">{selectedClass.name}</strong> • Data:{' '}
+                          Class: <strong className="text-slate-800">{selectedClass.name}</strong> • Date:{' '}
                           <strong className="text-slate-800">{formatPortugueseDate(attendanceDate)}</strong>
                         </p>
                         <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                           <span className="text-xs font-bold text-emerald-800 bg-emerald-100 px-2.5 py-0.5 rounded-md border border-emerald-200">
-                            {presentCount} Presentes
+                            {presentCount} Present
                           </span>
                           <span className="text-xs font-bold text-rose-800 bg-rose-100 px-2.5 py-0.5 rounded-md border border-rose-200">
-                            {absentCount} Ausentes
+                            {absentCount} Absent
                           </span>
                           <span className="text-xs font-bold text-amber-800 bg-amber-100 px-2.5 py-0.5 rounded-md border border-amber-200">
-                            HW: {homeworkDoneCount} fez • {homeworkNotDoneCount} não fez • {homeworkNoneCount} sem HW
+                            HW: {homeworkDoneCount} done • {homeworkNotDoneCount} missed • {homeworkNoneCount} no HW
                           </span>
                           <span className="text-xs font-medium text-slate-500">
-                            Total: {classEnrollments.length} alunos
+                            Total: {classEnrollments.length} students
                           </span>
                         </div>
                       </div>
                     </div>
 
-                    {/* O ÚNICO BOTÃO DE SALVAR */}
+                    {/* THE SINGLE SAVE BUTTON */}
                     <button
                       onClick={handleSaveAttendance}
                       className="w-full sm:w-auto px-8 py-4 bg-[#075e38] hover:bg-[#064e2e] text-white font-black text-sm rounded-2xl shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2.5 active:scale-95 cursor-pointer border border-[#064e2e]"
                     >
                       <Save className="w-5 h-5 text-emerald-200" />
-                      <span>{currentAttendance ? 'ATUALIZAR CHAMADA' : 'SALVAR CHAMADA'}</span>
+                      <span>{currentAttendance ? 'UPDATE ATTENDANCE' : 'SAVE ATTENDANCE'}</span>
                       <span className="bg-white/20 px-2.5 py-0.5 rounded-lg text-xs font-mono font-bold text-white">
                         {attendanceDate.split('-').reverse().join('/')}
                       </span>
@@ -2526,7 +2549,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
             )}
 
             {/* ===================================================================== */}
-            {/* VISUALIZAÇÃO 2: MODO SEMANAL (GRADE SEMANAL DE FREQUÊNCIA)            */}
+            {/* VIEW 2: WEEKLY MODE (WEEKLY ATTENDANCE GRID)                      */}
             {/* ===================================================================== */}
             {attendanceViewMode === 'semanal' && (
               <div className="space-y-6">
@@ -2536,14 +2559,14 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                     <div>
                       <div className="flex items-center gap-2">
                         <span className="px-2.5 py-1 rounded-lg bg-emerald-100 text-[#075e38] text-xs font-extrabold">
-                          Visão Semanal
+                          Weekly View
                         </span>
                         <h3 className="text-base sm:text-lg font-black text-slate-900">
-                          Grade Semanal de Chamadas — {selectedClass.name}
+                          Weekly Attendance Grid — {selectedClass.name}
                         </h3>
                       </div>
                       <p className="text-xs text-slate-500 mt-1">
-                        Acompanhe o registro de presenças e faltas da semana inteira de segunda a domingo.
+                        Track attendance and absences for the entire week, from Monday to Sunday.
                       </p>
                     </div>
 
@@ -2554,7 +2577,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                         className="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold flex items-center gap-1 transition-colors cursor-pointer"
                       >
                         <ChevronLeft className="w-4 h-4" />
-                        <span>Semana Anterior</span>
+                        <span>Previous Week</span>
                       </button>
                       <button
                         onClick={() => setWeekOffset(0)}
@@ -2564,13 +2587,13 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                             : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
                         }`}
                       >
-                        Semana Atual
+                        Current Week
                       </button>
                       <button
                         onClick={() => setWeekOffset((prev) => prev + 1)}
                         className="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold flex items-center gap-1 transition-colors cursor-pointer"
                       >
-                        <span>Próxima Semana</span>
+                        <span>Next Week</span>
                         <ChevronRight className="w-4 h-4" />
                       </button>
                     </div>
@@ -2580,10 +2603,10 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs bg-emerald-50/70 p-4 rounded-2xl border border-emerald-100">
                     <div className="flex items-center gap-2">
                       <Calendar className="w-4 h-4 text-[#075e38]" />
-                      <span className="font-bold text-slate-700">Período da Semana:</span>
+                      <span className="font-bold text-slate-700">Week Period:</span>
                       <strong className="text-[#075e38]">
-                        {currentWeekDays[0]?.dayNumber} de {currentWeekDays[0]?.monthName} até{' '}
-                        {currentWeekDays[6]?.dayNumber} de {currentWeekDays[6]?.monthName} de{' '}
+                        {currentWeekDays[0]?.monthName} {currentWeekDays[0]?.dayNumber} to{' '}
+                        {currentWeekDays[6]?.monthName} {currentWeekDays[6]?.dayNumber},{' '}
                         {currentWeekDays[0]?.dateStr.split('-')[0]}
                       </strong>
                     </div>
@@ -2595,7 +2618,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                             isClassAttendanceSavedOnDate(selectedClass.id, d.dateStr)
                           ).length
                         }{' '}
-                        de 7 dias preenchidos
+                        of 7 days recorded
                       </span>
                     </div>
                   </div>
@@ -2625,7 +2648,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                               </span>
                               {isToday && (
                                 <span className="px-1 rounded bg-amber-200 text-amber-900 text-[8px] font-black">
-                                  Hoje
+                                  Today
                                 </span>
                               )}
                             </div>
@@ -2641,18 +2664,18 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                             {isFilled ? (
                               <>
                                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-100 text-emerald-800">
-                                  <Check className="w-3 h-3 stroke-[3]" /> Feita
+                                  <Check className="w-3 h-3 stroke-[3]" /> Done
                                 </span>
                                 <span className="text-[10px] font-bold text-slate-600">
-                                  {att.students.filter((s) => s.present).length} pres.
+                                  {att.students.filter((s) => s.present).length} present
                                 </span>
                               </>
                             ) : (
                               <>
                                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-200 text-slate-600">
-                                  <MinusCircle className="w-3 h-3" /> Pendente
+                                  <MinusCircle className="w-3 h-3" /> Pending
                                 </span>
-                                <span className="text-[10px] text-slate-400 font-medium">Sem registro</span>
+                                <span className="text-[10px] text-slate-400 font-medium">No record</span>
                               </>
                             )}
 
@@ -2663,7 +2686,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                               }}
                               className="w-full mt-1 py-1 rounded-lg bg-slate-100 hover:bg-[#075e38] hover:text-white text-slate-700 text-[10px] font-bold transition-colors cursor-pointer"
                             >
-                              {isFilled ? 'Editar' : 'Lançar'}
+                              {isFilled ? 'Edit' : 'Enter'}
                             </button>
                           </div>
                         </div>
@@ -2672,7 +2695,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                   </div>
                 </div>
 
-                {/* Grade / Matriz Semanal de Frequência dos Alunos */}
+                {/* Weekly Student Attendance Grid / Matrix */}
                 <div className="bg-white p-6 sm:p-8 rounded-3xl border-2 border-slate-200/80 shadow-xs space-y-4">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
                     <div>
@@ -2680,10 +2703,10 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                         <span className="w-6 h-6 rounded-full bg-[#075e38] text-white text-xs flex items-center justify-center font-bold">
                           ✓
                         </span>
-                        <span>MATRIZ SEMANAL DE PRESENÇAS POR ALUNO</span>
+                        <span>WEEKLY ATTENDANCE MATRIX BY STUDENT</span>
                       </h3>
                       <p className="text-xs text-slate-500 mt-0.5">
-                        Clique em qualquer coluna ou dia para abrir a lista diária e salvar a chamada.
+                        Click any column or day to open the daily list and save attendance.
                       </p>
                     </div>
 
@@ -2693,19 +2716,19 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                         <span className="w-5 h-5 rounded-md bg-emerald-100 text-emerald-800 flex items-center justify-center text-[10px] font-black">
                           ✓
                         </span>
-                        Presente
+                        Present
                       </span>
                       <span className="inline-flex items-center gap-1 font-bold text-rose-800">
                         <span className="w-5 h-5 rounded-md bg-rose-100 text-rose-800 flex items-center justify-center text-[10px] font-black">
                           ✗
                         </span>
-                        Ausente
+                        Absent
                       </span>
                       <span className="inline-flex items-center gap-1 font-medium text-slate-400">
                         <span className="w-5 h-5 rounded-md bg-slate-100 text-slate-400 flex items-center justify-center text-[10px] font-bold">
                           —
                         </span>
-                        Não registrada
+                        Not recorded
                       </span>
                     </div>
                   </div>
@@ -2714,14 +2737,14 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                   {classEnrollments.length === 0 ? (
                     <div className="text-center py-12 text-slate-400 bg-slate-50 rounded-2xl border border-slate-200">
                       <Users className="w-10 h-10 mx-auto text-slate-300 mb-2" />
-                      <p className="font-bold text-slate-600 text-sm">Nenhum aluno matriculado nesta turma</p>
+                      <p className="font-bold text-slate-600 text-sm">No students enrolled in this class</p>
                     </div>
                   ) : (
                     <div className="overflow-x-auto rounded-2xl border border-slate-200">
                       <table className="w-full text-left border-collapse">
                         <thead>
                           <tr className="bg-slate-50 border-b border-slate-200 text-[11px] font-black uppercase text-slate-500 tracking-wider">
-                            <th className="p-3.5 sm:p-4 min-w-[180px]">Aluno</th>
+                            <th className="p-3.5 sm:p-4 min-w-[180px]">Student</th>
                             {currentWeekDays.map((d) => (
                               <th
                                 key={d.dateStr}
@@ -2730,7 +2753,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                                   setAttendanceViewMode('diaria');
                                 }}
                                 className="p-2 sm:p-3 text-center min-w-[65px] hover:bg-emerald-50 transition-colors cursor-pointer group"
-                                title={`Clique para abrir o dia ${d.dateStr}`}
+                                title={`Click to open day ${d.dateStr}`}
                               >
                                 <div className="text-[10px] text-slate-400 group-hover:text-[#075e38]">
                                   {d.weekDayShort}
@@ -2740,8 +2763,8 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                                 </div>
                               </th>
                             ))}
-                            <th className="p-3.5 sm:p-4 text-center min-w-[80px]">Presenças</th>
-                            <th className="p-3.5 sm:p-4 text-center min-w-[80px]">Frequência</th>
+                            <th className="p-3.5 sm:p-4 text-center min-w-[80px]">Present Days</th>
+                            <th className="p-3.5 sm:p-4 text-center min-w-[80px]">Attendance %</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100 text-xs">
@@ -2795,7 +2818,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                                         setAttendanceViewMode('diaria');
                                       }}
                                       className="p-2 text-center cursor-pointer hover:bg-emerald-50/60 transition-colors"
-                                      title={`Abrir chamada de ${d.dateStr}`}
+                                      title={`Open attendance for ${d.dateStr}`}
                                     >
                                       {cellStatus === 'present' && (
                                         <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-emerald-100 text-emerald-800 font-black text-xs">
@@ -2840,7 +2863,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                                     </span>
                                   ) : (
                                     <span className="text-[11px] text-slate-400 font-medium">
-                                      Sem dados
+                                      No data
                                     </span>
                                   )}
                                 </td>
@@ -2855,14 +2878,14 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                   {/* Action Link to Go to Daily Sheet */}
                   <div className="pt-3 flex items-center justify-between flex-wrap gap-3">
                     <p className="text-xs text-slate-500">
-                      💡 Para preencher ou editar qualquer dia acima, basta clicar no dia desejado para abrir a lista com o botão de confirmação.
+                      💡 To fill in or edit any day above, simply click the desired day to open the list with the save button.
                     </p>
                     <button
                       onClick={() => setAttendanceViewMode('diaria')}
                       className="px-5 py-2.5 bg-[#075e38] hover:bg-[#064e2e] text-white font-bold text-xs rounded-xl transition-all cursor-pointer flex items-center gap-1.5"
                     >
                       <ClipboardList className="w-4 h-4" />
-                      <span>Ir para Lançamento do Dia</span>
+                      <span>Go to Daily Entry</span>
                     </button>
                   </div>
                 </div>
@@ -2872,7 +2895,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
         )}
 
         {/* ========================================================================= */}
-        {/* TAB 3: PROVAS (EXAM MANAGEMENT - EXPLICITLY REQUESTED AREA)               */}
+        {/* TAB 3: EXAMS (EXAM MANAGEMENT - EXPLICITLY REQUESTED AREA)              */}
         {/* ========================================================================= */}
         {activeNavTab === 'provas' && (
           <div className="space-y-6">
@@ -2882,10 +2905,10 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                 <div>
                   <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
                     <Award className="w-5 h-5 text-[#075e38]" />
-                    Gestão de Provas & Avaliações Acadêmicas
+                    Exam & Academic Assessment Management
                   </h2>
                   <p className="text-xs text-slate-500 mt-0.5">
-                    Cadastre provas, defina o conteúdo programático cobrado, nota máxima, pesos e controle o lançamento de notas.
+                    Register exams, define the syllabus covered, maximum grade, and weights, and manage grade entry.
                   </p>
                 </div>
 
@@ -2898,7 +2921,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                     className="px-5 py-2.5 text-xs font-bold text-white bg-[#075e38] hover:bg-[#064e2e] rounded-2xl transition-all shadow-sm flex items-center gap-2 ring-2 ring-[#075e38]/20"
                   >
                     <Plus className="w-4 h-4" />
-                    <span>+ Nova Prova / Avaliação</span>
+                    <span>+ New Exam / Assessment</span>
                   </button>
                 </div>
               </div>
@@ -2910,7 +2933,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                   <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
                   <input
                     type="text"
-                    placeholder="Buscar por título, matéria ou conteúdo..."
+                    placeholder="Search by title, subject, or content..."
                     value={examSearch}
                     onChange={(e) => setExamSearch(e.target.value)}
                     className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs focus:ring-2 focus:ring-[#075e38] focus:bg-white focus:outline-hidden"
@@ -2924,7 +2947,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                     onChange={(e) => setExamFilterClass(e.target.value)}
                     className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-bold text-slate-800 focus:ring-2 focus:ring-[#075e38] focus:bg-white focus:outline-hidden"
                   >
-                    <option value="ALL">Todas as Turmas ({teacherClasses.length})</option>
+                    <option value="ALL">All Classes ({teacherClasses.length})</option>
                     {teacherClasses.map((c) => (
                       <option key={c.id} value={c.id}>
                         {c.name}
@@ -2935,8 +2958,8 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
 
                 {/* Stats summary */}
                 <div className="bg-emerald-50/60 border border-emerald-100 rounded-2xl px-4 py-2 flex items-center justify-between text-xs">
-                  <span className="font-bold text-emerald-900">Total de Provas:</span>
-                  <span className="font-black text-[#075e38] text-sm">{displayedAssessments.length} cadastradas</span>
+                  <span className="font-bold text-emerald-900">Total Exams:</span>
+                  <span className="font-black text-[#075e38] text-sm">{displayedAssessments.length} registered</span>
                 </div>
               </div>
             </div>
@@ -2970,17 +2993,17 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
 
                         <div className="flex items-center gap-1.5">
                           <span className="px-2 py-0.5 bg-slate-100 text-slate-700 font-extrabold text-[10px] rounded uppercase tracking-wider">
-                            {exam.type.replace('_', ' ')}
+                            {EXAM_TYPE_LABELS[exam.type] || exam.type.replace(/_/g, ' ')}
                           </span>
 
                           {exam.requiredPaymentStage !== 'NONE' && (
                             <span className="px-2 py-0.5 bg-amber-50 text-amber-800 font-bold text-[10px] rounded border border-amber-200 flex items-center gap-1">
                               <Lock className="w-2.5 h-2.5 text-amber-600" />
                               {exam.requiredPaymentStage === 'STAGE_2_PAID'
-                                ? 'Exige 2ª Parcela'
+                                ? 'Requires 2nd Installment'
                                 : exam.requiredPaymentStage === 'STAGE_FINAL_PAID'
-                                ? 'Quitação Total'
-                                : 'Exige 1ª Parcela'}
+                                ? 'Fully Paid'
+                                : 'Requires 1st Installment'}
                             </span>
                           )}
                         </div>
@@ -2995,25 +3018,25 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                       <div className="flex flex-wrap gap-2 text-xs">
                         <div className="px-2.5 py-1 bg-slate-50 border border-slate-200/80 rounded-xl text-slate-700 font-medium flex items-center gap-1.5">
                           <Clock className="w-3.5 h-3.5 text-slate-400" />
-                          <span>{exam.date} {exam.time ? `às ${exam.time}` : ''}</span>
+                          <span>{exam.date} {exam.time ? `at ${exam.time}` : ''}</span>
                         </div>
 
                         <div className="px-2.5 py-1 bg-emerald-50/80 border border-emerald-200/60 rounded-xl text-[#075e38] font-black">
-                          Nota Máx: {exam.maxScore} pts
+                          Max Grade: {exam.maxScore} pts
                         </div>
 
                         <div className="px-2.5 py-1 bg-purple-50 border border-purple-200/60 rounded-xl text-purple-800 font-bold">
-                          Peso: {exam.weight}%
+                          Weight: {exam.weight}%
                         </div>
                       </div>
 
-                      {/* Conteúdo Programático Box */}
+                      {/* Syllabus Box */}
                       {exam.content ? (
                         <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200/70 text-xs space-y-1.5">
                           <div className="flex items-center justify-between">
                             <span className="font-bold text-slate-800 flex items-center gap-1.5 text-[11px] uppercase tracking-wider">
                               <BookMarked className="w-3.5 h-3.5 text-[#075e38]" />
-                              Conteúdo Programático Cobrado
+                              Syllabus Covered
                             </span>
                           </div>
                           <p className="text-slate-600 text-[11px] leading-relaxed line-clamp-3 whitespace-pre-line">
@@ -3022,7 +3045,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                         </div>
                       ) : (
                         <div className="p-3 bg-slate-50/60 rounded-2xl border border-slate-100 text-[11px] text-slate-400 italic">
-                          Nenhum tópico detalhado foi cadastrado.
+                          No detailed topics have been registered.
                         </div>
                       )}
 
@@ -3030,16 +3053,16 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                       <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
                         <div>
                           <span className="text-slate-500 font-medium block text-[11px]">
-                            Lançamento de Notas:
+                            Grade Entry:
                           </span>
                           <span className="font-bold text-slate-800">
-                            {gradedCount} de {totalStudents} alunos avaliados
+                            {gradedCount} of {totalStudents} students graded
                           </span>
                         </div>
 
                         {averageScore !== null && (
                           <div className="text-right">
-                            <span className="text-slate-500 font-medium block text-[11px]">Média da Turma:</span>
+                            <span className="text-slate-500 font-medium block text-[11px]">Class Average:</span>
                             <span className="font-mono font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 text-xs">
                               {averageScore} / {exam.maxScore}
                             </span>
@@ -3059,26 +3082,26 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                         className="flex-1 py-2 px-3 rounded-xl bg-[#075e38] text-white font-bold text-xs flex items-center justify-center gap-1.5 hover:bg-[#064e2e] transition-colors shadow-2xs"
                       >
                         <Star className="w-3.5 h-3.5 text-amber-300" />
-                        <span>Lançar Notas</span>
+                        <span>Enter Grades</span>
                       </button>
 
                       <button
                         onClick={() => setSelectedExamForDetails(exam)}
                         className="py-2 px-3 rounded-xl bg-slate-100 text-slate-700 font-bold text-xs flex items-center justify-center gap-1.5 hover:bg-slate-200 transition-colors"
-                        title="Ver Conteúdo e Detalhes"
+                        title="View Content and Details"
                       >
                         <Eye className="w-3.5 h-3.5" />
-                        <span>Detalhes</span>
+                        <span>Details</span>
                       </button>
 
                       <button
                         onClick={() => {
-                          if (confirm(`Deseja realmente excluir a avaliação "${exam.title}"?`)) {
+                          if (confirm(`Are you sure you want to delete the assessment "${exam.title}"?`)) {
                             deleteAssessment(exam.id);
                           }
                         }}
                         className="p-2 rounded-xl text-rose-500 hover:bg-rose-50 transition-colors"
-                        title="Excluir Prova"
+                        title="Delete Exam"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -3093,9 +3116,9 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                     <Award className="w-7 h-7" />
                   </div>
                   <div>
-                    <h3 className="text-base font-bold text-slate-900">Nenhuma Prova Encontrada</h3>
+                    <h3 className="text-base font-bold text-slate-900">No Exams Found</h3>
                     <p className="text-xs text-slate-500 mt-1 max-w-md mx-auto">
-                      Cadastre provas e avaliações com conteúdo programático e nota máxima para gerenciar as notas dos alunos.
+                      Register exams and assessments with a syllabus and maximum grade to manage student grades.
                     </p>
                   </div>
                   <button
@@ -3103,7 +3126,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                     className="px-5 py-2.5 bg-[#075e38] text-white rounded-xl text-xs font-bold hover:bg-[#064e2e] inline-flex items-center gap-2"
                   >
                     <Plus className="w-4 h-4" />
-                    <span>Cadastrar Primeira Prova</span>
+                    <span>Register First Exam</span>
                   </button>
                 </div>
               )}
@@ -3112,7 +3135,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
         )}
 
         {/* ========================================================================= */}
-        {/* TAB 4: NOTAS (LANÇAMENTO DE NOTAS E AVALIAÇÕES)                           */}
+        {/* TAB 4: GRADES (GRADE ENTRY AND ASSESSMENTS)                              */}
         {/* ========================================================================= */}
         {activeNavTab === 'notas' && (
           <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200/70 shadow-xs space-y-6">
@@ -3120,17 +3143,17 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
               <div>
                 <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
                   <Star className="w-5 h-5 text-amber-500" />
-                  Lançamento de Notas & Avaliações
+                  Grade Entry & Assessments
                 </h2>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  As notas lançadas são refletidas imediatamente no boletim oficial do aluno.
+                  Entered grades are immediately reflected in the student's official report card.
                 </p>
               </div>
 
               <div className="flex flex-wrap items-center gap-3">
                 {/* Select Class */}
                 <div>
-                  <label className="block text-[10px] font-bold uppercase text-slate-400 mb-1">Turma</label>
+                  <label className="block text-[10px] font-bold uppercase text-slate-400 mb-1">Class</label>
                   <select
                     value={selectedClassId}
                     onChange={(e) => setSelectedClassId(e.target.value)}
@@ -3146,7 +3169,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
 
                 {/* Select Assessment */}
                 <div>
-                  <label className="block text-[10px] font-bold uppercase text-slate-400 mb-1">Prova / Avaliação</label>
+                  <label className="block text-[10px] font-bold uppercase text-slate-400 mb-1">Exam / Assessment</label>
                   <select
                     value={selectedAssessmentId}
                     onChange={(e) => setSelectedAssessmentId(e.target.value)}
@@ -3154,7 +3177,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                   >
                     {classAssessments.map((a) => (
                       <option key={a.id} value={a.id}>
-                        {a.title} (Máx: {a.maxScore} pts | Peso: {a.weight}%)
+                        {a.title} (Max: {a.maxScore} pts | Weight: {a.weight}%)
                       </option>
                     ))}
                   </select>
@@ -3168,7 +3191,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                       className="px-4 py-2 text-xs font-bold text-white bg-[#075e38] hover:bg-[#064e2e] rounded-xl transition-colors shadow-2xs flex items-center gap-1.5"
                     >
                       <Save className="w-4 h-4" />
-                      <span>Salvar Todas as Notas</span>
+                      <span>Save All Grades</span>
                     </button>
                   </div>
                 )}
@@ -3182,15 +3205,15 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                   <div className="flex items-center gap-2">
                     <span className="font-extrabold text-slate-900">{currentAssessment.title}</span>
                     <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 font-black rounded text-[10px]">
-                      Nota Máxima: {currentAssessment.maxScore} pts
+                      Maximum Grade: {currentAssessment.maxScore} pts
                     </span>
                     <span className="px-2 py-0.5 bg-purple-100 text-purple-800 font-bold rounded text-[10px]">
-                      Peso: {currentAssessment.weight}%
+                      Weight: {currentAssessment.weight}%
                     </span>
                   </div>
                   {currentAssessment.content && (
                     <p className="text-slate-600 text-[11px] line-clamp-1">
-                      <strong className="text-slate-700">Conteúdo:</strong> {currentAssessment.content}
+                      <strong className="text-slate-700">Content:</strong> {currentAssessment.content}
                     </p>
                   )}
                 </div>
@@ -3200,14 +3223,14 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                     onClick={() => setSelectedExamForDetails(currentAssessment)}
                     className="px-3 py-1 bg-white border border-slate-300 rounded-lg text-slate-700 font-bold text-[11px] hover:bg-slate-50"
                   >
-                    Ver Conteúdo da Prova
+                    View Exam Content
                   </button>
                 </div>
               </div>
             ) : (
               <div className="p-6 bg-amber-50 rounded-2xl border border-amber-200 text-center space-y-3">
-                <p className="font-bold text-amber-900 text-sm">Esta turma ainda não possui provas cadastradas.</p>
-                <p className="text-xs text-amber-700">Cadastre uma prova para liberar o lançamento de notas.</p>
+                <p className="font-bold text-amber-900 text-sm">This class does not have any exams registered yet.</p>
+                <p className="text-xs text-amber-700">Register an exam to enable grade entry.</p>
                 <button
                   onClick={() => {
                     setExamClassId(selectedClassId);
@@ -3216,7 +3239,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                   className="px-4 py-2 bg-[#075e38] text-white rounded-xl font-bold text-xs hover:bg-[#064e2e] inline-flex items-center gap-1.5"
                 >
                   <Plus className="w-4 h-4" />
-                  <span>Cadastrar Prova para {selectedClass.name}</span>
+                  <span>Register Exam for {selectedClass.name}</span>
                 </button>
               </div>
             )}
@@ -3224,7 +3247,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
             {gradeSaved && (
               <div className="p-3 bg-emerald-50 text-emerald-800 rounded-xl text-xs font-bold flex items-center gap-2 border border-emerald-200 animate-in fade-in">
                 <Check className="w-4 h-4 text-emerald-600" />
-                Notas salvas e sincronizadas com o boletim do aluno com sucesso!
+                Grades saved and synced with the student's report card successfully!
               </div>
             )}
 
@@ -3234,12 +3257,12 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                 <table className="w-full text-left text-xs">
                   <thead className="bg-slate-50 text-slate-500 uppercase font-bold tracking-wider">
                     <tr>
-                      <th className="px-4 py-3">ID Aluno</th>
-                      <th className="px-4 py-3">Nome do Aluno</th>
-                      <th className="px-4 py-3">Nota Atual</th>
-                      <th className="px-4 py-3">Lançar Nota (0 a {currentAssessment.maxScore})</th>
-                      <th className="px-4 py-3">Feedback / Observações</th>
-                      <th className="px-4 py-3 text-right">Ação</th>
+                      <th className="px-4 py-3">Student ID</th>
+                      <th className="px-4 py-3">Student Name</th>
+                      <th className="px-4 py-3">Current Grade</th>
+                      <th className="px-4 py-3">Enter Grade (0 to {currentAssessment.maxScore})</th>
+                      <th className="px-4 py-3">Feedback / Notes</th>
+                      <th className="px-4 py-3 text-right">Action</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
@@ -3262,7 +3285,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                               <span className="font-bold text-slate-900 block">{enr.studentName}</span>
                               {!examAccess.allowed && (
                                 <span className="px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-amber-200 text-amber-900 inline-flex items-center gap-0.5">
-                                  <Lock className="w-2.5 h-2.5" /> PROVA BLOQUEADA
+                                  <Lock className="w-2.5 h-2.5" /> EXAM LOCKED
                                 </span>
                               )}
                             </div>
@@ -3279,7 +3302,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                                 {existingGrade.score} / {currentAssessment.maxScore} ({existingGrade.percentage}%)
                               </span>
                             ) : (
-                              <span className="text-slate-400 italic">Pendente</span>
+                              <span className="text-slate-400 italic">Pending</span>
                             )}
                           </td>
                           <td className="px-4 py-3">
@@ -3300,7 +3323,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                           <td className="px-4 py-3">
                             <input
                               type="text"
-                              placeholder="Ex: Excelente aproveitamento nos tópicos"
+                              placeholder="E.g., Excellent grasp of the topics"
                               value={feedbackInputs[enr.studentId] ?? ''}
                               onChange={(e) =>
                                 setFeedbackInputs({ ...feedbackInputs, [enr.studentId]: e.target.value })
@@ -3314,7 +3337,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                                 if (!examAccess.allowed) {
                                   if (
                                     !confirm(
-                                      `⚠️ ALERTA DE PROVA BLOQUEADA:\n\nO aluno ${enr.studentName} (${enr.studentId}) possui pendência financeira para esta prova: ${examAccess.reason}\n\nDeseja lançar a nota mesmo assim?`
+                                      `⚠️ EXAM LOCKED ALERT:\n\nStudent ${enr.studentName} (${enr.studentId}) has an outstanding financial issue for this exam: ${examAccess.reason}\n\nDo you want to enter the grade anyway?`
                                     )
                                   ) {
                                     return;
@@ -3328,7 +3351,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                                   : 'text-white bg-[#075e38] hover:bg-[#064e2e]'
                               }`}
                             >
-                              Salvar
+                              Save
                             </button>
                           </td>
                         </tr>
@@ -3342,7 +3365,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
         )}
 
         {/* ========================================================================= */}
-        {/* TAB 5: AULAS (LMS / CADASTRO DE MATERIAIS)                                */}
+        {/* TAB 5: LESSONS (LMS / MATERIAL REGISTRATION)                            */}
         {/* ========================================================================= */}
         {activeNavTab === 'aulas' && (
           <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200/70 shadow-xs space-y-6">
@@ -3350,10 +3373,10 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
               <div>
                 <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
                   <FileText className="w-5 h-5 text-[#075e38]" />
-                  Aulas Cadastradas & Publicação de Documentos
+                  Registered Lessons & Document Publishing
                 </h2>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  Disponibilize documentos em PDF/DOC, textos escritos e links pedagógicos para os alunos da turma.
+                  Provide PDF/DOC documents, written texts, and educational links for the class students.
                 </p>
               </div>
 
@@ -3374,7 +3397,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                   onClick={() => setIsLessonModalOpen(true)}
                   className="px-4 py-2 text-xs font-bold text-white bg-[#075e38] hover:bg-[#064e2e] rounded-xl transition-colors shadow-2xs flex items-center gap-1.5"
                 >
-                  <Plus className="w-4 h-4" /> Publicar Nova Aula
+                  <Plus className="w-4 h-4" /> Publish New Lesson
                 </button>
               </div>
             </div>
@@ -3396,7 +3419,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                         <button
                           onClick={() => deleteLesson(lesson.id)}
                           className="text-slate-400 hover:text-rose-600 p-1"
-                          title="Excluir Aula"
+                          title="Delete Lesson"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
@@ -3406,11 +3429,11 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                     <div className="pt-3 border-t border-slate-200 flex items-center justify-between">
                       <span className="text-slate-500 flex items-center gap-1">
                         <FileText className="w-3.5 h-3.5 text-slate-400" />
-                        {lesson.materials.length} anexos / apostila
+                        {lesson.materials.length} attachments / workbook
                       </span>
                       <span className="text-[#075e38] font-bold flex items-center gap-1">
                         <CheckCircle className="w-3.5 h-3.5 text-[#075e38]" />
-                        Disponível no AVA
+                        Available in the VLE
                       </span>
                     </div>
                   </div>
@@ -3420,11 +3443,11 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
         )}
 
         {/* ========================================================================= */}
-        {/* TAB 6: ATIVIDADES & TAREFAS (COM VISIBILIDADE DE QUEM FEZ/NÃO FEZ, VISTO E FEEDBACK) */}
+        {/* TAB 6: ACTIVITIES & ASSIGNMENTS (WITH VISIBILITY OF WHO DID/DIDN'T DO IT, SEEN AND FEEDBACK) */}
         {/* ========================================================================= */}
         {activeNavTab === 'atividades' && (
           <div className="space-y-6">
-            {/* Notificação Toast */}
+            {/* Toast Notification */}
             {activityToast && (
               <div className="p-3.5 bg-emerald-50 border border-emerald-300/80 rounded-2xl flex items-center justify-between text-xs text-emerald-900 font-bold shadow-xs animate-in fade-in slide-in-from-top-1">
                 <div className="flex items-center gap-2">
@@ -3438,7 +3461,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
             )}
 
             {/* =================================================================== */}
-            {/* CENÁRIO A: DENTRO DA ATIVIDADE ADICIONADA (DETALHES E VISTOS)        */}
+            {/* SCENARIO A: INSIDE THE ADDED ASSIGNMENT (DETAILS AND SEEN STATUS)  */}
             {/* =================================================================== */}
             {selectedAssignmentForReview ? (
               (() => {
@@ -3465,7 +3488,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
 
                 const percentCompleted = totalStudents > 0 ? Math.round((fezStudents.length / totalStudents) * 100) : 0;
 
-                // Filtragem dos alunos de acordo com as abas e busca
+                // Filter students according to the tabs and search
                 let displayedStudents = enrollmentsInClass;
                 if (assignmentStudentFilter === 'FEZ') {
                   displayedStudents = fezStudents;
@@ -3489,7 +3512,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
 
                 return (
                   <div className="space-y-6">
-                    {/* Header de Navegação da Atividade */}
+                    {/* Assignment Navigation Header */}
                     <div className="bg-white p-6 sm:p-7 rounded-3xl border border-slate-200/80 shadow-xs space-y-4">
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
                         <button
@@ -3497,25 +3520,25 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                           className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 font-bold text-xs transition-colors w-fit shadow-2xs"
                         >
                           <ArrowLeft className="w-3.5 h-3.5 text-slate-500" />
-                          <span>Voltar para Lista de Atividades</span>
+                          <span>Back to Assignment List</span>
                         </button>
 
                         <div className="flex items-center gap-2">
                           <span className="text-[11px] font-bold text-slate-500 bg-slate-100 px-3 py-1 rounded-full border border-slate-200">
-                            Turma: <strong className="text-slate-800">{targetAssignment.className}</strong>
+                            Class: <strong className="text-slate-800">{targetAssignment.className}</strong>
                           </span>
                           <span className="text-[11px] font-bold text-amber-800 bg-amber-50 px-3 py-1 rounded-full border border-amber-200">
-                            Prazo: {targetAssignment.dueDate}
+                            Due: {targetAssignment.dueDate}
                           </span>
                         </div>
                       </div>
 
-                      {/* Título & Categoria */}
+                      {/* Title & Category */}
                       <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
                         <div className="space-y-1.5">
                           <div className="flex items-center gap-2">
                             <span className="text-[10px] font-mono uppercase font-bold px-2 py-0.5 rounded bg-orange-100 text-orange-900 border border-orange-200">
-                              {targetAssignment.category || 'EXERCÍCIO'}
+                              {CATEGORY_LABELS[targetAssignment.category] || targetAssignment.category || 'Exercise'}
                             </span>
                             <span className="text-xs font-mono font-bold text-slate-400">
                               ID: {targetAssignment.id}
@@ -3528,7 +3551,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
 
                         <div className="flex items-center gap-3 bg-slate-50 p-3 rounded-2xl border border-slate-200 self-start">
                           <div className="text-right">
-                            <span className="text-[10px] text-slate-400 font-bold uppercase block">Pontuação Máxima</span>
+                            <span className="text-[10px] text-slate-400 font-bold uppercase block">Maximum Score</span>
                             <span className="text-base font-black font-mono text-[#075e38]">
                               {targetAssignment.maxScore} pts
                             </span>
@@ -3537,11 +3560,11 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                         </div>
                       </div>
 
-                      {/* Enunciado e Instruções Cadastradas */}
+                      {/* Statement and Registered Instructions */}
                       <div className="p-4 bg-orange-50/40 rounded-2xl border border-orange-200/80 text-xs space-y-1.5">
                         <div className="flex items-center gap-1.5 font-bold text-orange-950">
                           <FileText className="w-4 h-4 text-[#ea580c]" />
-                          <span>Orientações & Enunciado da Atividade:</span>
+                          <span>Guidelines & Assignment Statement:</span>
                         </div>
                         <p className="text-slate-700 leading-relaxed whitespace-pre-line pl-5">
                           {targetAssignment.instructions}
@@ -3549,36 +3572,36 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                       </div>
 
                       {/* ========================================================= */}
-                      {/* PAINEL DE MÉTRICAS DA ATIVIDADE (QUEM FEZ / QUEM NÃO FEZ) */}
+                      {/* ASSIGNMENT METRICS PANEL (WHO DID / WHO DID NOT) */}
                       {/* ========================================================= */}
                       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
-                        {/* Total de Alunos */}
+                        {/* Total Students */}
                         <div className="p-4 rounded-2xl border border-slate-200 bg-white shadow-2xs">
                           <div className="flex items-center justify-between">
-                            <span className="text-[11px] font-bold text-slate-500 uppercase">Alunos na Turma</span>
+                            <span className="text-[11px] font-bold text-slate-500 uppercase">Students in Class</span>
                             <Users className="w-4 h-4 text-slate-400" />
                           </div>
                           <p className="text-2xl font-black text-slate-900 mt-2">{totalStudents}</p>
-                          <span className="text-[10px] text-slate-400 font-medium">Matrículas ativas</span>
+                          <span className="text-[10px] text-slate-400 font-medium">Active enrollments</span>
                         </div>
 
-                        {/* Quem Fez */}
+                        {/* Who Did It */}
                         <div className="p-4 rounded-2xl border border-emerald-200 bg-emerald-50/50 shadow-2xs">
                           <div className="flex items-center justify-between">
-                            <span className="text-[11px] font-bold text-emerald-800 uppercase">Quem Fez</span>
+                            <span className="text-[11px] font-bold text-emerald-800 uppercase">Completed</span>
                             <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                           </div>
                           <div className="flex items-baseline gap-2 mt-2">
                             <p className="text-2xl font-black text-emerald-950">{fezStudents.length}</p>
                             <span className="text-xs font-bold text-emerald-700">({percentCompleted}%)</span>
                           </div>
-                          <span className="text-[10px] text-emerald-600 font-medium">Entregas registradas</span>
+                          <span className="text-[10px] text-emerald-600 font-medium">Submissions recorded</span>
                         </div>
 
-                        {/* Quem Não Fez */}
+                        {/* Who Did Not Do It */}
                         <div className="p-4 rounded-2xl border border-rose-200 bg-rose-50/50 shadow-2xs">
                           <div className="flex items-center justify-between">
-                            <span className="text-[11px] font-bold text-rose-800 uppercase">Quem Não Fez</span>
+                            <span className="text-[11px] font-bold text-rose-800 uppercase">Not Completed</span>
                             <AlertCircle className="w-4 h-4 text-rose-600" />
                           </div>
                           <div className="flex items-baseline gap-2 mt-2">
@@ -3587,28 +3610,28 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                               ({totalStudents > 0 ? 100 - percentCompleted : 0}%)
                             </span>
                           </div>
-                          <span className="text-[10px] text-rose-600 font-medium">Envios pendentes</span>
+                          <span className="text-[10px] text-rose-600 font-medium">Pending submissions</span>
                         </div>
 
-                        {/* Vistos Concluídos */}
+                        {/* Completed Reviews */}
                         <div className="p-4 rounded-2xl border border-blue-200 bg-blue-50/50 shadow-2xs">
                           <div className="flex items-center justify-between">
-                            <span className="text-[11px] font-bold text-blue-800 uppercase">Vistos & Feedbacks</span>
+                            <span className="text-[11px] font-bold text-blue-800 uppercase">Reviews & Feedback</span>
                             <FileCheck className="w-4 h-4 text-blue-600" />
                           </div>
                           <p className="text-2xl font-black text-blue-950 mt-2">{vistosConcluidos.length}</p>
                           <span className="text-[10px] text-blue-600 font-medium">
-                            {pendentesVisto.length > 0 ? `${pendentesVisto.length} aguardando visto` : 'Tudo visto'}
+                            {pendentesVisto.length > 0 ? `${pendentesVisto.length} awaiting review` : 'All reviewed'}
                           </span>
                         </div>
                       </div>
 
-                      {/* Barra de Progresso de Adesão */}
+                      {/* Completion Progress Bar */}
                       <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-200 space-y-1.5">
                         <div className="flex justify-between text-xs font-bold">
                           <span className="text-slate-700 flex items-center gap-1.5">
                             <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
-                            Taxa de Adesão da Turma ({fezStudents.length} de {totalStudents} entregaram)
+                            Class Completion Rate ({fezStudents.length} of {totalStudents} submitted)
                           </span>
                           <span className="text-emerald-700 font-mono">{percentCompleted}%</span>
                         </div>
@@ -3622,12 +3645,12 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                     </div>
 
                     {/* ========================================================= */}
-                    {/* CONTROLE DE ALUNOS, STATUS DE ENTREGA, VISTO E FEEDBACK    */}
+                    {/* STUDENT CONTROL, SUBMISSION STATUS, REVIEW AND FEEDBACK   */}
                     {/* ========================================================= */}
                     <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200/80 shadow-xs space-y-5">
-                      {/* Abas e Filtro de Alunos */}
+                      {/* Student Tabs and Filter */}
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
-                        {/* Abas de visualização */}
+                        {/* View tabs */}
                         <div className="flex flex-wrap items-center gap-1.5">
                           <button
                             onClick={() => setAssignmentStudentFilter('ALL')}
@@ -3637,7 +3660,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                             }`}
                           >
-                            <span>Todos os Alunos</span>
+                            <span>All Students</span>
                             <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-white/20">
                               {totalStudents}
                             </span>
@@ -3652,7 +3675,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                             }`}
                           >
                             <CheckCircle2 className="w-3.5 h-3.5" />
-                            <span>Quem Fez</span>
+                            <span>Completed</span>
                             <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-white/20">
                               {fezStudents.length}
                             </span>
@@ -3667,7 +3690,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                             }`}
                           >
                             <AlertCircle className="w-3.5 h-3.5" />
-                            <span>Quem Não Fez</span>
+                            <span>Not Completed</span>
                             <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-white/20">
                               {naoFezStudents.length}
                             </span>
@@ -3682,19 +3705,19 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                             }`}
                           >
                             <Clock className="w-3.5 h-3.5" />
-                            <span>Aguardando Visto</span>
+                            <span>Awaiting Review</span>
                             <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-white/20">
                               {pendentesVisto.length}
                             </span>
                           </button>
                         </div>
 
-                        {/* Campo de Busca de Aluno */}
+                        {/* Student Search Field */}
                         <div className="relative min-w-[240px]">
                           <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                           <input
                             type="text"
-                            placeholder="Buscar aluno por nome ou código..."
+                            placeholder="Search student by name or code..."
                             value={studentSearchInsideAsg}
                             onChange={(e) => setStudentSearchInsideAsg(e.target.value)}
                             className="w-full pl-9 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
@@ -3702,7 +3725,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                         </div>
                       </div>
 
-                      {/* Lista de Alunos e Acompanhamento de Visto */}
+                      {/* Student List and Review Tracking */}
                       <div className="space-y-4">
                         {displayedStudents.map((enrollment) => {
                           const sub = studentSubMap.get(enrollment.studentId);
@@ -3733,7 +3756,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                               }`}
                             >
                               <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-4">
-                                {/* Informações do Aluno */}
+                                {/* Student Information */}
                                 <div className="space-y-2 flex-1">
                                   <div className="flex flex-wrap items-center gap-2">
                                     <div className="w-8 h-8 rounded-full bg-[#075e38] text-white flex items-center justify-center font-bold text-xs shadow-2xs">
@@ -3748,38 +3771,38 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                                       </span>
                                     </div>
 
-                                    {/* Badges de Status */}
+                                    {/* Status Badges */}
                                     {hasSubmitted ? (
                                       isVistoDone ? (
                                         <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
                                           <CheckCheck className="w-3.5 h-3.5 text-emerald-600" />
-                                          Visto Realizado
+                                          Review Completed
                                         </span>
                                       ) : (
                                         <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-900 border border-amber-200">
                                           <Clock className="w-3.5 h-3.5 text-amber-600" />
-                                          Fez • Aguardando Visto
+                                          Submitted • Awaiting Review
                                         </span>
                                       )
                                     ) : (
                                       <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-100 text-rose-800 border border-rose-200">
                                         <AlertCircle className="w-3.5 h-3.5 text-rose-600" />
-                                        Não Fez / Pendente
+                                        Not Submitted / Pending
                                       </span>
                                     )}
 
                                     {sub?.deliveryMethod === 'PRESENCIAL' && (
                                       <span className="text-[10px] font-bold bg-purple-50 text-purple-800 border border-purple-200 px-2 py-0.5 rounded-md">
-                                        Caderno / Presencial
+                                        Notebook / In Person
                                       </span>
                                     )}
                                   </div>
 
-                                  {/* Conteúdo da Entrega do Aluno (se fez) */}
+                                  {/* Student Submission Content (if submitted) */}
                                   {hasSubmitted ? (
                                     <div className="bg-white p-3.5 rounded-xl border border-slate-200/90 space-y-2 mt-2">
                                       <div className="flex items-center justify-between text-[11px] text-slate-400">
-                                        <span>Entregue em: <strong>{sub.submittedAt}</strong></span>
+                                        <span>Submitted on: <strong>{sub.submittedAt}</strong></span>
                                         {sub.attachmentName && (
                                           <span className="text-[#075e38] font-bold flex items-center gap-1">
                                             <FileText className="w-3.5 h-3.5" />
@@ -3797,43 +3820,43 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                                           onClick={() => setSelectedSubmissionForViewModal(sub)}
                                           className="text-xs font-bold text-[#075e38] hover:underline flex items-center gap-1"
                                         >
-                                          <Eye className="w-3.5 h-3.5" /> Ver Envio Completo
+                                          <Eye className="w-3.5 h-3.5" /> View Full Submission
                                         </button>
                                       </div>
                                     </div>
                                   ) : (
                                     <div className="text-slate-400 italic text-[11px] bg-slate-100/60 p-2.5 rounded-xl border border-slate-200">
-                                      O aluno ainda não enviou esta atividade pelo AVA. Caso ele tenha apresentado em aula física no caderno, clique em "Dar Visto Presencial".
+                                      The student has not yet submitted this activity through the VLE. If they presented it in a physical class in their notebook, click "Give In-Person Review".
                                     </div>
                                   )}
                                 </div>
 
-                                {/* Coluna Direita: Ações de Feedback & Visto */}
+                                {/* Right Column: Feedback & Review Actions */}
                                 <div className="w-full lg:w-[420px] bg-white p-4 rounded-2xl border border-slate-200 space-y-3 flex-shrink-0 shadow-2xs">
                                   {hasSubmitted ? (
                                     <>
                                       <div className="flex items-center justify-between">
                                         <span className="font-bold text-slate-800 flex items-center gap-1.5">
                                           <MessageSquare className="w-3.5 h-3.5 text-[#075e38]" />
-                                          Feedback & Visto do Professor
+                                          Teacher Feedback & Review
                                         </span>
                                         {sub.score !== undefined && (
                                           <span className="font-mono font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                                            Nota: {sub.score} / {targetAssignment.maxScore}
+                                            Grade: {sub.score} / {targetAssignment.maxScore}
                                           </span>
                                         )}
                                       </div>
 
-                                      {/* Se já foi dado visto */}
+                                      {/* If a review has already been given */}
                                       {isVistoDone && !quickFeedbacks[sub.id] ? (
                                         <div className="space-y-2">
                                           <div className="p-2.5 bg-emerald-50/60 rounded-xl border border-emerald-200/80 text-emerald-950">
                                             <p className="font-medium text-xs">
-                                              {sub.feedback || 'Atividade visualizada e validada pelo professor.'}
+                                              {sub.feedback || 'Activity reviewed and validated by the teacher.'}
                                             </p>
                                             {sub.gradedBy && (
                                               <p className="text-[10px] text-emerald-700 mt-1 font-bold">
-                                                ✓ Visto por {sub.gradedBy} em {sub.gradedAt || 'hoje'}
+                                                ✓ Reviewed by {sub.gradedBy} on {sub.gradedAt || 'today'}
                                               </p>
                                             )}
                                           </div>
@@ -3843,7 +3866,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                                               onClick={() => {
                                                 setQuickFeedbacks((prev) => ({
                                                   ...prev,
-                                                  [sub.id]: sub.feedback || 'Excelente trabalho!',
+                                                  [sub.id]: sub.feedback || 'Excellent work!',
                                                 }));
                                                 setQuickScores((prev) => ({
                                                   ...prev,
@@ -3852,20 +3875,20 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                                               }}
                                               className="px-3 py-1 text-xs font-bold text-slate-600 hover:text-slate-900 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
                                             >
-                                              Editar Feedback / Visto
+                                              Edit Feedback / Review
                                             </button>
                                           </div>
                                         </div>
                                       ) : (
-                                        /* Formulário Ativo para Dar Visto */
+                                        /* Active Form to Give Review */
                                         <div className="space-y-2.5">
-                                          {/* Sugestões Rápidas de Feedback */}
+                                          {/* Quick Feedback Suggestions */}
                                           <div className="flex flex-wrap gap-1">
                                             {[
-                                              'Excelente trabalho! 👏',
-                                              'Parabéns pelo capricho!',
-                                              'Revisar atenção nas instruções.',
-                                              'Visto em aula. Muito bom!',
+                                              'Excellent work! 👏',
+                                              'Great care and effort!',
+                                              'Review attention to the instructions.',
+                                              'Reviewed in class. Very good!',
                                             ].map((quickText) => (
                                               <button
                                                 key={quickText}
@@ -3885,7 +3908,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
 
                                           <textarea
                                             rows={2}
-                                            placeholder="Escreva um feedback pedagógico para o aluno..."
+                                            placeholder="Write pedagogical feedback for the student..."
                                             value={currentFeedback}
                                             onChange={(e) =>
                                               setQuickFeedbacks((prev) => ({
@@ -3898,7 +3921,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
 
                                           <div className="flex items-center justify-between gap-2">
                                             <div className="flex items-center gap-1.5">
-                                              <span className="text-[11px] font-bold text-slate-600">Nota:</span>
+                                              <span className="text-[11px] font-bold text-slate-600">Grade:</span>
                                               <input
                                                 type="number"
                                                 min="0"
@@ -3920,24 +3943,24 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                                               className="px-4 py-1.5 bg-[#075e38] hover:bg-[#064e2e] text-white rounded-xl font-bold text-xs transition-colors shadow-2xs flex items-center gap-1"
                                             >
                                               <Check className="w-3.5 h-3.5" />
-                                              <span>Dar como Visto</span>
+                                              <span>Mark as Reviewed</span>
                                             </button>
                                           </div>
                                         </div>
                                       )}
                                     </>
                                   ) : (
-                                    /* Opções para aluno que NÃO FEZ */
+                                    /* Options for a student who did NOT submit */
                                     <div className="space-y-3">
                                       <div className="flex items-center justify-between">
                                         <span className="font-bold text-slate-700 flex items-center gap-1.5">
                                           <ClipboardList className="w-3.5 h-3.5 text-rose-500" />
-                                          Atividade Pendente
+                                          Pending Activity
                                         </span>
                                       </div>
 
                                       <p className="text-[11px] text-slate-500">
-                                        Você pode registrar a validação presencial caso o aluno tenha mostrado o trabalho impresso ou no caderno.
+                                        You can record in-person validation if the student showed the printed work or their notebook.
                                       </p>
 
                                       <div className="flex items-center gap-2">
@@ -3949,14 +3972,14 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                                               assignmentId: targetAssignment.id,
                                               assignmentTitle: targetAssignment.title,
                                             });
-                                            setManualFeedback('Visto presencial em caderno verificado pelo professor.');
+                                            setManualFeedback('In-person review of notebook verified by the teacher.');
                                             setManualScore(targetAssignment.maxScore);
                                             setIsManualModalOpen(true);
                                           }}
                                           className="w-full px-3 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl font-bold text-xs transition-colors shadow-2xs flex items-center justify-center gap-1.5"
                                         >
                                           <CheckCircle className="w-3.5 h-3.5" />
-                                          <span>Dar Visto Presencial</span>
+                                          <span>Give In-Person Review</span>
                                         </button>
                                       </div>
                                     </div>
@@ -3969,7 +3992,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
 
                         {displayedStudents.length === 0 && (
                           <div className="p-8 text-center text-slate-400 text-xs bg-slate-50 rounded-2xl border border-dashed border-slate-200">
-                            Nenhum aluno encontrado para os filtros selecionados.
+                            No students found for the selected filters.
                           </div>
                         )}
                       </div>
@@ -3979,19 +4002,19 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
               })()
             ) : (
               /* =================================================================== */
-              /* CENÁRIO B: LISTAGEM DE TODAS AS ATIVIDADES CADASTRADAS              */
+              /* SCENARIO B: LIST OF ALL REGISTERED ASSIGNMENTS                */
               /* =================================================================== */
               <div className="space-y-6">
-                {/* Header Principal da Aba */}
+                {/* Main Tab Header */}
                 <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200/80 shadow-xs space-y-6">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-5">
                     <div>
                       <h2 className="text-lg sm:text-xl font-bold text-slate-900 flex items-center gap-2">
                         <ClipboardList className="w-5 h-5 text-[#ea580c]" />
-                        Gestão de Atividades & Tarefas
+                        Activity & Assignment Management
                       </h2>
                       <p className="text-xs text-slate-500 mt-0.5">
-                        Crie atividades para suas turmas, acompanhe em tempo real quem fez e quem não fez, dê feedbacks e atribua visto.
+                        Create activities for your classes, track in real time who submitted and who did not, give feedback, and assign reviews.
                       </p>
                     </div>
 
@@ -4003,24 +4026,24 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                         }}
                         className="px-4 py-2.5 text-xs font-bold text-white bg-[#ea580c] hover:bg-[#c2410c] rounded-xl transition-colors shadow-sm flex items-center gap-1.5"
                       >
-                        <Plus className="w-4 h-4" /> Adicionar Atividade
+                        <Plus className="w-4 h-4" /> Add Activity
                       </button>
                     </div>
                   </div>
 
-                  {/* Barra de Filtros por Turma e Pesquisa */}
+                  {/* Class Filter and Search Bar */}
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50 p-3 rounded-2xl border border-slate-200">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="text-xs font-bold text-slate-600 flex items-center gap-1 pl-1">
                         <Filter className="w-3.5 h-3.5 text-slate-400" />
-                        Filtrar Turma:
+                        Filter Class:
                       </span>
                       <select
                         value={assignmentClassFilter}
                         onChange={(e) => setAssignmentClassFilter(e.target.value)}
                         className="px-3 py-1.5 text-xs bg-white border border-slate-300 rounded-xl font-bold text-slate-800 focus:outline-none"
                       >
-                        <option value="ALL">Todas as Minhas Turmas ({teacherClasses.length})</option>
+                        <option value="ALL">All My Classes ({teacherClasses.length})</option>
                         {teacherClasses.map((cls) => (
                           <option key={cls.id} value={cls.id}>
                             {cls.name}
@@ -4033,7 +4056,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                       <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                       <input
                         type="text"
-                        placeholder="Pesquisar atividade por título..."
+                        placeholder="Search activity by title..."
                         value={assignmentSearchQuery}
                         onChange={(e) => setAssignmentSearchQuery(e.target.value)}
                         className="w-full pl-9 pr-3 py-1.5 text-xs bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-1 focus:ring-[#ea580c]"
@@ -4041,7 +4064,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                     </div>
                   </div>
 
-                  {/* Grid das Atividades Cadastradas */}
+                  {/* Registered Activities Grid */}
                   {(() => {
                     let filteredAssignments = state.assignments;
                     if (assignmentClassFilter !== 'ALL') {
@@ -4063,9 +4086,9 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                           <div className="w-12 h-12 rounded-full bg-orange-100 text-[#ea580c] mx-auto flex items-center justify-center">
                             <ClipboardList className="w-6 h-6" />
                           </div>
-                          <h3 className="font-bold text-slate-800 text-sm">Nenhuma atividade cadastrada</h3>
+                          <h3 className="font-bold text-slate-800 text-sm">No activities registered</h3>
                           <p className="text-xs text-slate-500 max-w-md mx-auto">
-                            Cadastre a primeira atividade para suas turmas e comece a acompanhar as entregas dos alunos.
+                            Register the first activity for your classes and start tracking student submissions.
                           </p>
                           <button
                             onClick={() => {
@@ -4074,7 +4097,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                             }}
                             className="px-4 py-2 text-xs font-bold text-white bg-[#ea580c] hover:bg-[#c2410c] rounded-xl transition-colors inline-flex items-center gap-1.5"
                           >
-                            <Plus className="w-4 h-4" /> Criar Primeira Atividade
+                            <Plus className="w-4 h-4" /> Create First Activity
                           </button>
                         </div>
                       );
@@ -4111,12 +4134,12 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                               className="p-5 sm:p-6 rounded-3xl border border-slate-200 bg-white shadow-2xs hover:border-orange-300 hover:shadow-xs transition-all space-y-4 flex flex-col justify-between"
                             >
                               <div className="space-y-3">
-                                {/* Header do Card */}
+                                {/* Card Header */}
                                 <div className="flex items-start justify-between gap-2">
                                   <div className="space-y-1">
                                     <div className="flex items-center gap-2">
                                       <span className="text-[10px] font-bold font-mono px-2 py-0.5 rounded bg-orange-100 text-orange-900 border border-orange-200 uppercase">
-                                        {assignment.category || 'EXERCÍCIO'}
+                                        {CATEGORY_LABELS[assignment.category] || assignment.category || 'Exercise'}
                                       </span>
                                       <span className="text-[11px] font-bold text-slate-500">
                                         {assignment.className}
@@ -4129,49 +4152,49 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
 
                                   <button
                                     onClick={() => {
-                                      if (confirm(`Deseja excluir a atividade "${assignment.title}"?`)) {
+                                      if (confirm(`Do you want to delete the activity "${assignment.title}"?`)) {
                                         deleteAssignment(assignment.id);
-                                        showActivityToast(`Atividade excluída com sucesso.`);
+                                        showActivityToast(`Activity deleted successfully.`);
                                       }
                                     }}
                                     className="text-slate-400 hover:text-rose-600 p-1.5 rounded-lg hover:bg-slate-100 transition-colors"
-                                    title="Excluir Atividade"
+                                    title="Delete Activity"
                                   >
                                     <Trash2 className="w-4 h-4" />
                                   </button>
                                 </div>
 
-                                {/* Enunciado / Instruções */}
+                                {/* Statement / Instructions */}
                                 <p className="text-slate-600 text-xs line-clamp-2 leading-relaxed">
                                   {assignment.instructions}
                                 </p>
 
-                                {/* Informações de Prazo e Nota */}
+                                {/* Due Date and Grade Information */}
                                 <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1">
                                   <span className="flex items-center gap-1 font-medium">
                                     <Clock className="w-3.5 h-3.5 text-amber-600" />
-                                    Prazo: <strong className="text-slate-800">{assignment.dueDate}</strong>
+                                    Due: <strong className="text-slate-800">{assignment.dueDate}</strong>
                                   </span>
                                   <span className="font-mono font-bold text-[#075e38] bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                                    {assignment.maxScore} pts máx
+                                    {assignment.maxScore} pts max
                                   </span>
                                 </div>
 
-                                {/* Barra de Progresso e Métricas: Quem Fez vs Quem Não Fez */}
+                                {/* Progress Bar and Metrics: Completed vs Not Completed */}
                                 <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200/80 space-y-2">
                                   <div className="flex items-center justify-between text-xs">
                                     <div className="flex items-center gap-3">
                                       <span className="font-bold text-emerald-800 flex items-center gap-1">
                                         <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                                        Fizeram: {fezCount}
+                                        Completed: {fezCount}
                                       </span>
                                       <span className="font-bold text-rose-700 flex items-center gap-1">
                                         <AlertCircle className="w-3.5 h-3.5 text-rose-500" />
-                                        Não fizeram: {naoFezCount}
+                                        Not completed: {naoFezCount}
                                       </span>
                                     </div>
                                     <span className="font-mono font-bold text-slate-700 text-[11px]">
-                                      {percentFez}% concluído
+                                      {percentFez}% complete
                                     </span>
                                   </div>
 
@@ -4183,21 +4206,21 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                                   </div>
 
                                   <div className="flex items-center justify-between text-[10px] text-slate-500 pt-0.5">
-                                    <span>{totalStudents} alunos matriculados</span>
+                                    <span>{totalStudents} enrolled students</span>
                                     <span>
                                       {pendentesVistoCount > 0 ? (
                                         <strong className="text-amber-700 font-bold">
-                                          {pendentesVistoCount} aguardando visto
+                                          {pendentesVistoCount} awaiting review
                                         </strong>
                                       ) : (
-                                        <span className="text-emerald-700 font-bold">✓ Todos os vistos em dia</span>
+                                        <span className="text-emerald-700 font-bold">✓ All reviews up to date</span>
                                       )}
                                     </span>
                                   </div>
                                 </div>
                               </div>
 
-                              {/* Botão de Ação: Entrar na Atividade */}
+                              {/* Action Button: Enter Activity */}
                               <div className="pt-2 border-t border-slate-100">
                                 <button
                                   onClick={() => {
@@ -4207,7 +4230,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                                   }}
                                   className="w-full py-2.5 px-4 bg-[#075e38] hover:bg-[#064e2e] text-white rounded-xl font-bold text-xs transition-colors shadow-2xs flex items-center justify-center gap-2"
                                 >
-                                  <span>Abrir Atividade & Gerenciar Entregas</span>
+                                  <span>Open Activity & Manage Submissions</span>
                                   <ArrowRight className="w-4 h-4" />
                                 </button>
                               </div>
@@ -4232,22 +4255,22 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
           <Sprout className="w-4 h-4 text-[#075e38]" />
           <span>Think Green Platform</span>
         </div>
-        <p>© 2026 Todos os direitos reservados.</p>
+        <p>© 2026 All rights reserved.</p>
       </footer>
 
       {/* ========================================================================= */}
-      {/* MODAL 1: CADASTRAR NOVA PROVA (AREA DE PROVAS)                            */}
+      {/* MODAL 1: REGISTER NEW EXAM (EXAMS AREA)                            */}
       {/* ========================================================================= */}
       <Modal
         isOpen={isExamModalOpen}
         onClose={() => setIsExamModalOpen(false)}
-        title="Cadastrar Nova Prova / Avaliação"
-        subtitle="Defina o conteúdo programático, nota máxima e critérios de aplicação"
+        title="Register New Exam / Assessment"
+        subtitle="Define the syllabus, maximum grade, and application criteria"
       >
         <form onSubmit={handleCreateAssessment} className="space-y-4 text-xs">
-          {/* Turma de Destino */}
+          {/* Target Class */}
           <div>
-            <label className="block font-bold text-slate-700 mb-1">Turma de Destino *</label>
+            <label className="block font-bold text-slate-700 mb-1">Target Class *</label>
             <select
               value={examClassId}
               onChange={(e) => setExamClassId(e.target.value)}
@@ -4261,19 +4284,19 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
             </select>
           </div>
 
-          {/* Vincular à Avaliação Pré-Selecionada */}
+          {/* Link to Pre-Selected Assessment */}
           <div className="p-3.5 bg-purple-50/70 rounded-2xl border border-purple-200 space-y-2">
             <div className="flex items-center justify-between">
               <label className="block font-bold text-purple-950 text-xs">
-                Vincular à Avaliação Pré-Selecionada da Turma *
+                Link to the Class Pre-Selected Assessment *
               </label>
               <span className="text-[10px] font-black uppercase tracking-wider text-purple-700 bg-purple-100 px-2 py-0.5 rounded-md">
-                Critério Oficial da Turma
+                Official Class Criteria
               </span>
             </div>
 
             <p className="text-[11px] text-purple-900/80">
-              As avaliações são padronizadas pela Orientação Educacional. Selecione a avaliação que você está registrando:
+              Assessments are standardized by the Educational Guidance team. Select the assessment you are registering:
             </p>
 
             <select
@@ -4283,26 +4306,26 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
             >
               {availableClassAssessmentItems.map((item) => (
                 <option key={item.id} value={item.id}>
-                  {item.name} — Peso: {item.weight}% {item.description ? `(${item.description})` : ''}
+                  {item.name} — Weight: {item.weight}% {item.description ? `(${item.description})` : ''}
                 </option>
               ))}
             </select>
 
             <div className="flex items-center justify-between pt-1 text-xs">
               <span className="text-slate-600">
-                Título Vinculado: <strong className="text-slate-900 font-bold">{examTitle}</strong>
+                Linked Title: <strong className="text-slate-900 font-bold">{examTitle}</strong>
               </span>
               <span className="text-purple-800 font-black">
-                Peso Definido: {examWeight}% na Média
+                Defined Weight: {examWeight}% of the Average
               </span>
             </div>
           </div>
 
-          {/* Nota Máxima & Peso na Média */}
+          {/* Maximum Grade & Weight in the Average */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block font-bold text-slate-700 mb-1">
-                Nota Máxima da Prova *
+                Maximum Exam Grade *
               </label>
               <input
                 type="number"
@@ -4313,27 +4336,27 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                 onChange={(e) => setExamMaxScore(Number(e.target.value))}
                 className="w-full p-2.5 border border-slate-300 rounded-xl font-mono font-bold"
               />
-              <span className="text-[10px] text-slate-400">Padrão: 100 pontos</span>
+              <span className="text-[10px] text-slate-400">Default: 100 points</span>
             </div>
 
             <div>
               <label className="block font-bold text-slate-700 mb-1">
-                Peso na Média Semestral (%)
+                Weight in the Semester Average (%)
               </label>
               <div className="flex items-center gap-2 p-2.5 bg-slate-100 border border-slate-200 rounded-xl">
                 <Percent className="w-4 h-4 text-purple-600 flex-shrink-0" />
                 <span className="font-mono font-black text-slate-900 text-xs">
                   {examWeight}%
                 </span>
-                <span className="text-[10px] text-slate-400 ml-auto font-medium">Definido pela Orientação</span>
+                <span className="text-[10px] text-slate-400 ml-auto font-medium">Defined by Guidance</span>
               </div>
             </div>
           </div>
 
-          {/* Data e Horário */}
+          {/* Date and Time */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block font-bold text-slate-700 mb-1">Data de Aplicação *</label>
+              <label className="block font-bold text-slate-700 mb-1">Application Date *</label>
               <input
                 type="date"
                 required
@@ -4344,7 +4367,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
             </div>
 
             <div>
-              <label className="block font-bold text-slate-700 mb-1">Horário de Início</label>
+              <label className="block font-bold text-slate-700 mb-1">Start Time</label>
               <input
                 type="time"
                 value={examTime}
@@ -4354,49 +4377,49 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
             </div>
           </div>
 
-          {/* Conteúdo Programático / Tópicos Cobrados */}
+          {/* Syllabus / Covered Topics */}
           <div>
             <label className="block font-bold text-slate-700 mb-1">
-              Conteúdo Programático & Tópicos Cobrados *
+              Syllabus & Covered Topics *
             </label>
             <textarea
               rows={4}
               required
-              placeholder="Descreva detalhadamente as unidades, matérias, regras gramaticais, vocabulário ou fundamentos esportivos que serão exigidos na prova..."
+              placeholder="Describe in detail the units, subjects, grammar rules, vocabulary, or sports fundamentals that will be required on the exam..."
               value={examContent}
               onChange={(e) => setExamContent(e.target.value)}
               className="w-full p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#075e38] focus:outline-hidden"
             />
           </div>
 
-          {/* Instruções Gerais & Critérios */}
+          {/* General Instructions & Criteria */}
           <div>
             <label className="block font-bold text-slate-700 mb-1">
-              Instruções aos Alunos & Critérios de Correção
+              Instructions for Students & Grading Criteria
             </label>
             <textarea
               rows={2}
-              placeholder="Ex: Tempo limite de 50 minutos. Trazer caneta azul ou preta. Proibido consulta a eletrônicos."
+              placeholder="E.g., 50-minute time limit. Bring a blue or black pen. Electronic devices are not allowed."
               value={examInstructions}
               onChange={(e) => setExamInstructions(e.target.value)}
               className="w-full p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#075e38] focus:outline-hidden"
             />
           </div>
 
-          {/* Regra de Liberação Financeira (Financial Gate) */}
+          {/* Financial Release Rule (Financial Gate) */}
           <div>
             <label className="block font-bold text-slate-700 mb-1">
-              Regra de Liberação Financeira (Gate de Acesso)
+              Financial Release Rule (Access Gate)
             </label>
             <select
               value={examRequiredStage}
               onChange={(e) => setExamRequiredStage(e.target.value as any)}
               className="w-full p-2.5 border border-slate-300 rounded-xl bg-white font-bold text-slate-800"
             >
-              <option value="NONE">Acesso Livre (Sem restrição de pagamento)</option>
-              <option value="STAGE_1_PAID">Exige 1ª Parcela Paga (Matrícula)</option>
-              <option value="STAGE_2_PAID">Exige 2ª Parcela Paga (Padrão para Prova 1)</option>
-              <option value="STAGE_FINAL_PAID">Exige Quitação Total (Padrão para Prova Final)</option>
+              <option value="NONE">Free Access (No payment restriction)</option>
+              <option value="STAGE_1_PAID">Requires 1st Installment Paid (Enrollment)</option>
+              <option value="STAGE_2_PAID">Requires 2nd Installment Paid (Default for Exam 1)</option>
+              <option value="STAGE_FINAL_PAID">Requires Full Payment (Default for Final Exam)</option>
             </select>
           </div>
 
@@ -4406,76 +4429,76 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
               onClick={() => setIsExamModalOpen(false)}
               className="px-4 py-2 border border-slate-300 rounded-xl text-slate-700 font-semibold"
             >
-              Cancelar
+              Cancel
             </button>
             <button
               type="submit"
               className="px-5 py-2 bg-[#075e38] text-white rounded-xl font-bold hover:bg-[#064e2e] transition-colors shadow-sm flex items-center gap-1.5"
             >
               <Save className="w-4 h-4" />
-              <span>Salvar e Agendar Prova</span>
+              <span>Save and Schedule Exam</span>
             </button>
           </div>
         </form>
       </Modal>
 
       {/* ========================================================================= */}
-      {/* MODAL 2: DETALHES DO CONTEÚDO DA PROVA                                    */}
+      {/* MODAL 2: EXAM CONTENT DETAILS                                     */}
       {/* ========================================================================= */}
       {selectedExamForDetails && (
         <Modal
           isOpen={!!selectedExamForDetails}
           onClose={() => setSelectedExamForDetails(null)}
           title={selectedExamForDetails.title}
-          subtitle={`Turma: ${selectedExamForDetails.className} • ${selectedExamForDetails.courseName}`}
+          subtitle={`Class: ${selectedExamForDetails.className} • ${selectedExamForDetails.courseName}`}
         >
           <div className="space-y-4 text-xs">
             {/* Metadata Pills */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 bg-slate-50 p-3 rounded-2xl border border-slate-200">
               <div>
-                <span className="text-[10px] text-slate-400 uppercase font-bold block">Nota Máxima</span>
+                <span className="text-[10px] text-slate-400 uppercase font-bold block">Maximum Grade</span>
                 <span className="font-mono font-black text-emerald-800 text-sm">
                   {selectedExamForDetails.maxScore} pts
                 </span>
               </div>
 
               <div>
-                <span className="text-[10px] text-slate-400 uppercase font-bold block">Peso na Média</span>
+                <span className="text-[10px] text-slate-400 uppercase font-bold block">Weight in Average</span>
                 <span className="font-mono font-black text-purple-800 text-sm">
                   {selectedExamForDetails.weight}%
                 </span>
               </div>
 
               <div>
-                <span className="text-[10px] text-slate-400 uppercase font-bold block">Data / Hora</span>
+                <span className="text-[10px] text-slate-400 uppercase font-bold block">Date / Time</span>
                 <span className="font-bold text-slate-800">
                   {selectedExamForDetails.date}
                 </span>
               </div>
 
               <div>
-                <span className="text-[10px] text-slate-400 uppercase font-bold block">Tipo</span>
+                <span className="text-[10px] text-slate-400 uppercase font-bold block">Type</span>
                 <span className="font-bold text-slate-800">
-                  {selectedExamForDetails.type}
+                  {EXAM_TYPE_LABELS[selectedExamForDetails.type] || selectedExamForDetails.type}
                 </span>
               </div>
             </div>
 
-            {/* Conteúdo Programático Formatado */}
+            {/* Formatted Syllabus */}
             <div className="p-4 bg-emerald-50/50 rounded-2xl border border-emerald-200/80 space-y-2">
               <h4 className="font-bold text-emerald-950 flex items-center gap-1.5">
                 <BookMarked className="w-4 h-4 text-[#075e38]" />
-                Conteúdo Programático & Tópicos Exigidos
+                Syllabus & Required Topics
               </h4>
               <p className="text-slate-700 leading-relaxed whitespace-pre-line">
-                {selectedExamForDetails.content || 'Nenhum conteúdo detalhado cadastrado.'}
+                {selectedExamForDetails.content || 'No detailed content registered.'}
               </p>
             </div>
 
-            {/* Instruções aos Alunos */}
+            {/* Instructions for Students */}
             {selectedExamForDetails.instructions && (
               <div className="p-3.5 bg-amber-50/60 rounded-2xl border border-amber-200 text-amber-950 space-y-1">
-                <h5 className="font-bold text-amber-900">Orientações & Critérios:</h5>
+                <h5 className="font-bold text-amber-900">Guidelines & Criteria:</h5>
                 <p className="text-amber-800">{selectedExamForDetails.instructions}</p>
               </div>
             )}
@@ -4486,7 +4509,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                 onClick={() => setSelectedExamForDetails(null)}
                 className="px-4 py-2 border border-slate-300 rounded-xl text-slate-700 font-semibold"
               >
-                Fechar
+                Close
               </button>
               <button
                 type="button"
@@ -4499,37 +4522,37 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                 className="px-4 py-2 bg-[#075e38] text-white rounded-xl font-bold hover:bg-[#064e2e] flex items-center gap-1.5"
               >
                 <Star className="w-3.5 h-3.5 text-amber-300" />
-                <span>Ir para Lançamento de Notas</span>
+                <span>Go to Grade Entry</span>
               </button>
             </div>
           </div>
         </Modal>
       )}
 
-      {/* Modal Criar Nova Aula (Apenas Documentos, Texto Escrito ou Links) */}
+      {/* Create New Lesson Modal (Documents, Written Text, or Links Only) */}
       <Modal
         isOpen={isLessonModalOpen}
         onClose={() => setIsLessonModalOpen(false)}
-        title="Publicar Nova Aula no AVA (Documento / Texto / Links)"
-        subtitle={`Turma: ${selectedClass?.name}`}
+        title="Publish New Lesson in the VLE (Document / Text / Links)"
+        subtitle={`Class: ${selectedClass?.name}`}
       >
         <form onSubmit={handleCreateLesson} className="space-y-4 text-xs">
           <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-[11px] text-emerald-900 space-y-1">
             <p className="font-bold flex items-center gap-1.5">
               <FileText className="w-3.5 h-3.5 text-[#075e38]" />
-              Formato Oficial das Aulas no AVA:
+              Official Lesson Format in the VLE:
             </p>
             <p className="text-emerald-800">
-              As aulas são compostas exclusivamente por <strong>documentos (PDF/DOC)</strong>, <strong>texto escrito</strong> e <strong>links de estudo</strong>, proporcionando aos alunos acesso a materiais didáticos estruturados.
+              Lessons consist exclusively of <strong>documents (PDF/DOC)</strong>, <strong>written text</strong>, and <strong>study links</strong>, giving students access to structured teaching materials.
             </p>
           </div>
 
           <div>
-            <label className="block font-bold text-slate-700 mb-1">Título da Aula</label>
+            <label className="block font-bold text-slate-700 mb-1">Lesson Title</label>
             <input
               type="text"
               required
-              placeholder="Ex: Aula 09: Expressões de Tempo e Preposições"
+              placeholder="E.g., Lesson 09: Time Expressions and Prepositions"
               value={newLessonTitle}
               onChange={(e) => setNewLessonTitle(e.target.value)}
               className="w-full p-2.5 border border-slate-300 rounded-xl font-medium"
@@ -4537,11 +4560,11 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
           </div>
 
           <div>
-            <label className="block font-bold text-slate-700 mb-1">Texto Escrito & Roteiro Pedagógico da Aula</label>
+            <label className="block font-bold text-slate-700 mb-1">Written Text & Lesson Teaching Outline</label>
             <textarea
               rows={4}
               required
-              placeholder="Digite as explicações conceituais, roteiro de leitura, orientações teóricas e resumos para os alunos..."
+              placeholder="Enter conceptual explanations, reading outline, theoretical guidelines, and summaries for the students..."
               value={newLessonDesc}
               onChange={(e) => setNewLessonDesc(e.target.value)}
               className="w-full p-2.5 border border-slate-300 rounded-xl text-xs leading-relaxed"
@@ -4550,35 +4573,35 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
 
           <div>
             <label className="block font-bold text-slate-700 mb-1">
-              Documento / Apostila Didática (PDF ou DOC)
+              Document / Teaching Workbook (PDF or DOC)
             </label>
             <input
               type="text"
-              placeholder="Ex: Apostila_Aula_09_Grammar.pdf ou Documento_Exercicios.docx"
+              placeholder="E.g., Lesson_09_Grammar_Workbook.pdf or Exercises_Document.docx"
               value={newLessonPdf}
               onChange={(e) => setNewLessonPdf(e.target.value)}
               className="w-full p-2.5 border border-slate-300 rounded-xl font-mono text-xs"
             />
             <p className="text-[10px] text-slate-500 mt-1">
-              Informe o nome do arquivo que ficará disponível para download ou leitura pelo aluno.
+              Enter the file name that will be available for the student to download or read.
             </p>
           </div>
 
           <div className="p-3 bg-purple-50/70 border border-purple-200 rounded-xl space-y-2">
             <label className="block font-bold text-purple-900">
-              Link de Referência / Leitura Complementar (Opcional)
+              Reference Link / Supplementary Reading (Optional)
             </label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               <input
                 type="url"
-                placeholder="https://exemplo.org/artigo-estudo"
+                placeholder="https://example.org/study-article"
                 value={newLessonLink}
                 onChange={(e) => setNewLessonLink(e.target.value)}
                 className="w-full p-2 border border-purple-300 rounded-lg text-xs bg-white font-mono"
               />
               <input
                 type="text"
-                placeholder="Rótulo (Ex: Artigo BBC Learning)"
+                placeholder="Label (E.g., BBC Learning Article)"
                 value={newLessonLinkTitle}
                 onChange={(e) => setNewLessonLinkTitle(e.target.value)}
                 className="w-full p-2 border border-purple-300 rounded-lg text-xs bg-white"
@@ -4592,28 +4615,28 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
               onClick={() => setIsLessonModalOpen(false)}
               className="px-4 py-2 border border-slate-300 rounded-xl text-slate-700 font-semibold"
             >
-              Cancelar
+              Cancel
             </button>
             <button
               type="submit"
               className="px-4 py-2 bg-[#075e38] text-white rounded-xl font-bold hover:bg-[#064e2e] shadow-2xs"
             >
-              Publicar Aula no AVA
+              Publish Lesson in the VLE
             </button>
           </div>
         </form>
       </Modal>
 
-      {/* Modal Criar Nova Atividade / Tarefa */}
+      {/* Create New Activity / Assignment Modal */}
       <Modal
         isOpen={isAssignmentModalOpen}
         onClose={() => setIsAssignmentModalOpen(false)}
-        title="Cadastrar Nova Atividade / Tarefa"
-        subtitle="Defina as orientações, pontuação e prazos para a turma"
+        title="Register New Activity / Assignment"
+        subtitle="Define the guidelines, scoring, and deadlines for the class"
       >
         <form onSubmit={handleCreateAssignment} className="space-y-4 text-xs">
           <div>
-            <label className="block font-bold text-slate-700 mb-1">Turma Destino</label>
+            <label className="block font-bold text-slate-700 mb-1">Target Class</label>
             <select
               value={newAsgClassId}
               onChange={(e) => setNewAsgClassId(e.target.value)}
@@ -4629,40 +4652,40 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block font-bold text-slate-700 mb-1">Categoria</label>
+              <label className="block font-bold text-slate-700 mb-1">Category</label>
               <select
                 value={newAsgCategory}
                 onChange={(e) => setNewAsgCategory(e.target.value as any)}
                 className="w-full p-2.5 border border-slate-300 rounded-xl font-medium text-slate-800 bg-white"
               >
-                <option value="EXERCÍCIO">Exercício / Fixação</option>
-                <option value="TRABALHO">Trabalho em Grupo / Individual</option>
-                <option value="REDAÇÃO">Redação / Produção de Texto</option>
-                <option value="PROJETO">Projeto / Pesquisa</option>
-                <option value="DESAFIO">Desafio / Extra</option>
+                <option value="EXERCÍCIO">Exercise / Practice</option>
+                <option value="TRABALHO">Group / Individual Assignment</option>
+                <option value="REDAÇÃO">Essay / Text Production</option>
+                <option value="PROJETO">Project / Research</option>
+                <option value="DESAFIO">Challenge / Extra</option>
               </select>
             </div>
 
             <div>
-              <label className="block font-bold text-slate-700 mb-1">Método de Entrega Esperado</label>
+              <label className="block font-bold text-slate-700 mb-1">Expected Submission Method</label>
               <select
                 value={newAsgDeliveryMethod}
                 onChange={(e) => setNewAsgDeliveryMethod(e.target.value as any)}
                 className="w-full p-2.5 border border-slate-300 rounded-xl font-medium text-slate-800 bg-white"
               >
-                <option value="ONLINE">Envio Online pelo Portal (AVA)</option>
-                <option value="PRESENCIAL">Presencial (Caderno / Sala)</option>
-                <option value="HIBRIDO">Híbrido (Online ou Caderno)</option>
+                <option value="ONLINE">Online Submission via Portal (VLE)</option>
+                <option value="PRESENCIAL">In Person (Notebook / Classroom)</option>
+                <option value="HIBRIDO">Hybrid (Online or Notebook)</option>
               </select>
             </div>
           </div>
 
           <div>
-            <label className="block font-bold text-slate-700 mb-1">Título da Atividade</label>
+            <label className="block font-bold text-slate-700 mb-1">Activity Title</label>
             <input
               type="text"
               required
-              placeholder="Ex: Atividade 04: Resumo crítico sobre Termodinâmica"
+              placeholder="E.g., Activity 04: Critical summary of Thermodynamics"
               value={newAsgTitle}
               onChange={(e) => setNewAsgTitle(e.target.value)}
               className="w-full p-2.5 border border-slate-300 rounded-xl"
@@ -4670,11 +4693,11 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
           </div>
 
           <div>
-            <label className="block font-bold text-slate-700 mb-1">Instruções e Enunciado para os Alunos</label>
+            <label className="block font-bold text-slate-700 mb-1">Instructions and Statement for Students</label>
             <textarea
               rows={4}
               required
-              placeholder="Descreva detalhadamente o que os alunos devem fazer, critérios avaliativos e diretrizes de entrega..."
+              placeholder="Describe in detail what students should do, assessment criteria, and submission guidelines..."
               value={newAsgInstructions}
               onChange={(e) => setNewAsgInstructions(e.target.value)}
               className="w-full p-2.5 border border-slate-300 rounded-xl"
@@ -4683,7 +4706,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block font-bold text-slate-700 mb-1">Data Limite de Entrega</label>
+              <label className="block font-bold text-slate-700 mb-1">Submission Deadline</label>
               <input
                 type="date"
                 required
@@ -4694,7 +4717,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
             </div>
 
             <div>
-              <label className="block font-bold text-slate-700 mb-1">Pontuação Máxima (Pontos)</label>
+              <label className="block font-bold text-slate-700 mb-1">Maximum Score (Points)</label>
               <input
                 type="number"
                 min="1"
@@ -4713,41 +4736,41 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
               onClick={() => setIsAssignmentModalOpen(false)}
               className="px-4 py-2 border border-slate-300 rounded-xl text-slate-700 font-semibold"
             >
-              Cancelar
+              Cancel
             </button>
             <button
               type="submit"
               className="px-4 py-2 bg-[#ea580c] text-white rounded-xl font-bold hover:bg-[#c2410c] shadow-2xs"
             >
-              Publicar Atividade
+              Publish Activity
             </button>
           </div>
         </form>
       </Modal>
 
-      {/* Modal Registrar Visto Presencial no Caderno */}
+      {/* Register In-Person Notebook Review Modal */}
       <Modal
         isOpen={isManualModalOpen}
         onClose={() => {
           setIsManualModalOpen(false);
           setManualTarget(null);
         }}
-        title={`Dar Visto Presencial: ${manualTarget?.studentName || ''}`}
-        subtitle={`Atividade: ${manualTarget?.assignmentTitle || ''}`}
+        title={`Give In-Person Review: ${manualTarget?.studentName || ''}`}
+        subtitle={`Activity: ${manualTarget?.assignmentTitle || ''}`}
       >
         <form onSubmit={handleSaveManualVisto} className="space-y-4 text-xs">
           <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-200 text-emerald-900">
             <p className="font-bold flex items-center gap-1.5">
               <CheckCircle className="w-4 h-4 text-emerald-600" />
-              Validação Presencial de Caderno / Sala
+              In-Person Notebook / Classroom Validation
             </p>
             <p className="text-[11px] text-emerald-800 mt-1">
-              Esta ação registrará imediatamente que o aluno realizou a atividade presencialmente, aplicando o visto pedagógico e a pontuação configurada.
+              This action will immediately record that the student completed the activity in person, applying the pedagogical review and the configured score.
             </p>
           </div>
 
           <div>
-            <label className="block font-bold text-slate-700 mb-1">Nota Atribuída</label>
+            <label className="block font-bold text-slate-700 mb-1">Assigned Grade</label>
             <input
               type="number"
               min="0"
@@ -4760,12 +4783,12 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
           </div>
 
           <div>
-            <label className="block font-bold text-slate-700 mb-1">Feedback / Observação do Visto</label>
+            <label className="block font-bold text-slate-700 mb-1">Review Feedback / Note</label>
             <textarea
               rows={3}
               value={manualFeedback}
               onChange={(e) => setManualFeedback(e.target.value)}
-              placeholder="Escreva comentários ou observações sobre o visto do caderno..."
+              placeholder="Write comments or notes about the notebook review..."
               className="w-full p-2.5 border border-slate-300 rounded-xl"
             />
           </div>
@@ -4779,37 +4802,37 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
               }}
               className="px-4 py-2 border border-slate-300 rounded-xl text-slate-700 font-semibold"
             >
-              Cancelar
+              Cancel
             </button>
             <button
               type="submit"
               className="px-4 py-2 bg-[#075e38] hover:bg-[#064e2e] text-white rounded-xl font-bold shadow-2xs"
             >
-              Confirmar Visto Presencial
+              Confirm In-Person Review
             </button>
           </div>
         </form>
       </Modal>
 
-      {/* Modal Entregas da Atividade */}
+      {/* Assignment Submissions Modal */}
       {selectedAssignmentForReview && (
         <Modal
           isOpen={!!selectedAssignmentForReview}
           onClose={() => setSelectedAssignmentForReview(null)}
-          title={`Entregas: ${selectedAssignmentForReview.title}`}
-          subtitle={`Prazo: ${selectedAssignmentForReview.dueDate} • Valor Máximo: ${selectedAssignmentForReview.maxScore} pontos`}
+          title={`Submissions: ${selectedAssignmentForReview.title}`}
+          subtitle={`Due: ${selectedAssignmentForReview.dueDate} • Maximum Score: ${selectedAssignmentForReview.maxScore} points`}
         >
           <div className="space-y-4 text-xs">
             <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200">
-              <p className="font-bold text-slate-800 mb-1">Instruções da Atividade:</p>
+              <p className="font-bold text-slate-800 mb-1">Activity Instructions:</p>
               <p className="text-slate-600 leading-relaxed">{selectedAssignmentForReview.instructions}</p>
             </div>
 
             <div className="space-y-2">
               <h4 className="font-bold text-slate-800 text-xs flex items-center justify-between">
-                <span>Relação de Alunos & Entregas</span>
+                <span>Student List & Submissions</span>
                 <span className="text-[11px] text-slate-500 font-normal">
-                  {state.submissions.filter((s) => s.assignmentId === selectedAssignmentForReview.id).length} entregas registradas
+                  {state.submissions.filter((s) => s.assignmentId === selectedAssignmentForReview.id).length} submissions recorded
                 </span>
               </h4>
 
@@ -4833,16 +4856,16 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                           {sub ? (
                             <>
                               <Badge status={sub.status} size="sm" />
-                              <span className="text-[10px] text-slate-400 font-mono">Em: {sub.submittedAt}</span>
+                              <span className="text-[10px] text-slate-400 font-mono">On: {sub.submittedAt}</span>
                               {sub.grade !== undefined && (
                                 <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded">
-                                  Nota: {sub.grade}/{selectedAssignmentForReview.maxScore}
+                                  Grade: {sub.grade}/{selectedAssignmentForReview.maxScore}
                                 </span>
                               )}
                             </>
                           ) : (
                             <span className="text-[10px] font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full border border-rose-200">
-                              Não Entregue
+                              Not Submitted
                             </span>
                           )}
                         </div>
@@ -4855,7 +4878,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                             onClick={() => setSelectedSubmissionForViewModal(sub)}
                             className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg text-[11px] cursor-pointer"
                           >
-                            Ver Resposta
+                            View Answer
                           </button>
                         )}
                         <button
@@ -4873,13 +4896,13 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                                 assignmentTitle: selectedAssignmentForReview.title,
                               });
                               setManualScore(selectedAssignmentForReview.maxScore);
-                              setManualFeedback('Visto presencial em sala de aula.');
+                              setManualFeedback('In-person review in the classroom.');
                               setIsManualModalOpen(true);
                             }
                           }}
                           className="px-2.5 py-1.5 bg-[#075e38] hover:bg-[#064e2e] text-white font-bold rounded-lg text-[11px] cursor-pointer"
                         >
-                          {sub ? 'Avaliar' : 'Dar Visto'}
+                          {sub ? 'Grade' : 'Give Review'}
                         </button>
                       </div>
                     </div>
@@ -4894,35 +4917,35 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                 onClick={() => setSelectedAssignmentForReview(null)}
                 className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold cursor-pointer"
               >
-                Fechar
+                Close
               </button>
             </div>
           </div>
         </Modal>
       )}
 
-      {/* Modal Visualizar Envio Completo do Aluno */}
+      {/* View Full Student Submission Modal */}
       {selectedSubmissionForViewModal && (
         <Modal
           isOpen={!!selectedSubmissionForViewModal}
           onClose={() => setSelectedSubmissionForViewModal(null)}
-          title={`Envio do Aluno: ${selectedSubmissionForViewModal.studentName}`}
-          subtitle={`Atividade: ${selectedSubmissionForViewModal.assignmentTitle}`}
+          title={`Student Submission: ${selectedSubmissionForViewModal.studentName}`}
+          subtitle={`Activity: ${selectedSubmissionForViewModal.assignmentTitle}`}
         >
           <div className="space-y-4 text-xs">
             <div className="grid grid-cols-2 gap-3 p-3 bg-slate-50 rounded-xl border border-slate-200">
               <div>
-                <span className="text-[10px] text-slate-400 font-bold uppercase block">Data da Entrega</span>
+                <span className="text-[10px] text-slate-400 font-bold uppercase block">Submission Date</span>
                 <span className="font-bold text-slate-800">{selectedSubmissionForViewModal.submittedAt}</span>
               </div>
               <div>
-                <span className="text-[10px] text-slate-400 font-bold uppercase block">Status Atual</span>
+                <span className="text-[10px] text-slate-400 font-bold uppercase block">Current Status</span>
                 <Badge status={selectedSubmissionForViewModal.status} size="sm" />
               </div>
             </div>
 
             <div className="space-y-1.5">
-              <label className="block font-bold text-slate-700">Texto / Resposta da Atividade:</label>
+              <label className="block font-bold text-slate-700">Activity Text / Answer:</label>
               <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 text-slate-800 whitespace-pre-line leading-relaxed max-h-60 overflow-y-auto">
                 {selectedSubmissionForViewModal.submissionText}
               </div>
@@ -4932,21 +4955,21 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
               <div className="p-3 bg-emerald-50/60 rounded-xl border border-emerald-200 flex items-center justify-between">
                 <div className="flex items-center gap-2 text-emerald-900 font-bold">
                   <FileText className="w-4 h-4 text-emerald-700" />
-                  <span>Arquivo anexado: {selectedSubmissionForViewModal.attachmentName}</span>
+                  <span>Attached file: {selectedSubmissionForViewModal.attachmentName}</span>
                 </div>
                 <span className="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded font-bold">
-                  PDF / Documento
+                  PDF / Document
                 </span>
               </div>
             )}
 
             {selectedSubmissionForViewModal.feedback && (
               <div className="p-3 bg-blue-50/60 rounded-xl border border-blue-200 space-y-1">
-                <span className="font-bold text-blue-950 block">Feedback Pedagógico Registrado:</span>
+                <span className="font-bold text-blue-950 block">Recorded Pedagogical Feedback:</span>
                 <p className="text-blue-900">{selectedSubmissionForViewModal.feedback}</p>
                 {selectedSubmissionForViewModal.gradedBy && (
                   <p className="text-[10px] text-blue-700 mt-1 font-semibold">
-                    Avaliado por {selectedSubmissionForViewModal.gradedBy} em {selectedSubmissionForViewModal.gradedAt}
+                    Graded by {selectedSubmissionForViewModal.gradedBy} on {selectedSubmissionForViewModal.gradedAt}
                   </p>
                 )}
               </div>
@@ -4958,35 +4981,35 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                 onClick={() => setSelectedSubmissionForViewModal(null)}
                 className="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-xl font-bold"
               >
-                Fechar
+                Close
               </button>
             </div>
           </div>
         </Modal>
       )}
 
-      {/* Modal Avaliar Trabalho */}
+      {/* Grade Assignment Modal */}
       {correctingSub && (
         <Modal
           isOpen={!!correctingSub}
           onClose={() => setCorrectingSub(null)}
-          title={`Avaliar: ${correctingSub.studentName}`}
-          subtitle={`Atividade: ${correctingSub.assignmentTitle}`}
+          title={`Grade: ${correctingSub.studentName}`}
+          subtitle={`Activity: ${correctingSub.assignmentTitle}`}
         >
           <div className="space-y-4 text-xs">
             <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200 space-y-1.5">
-              <p className="font-bold text-slate-800">Resposta Enviada pelo Aluno:</p>
+              <p className="font-bold text-slate-800">Answer Submitted by the Student:</p>
               <p className="text-slate-600 italic">"{correctingSub.submissionText}"</p>
               {correctingSub.attachmentName && (
                 <div className="pt-2 text-[11px] text-[#075e38] font-bold flex items-center gap-1.5">
                   <FileText className="w-3.5 h-3.5" />
-                  <span>Anexo: {correctingSub.attachmentName}</span>
+                  <span>Attachment: {correctingSub.attachmentName}</span>
                 </div>
               )}
             </div>
 
             <div>
-              <label className="block font-bold text-slate-700 mb-1">Nota Atribuída (0 a 100)</label>
+              <label className="block font-bold text-slate-700 mb-1">Assigned Grade (0 to 100)</label>
               <input
                 type="number"
                 min="0"
@@ -4998,12 +5021,12 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
             </div>
 
             <div>
-              <label className="block font-bold text-slate-700 mb-1">Feedback Pedagógico do Professor</label>
+              <label className="block font-bold text-slate-700 mb-1">Teacher Pedagogical Feedback</label>
               <textarea
                 rows={3}
                 value={feedbackText}
                 onChange={(e) => setFeedbackText(e.target.value)}
-                placeholder="Escreva comentários para orientar o aluno..."
+                placeholder="Write comments to guide the student..."
                 className="w-full p-2.5 border border-slate-300 rounded-xl"
               />
             </div>
@@ -5014,7 +5037,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                 onClick={() => setCorrectingSub(null)}
                 className="px-4 py-2 border border-slate-300 rounded-xl text-slate-700 font-semibold"
               >
-                Cancelar
+                Cancel
               </button>
               <button
                 type="button"
@@ -5024,7 +5047,7 @@ export const TeacherPortal: React.FC<TeacherPortalProps> = ({
                 }}
                 className="px-4 py-2 bg-[#075e38] hover:bg-[#064e2e] text-white rounded-xl font-bold"
               >
-                Salvar Nota & Feedback
+                Save Grade & Feedback
               </button>
             </div>
           </div>

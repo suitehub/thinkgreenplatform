@@ -65,7 +65,7 @@ export const SecretariatEnrollmentsTab: React.FC = () => {
   const [enableNegotiation, setEnableNegotiation] = useState<boolean>(false);
   const [discountType, setDiscountType] = useState<'PERCENT' | 'FIXED'>('PERCENT');
   const [discountValue, setDiscountValue] = useState<number>(10);
-  const [discountReason, setDiscountReason] = useState<string>('Acordo de balcão / Bolsa familiar');
+  const [discountReason, setDiscountReason] = useState<string>('Over-the-counter agreement / Family scholarship');
 
   // Selected Enrollment for details
   const [selectedEnrollmentForDetail, setSelectedEnrollmentForDetail] = useState<Enrollment | null>(null);
@@ -74,7 +74,7 @@ export const SecretariatEnrollmentsTab: React.FC = () => {
   const [renegotiateEnrollment, setRenegotiateEnrollment] = useState<Enrollment | null>(null);
   const [renegDiscountType, setRenegDiscountType] = useState<'PERCENT' | 'FIXED'>('PERCENT');
   const [renegDiscountValue, setRenegDiscountValue] = useState<number>(15);
-  const [renegDiscountReason, setRenegDiscountReason] = useState<string>('Desconto especial acordado na secretaria');
+  const [renegDiscountReason, setRenegDiscountReason] = useState<string>('Special discount agreed at the registrar\'s office');
   const [renegInstallmentsCount, setRenegInstallmentsCount] = useState<number>(4);
   const [renegCustomInstallments, setRenegCustomInstallments] = useState<string>('4');
 
@@ -84,7 +84,7 @@ export const SecretariatEnrollmentsTab: React.FC = () => {
   const [editingDefaultInstallments, setEditingDefaultInstallments] = useState<number>(4);
   const [editingLevels, setEditingLevels] = useState<CourseLevelPricing[]>([]);
   const [applyToPendingCharges, setApplyToPendingCharges] = useState<boolean>(true);
-  const [feeChangeReason, setFeeChangeReason] = useState<string>('Atualização da tabela de valores inteiros');
+  const [feeChangeReason, setFeeChangeReason] = useState<string>('Update to full-price table');
   const [showFeeSuccessAlert, setShowFeeSuccessAlert] = useState<string | null>(null);
 
   // Course Price Table View Modal
@@ -144,7 +144,7 @@ export const SecretariatEnrollmentsTab: React.FC = () => {
     setEditingTotalAmount(total);
     setEditingDefaultInstallments(course.defaultInstallmentsCount || 4);
     setApplyToPendingCharges(true);
-    setFeeChangeReason('Reajuste do valor inteiro do curso aprovado pela diretoria');
+    setFeeChangeReason('Full course price adjustment approved by management');
 
     if (isEnglishCourse(course) && course.levels && course.levels.length > 0) {
       setEditingLevels([...course.levels]);
@@ -152,27 +152,27 @@ export const SecretariatEnrollmentsTab: React.FC = () => {
       setEditingLevels([
         {
           level: 'CRIANCAS',
-          label: 'Crianças (Kids: 6-11 anos)',
+          label: 'Children (Kids: 6-11 years)',
           defaultInstallmentsCount: 4,
           totalCourseAmount: 2000,
           monthlyFee: 500,
-          notes: '4 parcelas mensais de 500 EGP',
+          notes: '4 monthly installments of 500 EGP',
         },
         {
           level: 'ADOLESCENTES',
-          label: 'Adolescentes (Teens: 12-17 anos)',
+          label: 'Teens (12-17 years)',
           defaultInstallmentsCount: 3,
           totalCourseAmount: 1500,
           monthlyFee: 500,
-          notes: '3 parcelas mensais de 500 EGP',
+          notes: '3 monthly installments of 500 EGP',
         },
         {
           level: 'ADULTO',
-          label: 'Adulto (Adults: 18+ anos)',
+          label: 'Adults (18+ years)',
           defaultInstallmentsCount: 3,
           totalCourseAmount: 1800,
           monthlyFee: 600,
-          notes: '3 parcelas mensais de 600 EGP',
+          notes: '3 monthly installments of 600 EGP',
         },
       ]);
     } else {
@@ -198,10 +198,10 @@ export const SecretariatEnrollmentsTab: React.FC = () => {
     );
 
     setShowFeeSuccessAlert(
-      `Valor total do curso "${editingCourseForFee.name}" atualizado para ${formatCurrency(
+      `Total course price "${editingCourseForFee.name}" updated to ${formatCurrency(
         editingTotalAmount,
         'EGP'
-      )} (${editingDefaultInstallments} parcelas) com sucesso!`
+      )} (${editingDefaultInstallments} installments) successfully!`
     );
     setEditingCourseForFee(null);
 
@@ -229,7 +229,7 @@ export const SecretariatEnrollmentsTab: React.FC = () => {
     setEnableNegotiation(false);
     setDiscountType('PERCENT');
     setDiscountValue(10);
-    setDiscountReason('Acordo de balcão / Bolsa familiar');
+    setDiscountReason('Over-the-counter agreement / Family scholarship');
     setIsAddModalOpen(true);
   };
 
@@ -301,7 +301,7 @@ export const SecretariatEnrollmentsTab: React.FC = () => {
     setRenegotiateEnrollment(enr);
     setRenegDiscountType(enr.paymentPlan.discountType === 'FIXED' ? 'FIXED' : 'PERCENT');
     setRenegDiscountValue(enr.paymentPlan.discountValue || 15);
-    setRenegDiscountReason(enr.paymentPlan.discountReason || 'Acordo de renegociação presencial na Secretaria');
+    setRenegDiscountReason(enr.paymentPlan.discountReason || 'Special discount agreed at the registrar\'s office');
     setRenegInstallmentsCount(enr.paymentPlan.installmentsCount || 4);
     setRenegCustomInstallments(String(enr.paymentPlan.installmentsCount || 4));
   };
@@ -374,17 +374,17 @@ export const SecretariatEnrollmentsTab: React.FC = () => {
         <div>
           <div className="flex items-center gap-2">
             <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
-              Secretaria • Matrículas, Valores & Negociações
+              Registrar's Office • Enrollments, Pricing & Negotiations
             </span>
             <span className="text-xs font-bold text-purple-700 bg-purple-50 px-2.5 py-0.5 rounded-full border border-purple-200">
-              Inglês: 3 Níveis Etários
+              English: 3 Age Levels
             </span>
           </div>
           <h2 className="text-xl font-bold text-slate-900 mt-1">
-            Gestão de Matrículas, Valores Inteiros & Descontos
+            Enrollment Management, Full Prices & Discounts
           </h2>
           <p className="text-xs text-slate-500">
-            Valores estruturados pelo valor total do curso com parcelamento livre, 3 níveis específicos para Inglês (Crianças 4x, Adolescentes 3x, Adultos 3x) e módulo de negociação de descontos.
+            Pricing structured by total course price with flexible installments, 3 specific levels for English (Children 4x, Teens 3x, Adults 3x), and a discount negotiation module.
           </p>
         </div>
 
@@ -393,14 +393,14 @@ export const SecretariatEnrollmentsTab: React.FC = () => {
             onClick={() => setIsPriceTableModalOpen(true)}
             className="px-3.5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl font-bold text-xs transition-colors shadow-2xs flex items-center gap-1.5 cursor-pointer"
           >
-            <DollarSign className="w-4 h-4 text-emerald-700" /> Tabela de Mensalidades
+            <DollarSign className="w-4 h-4 text-emerald-700" /> Tuition Table
           </button>
 
           <button
             onClick={handleOpenNewEnrollmentModal}
             className="px-4 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl font-bold text-xs transition-colors shadow-2xs flex items-center gap-1.5 cursor-pointer"
           >
-            <Plus className="w-4 h-4" /> Nova Matrícula em Curso
+            <Plus className="w-4 h-4" /> New Course Enrollment
           </button>
         </div>
       </div>
@@ -410,10 +410,10 @@ export const SecretariatEnrollmentsTab: React.FC = () => {
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
             <BookOpen className="w-3.5 h-3.5" />
-            Cursos Ofertados & Valores Totais ({state.courses.length})
+            Courses Offered & Total Prices ({state.courses.length})
           </h3>
           <span className="text-[11px] text-slate-400">
-            Baseados em valor total inteiro com parcelas configuráveis
+            Based on full total price with configurable installments
           </span>
         </div>
 
@@ -439,7 +439,7 @@ export const SecretariatEnrollmentsTab: React.FC = () => {
                     <div className="flex items-center gap-1">
                       {isEng && (
                         <span className="text-[10px] font-bold text-purple-700 bg-purple-50 px-1.5 py-0.5 rounded border border-purple-200">
-                          3 Níveis
+                          3 Levels
                         </span>
                       )}
                       <span className="font-mono text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
@@ -456,19 +456,19 @@ export const SecretariatEnrollmentsTab: React.FC = () => {
                   {isEng ? (
                     <div className="space-y-1.5 bg-purple-50/50 p-2.5 rounded-xl border border-purple-100">
                       <div className="flex items-center justify-between text-[11px]">
-                        <span className="font-semibold text-slate-700">🧒 Crianças (Kids):</span>
+                        <span className="font-semibold text-slate-700">🧒 Children (Kids):</span>
                         <span className="font-mono font-bold text-purple-900">
                           2.000 EGP <span className="text-[10px] font-normal text-slate-500">(4x 500)</span>
                         </span>
                       </div>
                       <div className="flex items-center justify-between text-[11px]">
-                        <span className="font-semibold text-slate-700">🎒 Adolescentes:</span>
+                        <span className="font-semibold text-slate-700">🎒 Teens:</span>
                         <span className="font-mono font-bold text-purple-900">
                           1.500 EGP <span className="text-[10px] font-normal text-slate-500">(3x 500)</span>
                         </span>
                       </div>
                       <div className="flex items-center justify-between text-[11px]">
-                        <span className="font-semibold text-slate-700">🧑 Adulto:</span>
+                        <span className="font-semibold text-slate-700">🧑 Adults:</span>
                         <span className="font-mono font-bold text-purple-900">
                           1.800 EGP <span className="text-[10px] font-normal text-slate-500">(3x 600)</span>
                         </span>
@@ -477,13 +477,13 @@ export const SecretariatEnrollmentsTab: React.FC = () => {
                   ) : (
                     <div className="flex items-center justify-between text-xs">
                       <div>
-                        <span className="text-[10px] text-slate-400 block font-medium">Valor Total Inteiro</span>
+                        <span className="text-[10px] text-slate-400 block font-medium">Full Total Price</span>
                         <span className="font-mono font-bold text-emerald-800 text-base">
                           {formatCurrency(totalValue, 'EGP')}
                         </span>
                       </div>
                       <div className="text-right">
-                        <span className="text-[10px] text-slate-400 block font-medium">Plano Padrão</span>
+                        <span className="text-[10px] text-slate-400 block font-medium">Standard Plan</span>
                         <span className="font-mono font-bold text-slate-700 text-xs">
                           {defInstallments}x de {formatCurrency(Math.round(totalValue / defInstallments), 'EGP')}
                         </span>
@@ -492,16 +492,16 @@ export const SecretariatEnrollmentsTab: React.FC = () => {
                   )}
 
                   <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1">
-                    <span>{activeEnrollments.length} alunos ativos</span>
-                    <span>{courseEnrollments.length} matrículas total</span>
+                    <span>{activeEnrollments.length} active students</span>
+                    <span>{courseEnrollments.length} total enrollments</span>
                   </div>
 
-                  {/* Alterar Valor Button */}
+                  {/* Change Price Button */}
                   <button
                     onClick={() => handleOpenEditFee(course)}
                     className="w-full py-2 px-3 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-[11px] font-bold rounded-xl border border-emerald-200 transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs"
                   >
-                    <Edit2 className="w-3 h-3" /> Alterar Valor Inteiro / Níveis
+                    <Edit2 className="w-3 h-3" /> Change Full Price / Levels
                   </button>
                 </div>
               </div>
@@ -517,10 +517,10 @@ export const SecretariatEnrollmentsTab: React.FC = () => {
           <div>
             <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
               <Layers className="w-4 h-4 text-emerald-700" />
-              Livro de Matrículas Ativas ({filteredEnrollments.length})
+              Active Enrollment Ledger ({filteredEnrollments.length})
             </h3>
             <p className="text-xs text-slate-500">
-              Vínculos ativos, planos de pagamento, níveis de inglês e negociações de desconto aplicadas
+              Active links, payment plans, English levels, and applied discount negotiations
             </p>
           </div>
 
@@ -529,7 +529,7 @@ export const SecretariatEnrollmentsTab: React.FC = () => {
               <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
               <input
                 type="text"
-                placeholder="Buscar aluno, ID ou turma..."
+                placeholder="Search student, ID, or class..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-9 pr-3 py-1.5 text-xs border border-slate-300 rounded-xl w-48 sm:w-60 focus:ring-1 focus:ring-slate-400 focus:outline-hidden"
@@ -541,7 +541,7 @@ export const SecretariatEnrollmentsTab: React.FC = () => {
               onChange={(e) => setFilterCourse(e.target.value)}
               className="px-2.5 py-1.5 text-xs bg-slate-50 border border-slate-300 rounded-xl font-semibold"
             >
-              <option value="ALL">Todos os Cursos</option>
+              <option value="ALL">All Courses</option>
               {state.courses.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.name}
@@ -554,11 +554,11 @@ export const SecretariatEnrollmentsTab: React.FC = () => {
               onChange={(e) => setFilterStatus(e.target.value)}
               className="px-2.5 py-1.5 text-xs bg-slate-50 border border-slate-300 rounded-xl font-semibold"
             >
-              <option value="ALL">Todos os Status</option>
-              <option value="ATIVA">Ativa</option>
-              <option value="BLOQUEADA">Bloqueada</option>
-              <option value="CONCLUIDA">Concluída</option>
-              <option value="CANCELADA">Cancelada</option>
+              <option value="ALL">All Statuses</option>
+              <option value="ATIVA">Active</option>
+              <option value="BLOQUEADA">Blocked</option>
+              <option value="CONCLUIDA">Completed</option>
+              <option value="CANCELADA">Cancelled</option>
             </select>
           </div>
         </div>
@@ -568,21 +568,21 @@ export const SecretariatEnrollmentsTab: React.FC = () => {
           <table className="w-full text-left text-xs">
             <thead className="bg-slate-50 text-slate-500 font-bold uppercase tracking-wider border-b border-slate-200">
               <tr>
-                <th className="px-4 py-3">ID Aluno</th>
-                <th className="px-4 py-3">Estudante</th>
-                <th className="px-4 py-3">Curso & Nível</th>
-                <th className="px-4 py-3">Turma Alocada</th>
-                <th className="px-4 py-3">Data Matrícula</th>
-                <th className="px-4 py-3">Plano Financeiro & Negociação</th>
+                <th className="px-4 py-3">Student ID</th>
+                <th className="px-4 py-3">Student</th>
+                <th className="px-4 py-3">Course & Level</th>
+                <th className="px-4 py-3">Assigned Class</th>
+                <th className="px-4 py-3">Enrollment Date</th>
+                <th className="px-4 py-3">Payment Plan & Negotiation</th>
                 <th className="px-4 py-3">Status</th>
-                <th className="px-4 py-3 text-right">Ações</th>
+                <th className="px-4 py-3 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {filteredEnrollments.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="px-4 py-8 text-center text-slate-400">
-                    Nenhuma matrícula encontrada com os filtros selecionados.
+                    No enrollments found with the selected filters.
                   </td>
                 </tr>
               ) : (
@@ -600,15 +600,15 @@ export const SecretariatEnrollmentsTab: React.FC = () => {
                       </td>
                       <td className="px-4 py-3.5">
                         <p className="font-bold text-slate-900">{enr.studentName}</p>
-                        <p className="text-[11px] text-slate-400">{student?.phone || 'Sem telefone'}</p>
+                        <p className="text-[11px] text-slate-400">{student?.phone || 'No phone'}</p>
                       </td>
                       <td className="px-4 py-3.5">
                         <p className="font-semibold text-slate-800">{enr.courseName}</p>
                         {isEng && enr.paymentPlan.englishLevel && (
                           <span className="inline-block mt-0.5 text-[10px] font-bold text-purple-700 bg-purple-50 px-1.5 py-0.5 rounded border border-purple-200">
-                            {enr.paymentPlan.englishLevel === 'CRIANCAS' && '🧒 Crianças (4x)'}
-                            {enr.paymentPlan.englishLevel === 'ADOLESCENTES' && '🎒 Adolescentes (3x)'}
-                            {enr.paymentPlan.englishLevel === 'ADULTO' && '🧑 Adulto (3x)'}
+                            {enr.paymentPlan.englishLevel === 'CRIANCAS' && '🧒 Children (4x)'}
+                            {enr.paymentPlan.englishLevel === 'ADOLESCENTES' && '🎒 Teens (3x)'}
+                            {enr.paymentPlan.englishLevel === 'ADULTO' && '🧑 Adults (3x)'}
                           </span>
                         )}
                       </td>
@@ -622,10 +622,10 @@ export const SecretariatEnrollmentsTab: React.FC = () => {
                         <div className="space-y-0.5">
                           <p className="font-bold text-slate-900 font-mono">
                             {formatCurrency(enr.paymentPlan.installmentAmount, 'EGP')}
-                            <span className="text-[10px] text-slate-400 font-normal"> /mês</span>
+                            <span className="text-[10px] text-slate-400 font-normal"> /month</span>
                           </p>
                           <p className="text-[10px] text-slate-500">
-                            {enr.paymentPlan.installmentsCount} parcelas • Total:{' '}
+                            {enr.paymentPlan.installmentsCount} installments • Total:{' '}
                             <strong className="text-slate-800 font-mono">
                               {formatCurrency(enr.paymentPlan.totalAmount, 'EGP')}
                             </strong>
@@ -634,7 +634,7 @@ export const SecretariatEnrollmentsTab: React.FC = () => {
                           {/* Discount Tag */}
                           {enr.paymentPlan.isNegotiated && (
                             <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-800 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200 mt-1">
-                              <Tag className="w-2.5 h-2.5" /> Negociado
+                              <Tag className="w-2.5 h-2.5" /> Negotiated
                               {enr.paymentPlan.originalTotalAmount && enr.paymentPlan.originalTotalAmount > enr.paymentPlan.totalAmount && (
                                 <span>(-{formatCurrency(enr.paymentPlan.originalTotalAmount - enr.paymentPlan.totalAmount, 'EGP')})</span>
                               )}
@@ -650,25 +650,25 @@ export const SecretariatEnrollmentsTab: React.FC = () => {
                           <button
                             onClick={() => setSelectedEnrollmentForDetail(enr)}
                             className="px-2.5 py-1 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors cursor-pointer"
-                            title="Ver detalhes da matrícula e carnê"
+                            title="View enrollment and payment plan details"
                           >
-                            Detalhes
+                            Details
                           </button>
 
-                          {/* Negociar / Conceder Desconto */}
+                          {/* Negotiate / Grant Discount */}
                           <button
                             onClick={() => handleOpenRenegotiate(enr)}
                             className="px-2.5 py-1 text-xs font-bold text-amber-800 bg-amber-50 hover:bg-amber-100 rounded-lg border border-amber-200 transition-colors flex items-center gap-1 cursor-pointer"
-                            title="Negociar parcelamento ou conceder desconto"
+                            title="Negotiate installments or grant a discount"
                           >
-                            <BadgePercent className="w-3.5 h-3.5 text-amber-600" /> Negociar
+                            <BadgePercent className="w-3.5 h-3.5 text-amber-600" /> Negotiate
                           </button>
 
                           {course && (
                             <button
                               onClick={() => handleOpenEditFee(course)}
                               className="p-1 text-emerald-700 hover:bg-emerald-50 rounded-lg transition-colors border border-transparent hover:border-emerald-200 cursor-pointer"
-                              title={`Alterar valor do curso ${course.name}`}
+                              title={`Change course price ${course.name}`}
                             >
                               <DollarSign className="w-3.5 h-3.5" />
                             </button>
@@ -678,17 +678,17 @@ export const SecretariatEnrollmentsTab: React.FC = () => {
                             <button
                               onClick={() => updateEnrollmentStatus(enr.id, 'BLOQUEADA')}
                               className="px-2 py-1 text-[11px] font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 rounded-lg border border-rose-200 transition-colors cursor-pointer"
-                              title="Bloquear matrícula"
+                              title="Block enrollment"
                             >
-                              Bloquear
+                              Block
                             </button>
                           ) : (
                             <button
                               onClick={() => updateEnrollmentStatus(enr.id, 'ATIVA')}
                               className="px-2 py-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-lg border border-emerald-200 transition-colors cursor-pointer"
-                              title="Desbloquear matrícula"
+                              title="Unblock enrollment"
                             >
-                              Desbloquear
+                              Unblock
                             </button>
                           )}
                         </div>
@@ -703,28 +703,28 @@ export const SecretariatEnrollmentsTab: React.FC = () => {
       </div>
 
       {/* ========================================================================= */}
-      {/* MODAL 1: TABELA DE MENSALIDADES COM 3 NÍVEIS DE INGLÊS E SIMULADOR LIVRE  */}
+      {/* MODAL 1: TUITION TABLE WITH 3 ENGLISH AGE LEVELS & FREE SIMULATOR      */}
       {/* ========================================================================= */}
       {isPriceTableModalOpen && (
         <Modal
           isOpen={isPriceTableModalOpen}
           onClose={() => setIsPriceTableModalOpen(false)}
           size="lg"
-          title="Tabela de Mensalidades & Valores dos Cursos"
-          subtitle="Valores inteiros dos cursos, 3 níveis específicos para Inglês e simulador de parcelas livres"
+          title="Tuition & Course Price Table"
+          subtitle="Full course prices, 3 specific levels for English, and a flexible installment simulator"
         >
           <div className="space-y-5 text-xs">
             {/* Informational Banner on English Course Specifics */}
             <div className="p-3.5 bg-purple-50 border border-purple-200 rounded-xl space-y-1">
               <div className="flex items-center gap-2 text-purple-900 font-bold text-xs">
                 <Sparkles className="w-4 h-4 text-purple-700" />
-                <span>Regra Oficial: Curso Livre de Inglês em 3 Níveis Etários</span>
+                <span>Official Rule: English General Course in 3 Age Levels</span>
               </div>
               <p className="text-[11px] text-purple-800 leading-relaxed">
-                O <strong>Curso Livre de Inglês</strong> possui 3 níveis de atendimento:{' '}
-                <strong>Crianças (Kids)</strong> com parcelamento padrão em <strong>4 parcelas</strong>; e{' '}
-                <strong>Adolescentes (Teens)</strong> e <strong>Adulto (Adults)</strong> com parcelamento padrão em{' '}
-                <strong>3 parcelas</strong>. Para qualquer curso, a secretaria tem a liberdade de personalizar quantas parcelas desejar!
+                The <strong>English General Course</strong> has 3 service levels:{' '}
+                <strong>Children (Kids)</strong> with a standard plan of <strong>4 installments</strong>; and{' '}
+                <strong>Teens</strong> and <strong>Adults</strong> with a standard plan of{' '}
+                <strong>3 installments</strong>. For any course, the registrar's office is free to customize the number of installments as needed!
               </p>
             </div>
 
@@ -733,13 +733,13 @@ export const SecretariatEnrollmentsTab: React.FC = () => {
               <table className="w-full text-left text-xs">
                 <thead className="bg-slate-50 text-slate-500 font-bold uppercase tracking-wider border-b border-slate-200">
                   <tr>
-                    <th className="px-3 py-2.5">Código</th>
-                    <th className="px-3 py-2.5">Curso</th>
-                    <th className="px-3 py-2.5">Nível / Faixa Etária</th>
-                    <th className="px-3 py-2.5">Valor Inteiro (Total)</th>
-                    <th className="px-3 py-2.5">Parcelas Padrão</th>
-                    <th className="px-3 py-2.5">Valor da Parcela</th>
-                    <th className="px-3 py-2.5 text-right">Ação</th>
+                    <th className="px-3 py-2.5">Code</th>
+                    <th className="px-3 py-2.5">Course</th>
+                    <th className="px-3 py-2.5">Level / Age Range</th>
+                    <th className="px-3 py-2.5">Full Price (Total)</th>
+                    <th className="px-3 py-2.5">Standard Installments</th>
+                    <th className="px-3 py-2.5">Installment Amount</th>
+                    <th className="px-3 py-2.5 text-right">Action</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -754,21 +754,21 @@ export const SecretariatEnrollmentsTab: React.FC = () => {
                           : [
                               {
                                 level: 'CRIANCAS',
-                                label: 'Crianças (Kids: 6-11 anos)',
+                                label: 'Children (Kids: 6-11 years)',
                                 defaultInstallmentsCount: 4,
                                 totalCourseAmount: 2000,
                                 monthlyFee: 500,
                               },
                               {
                                 level: 'ADOLESCENTES',
-                                label: 'Adolescentes (Teens: 12-17 anos)',
+                                label: 'Teens (12-17 years)',
                                 defaultInstallmentsCount: 3,
                                 totalCourseAmount: 1500,
                                 monthlyFee: 500,
                               },
                               {
                                 level: 'ADULTO',
-                                label: 'Adulto (Adults: 18+ anos)',
+                                label: 'Adults (18+ years)',
                                 defaultInstallmentsCount: 3,
                                 totalCourseAmount: 1800,
                                 monthlyFee: 600,
@@ -785,7 +785,7 @@ export const SecretariatEnrollmentsTab: React.FC = () => {
                               <div>
                                 <p className="font-bold text-slate-900">{c.name}</p>
                                 <span className="text-[10px] text-purple-700 font-bold bg-purple-100 px-1.5 py-0.5 rounded">
-                                  Curso Especial de Inglês
+                                  Special English Course
                                 </span>
                               </div>
                             )}
@@ -793,7 +793,7 @@ export const SecretariatEnrollmentsTab: React.FC = () => {
                           <td className="px-3 py-2.5">
                             <span className="font-bold text-purple-950 block">{lvl.label}</span>
                             <span className="text-[10px] text-slate-400">
-                              {lvl.level === 'CRIANCAS' ? '4 parcelas mensais' : '3 parcelas mensais'}
+                              {lvl.level === 'CRIANCAS' ? '4 monthly installments' : '3 monthly installments'}
                             </span>
                           </td>
                           <td className="px-3 py-2.5 font-mono font-black text-emerald-800 text-sm">
@@ -813,7 +813,7 @@ export const SecretariatEnrollmentsTab: React.FC = () => {
                                 ),
                               'EGP'
                             )}
-                            <span className="text-[10px] text-slate-400 font-normal"> /mês</span>
+                            <span className="text-[10px] text-slate-400 font-normal"> /month</span>
                           </td>
                           <td className="px-3 py-2.5 text-right">
                             {idx === 0 && (
@@ -824,7 +824,7 @@ export const SecretariatEnrollmentsTab: React.FC = () => {
                                 }}
                                 className="px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold rounded-lg border border-emerald-200 transition-colors flex items-center gap-1 cursor-pointer ml-auto text-xs"
                               >
-                                <Edit2 className="w-3 h-3" /> Alterar
+                                <Edit2 className="w-3 h-3" /> Change
                               </button>
                             )}
                           </td>
@@ -843,7 +843,7 @@ export const SecretariatEnrollmentsTab: React.FC = () => {
                           <p className="font-bold text-slate-900">{c.name}</p>
                           <p className="text-[10px] text-slate-400">{c.category}</p>
                         </td>
-                        <td className="px-3 py-2.5 text-slate-600 font-medium">Geral / Livre</td>
+                        <td className="px-3 py-2.5 text-slate-600 font-medium">General / All Ages</td>
                         <td className="px-3 py-2.5 font-mono font-black text-emerald-800 text-sm">
                           {formatCurrency(totalVal, 'EGP')}
                         </td>
@@ -854,7 +854,7 @@ export const SecretariatEnrollmentsTab: React.FC = () => {
                         </td>
                         <td className="px-3 py-2.5 font-mono font-bold text-slate-800">
                           {formatCurrency(Math.round(totalVal / defInst), 'EGP')}
-                          <span className="text-[10px] text-slate-400 font-normal"> /mês</span>
+                          <span className="text-[10px] text-slate-400 font-normal"> /month</span>
                         </td>
                         <td className="px-3 py-2.5 text-right">
                           <button
@@ -864,7 +864,7 @@ export const SecretariatEnrollmentsTab: React.FC = () => {
                             }}
                             className="px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold rounded-lg border border-emerald-200 transition-colors flex items-center gap-1 cursor-pointer ml-auto text-xs"
                           >
-                            <Edit2 className="w-3 h-3" /> Alterar
+                            <Edit2 className="w-3 h-3" /> Change
                           </button>
                         </td>
                       </tr>
@@ -879,15 +879,15 @@ export const SecretariatEnrollmentsTab: React.FC = () => {
               <div className="flex items-center justify-between">
                 <span className="font-bold text-slate-900 flex items-center gap-1.5 text-xs">
                   <Calculator className="w-4 h-4 text-emerald-700" />
-                  Simulador de Parcelas Livres & Negociação Instantânea
+                  Flexible Installment & Instant Negotiation Simulator
                 </span>
-                <span className="text-[11px] text-slate-500">Escolha quantas parcelas quiser e teste descontos</span>
+                <span className="text-[11px] text-slate-500">Choose any number of installments and test discounts</span>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-4 gap-2.5">
                 {/* Select Course */}
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Curso</label>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Course</label>
                   <select
                     value={simSelectedCourseId}
                     onChange={(e) => setSimSelectedCourseId(e.target.value)}
@@ -904,23 +904,23 @@ export const SecretariatEnrollmentsTab: React.FC = () => {
                 {/* Level (if English) */}
                 {isEnglishCourse(state.courses.find((c) => c.id === simSelectedCourseId)) ? (
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Nível Inglês</label>
+                    <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">English Level</label>
                     <select
                       value={simSelectedLevel}
                       onChange={(e) => setSimSelectedLevel(e.target.value as EnglishAudienceLevel)}
                       className="w-full p-2 bg-purple-50 border border-purple-300 text-purple-900 rounded-xl font-bold text-xs"
                     >
-                      <option value="CRIANCAS">Crianças (Kids - Padrão 4x)</option>
-                      <option value="ADOLESCENTES">Adolescentes (Teens - Padrão 3x)</option>
-                      <option value="ADULTO">Adulto (Adults - Padrão 3x)</option>
+                      <option value="CRIANCAS">Children (Kids - Standard 4x)</option>
+                      <option value="ADOLESCENTES">Teens (Standard 3x)</option>
+                      <option value="ADULTO">Adults (Standard 3x)</option>
                     </select>
                   </div>
                 ) : (
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Nível</label>
+                    <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Level</label>
                     <input
                       disabled
-                      value="Geral / Todas as idades"
+                      value="General / All Ages"
                       className="w-full p-2 bg-slate-100 border border-slate-200 text-slate-500 rounded-xl text-xs"
                     />
                   </div>
@@ -929,7 +929,7 @@ export const SecretariatEnrollmentsTab: React.FC = () => {
                 {/* Number of installments */}
                 <div>
                   <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">
-                    Quantas Parcelas?
+                    Number of Installments?
                   </label>
                   <div className="flex items-center gap-1">
                     <input
@@ -962,7 +962,7 @@ export const SecretariatEnrollmentsTab: React.FC = () => {
                 {/* Simulated Discount % */}
                 <div>
                   <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">
-                    Desconto Simulado (%)
+                    Simulated Discount (%)
                   </label>
                   <input
                     type="number"
@@ -989,30 +989,30 @@ export const SecretariatEnrollmentsTab: React.FC = () => {
                 return (
                   <div className="p-3 bg-white border border-emerald-200 rounded-xl grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
                     <div>
-                      <span className="text-[10px] text-slate-400 block font-medium">Valor Inteiro Original</span>
+                      <span className="text-[10px] text-slate-400 block font-medium">Original Full Price</span>
                       <span className="font-mono font-bold text-slate-800 text-xs">
                         {formatCurrency(baseTotal, 'EGP')}
                       </span>
                     </div>
                     <div>
-                      <span className="text-[10px] text-slate-400 block font-medium">Desconto Simulado</span>
+                      <span className="text-[10px] text-slate-400 block font-medium">Simulated Discount</span>
                       <span className="font-mono font-bold text-amber-700 text-xs">
-                        {simDiscountPercent > 0 ? `-${formatCurrency(discountAmt, 'EGP')} (${simDiscountPercent}%)` : 'Sem desconto'}
+                        {simDiscountPercent > 0 ? `-${formatCurrency(discountAmt, 'EGP')} (${simDiscountPercent}%)` : 'No discount'}
                       </span>
                     </div>
                     <div>
-                      <span className="text-[10px] text-slate-400 block font-medium">Total Calculado</span>
+                      <span className="text-[10px] text-slate-400 block font-medium">Calculated Total</span>
                       <span className="font-mono font-black text-emerald-800 text-sm">
                         {formatCurrency(finalSimTotal, 'EGP')}
                       </span>
                     </div>
                     <div className="bg-emerald-50/80 p-1.5 rounded-lg border border-emerald-200">
                       <span className="text-[10px] text-emerald-900 block font-bold">
-                        {simInstallments}x Parcelas de:
+                        {simInstallments}x Installments of:
                       </span>
                       <span className="font-mono font-black text-emerald-900 text-sm">
                         {formatCurrency(simInstallmentVal, 'EGP')}
-                        <span className="text-[10px] font-normal"> /mês</span>
+                        <span className="text-[10px] font-normal"> /month</span>
                       </span>
                     </div>
                   </div>
@@ -1025,7 +1025,7 @@ export const SecretariatEnrollmentsTab: React.FC = () => {
                 onClick={() => setIsPriceTableModalOpen(false)}
                 className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold cursor-pointer"
               >
-                Fechar
+                Close
               </button>
             </div>
           </div>
@@ -1033,14 +1033,14 @@ export const SecretariatEnrollmentsTab: React.FC = () => {
       )}
 
       {/* ========================================================================= */}
-      {/* MODAL 2: ALTERAR VALOR INTEIRO / NÍVEIS DO CURSO                         */}
+      {/* MODAL 2: CHANGE COURSE FULL PRICE / LEVELS                              */}
       {/* ========================================================================= */}
       {editingCourseForFee && (
         <Modal
           isOpen={!!editingCourseForFee}
           onClose={() => setEditingCourseForFee(null)}
-          title={`Alterar Valor Inteiro: ${editingCourseForFee.name}`}
-          subtitle="Configure o valor total do curso, parcelamento padrão e níveis para o curso de inglês"
+          title={`Change Full Price: ${editingCourseForFee.name}`}
+          subtitle="Configure the total course price, default installments, and levels for the English course"
         >
           <form onSubmit={handleSaveCourseFee} className="space-y-4 text-xs">
             {/* If English Course: 3-level customizer */}
@@ -1048,10 +1048,10 @@ export const SecretariatEnrollmentsTab: React.FC = () => {
               <div className="space-y-3">
                 <div className="p-3 bg-purple-50 border border-purple-200 rounded-xl">
                   <span className="font-bold text-purple-900 block text-xs">
-                    Estrutura de 3 Níveis do Curso Livre de Inglês:
+                    3-Level Structure of the English General Course:
                   </span>
                   <p className="text-[11px] text-purple-800 mt-0.5">
-                    Defina o valor inteiro total de cada faixa etária. Crianças tem 4 parcelas padrão, e Adolescentes e Adultos 3 parcelas.
+                    Set the full total price for each age range. Children have 4 standard installments, while Teens and Adults have 3.
                   </p>
                 </div>
 
@@ -1067,14 +1067,14 @@ export const SecretariatEnrollmentsTab: React.FC = () => {
                         <div className="flex items-center justify-between">
                           <span className="font-bold text-slate-900 text-xs">{lvl.label}</span>
                           <span className="text-[10px] font-mono font-bold text-purple-700 bg-purple-50 px-2 py-0.5 rounded border border-purple-200">
-                            {lvl.defaultInstallmentsCount} parcelas padrão
+                            {lvl.defaultInstallmentsCount} standard installments
                           </span>
                         </div>
 
                         <div className="grid grid-cols-2 gap-2">
                           <div>
                             <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">
-                              Valor Inteiro Total (EGP) *
+                              Full Total Price (EGP) *
                             </label>
                             <input
                               type="number"
@@ -1099,7 +1099,7 @@ export const SecretariatEnrollmentsTab: React.FC = () => {
 
                           <div>
                             <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">
-                              Parcelas Padrão
+                              Standard Installments
                             </label>
                             <input
                               type="number"
@@ -1123,9 +1123,9 @@ export const SecretariatEnrollmentsTab: React.FC = () => {
                         </div>
 
                         <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1 border-t border-slate-100">
-                          <span>Valor mensal resultante:</span>
+                          <span>Resulting monthly amount:</span>
                           <span className="font-mono font-bold text-emerald-700">
-                            {formatCurrency(monthly, 'EGP')} / parcela
+                            {formatCurrency(monthly, 'EGP')} / installment
                           </span>
                         </div>
                       </div>
@@ -1138,7 +1138,7 @@ export const SecretariatEnrollmentsTab: React.FC = () => {
               <div className="space-y-3">
                 <div>
                   <label className="block font-bold text-slate-700 mb-1">
-                    Valor Inteiro Total do Curso (EGP) *
+                    Full Total Course Price (EGP) *
                   </label>
                   <div className="relative">
                     <input
@@ -1156,13 +1156,13 @@ export const SecretariatEnrollmentsTab: React.FC = () => {
                     </span>
                   </div>
                   <p className="text-[11px] text-slate-400 mt-1">
-                    Ex: 1.600 EGP (Futebol), 3.000 EGP (Preschool), 1.800 EGP (Costura).
+                    Ex: 1,600 EGP (Soccer), 3,000 EGP (Preschool), 1,800 EGP (Sewing).
                   </p>
                 </div>
 
                 <div>
                   <label className="block font-bold text-slate-700 mb-1">
-                    Número de Parcelas Padrão
+                    Number of Standard Installments
                   </label>
                   <div className="flex items-center gap-2">
                     <input
@@ -1174,14 +1174,14 @@ export const SecretariatEnrollmentsTab: React.FC = () => {
                       className="w-28 p-2.5 border border-slate-300 rounded-xl font-mono font-bold text-slate-900"
                     />
                     <span className="text-slate-500 font-medium">
-                      Resultará em{' '}
+                      Will result in{' '}
                       <strong className="text-emerald-700 font-mono">
                         {formatCurrency(
                           Math.round(editingTotalAmount / Math.max(1, editingDefaultInstallments)),
                           'EGP'
                         )}
                       </strong>{' '}
-                      / parcela
+                      / installment
                     </span>
                   </div>
                 </div>
@@ -1199,25 +1199,25 @@ export const SecretariatEnrollmentsTab: React.FC = () => {
                 />
                 <div>
                   <span className="font-bold text-slate-800 block text-xs">
-                    Reajustar também cobranças pendentes de alunos já matriculados
+                    Also adjust pending charges for already-enrolled students
                   </span>
                   <span className="text-[11px] text-slate-500 block mt-0.5">
-                    Atualiza proporcionalmente as parcelas com status REGULAR ou PENDENTE. Cobranças já pagas permanecem inalteradas.
+                    Proportionally updates installments with REGULAR or PENDING status. Charges already paid remain unchanged.
                   </span>
                 </div>
               </label>
             </div>
 
-            {/* Motivo */}
+            {/* Reason */}
             <div>
               <label className="block font-semibold text-slate-700 mb-1">
-                Motivo / Justificativa da Alteração
+                Reason / Justification for Change
               </label>
               <input
                 type="text"
                 value={feeChangeReason}
                 onChange={(e) => setFeeChangeReason(e.target.value)}
-                placeholder="Ex: Reajuste aprovado pela diretoria para o ciclo atual"
+                placeholder="Ex: Price adjustment approved by management for the current cycle"
                 className="w-full p-2.5 border border-slate-300 rounded-xl font-medium"
               />
             </div>
@@ -1228,13 +1228,13 @@ export const SecretariatEnrollmentsTab: React.FC = () => {
                 onClick={() => setEditingCourseForFee(null)}
                 className="px-4 py-2 border border-slate-300 rounded-xl font-semibold text-slate-700 hover:bg-slate-50 cursor-pointer"
               >
-                Cancelar
+                Cancel
               </button>
               <button
                 type="submit"
                 className="px-5 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl font-bold cursor-pointer shadow-2xs flex items-center gap-1.5"
               >
-                <Check className="w-4 h-4" /> Salvar Novos Valores
+                <Check className="w-4 h-4" /> Save New Prices
               </button>
             </div>
           </form>
@@ -1242,19 +1242,19 @@ export const SecretariatEnrollmentsTab: React.FC = () => {
       )}
 
       {/* ========================================================================= */}
-      {/* MODAL 3: NOVA MATRÍCULA COM SELEÇÃO DE NÍVEL, PARCELAS LIVRES E DESCONTO  */}
+      {/* MODAL 3: NEW ENROLLMENT WITH LEVEL SELECTION, FLEXIBLE INSTALLMENTS & DISCOUNT  */}
       {/* ========================================================================= */}
       {isAddModalOpen && (
         <Modal
           isOpen={isAddModalOpen}
           onClose={() => setIsAddModalOpen(false)}
-          title="Nova Matrícula em Curso"
-          subtitle="Vincule um estudante já cadastrado a um curso com parcelas livres e opção de negociação"
+          title="New Course Enrollment"
+          subtitle="Link an existing student to a course with flexible installments and negotiation options"
         >
           <form onSubmit={handleCreateEnrollment} className="space-y-4 text-xs">
             {/* Student selection */}
             <div>
-              <label className="block font-bold text-slate-700 mb-1">Selecione o Aluno *</label>
+              <label className="block font-bold text-slate-700 mb-1">Select Student *</label>
               <select
                 value={selectedStudentId}
                 onChange={(e) => setSelectedStudentId(e.target.value)}
@@ -1271,7 +1271,7 @@ export const SecretariatEnrollmentsTab: React.FC = () => {
 
             {/* Course selection */}
             <div>
-              <label className="block font-bold text-slate-700 mb-1">Selecione o Curso *</label>
+              <label className="block font-bold text-slate-700 mb-1">Select Course *</label>
               <select
                 value={selectedCourseId}
                 onChange={(e) => handleSelectCourse(e.target.value)}
@@ -1280,7 +1280,7 @@ export const SecretariatEnrollmentsTab: React.FC = () => {
               >
                 {state.courses.map((c) => (
                   <option key={c.id} value={c.id}>
-                    {c.name} — Valor Total Inteiro:{' '}
+                    {c.name} — Full Total Price:{' '}
                     {formatCurrency(
                       c.totalCourseAmount || c.monthlyFee * (c.defaultInstallmentsCount || 4),
                       'EGP'
@@ -1294,7 +1294,7 @@ export const SecretariatEnrollmentsTab: React.FC = () => {
             {isEnglishCourse(activeModalCourse) && (
               <div className="p-3 bg-purple-50 border border-purple-200 rounded-xl space-y-2">
                 <label className="block font-bold text-purple-950 text-xs">
-                  Faixa Etária / Nível de Inglês * (Seletor Exclusivo do Curso de Inglês)
+                  Age Range / English Level * (Exclusive Selector for English Course)
                 </label>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                   <button
@@ -1306,8 +1306,8 @@ export const SecretariatEnrollmentsTab: React.FC = () => {
                         : 'border-purple-200 bg-white text-slate-700 hover:bg-purple-100/50'
                     }`}
                   >
-                    <p className="font-bold text-xs">🧒 Crianças (Kids)</p>
-                    <p className="text-[10px] opacity-90 mt-0.5">Padrão: 4 Parcelas</p>
+                    <p className="font-bold text-xs">🧒 Children (Kids)</p>
+                    <p className="text-[10px] opacity-90 mt-0.5">Standard: 4 Installments</p>
                     <p className="font-mono font-bold text-xs mt-1">2.000 EGP (4x 500)</p>
                   </button>
 
@@ -1320,8 +1320,8 @@ export const SecretariatEnrollmentsTab: React.FC = () => {
                         : 'border-purple-200 bg-white text-slate-700 hover:bg-purple-100/50'
                     }`}
                   >
-                    <p className="font-bold text-xs">🎒 Adolescentes (Teens)</p>
-                    <p className="text-[10px] opacity-90 mt-0.5">Padrão: 3 Parcelas</p>
+                    <p className="font-bold text-xs">🎒 Teens</p>
+                    <p className="text-[10px] opacity-90 mt-0.5">Standard: 3 Installments</p>
                     <p className="font-mono font-bold text-xs mt-1">1.500 EGP (3x 500)</p>
                   </button>
 
@@ -1334,8 +1334,8 @@ export const SecretariatEnrollmentsTab: React.FC = () => {
                         : 'border-purple-200 bg-white text-slate-700 hover:bg-purple-100/50'
                     }`}
                   >
-                    <p className="font-bold text-xs">🧑 Adulto (Adults)</p>
-                    <p className="text-[10px] opacity-90 mt-0.5">Padrão: 3 Parcelas</p>
+                    <p className="font-bold text-xs">🧑 Adults</p>
+                    <p className="text-[10px] opacity-90 mt-0.5">Standard: 3 Installments</p>
                     <p className="font-mono font-bold text-xs mt-1">1.800 EGP (3x 600)</p>
                   </button>
                 </div>
@@ -1344,7 +1344,7 @@ export const SecretariatEnrollmentsTab: React.FC = () => {
 
             {/* Class selection */}
             <div>
-              <label className="block font-bold text-slate-700 mb-1">Selecione a Turma & Horário *</label>
+              <label className="block font-bold text-slate-700 mb-1">Select Class & Schedule *</label>
               <select
                 value={selectedClassId}
                 onChange={(e) => setSelectedClassId(e.target.value)}
@@ -1365,10 +1365,10 @@ export const SecretariatEnrollmentsTab: React.FC = () => {
             <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
               <div className="flex items-center justify-between">
                 <label className="block font-bold text-slate-800 text-xs">
-                  Número de Parcelas do Aluno (Opção Livre)
+                  Student's Number of Installments (Flexible)
                 </label>
                 <span className="text-[11px] text-slate-500 font-medium">
-                  {installmentsCount === 1 ? 'Quitação à vista' : `Dividido em ${installmentsCount} vezes`}
+                  {installmentsCount === 1 ? 'Full payment upfront' : `Split into ${installmentsCount} payments`}
                 </span>
               </div>
 
@@ -1388,14 +1388,14 @@ export const SecretariatEnrollmentsTab: React.FC = () => {
                         : 'bg-white border border-slate-300 text-slate-700 hover:bg-slate-100'
                     }`}
                   >
-                    {num === 1 ? '1x (À Vista)' : `${num}x`}
+                    {num === 1 ? '1x (Full Payment)' : `${num}x`}
                   </button>
                 ))}
               </div>
 
               {/* Custom number input */}
               <div className="flex items-center gap-2 pt-1">
-                <span className="text-slate-500 text-[11px]">Ou digite o número exato:</span>
+                <span className="text-slate-500 text-[11px]">Or enter the exact number:</span>
                 <input
                   type="number"
                   min={1}
@@ -1408,7 +1408,7 @@ export const SecretariatEnrollmentsTab: React.FC = () => {
                   }}
                   className="w-20 p-1.5 bg-white border border-slate-300 rounded-lg text-center font-mono font-bold text-xs"
                 />
-                <span className="text-slate-500 text-[11px]">parcelas</span>
+                <span className="text-slate-500 text-[11px]">installments</span>
               </div>
             </div>
 
@@ -1424,12 +1424,12 @@ export const SecretariatEnrollmentsTab: React.FC = () => {
                   />
                   <span className="font-bold text-amber-950 text-xs flex items-center gap-1">
                     <BadgePercent className="w-3.5 h-3.5 text-amber-600" />
-                    Aplicar Negociação / Conceder Desconto ao Aluno
+                    Apply Negotiation / Grant Discount to Student
                   </span>
                 </label>
                 {enableNegotiation && (
                   <span className="text-[10px] font-bold text-amber-800 bg-amber-100 px-2 py-0.5 rounded-full">
-                    Ativo
+                    Active
                   </span>
                 )}
               </div>
@@ -1438,7 +1438,7 @@ export const SecretariatEnrollmentsTab: React.FC = () => {
                 <div className="space-y-2.5 pt-1 border-t border-amber-200/70">
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <label className="block text-[10px] font-bold text-amber-900 mb-1">Tipo de Desconto</label>
+                      <label className="block text-[10px] font-bold text-amber-900 mb-1">Discount Type</label>
                       <div className="grid grid-cols-2 gap-1">
                         <button
                           type="button"
@@ -1449,7 +1449,7 @@ export const SecretariatEnrollmentsTab: React.FC = () => {
                               : 'bg-white border border-amber-200 text-amber-900'
                           }`}
                         >
-                          Porcentagem (%)
+                          Percentage (%)
                         </button>
                         <button
                           type="button"
@@ -1460,14 +1460,14 @@ export const SecretariatEnrollmentsTab: React.FC = () => {
                               : 'bg-white border border-amber-200 text-amber-900'
                           }`}
                         >
-                          Valor Fixo (EGP)
+                          Fixed Amount (EGP)
                         </button>
                       </div>
                     </div>
 
                     <div>
                       <label className="block text-[10px] font-bold text-amber-900 mb-1">
-                        {discountType === 'PERCENT' ? 'Porcentagem de Desconto (%)' : 'Valor a Abater (EGP)'}
+                        {discountType === 'PERCENT' ? 'Discount Percentage (%)' : 'Amount to Deduct (EGP)'}
                       </label>
                       <input
                         type="number"
@@ -1483,22 +1483,22 @@ export const SecretariatEnrollmentsTab: React.FC = () => {
                   {/* Justification & Quick Chips */}
                   <div>
                     <label className="block text-[10px] font-bold text-amber-900 mb-1">
-                      Motivo da Negociação / Acordo
+                      Reason for Negotiation / Agreement
                     </label>
                     <input
                       type="text"
                       value={discountReason}
                       onChange={(e) => setDiscountReason(e.target.value)}
-                      placeholder="Ex: Bolsa Social, Desconto Irmãos, Acordo de Balcão"
+                      placeholder="Ex: Social scholarship, Sibling discount, Over-the-counter agreement"
                       className="w-full p-2 bg-white border border-amber-300 rounded-xl text-xs"
                     />
                     <div className="flex flex-wrap gap-1 mt-1.5">
                       {[
-                        'Desconto Irmãos',
-                        'Bolsa Familiar Comunitária',
-                        'Pagamento Antecipado',
-                        'Parceria Social',
-                        'Acordo Balcão Secretaria',
+                        'Sibling Discount',
+                        'Community Family Scholarship',
+                        'Early Payment',
+                        'Social Partnership',
+                        'Registrar\'s Office Agreement',
                       ].map((chip) => (
                         <button
                           key={chip}
@@ -1518,7 +1518,7 @@ export const SecretariatEnrollmentsTab: React.FC = () => {
             {/* Financial Summary Box */}
             <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl space-y-1.5 text-xs">
               <div className="flex items-center justify-between text-slate-600">
-                <span>Valor Inteiro Original:</span>
+                <span>Original Full Price:</span>
                 <span className="font-mono font-bold text-slate-800">
                   {formatCurrency(activeModalBaseTotal, 'EGP')}
                 </span>
@@ -1526,25 +1526,25 @@ export const SecretariatEnrollmentsTab: React.FC = () => {
 
               {enableNegotiation && activeModalDiscountAmount > 0 && (
                 <div className="flex items-center justify-between text-amber-700">
-                  <span>Desconto Concedido:</span>
+                  <span>Discount Granted:</span>
                   <span className="font-mono font-bold">
                     -{formatCurrency(activeModalDiscountAmount, 'EGP')} (
-                    {discountType === 'PERCENT' ? `${discountValue}%` : 'Fixo'})
+                    {discountType === 'PERCENT' ? `${discountValue}%` : 'Fixed'})
                   </span>
                 </div>
               )}
 
               <div className="pt-1 border-t border-emerald-200 flex items-center justify-between font-bold text-emerald-950 text-sm">
-                <span>Total a Pagar ({installmentsCount} parcelas):</span>
+                <span>Total to Pay ({installmentsCount} installments):</span>
                 <span className="font-mono font-black text-emerald-800 text-base">
                   {formatCurrency(activeModalFinalTotal, 'EGP')}
                 </span>
               </div>
 
               <div className="flex items-center justify-between text-emerald-900 font-bold text-xs">
-                <span>Valor de Cada Parcela:</span>
+                <span>Amount of Each Installment:</span>
                 <span className="font-mono font-bold bg-white px-2 py-0.5 rounded border border-emerald-200">
-                  {formatCurrency(activeModalInstallmentAmount, 'EGP')} / mês
+                  {formatCurrency(activeModalInstallmentAmount, 'EGP')} / month
                 </span>
               </div>
             </div>
@@ -1555,13 +1555,13 @@ export const SecretariatEnrollmentsTab: React.FC = () => {
                 onClick={() => setIsAddModalOpen(false)}
                 className="px-4 py-2 border border-slate-300 rounded-xl font-semibold text-slate-700 cursor-pointer"
               >
-                Cancelar
+                Cancel
               </button>
               <button
                 type="submit"
                 className="px-5 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl font-bold cursor-pointer shadow-xs flex items-center gap-1.5"
               >
-                <Check className="w-4 h-4" /> Confirmar Matrícula
+                <Check className="w-4 h-4" /> Confirm Enrollment
               </button>
             </div>
           </form>
@@ -1569,14 +1569,14 @@ export const SecretariatEnrollmentsTab: React.FC = () => {
       )}
 
       {/* ========================================================================= */}
-      {/* MODAL 4: RENEGOCIAÇÃO / DESCONTO DE MATRÍCULA EXISTENTE                   */}
+      {/* MODAL 4: RENEGOTIATION / DISCOUNT ON EXISTING ENROLLMENT                */}
       {/* ========================================================================= */}
       {renegotiateEnrollment && (
         <Modal
           isOpen={!!renegotiateEnrollment}
           onClose={() => setRenegotiateEnrollment(null)}
-          title={`Negociação de Mensalidade: ${renegotiateEnrollment.studentName}`}
-          subtitle={`Matrícula: ${renegotiateEnrollment.id} • Curso: ${renegotiateEnrollment.courseName}`}
+          title={`Tuition Negotiation: ${renegotiateEnrollment.studentName}`}
+          subtitle={`Enrollment: ${renegotiateEnrollment.id} • Course: ${renegotiateEnrollment.courseName}`}
         >
           {(() => {
             const currentCharges = state.charges.filter((c) => c.enrollmentId === renegotiateEnrollment.id);
@@ -1605,27 +1605,27 @@ export const SecretariatEnrollmentsTab: React.FC = () => {
                 {/* Historical summary */}
                 <div className="grid grid-cols-3 gap-2 p-3 bg-slate-50 border border-slate-200 rounded-xl text-center">
                   <div>
-                    <span className="text-[10px] text-slate-400 block font-medium">Plano Atual</span>
+                    <span className="text-[10px] text-slate-400 block font-medium">Current Plan</span>
                     <span className="font-mono font-bold text-slate-800">
                       {formatCurrency(renegotiateEnrollment.paymentPlan.totalAmount, 'EGP')}
                     </span>
                     <span className="text-[10px] text-slate-500 block">
-                      ({renegotiateEnrollment.paymentPlan.installmentsCount} parcelas)
+                      ({renegotiateEnrollment.paymentPlan.installmentsCount} installments)
                     </span>
                   </div>
 
                   <div>
-                    <span className="text-[10px] text-slate-400 block font-medium">Já Pago</span>
+                    <span className="text-[10px] text-slate-400 block font-medium">Already Paid</span>
                     <span className="font-mono font-bold text-emerald-700">
                       {formatCurrency(totalPaid, 'EGP')}
                     </span>
-                    <span className="text-[10px] text-slate-500 block">({paidCharges.length} parcelas)</span>
+                    <span className="text-[10px] text-slate-500 block">({paidCharges.length} installments)</span>
                   </div>
 
                   <div>
-                    <span className="text-[10px] text-slate-400 block font-medium">Em Aberto</span>
+                    <span className="text-[10px] text-slate-400 block font-medium">Outstanding</span>
                     <span className="font-mono font-bold text-amber-700">
-                      {unpaidCharges.length} parcelas
+                      {unpaidCharges.length} installments
                     </span>
                   </div>
                 </div>
@@ -1633,12 +1633,12 @@ export const SecretariatEnrollmentsTab: React.FC = () => {
                 {/* Discount options */}
                 <div className="p-3.5 bg-amber-50/80 border border-amber-200 rounded-xl space-y-3">
                   <span className="font-bold text-amber-950 block text-xs">
-                    Concessão de Desconto / Repactuação do Valor Inteiro
+                    Grant Discount / Renegotiate Full Price
                   </span>
 
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <label className="block text-[10px] font-bold text-amber-900 mb-1">Tipo de Desconto</label>
+                      <label className="block text-[10px] font-bold text-amber-900 mb-1">Discount Type</label>
                       <div className="grid grid-cols-2 gap-1">
                         <button
                           type="button"
@@ -1649,7 +1649,7 @@ export const SecretariatEnrollmentsTab: React.FC = () => {
                               : 'bg-white border border-amber-200 text-amber-900'
                           }`}
                         >
-                          % Porcentagem
+                          % Percentage
                         </button>
                         <button
                           type="button"
@@ -1660,14 +1660,14 @@ export const SecretariatEnrollmentsTab: React.FC = () => {
                               : 'bg-white border border-amber-200 text-amber-900'
                           }`}
                         >
-                          EGP Valor Fixo
+                          EGP Fixed Amount
                         </button>
                       </div>
                     </div>
 
                     <div>
                       <label className="block text-[10px] font-bold text-amber-900 mb-1">
-                        {renegDiscountType === 'PERCENT' ? 'Desconto (%)' : 'Desconto (EGP)'}
+                        {renegDiscountType === 'PERCENT' ? 'Discount (%)' : 'Discount (EGP)'}
                       </label>
                       <input
                         type="number"
@@ -1682,13 +1682,13 @@ export const SecretariatEnrollmentsTab: React.FC = () => {
 
                   <div>
                     <label className="block text-[10px] font-bold text-amber-900 mb-1">
-                      Motivo / Acordo de Negociação
+                      Reason / Negotiation Agreement
                     </label>
                     <input
                       type="text"
                       value={renegDiscountReason}
                       onChange={(e) => setRenegDiscountReason(e.target.value)}
-                      placeholder="Ex: Renegociação por motivos financeiros / Acordo autorizado"
+                      placeholder="Ex: Renegotiation for financial reasons / Authorized agreement"
                       className="w-full p-2 bg-white border border-amber-300 rounded-xl text-xs"
                     />
                   </div>
@@ -1697,8 +1697,8 @@ export const SecretariatEnrollmentsTab: React.FC = () => {
                 {/* Adjust number of installments */}
                 <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="font-bold text-slate-800 text-xs">Ajustar Número de Parcelas do Plano</span>
-                    <span className="text-slate-500 font-medium text-[11px]">{effInstallments} parcelas total</span>
+                    <span className="font-bold text-slate-800 text-xs">Adjust Plan Installment Count</span>
+                    <span className="text-slate-500 font-medium text-[11px]">{effInstallments} installments total</span>
                   </div>
                   <div className="flex flex-wrap gap-1">
                     {[1, 2, 3, 4, 5, 6, 8].map((num) => (
@@ -1724,22 +1724,22 @@ export const SecretariatEnrollmentsTab: React.FC = () => {
                 {/* Financial Outcome Preview */}
                 <div className="p-3.5 bg-emerald-50 border border-emerald-200 rounded-xl space-y-1 text-xs">
                   <div className="flex items-center justify-between text-slate-600">
-                    <span>Novo Valor Inteiro Total:</span>
+                    <span>New Full Total Price:</span>
                     <span className="font-mono font-bold text-slate-900">
                       {formatCurrency(newTotal, 'EGP')}{' '}
                       <span className="text-amber-700 font-normal">(-{formatCurrency(discountAmt, 'EGP')})</span>
                     </span>
                   </div>
                   <div className="flex items-center justify-between text-slate-600">
-                    <span>Saldo Restante a Pagar:</span>
+                    <span>Remaining Balance to Pay:</span>
                     <span className="font-mono font-bold text-emerald-800">
                       {formatCurrency(remainingToPay, 'EGP')}
                     </span>
                   </div>
                   <div className="pt-1 border-t border-emerald-200 flex items-center justify-between font-bold text-emerald-950">
-                    <span>Novo Valor das Parcelas Pendentes ({unpaidCharges.length}x):</span>
+                    <span>New Amount of Pending Installments ({unpaidCharges.length}x):</span>
                     <span className="font-mono font-black text-emerald-900 text-sm">
-                      {formatCurrency(perUnpaidAmount, 'EGP')} / mês
+                      {formatCurrency(perUnpaidAmount, 'EGP')} / month
                     </span>
                   </div>
                 </div>
@@ -1750,13 +1750,13 @@ export const SecretariatEnrollmentsTab: React.FC = () => {
                     onClick={() => setRenegotiateEnrollment(null)}
                     className="px-4 py-2 border border-slate-300 rounded-xl font-semibold text-slate-700 cursor-pointer"
                   >
-                    Cancelar
+                    Cancel
                   </button>
                   <button
                     type="submit"
                     className="px-5 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl font-bold cursor-pointer shadow-xs flex items-center gap-1.5"
                   >
-                    <Check className="w-4 h-4" /> Aplicar Renegociação
+                    <Check className="w-4 h-4" /> Apply Renegotiation
                   </button>
                 </div>
               </form>
@@ -1766,34 +1766,34 @@ export const SecretariatEnrollmentsTab: React.FC = () => {
       )}
 
       {/* ========================================================================= */}
-      {/* MODAL 5: DETALHES DA MATRÍCULA E CARNÊ FINANCEIRO                         */}
+      {/* MODAL 5: ENROLLMENT DETAILS & FINANCIAL LEDGER                           */}
       {/* ========================================================================= */}
       {selectedEnrollmentForDetail && (
         <Modal
           isOpen={!!selectedEnrollmentForDetail}
           onClose={() => setSelectedEnrollmentForDetail(null)}
-          title={`Matrícula de ${selectedEnrollmentForDetail.studentName}`}
-          subtitle={`ID: ${selectedEnrollmentForDetail.studentId} • Curso: ${selectedEnrollmentForDetail.courseName}`}
+          title={`Enrollment for ${selectedEnrollmentForDetail.studentName}`}
+          subtitle={`ID: ${selectedEnrollmentForDetail.studentId} • Course: ${selectedEnrollmentForDetail.courseName}`}
         >
           <div className="space-y-4 text-xs">
             <div className="grid grid-cols-2 gap-3 p-3.5 bg-slate-50 rounded-xl border border-slate-200">
               <div>
-                <span className="text-slate-400 block text-[11px]">Turma Vinculada</span>
+                <span className="text-slate-400 block text-[11px]">Assigned Class</span>
                 <p className="font-bold text-slate-800">{selectedEnrollmentForDetail.className}</p>
               </div>
               <div>
-                <span className="text-slate-400 block text-[11px]">Data de Matrícula</span>
+                <span className="text-slate-400 block text-[11px]">Enrollment Date</span>
                 <p className="font-bold text-slate-800 font-mono">{selectedEnrollmentForDetail.enrollmentDate}</p>
               </div>
               <div>
-                <span className="text-slate-400 block text-[11px]">Valor da Parcela / Mensalidade</span>
+                <span className="text-slate-400 block text-[11px]">Installment / Monthly Amount</span>
                 <p className="font-bold text-emerald-700 font-mono">
                   {formatCurrency(selectedEnrollmentForDetail.paymentPlan.installmentAmount, 'EGP')}
                 </p>
               </div>
               <div>
                 <span className="text-slate-400 block text-[11px]">
-                  Plano Total ({selectedEnrollmentForDetail.paymentPlan.installmentsCount}x)
+                  Total Plan ({selectedEnrollmentForDetail.paymentPlan.installmentsCount}x)
                 </span>
                 <p className="font-bold text-slate-900 font-mono">
                   {formatCurrency(selectedEnrollmentForDetail.paymentPlan.totalAmount, 'EGP')}
@@ -1803,11 +1803,11 @@ export const SecretariatEnrollmentsTab: React.FC = () => {
               {/* English Level */}
               {selectedEnrollmentForDetail.paymentPlan.englishLevel && (
                 <div className="col-span-2 pt-2 border-t border-slate-200/80">
-                  <span className="text-slate-400 block text-[11px]">Nível Etário (Curso de Inglês)</span>
+                  <span className="text-slate-400 block text-[11px]">Age Level (English Course)</span>
                   <span className="inline-block mt-0.5 text-xs font-bold text-purple-800 bg-purple-100 px-2 py-0.5 rounded">
-                    {selectedEnrollmentForDetail.paymentPlan.englishLevel === 'CRIANCAS' && '🧒 Crianças (Kids: 4 parcelas)'}
-                    {selectedEnrollmentForDetail.paymentPlan.englishLevel === 'ADOLESCENTES' && '🎒 Adolescentes (Teens: 3 parcelas)'}
-                    {selectedEnrollmentForDetail.paymentPlan.englishLevel === 'ADULTO' && '🧑 Adulto (Adults: 3 parcelas)'}
+                    {selectedEnrollmentForDetail.paymentPlan.englishLevel === 'CRIANCAS' && '🧒 Children (Kids: 4 installments)'}
+                    {selectedEnrollmentForDetail.paymentPlan.englishLevel === 'ADOLESCENTES' && '🎒 Teens (3 installments)'}
+                    {selectedEnrollmentForDetail.paymentPlan.englishLevel === 'ADULTO' && '🧑 Adults (3 installments)'}
                   </span>
                 </div>
               )}
@@ -1816,20 +1816,20 @@ export const SecretariatEnrollmentsTab: React.FC = () => {
               {selectedEnrollmentForDetail.paymentPlan.isNegotiated && (
                 <div className="col-span-2 pt-2 border-t border-slate-200/80 bg-amber-50/60 p-2 rounded-lg">
                   <span className="text-amber-800 block font-bold text-[11px] flex items-center gap-1">
-                    <BadgePercent className="w-3 h-3" /> Desconto / Negociação Aplicada:
+                    <BadgePercent className="w-3 h-3" /> Discount / Negotiation Applied:
                   </span>
                   <p className="text-[11px] text-amber-900 mt-0.5">
-                    Valor Original: {formatCurrency(selectedEnrollmentForDetail.paymentPlan.originalTotalAmount || selectedEnrollmentForDetail.paymentPlan.totalAmount, 'EGP')} •{' '}
-                    Motivo: {selectedEnrollmentForDetail.paymentPlan.discountReason || 'Acordo de Secretaria'}
+                    Original Price: {formatCurrency(selectedEnrollmentForDetail.paymentPlan.originalTotalAmount || selectedEnrollmentForDetail.paymentPlan.totalAmount, 'EGP')} •{' '}
+                    Reason: {selectedEnrollmentForDetail.paymentPlan.discountReason || 'Registrar\'s Office agreement'}
                   </p>
                 </div>
               )}
             </div>
 
-            {/* Carnê Financeiro */}
+            {/* Financial Ledger */}
             <div>
               <div className="flex items-center justify-between mb-2">
-                <h4 className="font-bold text-slate-800">Carnê de Mensalidades Gerado</h4>
+                <h4 className="font-bold text-slate-800">Generated Tuition Ledger</h4>
                 <button
                   onClick={() => {
                     const enr = selectedEnrollmentForDetail;
@@ -1838,7 +1838,7 @@ export const SecretariatEnrollmentsTab: React.FC = () => {
                   }}
                   className="text-amber-800 hover:text-amber-900 font-bold text-xs flex items-center gap-1 cursor-pointer"
                 >
-                  <BadgePercent className="w-3.5 h-3.5" /> Renegociar Carnê
+                  <BadgePercent className="w-3.5 h-3.5" /> Renegotiate Ledger
                 </button>
               </div>
 
@@ -1852,9 +1852,9 @@ export const SecretariatEnrollmentsTab: React.FC = () => {
                     >
                       <div>
                         <p className="font-bold text-slate-900">
-                          Parcela {chg.installmentNumber}/{chg.totalInstallments}
+                          Installment {chg.installmentNumber}/{chg.totalInstallments}
                         </p>
-                        <p className="text-[10px] text-slate-400 font-mono">Vencimento: {chg.dueDate}</p>
+                        <p className="text-[10px] text-slate-400 font-mono">Due: {chg.dueDate}</p>
                         {chg.notes && <p className="text-[10px] text-slate-500 line-clamp-1">{chg.notes}</p>}
                       </div>
                       <div className="flex items-center gap-2">
@@ -1873,7 +1873,7 @@ export const SecretariatEnrollmentsTab: React.FC = () => {
                 onClick={() => setSelectedEnrollmentForDetail(null)}
                 className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold cursor-pointer"
               >
-                Fechar
+                Close
               </button>
             </div>
           </div>

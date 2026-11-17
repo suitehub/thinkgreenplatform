@@ -42,7 +42,20 @@ const formatActivityTime = (value?: string): string => {
     ? new Date(Number(brazilian[3]), Number(brazilian[2]) - 1, Number(brazilian[1]))
     : new Date(value);
   if (Number.isNaN(date.getTime())) return '';
-  return date.toLocaleDateString('pt-BR');
+  return date.toLocaleDateString('en-US');
+};
+
+const getAuthorRoleLabel = (role: string): string => {
+  switch (role) {
+    case 'Direção Geral':
+      return 'General Management';
+    case 'Coordenação Pedagógica':
+      return 'Academic Coordination';
+    case 'Secretaria Acadêmica':
+      return "Registrar's Office";
+    default:
+      return role;
+  }
 };
 
 export const SecretariatHomeTab: React.FC<SecretariatHomeTabProps> = ({
@@ -69,7 +82,7 @@ export const SecretariatHomeTab: React.FC<SecretariatHomeTabProps> = ({
   const handleCreateAnnouncement = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newAnnTitle.trim() || !newAnnContent.trim()) {
-      alert('Preencha o título e o conteúdo do comunicado.');
+      alert('Please enter the announcement title and content.');
       return;
     }
 
@@ -80,9 +93,9 @@ export const SecretariatHomeTab: React.FC<SecretariatHomeTabProps> = ({
       title: newAnnTitle.trim(),
       content: newAnnContent.trim(),
       createdAt:
-        new Date().toLocaleDateString('pt-BR') +
+        new Date().toLocaleDateString('en-US') +
         ' • ' +
-        new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+        new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
       priority: newAnnPriority,
       pinned: newAnnPinned,
       targetAudience: 'ALL_CLASSES',
@@ -109,7 +122,7 @@ export const SecretariatHomeTab: React.FC<SecretariatHomeTabProps> = ({
   };
 
   const handleDeleteAnnouncement = (id: string) => {
-    if (!confirm('Deseja realmente remover este comunicado de todas as turmas?')) return;
+    if (!confirm('Are you sure you want to remove this announcement from all classes?')) return;
     const updated = generalAnnouncements.filter((a) => a.id !== id);
     setGeneralAnnouncements(updated);
     saveStoredGeneralAnnouncements(updated);
@@ -121,7 +134,7 @@ export const SecretariatHomeTab: React.FC<SecretariatHomeTabProps> = ({
   const totalClasses = state.classes.length;
   const totalDocs = state.students.reduce((acc, s) => acc + (s.documents?.length || 0), 0);
 
-  // 1. DYNAMIC MATRÍCULAS POR CURSO (Calculated from registered courses & enrollments)
+  // 1. DYNAMIC ENROLLMENTS PER COURSE (Calculated from registered courses & enrollments)
   const activeCourses = state.courses.filter((c) => c.isActive);
   const circumference = 2 * Math.PI * 55; // r=55 -> ~345.575
 
@@ -129,7 +142,7 @@ export const SecretariatHomeTab: React.FC<SecretariatHomeTabProps> = ({
   const courseStats = activeCourses.map((course) => {
     const enrollmentsCount = state.enrollments.filter((e) => e.courseId === course.id).length;
     const percentNum = totalEnrollments > 0 ? (enrollmentsCount / totalEnrollments) * 100 : 0;
-    const percentStr = percentNum.toFixed(1).replace('.', ',') + '%';
+    const percentStr = percentNum.toFixed(1) + '%';
 
     // Calculate donut slice length & offset
     const sliceLength = (percentNum / 100) * circumference;
@@ -149,7 +162,7 @@ export const SecretariatHomeTab: React.FC<SecretariatHomeTabProps> = ({
     };
   });
 
-  // 2. DYNAMIC ATIVIDADES RECENTES (Built from real registered students and documents)
+  // 2. DYNAMIC RECENT ACTIVITIES (Built from real registered students and documents)
   const dynamicActivities: Array<{
     id: string;
     type: string;
@@ -164,12 +177,12 @@ export const SecretariatHomeTab: React.FC<SecretariatHomeTabProps> = ({
   // Add recent student registrations & enrollments
   state.students.slice(-4).reverse().forEach((stu) => {
     const studentEnrollments = state.enrollments.filter((e) => e.studentId === stu.studentId);
-    const firstCourse = studentEnrollments[0]?.courseName || 'Curso não informado';
+    const firstCourse = studentEnrollments[0]?.courseName || 'Course not specified';
 
     dynamicActivities.push({
       id: `act_reg_${stu.id}`,
       type: 'user',
-      title: 'Novo aluno cadastrado',
+      title: 'New student registered',
       subtitle: `${stu.name} (${stu.studentId})`,
       time: formatActivityTime(stu.createdAt),
       icon: UserPlus,
@@ -181,8 +194,8 @@ export const SecretariatHomeTab: React.FC<SecretariatHomeTabProps> = ({
       dynamicActivities.push({
         id: `act_enr_${stu.id}`,
         type: 'enrollment',
-        title: 'Matrícula realizada',
-        subtitle: `${stu.name} no ${firstCourse}`,
+        title: 'Enrollment completed',
+        subtitle: `${stu.name} in ${firstCourse}`,
         time: formatActivityTime(studentEnrollments[0]?.enrollmentDate),
         icon: FileText,
         bg: 'bg-purple-50',
@@ -198,7 +211,7 @@ export const SecretariatHomeTab: React.FC<SecretariatHomeTabProps> = ({
         dynamicActivities.push({
           id: `act_doc_${doc.id}`,
           type: 'doc',
-          title: 'Documento arquivado',
+          title: 'Document archived',
           subtitle: `${doc.title} - ${stu.name}`,
           time: formatActivityTime(doc.uploadedAt),
           icon: Folder,
@@ -212,13 +225,13 @@ export const SecretariatHomeTab: React.FC<SecretariatHomeTabProps> = ({
   // Take top 4 most relevant real activities
   const recentActivities = dynamicActivities.slice(0, 4);
 
-  // 3. DYNAMIC PRÓXIMAS TURMAS (From state.classes)
+  // 3. DYNAMIC UPCOMING CLASSES (From state.classes)
   const registeredClasses = state.classes.slice(0, 6).map((cls) => {
     const course = state.courses.find((c) => c.id === cls.courseId);
     const enrolledStudentsCount = state.enrollments.filter((e) => e.classId === cls.id).length;
 
-    // Parse days & schedule from cls.schedule string (e.g. "Segunda & Quarta, 19:00 - 19:50")
-    let days = 'Dias informados';
+    // Parse days & schedule from cls.schedule string (e.g. "Monday & Wednesday, 19:00 - 19:50")
+    let days = 'Days not specified';
     let hours = cls.schedule;
     if (cls.schedule.includes(',')) {
       const parts = cls.schedule.split(',');
@@ -230,13 +243,13 @@ export const SecretariatHomeTab: React.FC<SecretariatHomeTabProps> = ({
       id: cls.id,
       name: cls.name,
       code: cls.code,
-      course: course?.name || 'Curso Regular',
+      course: course?.name || 'Regular Course',
       courseColor: course?.color || '#075e38',
-      teacher: cls.teacherName || 'Professor Responsável',
+      teacher: cls.teacherName || 'Lead Teacher',
       days,
       schedule: hours,
       occupancy: `${enrolledStudentsCount} / ${cls.maxCapacity}`,
-      status: cls.status === 'ACTIVE' ? 'Ativa' : 'Em formação',
+      status: cls.status === 'ACTIVE' ? 'Active' : 'Forming',
       statusType: cls.status === 'ACTIVE' ? 'active' : 'forming',
       rawClass: cls,
     };
@@ -246,7 +259,7 @@ export const SecretariatHomeTab: React.FC<SecretariatHomeTabProps> = ({
     <div className="space-y-6 animate-fade-in">
       {/* 1. TOP 4 METRIC STAT CARDS */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
-        {/* Card 1: TOTAL DE ALUNOS NO PROJETO (Histórico Geral) */}
+        {/* Card 1: TOTAL STUDENTS IN THE PROJECT (Overall History) */}
         <div
           onClick={() => onNavigate('sec_students')}
           className="bg-white p-5 rounded-2xl border border-slate-100/90 shadow-[0_2px_8px_rgba(0,0,0,0.03)] hover:shadow-md transition-shadow cursor-pointer"
@@ -257,16 +270,16 @@ export const SecretariatHomeTab: React.FC<SecretariatHomeTabProps> = ({
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-[11px] font-extrabold tracking-wider text-slate-400 uppercase">
-                TOTAL DE ALUNOS NO PROJETO
+                TOTAL STUDENTS IN THE PROJECT
               </p>
               <h3 className="text-2xl sm:text-3xl font-black text-slate-900 mt-0.5 tracking-tight">
-                {totalStudents.toLocaleString('pt-BR')}
+                {totalStudents.toLocaleString('en-US')}
               </h3>
             </div>
           </div>
           <div className="mt-3 pt-2.5 border-t border-slate-50 flex items-center justify-between">
             <span className="text-xs font-semibold text-emerald-600 flex items-center gap-1">
-              Todos que já passaram no projeto
+              Everyone who has been part of the project
             </span>
             {/* Sparkline Graphic SVG */}
             <svg className="w-20 h-6 text-[#075e38] overflow-visible" viewBox="0 0 80 24" fill="none">
@@ -281,7 +294,7 @@ export const SecretariatHomeTab: React.FC<SecretariatHomeTabProps> = ({
           </div>
         </div>
 
-        {/* Card 2: ALUNOS ATIVOS ATUALMENTE */}
+        {/* Card 2: CURRENTLY ACTIVE STUDENTS */}
         <div
           onClick={() => onNavigate('sec_students')}
           className="bg-white p-5 rounded-2xl border border-slate-100/90 shadow-[0_2px_8px_rgba(0,0,0,0.03)] hover:shadow-md transition-shadow cursor-pointer"
@@ -292,16 +305,16 @@ export const SecretariatHomeTab: React.FC<SecretariatHomeTabProps> = ({
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-[11px] font-extrabold tracking-wider text-slate-400 uppercase">
-                ALUNOS ATIVOS ATUALMENTE
+                CURRENTLY ACTIVE STUDENTS
               </p>
               <h3 className="text-2xl sm:text-3xl font-black text-slate-900 mt-0.5 tracking-tight">
-                {state.students.filter((s) => s.status === 'ATIVO').length.toLocaleString('pt-BR')}
+                {state.students.filter((s) => s.status === 'ATIVO').length.toLocaleString('en-US')}
               </h3>
             </div>
           </div>
           <div className="mt-3 pt-2.5 border-t border-slate-50 flex items-center justify-between">
             <span className="text-xs font-semibold text-purple-600 flex items-center gap-1">
-              Cursando ativamente
+              Currently enrolled
             </span>
             <svg className="w-20 h-6 text-purple-500 overflow-visible" viewBox="0 0 80 24" fill="none">
               <path
@@ -315,7 +328,7 @@ export const SecretariatHomeTab: React.FC<SecretariatHomeTabProps> = ({
           </div>
         </div>
 
-        {/* Card 3: TURMAS ATIVAS */}
+        {/* Card 3: ACTIVE CLASSES */}
         <div className="bg-white p-5 rounded-2xl border border-slate-100/90 shadow-[0_2px_8px_rgba(0,0,0,0.03)] hover:shadow-md transition-shadow">
           <div className="flex items-start gap-3.5">
             <div className="w-12 h-12 rounded-full bg-[#2563eb] text-white flex items-center justify-center flex-shrink-0 shadow-sm">
@@ -323,16 +336,16 @@ export const SecretariatHomeTab: React.FC<SecretariatHomeTabProps> = ({
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-[11px] font-extrabold tracking-wider text-slate-400 uppercase">
-                TURMAS ATIVAS
+                ACTIVE CLASSES
               </p>
               <h3 className="text-2xl sm:text-3xl font-black text-slate-900 mt-0.5 tracking-tight">
-                {totalClasses.toLocaleString('pt-BR')}
+                {totalClasses.toLocaleString('en-US')}
               </h3>
             </div>
           </div>
           <div className="mt-3 pt-2.5 border-t border-slate-50 flex items-center justify-between">
             <span className="text-xs font-semibold text-blue-600 flex items-center gap-1">
-              {totalClasses} turmas abertas
+              {totalClasses} open classes
             </span>
             <svg className="w-20 h-6 text-blue-500 overflow-visible" viewBox="0 0 80 24" fill="none">
               <path
@@ -346,7 +359,7 @@ export const SecretariatHomeTab: React.FC<SecretariatHomeTabProps> = ({
           </div>
         </div>
 
-        {/* Card 4: DOCUMENTOS */}
+        {/* Card 4: DOCUMENTS */}
         <div className="bg-white p-5 rounded-2xl border border-slate-100/90 shadow-[0_2px_8px_rgba(0,0,0,0.03)] hover:shadow-md transition-shadow">
           <div className="flex items-start gap-3.5">
             <div className="w-12 h-12 rounded-full bg-[#f97316] text-white flex items-center justify-center flex-shrink-0 shadow-sm">
@@ -354,16 +367,16 @@ export const SecretariatHomeTab: React.FC<SecretariatHomeTabProps> = ({
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-[11px] font-extrabold tracking-wider text-slate-400 uppercase">
-                DOCUMENTOS
+                DOCUMENTS
               </p>
               <h3 className="text-2xl sm:text-3xl font-black text-slate-900 mt-0.5 tracking-tight">
-                {totalDocs.toLocaleString('pt-BR')}
+                {totalDocs.toLocaleString('en-US')}
               </h3>
             </div>
           </div>
           <div className="mt-3 pt-2.5 border-t border-slate-50 flex items-center justify-between">
             <span className="text-xs font-semibold text-orange-600 flex items-center gap-1">
-              {totalDocs} arquivos anexados
+              {totalDocs} files attached
             </span>
             <svg className="w-20 h-6 text-orange-500 overflow-visible" viewBox="0 0 80 24" fill="none">
               <path
@@ -380,15 +393,15 @@ export const SecretariatHomeTab: React.FC<SecretariatHomeTabProps> = ({
 
       {/* 2. MIDDLE ROW GRID (3 COLUMNS: Donut Chart | Recent Activities | Quick Access) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-        {/* COLUMN 1: MATRÍCULAS POR CURSO (DONUT CHART WITH EXACT REGISTERED COURSES) */}
+        {/* COLUMN 1: ENROLLMENTS PER COURSE (DONUT CHART WITH EXACT REGISTERED COURSES) */}
         <div className="lg:col-span-5 bg-white p-6 rounded-2xl border border-slate-100/90 shadow-[0_2px_8px_rgba(0,0,0,0.03)] flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between">
               <h3 className="text-xs font-black tracking-wider text-slate-900 uppercase">
-                MATRÍCULAS POR CURSO
+                ENROLLMENTS PER COURSE
               </h3>
               <span className="text-[11px] font-bold text-slate-500 bg-slate-100 px-2.5 py-0.5 rounded-full">
-                {activeCourses.length} Cursos Registrados
+                {activeCourses.length} Registered Courses
               </span>
             </div>
 
@@ -429,8 +442,8 @@ export const SecretariatHomeTab: React.FC<SecretariatHomeTabProps> = ({
 
                 {/* Donut Center Hole */}
                 <div className="absolute inset-0 m-auto w-20 h-20 bg-white rounded-full flex flex-col items-center justify-center pointer-events-none shadow-2xs">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase">Cursos</span>
-                  <span className="text-sm font-black text-slate-900">{activeCourses.length} Ativos</span>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase">Courses</span>
+                  <span className="text-sm font-black text-slate-900">{activeCourses.length} Active</span>
                 </div>
               </div>
 
@@ -458,16 +471,16 @@ export const SecretariatHomeTab: React.FC<SecretariatHomeTabProps> = ({
           </div>
 
           <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-xs">
-            <span className="text-slate-500 font-medium">Total de matrículas registradas</span>
+            <span className="text-slate-500 font-medium">Total enrollments recorded</span>
             <span className="font-black text-[#075e38] font-mono text-sm">{totalEnrollments}</span>
           </div>
         </div>
 
-        {/* COLUMN 2: ATIVIDADES RECENTES (FROM REAL DATA) */}
+        {/* COLUMN 2: RECENT ACTIVITIES (FROM REAL DATA) */}
         <div className="lg:col-span-4 bg-white p-6 rounded-2xl border border-slate-100/90 shadow-[0_2px_8px_rgba(0,0,0,0.03)] flex flex-col justify-between">
           <div>
             <h3 className="text-xs font-black tracking-wider text-slate-900 uppercase">
-              ATIVIDADES RECENTES
+              RECENT ACTIVITIES
             </h3>
 
             <div className="mt-4 space-y-3.5">
@@ -503,17 +516,17 @@ export const SecretariatHomeTab: React.FC<SecretariatHomeTabProps> = ({
               onClick={() => onNavigate('sec_students')}
               className="text-xs font-bold text-[#075e38] hover:text-emerald-800 flex items-center gap-1.5 transition-colors cursor-pointer group"
             >
-              <span>Ver todos os alunos ({state.students.length})</span>
+              <span>View all students ({state.students.length})</span>
               <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
             </button>
           </div>
         </div>
 
-        {/* COLUMN 3: ACESSO RÁPIDO */}
+        {/* COLUMN 3: QUICK ACCESS */}
         <div className="lg:col-span-3 bg-white p-6 rounded-2xl border border-slate-100/90 shadow-[0_2px_8px_rgba(0,0,0,0.03)] flex flex-col justify-between">
           <div>
             <h3 className="text-xs font-black tracking-wider text-slate-900 uppercase">
-              ACESSO RÁPIDO
+              QUICK ACCESS
             </h3>
 
             <div className="mt-4 space-y-2">
@@ -525,7 +538,7 @@ export const SecretariatHomeTab: React.FC<SecretariatHomeTabProps> = ({
                 className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl bg-slate-50/70 hover:bg-emerald-50/80 text-slate-700 hover:text-[#075e38] border border-slate-200/60 hover:border-emerald-200 text-xs font-bold transition-all group cursor-pointer"
               >
                 <UserPlus className="w-4 h-4 text-[#075e38] group-hover:scale-110 transition-transform" />
-                <span className="truncate">Novo aluno (Cadastro)</span>
+                <span className="truncate">New Student (Registration)</span>
               </button>
 
               <button
@@ -533,7 +546,7 @@ export const SecretariatHomeTab: React.FC<SecretariatHomeTabProps> = ({
                 className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl bg-slate-50/70 hover:bg-emerald-50/80 text-slate-700 hover:text-[#075e38] border border-slate-200/60 hover:border-emerald-200 text-xs font-bold transition-all group cursor-pointer"
               >
                 <Users className="w-4 h-4 text-[#075e38] group-hover:scale-110 transition-transform" />
-                <span className="truncate">Alunos & Matrículas</span>
+                <span className="truncate">Students & Enrollments</span>
               </button>
 
               <button
@@ -541,7 +554,7 @@ export const SecretariatHomeTab: React.FC<SecretariatHomeTabProps> = ({
                 className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl bg-slate-50/70 hover:bg-emerald-50/80 text-slate-700 hover:text-[#075e38] border border-slate-200/60 hover:border-emerald-200 text-xs font-bold transition-all group cursor-pointer"
               >
                 <Calendar className="w-4 h-4 text-[#075e38] group-hover:scale-110 transition-transform" />
-                <span className="truncate">Turmas & Horários</span>
+                <span className="truncate">Classes & Schedules</span>
               </button>
 
               <button
@@ -549,7 +562,7 @@ export const SecretariatHomeTab: React.FC<SecretariatHomeTabProps> = ({
                 className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl bg-slate-50/70 hover:bg-emerald-50/80 text-slate-700 hover:text-[#075e38] border border-slate-200/60 hover:border-emerald-200 text-xs font-bold transition-all group cursor-pointer"
               >
                 <Folder className="w-4 h-4 text-[#075e38] group-hover:scale-110 transition-transform" />
-                <span className="truncate">Documentos dos Alunos</span>
+                <span className="truncate">Student Documents</span>
               </button>
 
               <button
@@ -557,7 +570,7 @@ export const SecretariatHomeTab: React.FC<SecretariatHomeTabProps> = ({
                 className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl bg-slate-50/70 hover:bg-emerald-50/80 text-slate-700 hover:text-[#075e38] border border-slate-200/60 hover:border-emerald-200 text-xs font-bold transition-all group cursor-pointer"
               >
                 <Compass className="w-4 h-4 text-[#075e38] group-hover:scale-110 transition-transform" />
-                <span className="truncate">Orientador Educacional</span>
+                <span className="truncate">Educational Counselor</span>
               </button>
 
               <button
@@ -565,7 +578,7 @@ export const SecretariatHomeTab: React.FC<SecretariatHomeTabProps> = ({
                 className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl bg-slate-50/70 hover:bg-emerald-50/80 text-slate-700 hover:text-[#075e38] border border-slate-200/60 hover:border-emerald-200 text-xs font-bold transition-all group cursor-pointer"
               >
                 <Upload className="w-4 h-4 text-[#075e38] group-hover:scale-110 transition-transform" />
-                <span className="truncate">Importar Planilhas</span>
+                <span className="truncate">Import Spreadsheets</span>
               </button>
             </div>
           </div>
@@ -573,7 +586,7 @@ export const SecretariatHomeTab: React.FC<SecretariatHomeTabProps> = ({
       </div>
 
       {/* ========================================================================= */}
-      {/* 6. MURAL DE AVISOS GERAIS DA DIREÇÃO & COORDENAÇÃO (REQUIREMENT 6)       */}
+      {/* 6. GENERAL ANNOUNCEMENT BOARD FROM MANAGEMENT & COORDINATION (REQUIREMENT 6) */}
       {/* ========================================================================= */}
       <div className="bg-white p-6 sm:p-7 rounded-2xl border-2 border-emerald-100 shadow-[0_2px_8px_rgba(0,0,0,0.03)] space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
@@ -587,11 +600,11 @@ export const SecretariatHomeTab: React.FC<SecretariatHomeTabProps> = ({
                   D2L / Brightspace Mural
                 </span>
                 <span className="text-xs text-slate-500 font-semibold">
-                  Todas as turmas simultaneamente
+                  All classes simultaneously
                 </span>
               </div>
               <h3 className="text-sm sm:text-base font-black text-slate-900 uppercase tracking-wide mt-0.5">
-                Mural de Avisos Gerais da Direção & Coordenação
+                General Announcement Board from Management & Coordination
               </h3>
             </div>
           </div>
@@ -601,14 +614,14 @@ export const SecretariatHomeTab: React.FC<SecretariatHomeTabProps> = ({
             className="px-4 py-2.5 bg-[#075e38] hover:bg-[#064e2e] text-white font-bold text-xs rounded-xl shadow-xs hover:shadow-md transition-all flex items-center gap-2 cursor-pointer self-start sm:self-auto active:scale-95"
           >
             <Plus className="w-4 h-4" />
-            <span>Novo Comunicado Geral</span>
+            <span>New General Announcement</span>
           </button>
         </div>
 
         {generalAnnouncements.length === 0 ? (
           <div className="text-center py-8 text-slate-400">
             <Megaphone className="w-8 h-8 mx-auto text-slate-300 mb-2" />
-            <p className="text-xs font-semibold">Nenhum aviso geral ativo no momento.</p>
+            <p className="text-xs font-semibold">No active general announcements at the moment.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -626,7 +639,7 @@ export const SecretariatHomeTab: React.FC<SecretariatHomeTabProps> = ({
                     <div className="flex items-center gap-1.5 flex-wrap">
                       {ann.pinned && (
                         <span className="inline-flex items-center gap-1 text-[9px] font-black uppercase bg-emerald-600 text-white px-1.5 py-0.5 rounded shadow-2xs">
-                          <Pin className="w-2.5 h-2.5" /> Fixado
+                          <Pin className="w-2.5 h-2.5" /> Pinned
                         </span>
                       )}
                       <span
@@ -638,10 +651,10 @@ export const SecretariatHomeTab: React.FC<SecretariatHomeTabProps> = ({
                             : 'bg-blue-100 text-blue-800 border-blue-300'
                         }`}
                       >
-                        {ann.priority === 'URGENT' ? 'Urgente' : ann.priority === 'IMPORTANT' ? 'Importante' : 'Informativo'}
+                        {ann.priority === 'URGENT' ? 'Urgent' : ann.priority === 'IMPORTANT' ? 'Important' : 'Informational'}
                       </span>
                       <span className="text-[10px] font-bold text-slate-600">
-                        {ann.authorRole}
+                        {getAuthorRoleLabel(ann.authorRole)}
                       </span>
                     </div>
 
@@ -651,14 +664,14 @@ export const SecretariatHomeTab: React.FC<SecretariatHomeTabProps> = ({
                         className={`p-1 rounded-lg text-xs transition-colors cursor-pointer ${
                           ann.pinned ? 'text-emerald-700 hover:bg-emerald-100' : 'text-slate-400 hover:bg-slate-200'
                         }`}
-                        title={ann.pinned ? 'Desafixar aviso' : 'Fixar no topo'}
+                        title={ann.pinned ? 'Unpin announcement' : 'Pin to top'}
                       >
                         <Pin className="w-3.5 h-3.5" />
                       </button>
                       <button
                         onClick={() => handleDeleteAnnouncement(ann.id)}
                         className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
-                        title="Excluir comunicado"
+                        title="Delete announcement"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -675,8 +688,8 @@ export const SecretariatHomeTab: React.FC<SecretariatHomeTabProps> = ({
                 </div>
 
                 <div className="pt-2 border-t border-slate-200/60 text-[10px] text-slate-400 flex items-center justify-between">
-                  <span>Enviado: {ann.createdAt}</span>
-                  <span className="font-semibold text-emerald-800">100% das turmas</span>
+                  <span>Posted: {ann.createdAt}</span>
+                  <span className="font-semibold text-emerald-800">100% of classes</span>
                 </div>
               </div>
             ))}
@@ -684,22 +697,22 @@ export const SecretariatHomeTab: React.FC<SecretariatHomeTabProps> = ({
         )}
       </div>
 
-      {/* 3. BOTTOM FULL-WIDTH TABLE: PRÓXIMAS TURMAS (WITH REAL CLASSES FROM SYSTEM) */}
+      {/* 3. BOTTOM FULL-WIDTH TABLE: UPCOMING CLASSES (WITH REAL CLASSES FROM SYSTEM) */}
       <div className="bg-white p-6 rounded-2xl border border-slate-100/90 shadow-[0_2px_8px_rgba(0,0,0,0.03)] space-y-4">
         <div className="flex items-center justify-between">
           <div>
             <h3 className="text-xs font-black tracking-wider text-slate-900 uppercase">
-              PRÓXIMAS TURMAS DO SISTEMA
+              UPCOMING CLASSES IN THE SYSTEM
             </h3>
             <p className="text-[11px] text-slate-400 mt-0.5">
-              Turmas ativas com professores titulares e ocupação de vagas
+              Active classes with lead teachers and seat occupancy
             </p>
           </div>
           <button
             onClick={() => onNavigate('sec_classes')}
             className="text-xs font-bold text-[#075e38] hover:underline"
           >
-            Gerenciar todas ({state.classes.length})
+            Manage all ({state.classes.length})
           </button>
         </div>
 
@@ -707,14 +720,14 @@ export const SecretariatHomeTab: React.FC<SecretariatHomeTabProps> = ({
           <table className="w-full text-left text-xs">
             <thead className="text-[11px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100">
               <tr>
-                <th className="pb-3 px-2 font-bold">TURMA</th>
-                <th className="pb-3 px-2 font-bold">CURSO</th>
-                <th className="pb-3 px-2 font-bold">PROFESSOR</th>
-                <th className="pb-3 px-2 font-bold">DIAS</th>
-                <th className="pb-3 px-2 font-bold">HORÁRIO</th>
-                <th className="pb-3 px-2 font-bold">VAGAS</th>
+                <th className="pb-3 px-2 font-bold">CLASS</th>
+                <th className="pb-3 px-2 font-bold">COURSE</th>
+                <th className="pb-3 px-2 font-bold">TEACHER</th>
+                <th className="pb-3 px-2 font-bold">DAYS</th>
+                <th className="pb-3 px-2 font-bold">SCHEDULE</th>
+                <th className="pb-3 px-2 font-bold">SEATS</th>
                 <th className="pb-3 px-2 font-bold">STATUS</th>
-                <th className="pb-3 px-2 font-bold text-right">AÇÕES</th>
+                <th className="pb-3 px-2 font-bold text-right">ACTIONS</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -742,11 +755,11 @@ export const SecretariatHomeTab: React.FC<SecretariatHomeTabProps> = ({
                   <td className="py-4 px-2">
                     {cls.statusType === 'active' ? (
                       <span className="inline-block px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-[#075e38] border border-emerald-200">
-                        Ativa
+                        Active
                       </span>
                     ) : (
                       <span className="inline-block px-3 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200">
-                        Em formação
+                        Forming
                       </span>
                     )}
                   </td>
@@ -762,12 +775,12 @@ export const SecretariatHomeTab: React.FC<SecretariatHomeTabProps> = ({
                         }}
                         className="px-3 py-1.5 text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 rounded-lg transition-colors cursor-pointer shadow-2xs"
                       >
-                        Ver detalhes
+                        View details
                       </button>
                       <button
                         onClick={() => setSelectedClassAction(selectedClassAction === cls.id ? null : cls.id)}
                         className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
-                        title="Mais opções"
+                        title="More options"
                       >
                         <MoreVertical className="w-4 h-4" />
                       </button>
@@ -784,13 +797,13 @@ export const SecretariatHomeTab: React.FC<SecretariatHomeTabProps> = ({
             onClick={() => onNavigate('sec_classes')}
             className="text-xs font-bold text-[#075e38] hover:text-emerald-800 flex items-center gap-1.5 transition-colors cursor-pointer group py-1"
           >
-            <span>Ver todas as turmas ({state.classes.length})</span>
+            <span>View all classes ({state.classes.length})</span>
             <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
           </button>
         </div>
       </div>
 
-      {/* MODAL: NOVO COMUNICADO GERAL DA DIREÇÃO / COORDENAÇÃO */}
+      {/* MODAL: NEW GENERAL ANNOUNCEMENT FROM MANAGEMENT / COORDINATION */}
       {isNewAnnouncementOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in">
           <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-7 space-y-5 shadow-2xl border border-slate-200">
@@ -801,10 +814,10 @@ export const SecretariatHomeTab: React.FC<SecretariatHomeTabProps> = ({
                 </div>
                 <div>
                   <h3 className="font-bold text-slate-900 text-base">
-                    Novo Comunicado Geral
+                    New General Announcement
                   </h3>
                   <p className="text-xs text-slate-500">
-                    Transmissão simultânea para 100% das turmas e alunos
+                    Simultaneous delivery to 100% of classes and students
                   </p>
                 </div>
               </div>
@@ -820,22 +833,22 @@ export const SecretariatHomeTab: React.FC<SecretariatHomeTabProps> = ({
             <form onSubmit={handleCreateAnnouncement} className="space-y-4">
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">
-                  Origem do Comunicado:
+                  Announcement Source:
                 </label>
                 <select
                   value={newAnnRole}
                   onChange={(e) => setNewAnnRole(e.target.value as any)}
                   className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 font-semibold focus:border-[#075e38] focus:outline-hidden"
                 >
-                  <option value="Direção Geral">Direção Geral</option>
-                  <option value="Coordenação Pedagógica">Coordenação Pedagógica</option>
-                  <option value="Secretaria Acadêmica">Secretaria Acadêmica</option>
+                  <option value="Direção Geral">General Management</option>
+                  <option value="Coordenação Pedagógica">Academic Coordination</option>
+                  <option value="Secretaria Acadêmica">Registrar's Office</option>
                 </select>
               </div>
 
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">
-                  Prioridade / Categoria:
+                  Priority / Category:
                 </label>
                 <div className="grid grid-cols-3 gap-2">
                   <button
@@ -847,7 +860,7 @@ export const SecretariatHomeTab: React.FC<SecretariatHomeTabProps> = ({
                         : 'bg-slate-50 border-slate-200 text-slate-600'
                     }`}
                   >
-                    Informativo
+                    Informational
                   </button>
                   <button
                     type="button"
@@ -858,7 +871,7 @@ export const SecretariatHomeTab: React.FC<SecretariatHomeTabProps> = ({
                         : 'bg-slate-50 border-slate-200 text-slate-600'
                     }`}
                   >
-                    Importante
+                    Important
                   </button>
                   <button
                     type="button"
@@ -869,19 +882,19 @@ export const SecretariatHomeTab: React.FC<SecretariatHomeTabProps> = ({
                         : 'bg-slate-50 border-slate-200 text-slate-600'
                     }`}
                   >
-                    Urgente
+                    Urgent
                   </button>
                 </div>
               </div>
 
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">
-                  Título do Aviso Geral:
+                  General Announcement Title:
                 </label>
                 <input
                   type="text"
                   required
-                  placeholder="Ex: Calendário de Feriados ou Comunicado Oficial"
+                  placeholder="Ex: Holiday Calendar or Official Announcement"
                   value={newAnnTitle}
                   onChange={(e) => setNewAnnTitle(e.target.value)}
                   className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 font-medium focus:border-[#075e38] focus:outline-hidden"
@@ -890,12 +903,12 @@ export const SecretariatHomeTab: React.FC<SecretariatHomeTabProps> = ({
 
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">
-                  Conteúdo do Comunicado:
+                  Announcement Content:
                 </label>
                 <textarea
                   rows={4}
                   required
-                  placeholder="Escreva a mensagem que aparecerá em destaque no Portal de todos os alunos..."
+                  placeholder="Write the message that will be featured on every student's portal..."
                   value={newAnnContent}
                   onChange={(e) => setNewAnnContent(e.target.value)}
                   className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 leading-relaxed focus:border-[#075e38] focus:outline-hidden resize-none"
@@ -911,7 +924,7 @@ export const SecretariatHomeTab: React.FC<SecretariatHomeTabProps> = ({
                   className="accent-[#075e38] w-4 h-4 cursor-pointer"
                 />
                 <label htmlFor="pinMural" className="text-xs font-semibold text-slate-700 cursor-pointer">
-                  Fixar este comunicado no topo do mural dos alunos
+                  Pin this announcement to the top of the students' board
                 </label>
               </div>
 
@@ -921,14 +934,14 @@ export const SecretariatHomeTab: React.FC<SecretariatHomeTabProps> = ({
                   onClick={() => setIsNewAnnouncementOpen(false)}
                   className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition-colors cursor-pointer"
                 >
-                  Cancelar
+                  Cancel
                 </button>
                 <button
                   type="submit"
                   className="px-6 py-2.5 bg-[#075e38] hover:bg-[#064e2e] text-white font-bold text-xs rounded-xl transition-colors flex items-center gap-1.5 shadow-xs cursor-pointer active:scale-95"
                 >
                   <Send className="w-3.5 h-3.5" />
-                  <span>Publicar para Todas as Turmas</span>
+                  <span>Publish to All Classes</span>
                 </button>
               </div>
             </form>

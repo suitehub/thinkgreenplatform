@@ -122,10 +122,9 @@ export const FinanceOverviewTab: React.FC<FinanceOverviewTabProps> = ({
     const expense = state.accountingTransactions
       .filter((tx) => tx.type === 'DESPESA' && isSameMonth(tx.date, reference))
       .reduce((acc, tx) => acc + tx.amount, 0);
-    const label = new Intl.DateTimeFormat('pt-BR', { month: 'short', year: '2-digit' })
+    const label = new Intl.DateTimeFormat('en-US', { month: 'short', year: '2-digit' })
       .format(reference)
-      .replace('.', '')
-      .replace(' de ', '/');
+      .replace('.', '');
     return { label: label.charAt(0).toUpperCase() + label.slice(1), revenue, expense };
   });
 
@@ -169,14 +168,14 @@ export const FinanceOverviewTab: React.FC<FinanceOverviewTabProps> = ({
   const cancelledCount = cancelledCharges.length;
   const cancelledPct = percentOfReceivables(cancelledAmount);
 
-  // Format payment methods cleanly (Dinheiro Físico ou Transferência Bancária)
+  // Format payment methods cleanly (Cash or Bank Transfer)
   const formatPaymentMethod = (method?: string) => {
     switch (method) {
       case 'TRANSFERENCIA':
-        return 'Transferência Bancária';
+        return 'Bank Transfer';
       case 'DINHEIRO':
       default:
-        return 'Dinheiro Físico';
+        return 'Cash';
     }
   };
 
@@ -189,7 +188,7 @@ export const FinanceOverviewTab: React.FC<FinanceOverviewTabProps> = ({
       {/* 1. TOP 4 METRIC CARDS (Exact Row Layout)                                  */}
       {/* ========================================================================= */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* CARD 1: RECEITAS DO MÊS */}
+        {/* CARD 1: MONTHLY REVENUE */}
         <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col justify-between hover:shadow-md transition-shadow">
           <div className="flex items-start gap-3">
             <div className="w-10 h-10 rounded-full bg-[#075e38] text-white flex items-center justify-center font-bold text-xs flex-shrink-0 shadow-xs">
@@ -197,7 +196,7 @@ export const FinanceOverviewTab: React.FC<FinanceOverviewTabProps> = ({
             </div>
             <div className="min-w-0">
               <span className="text-[10px] font-bold tracking-wider text-slate-400 uppercase block">
-                RECEITAS DO MÊS
+                MONTHLY REVENUE
               </span>
               <p className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight mt-0.5 font-sans">
                 {formatCurrency(totalRevenueMonth, 'EGP')}
@@ -216,10 +215,10 @@ export const FinanceOverviewTab: React.FC<FinanceOverviewTabProps> = ({
               }`}
             >
               {revenueVariation === null
-                ? 'Sem base de comparação no mês anterior'
+                ? 'No comparison baseline for last month'
                 : `${revenueVariation >= 0 ? '+' : ''}${revenueVariation
                     .toFixed(1)
-                    .replace('.', ',')}% vs mês anterior`}
+                    .replace('.', ',')}% vs last month`}
             </span>
             {/* Green Sparkline Curve */}
             <svg className="w-20 h-6 overflow-visible" viewBox="0 0 80 24">
@@ -234,7 +233,7 @@ export const FinanceOverviewTab: React.FC<FinanceOverviewTabProps> = ({
           </div>
         </div>
 
-        {/* CARD 2: INADIMPLÊNCIA */}
+        {/* CARD 2: OVERDUE */}
         <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col justify-between hover:shadow-md transition-shadow">
           <div className="flex items-start gap-3">
             <div className="w-10 h-10 rounded-full bg-rose-500 text-white flex items-center justify-center font-bold flex-shrink-0 shadow-xs">
@@ -242,7 +241,7 @@ export const FinanceOverviewTab: React.FC<FinanceOverviewTabProps> = ({
             </div>
             <div className="min-w-0">
               <span className="text-[10px] font-bold tracking-wider text-slate-400 uppercase block">
-                INADIMPLÊNCIA
+                OVERDUE
               </span>
               <p className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight mt-0.5 font-sans">
                 {formatCurrency(totalOverdue, 'EGP')}
@@ -252,7 +251,7 @@ export const FinanceOverviewTab: React.FC<FinanceOverviewTabProps> = ({
 
           <div className="flex items-center justify-between mt-3 pt-2">
             <span className="text-xs font-medium text-rose-500">
-              {overduePercent}% do total a receber
+              {overduePercent}% of total receivables
             </span>
             {/* Red Sparkline Curve */}
             <svg className="w-20 h-6 overflow-visible" viewBox="0 0 80 24">
@@ -267,7 +266,7 @@ export const FinanceOverviewTab: React.FC<FinanceOverviewTabProps> = ({
           </div>
         </div>
 
-        {/* CARD 3: RECEBIDO HOJE */}
+        {/* CARD 3: RECEIVED TODAY */}
         <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col justify-between hover:shadow-md transition-shadow">
           <div className="flex items-start gap-3">
             <div className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold flex-shrink-0 shadow-xs">
@@ -275,7 +274,7 @@ export const FinanceOverviewTab: React.FC<FinanceOverviewTabProps> = ({
             </div>
             <div className="min-w-0">
               <span className="text-[10px] font-bold tracking-wider text-slate-400 uppercase block">
-                RECEBIDO HOJE
+                RECEIVED TODAY
               </span>
               <p className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight mt-0.5 font-sans">
                 {formatCurrency(totalReceivedToday, 'EGP')}
@@ -285,7 +284,7 @@ export const FinanceOverviewTab: React.FC<FinanceOverviewTabProps> = ({
 
           <div className="flex items-center justify-between mt-3 pt-2">
             <span className="text-xs font-medium text-blue-600">
-              {receiptsToday.length} recebimentos
+              {receiptsToday.length} payments
             </span>
             {/* Blue Sparkline Curve */}
             <svg className="w-20 h-6 overflow-visible" viewBox="0 0 80 24">
@@ -300,7 +299,7 @@ export const FinanceOverviewTab: React.FC<FinanceOverviewTabProps> = ({
           </div>
         </div>
 
-        {/* CARD 4: A VENCER (7 DIAS) */}
+        {/* CARD 4: DUE WITHIN 7 DAYS */}
         <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col justify-between hover:shadow-md transition-shadow">
           <div className="flex items-start gap-3">
             <div className="w-10 h-10 rounded-full bg-amber-500 text-white flex items-center justify-center font-bold flex-shrink-0 shadow-xs">
@@ -308,7 +307,7 @@ export const FinanceOverviewTab: React.FC<FinanceOverviewTabProps> = ({
             </div>
             <div className="min-w-0">
               <span className="text-[10px] font-bold tracking-wider text-slate-400 uppercase block">
-                A VENCER (7 DIAS)
+                DUE WITHIN 7 DAYS
               </span>
               <p className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight mt-0.5 font-sans">
                 {formatCurrency(totalUpcoming7Days, 'EGP')}
@@ -318,7 +317,7 @@ export const FinanceOverviewTab: React.FC<FinanceOverviewTabProps> = ({
 
           <div className="flex items-center justify-between mt-3 pt-2">
             <span className="text-xs font-medium text-amber-600">
-              {upcomingCount} cobranças
+              {upcomingCount} charges
             </span>
             {/* Orange Sparkline Curve */}
             <svg className="w-20 h-6 overflow-visible" viewBox="0 0 80 24">
@@ -338,10 +337,10 @@ export const FinanceOverviewTab: React.FC<FinanceOverviewTabProps> = ({
       {/* 2. MIDDLE ROW (3 COLUMNS: Donut, Line Chart, Accounts Summary)             */}
       {/* ========================================================================= */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-        {/* COLUMN 1 (4/12): RECEITAS X DESPESAS (MÊS ATUAL) */}
+        {/* COLUMN 1 (4/12): REVENUE VS EXPENSES (CURRENT MONTH) */}
         <div className="lg:col-span-4 bg-white p-5 rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-4">
           <h2 className="text-xs font-bold text-slate-900 tracking-wider uppercase">
-            RECEITAS X DESPESAS (MÊS ATUAL)
+            REVENUE VS EXPENSES (CURRENT MONTH)
           </h2>
 
           {/* Donut Chart with Legend */}
@@ -358,7 +357,7 @@ export const FinanceOverviewTab: React.FC<FinanceOverviewTabProps> = ({
                   stroke="#f1f5f9"
                   strokeWidth="18"
                 />
-                {/* Green Segment (Receitas) */}
+                {/* Green Segment (Revenue) */}
                 <circle
                   cx="50"
                   cy="50"
@@ -369,7 +368,7 @@ export const FinanceOverviewTab: React.FC<FinanceOverviewTabProps> = ({
                   strokeDasharray={`${donutRevenueLength} ${donutCircumference}`}
                   strokeLinecap="butt"
                 />
-                {/* Red Segment (Despesas) */}
+                {/* Red Segment (Expenses) */}
                 <circle
                   cx="50"
                   cy="50"
@@ -389,7 +388,7 @@ export const FinanceOverviewTab: React.FC<FinanceOverviewTabProps> = ({
               <div>
                 <div className="flex items-center gap-1.5">
                   <span className="w-2.5 h-2.5 rounded-full bg-[#075e38]" />
-                  <span className="text-xs font-bold text-slate-700">Receitas</span>
+                  <span className="text-xs font-bold text-slate-700">Revenue</span>
                 </div>
                 <p className="text-xs font-black text-slate-900 mt-0.5">
                   {formatCurrency(totalRevenueMonth, 'EGP')}
@@ -402,7 +401,7 @@ export const FinanceOverviewTab: React.FC<FinanceOverviewTabProps> = ({
               <div>
                 <div className="flex items-center gap-1.5">
                   <span className="w-2.5 h-2.5 rounded-full bg-[#ef4444]" />
-                  <span className="text-xs font-bold text-slate-700">Despesas</span>
+                  <span className="text-xs font-bold text-slate-700">Expenses</span>
                 </div>
                 <p className="text-xs font-black text-slate-900 mt-0.5">
                   {formatCurrency(totalExpensesMonth, 'EGP')}
@@ -414,14 +413,14 @@ export const FinanceOverviewTab: React.FC<FinanceOverviewTabProps> = ({
             </div>
           </div>
 
-          {/* Subcard: Saldo do mês */}
+          {/* Subcard: Monthly balance */}
           <div className="bg-emerald-50/70 p-3.5 rounded-2xl border border-emerald-100 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-xl bg-white border border-emerald-200 text-emerald-800 flex items-center justify-center flex-shrink-0 shadow-2xs">
                 <Coins className="w-5 h-5" />
               </div>
               <div>
-                <span className="text-[10.5px] font-medium text-slate-500 block">Saldo do mês</span>
+                <span className="text-[10.5px] font-medium text-slate-500 block">Monthly balance</span>
                 <span className="text-base font-black text-emerald-950 font-sans leading-tight">
                   {formatCurrency(netBalanceMonth, 'EGP')}
                 </span>
@@ -434,21 +433,21 @@ export const FinanceOverviewTab: React.FC<FinanceOverviewTabProps> = ({
           </div>
         </div>
 
-        {/* COLUMN 2 (5/12): FLUXO DE CAIXA (ÚLTIMOS 6 MESES) */}
+        {/* COLUMN 2 (5/12): CASH FLOW (LAST 6 MONTHS) */}
         <div className="lg:col-span-5 bg-white p-5 rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-3">
           {/* Header with Filter */}
           <div className="flex items-center justify-between">
             <h2 className="text-xs font-bold text-slate-900 tracking-wider uppercase">
-              FLUXO DE CAIXA (ÚLTIMOS 6 MESES)
+              CASH FLOW (LAST 6 MONTHS)
             </h2>
             <select
               value={cashFlowRange}
               onChange={(e) => setCashFlowRange(e.target.value)}
               className="text-[11px] font-semibold bg-white border border-slate-200 rounded-lg px-2.5 py-1 text-slate-700 shadow-2xs"
             >
-              <option value="6_meses">6 meses</option>
-              <option value="12_meses">12 meses</option>
-              <option value="ano_atual">Ano 2026</option>
+              <option value="6_meses">6 months</option>
+              <option value="12_meses">12 months</option>
+              <option value="ano_atual">Year 2026</option>
             </select>
           </div>
 
@@ -456,11 +455,11 @@ export const FinanceOverviewTab: React.FC<FinanceOverviewTabProps> = ({
           <div className="flex items-center gap-4 text-xs font-semibold text-slate-600">
             <div className="flex items-center gap-1.5">
               <span className="w-2.5 h-2.5 rounded-sm bg-[#075e38] rotate-45" />
-              <span>Receitas</span>
+              <span>Revenue</span>
             </div>
             <div className="flex items-center gap-1.5">
               <span className="w-2.5 h-2.5 rounded-sm bg-[#ef4444] rotate-45" />
-              <span>Despesas</span>
+              <span>Expenses</span>
             </div>
           </div>
 
@@ -501,7 +500,7 @@ export const FinanceOverviewTab: React.FC<FinanceOverviewTabProps> = ({
                 </text>
               ))}
 
-              {/* Red Line (Despesas) */}
+              {/* Red Line (Expenses) */}
               <polyline
                 points={toPolyline(expensePoints)}
                 fill="none"
@@ -511,7 +510,7 @@ export const FinanceOverviewTab: React.FC<FinanceOverviewTabProps> = ({
                 strokeLinejoin="round"
               />
 
-              {/* Green Line (Receitas) */}
+              {/* Green Line (Revenue) */}
               <polyline
                 points={toPolyline(revenuePoints)}
                 fill="none"
@@ -554,27 +553,27 @@ export const FinanceOverviewTab: React.FC<FinanceOverviewTabProps> = ({
             onClick={() => onNavigateTab('fin_reports')}
             className="text-xs font-bold text-emerald-800 hover:text-emerald-950 flex items-center justify-center gap-1 pt-1 cursor-pointer"
           >
-            <span>Ver relatório completo</span>
+            <span>View full report</span>
             <ChevronRight className="w-4 h-4" />
           </button>
         </div>
 
-        {/* COLUMN 3 (3/12): CONTAS A RECEBER (RESUMO) */}
+        {/* COLUMN 3 (3/12): ACCOUNTS RECEIVABLE (SUMMARY) */}
         <div className="lg:col-span-3 bg-white p-5 rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-4">
           <h2 className="text-xs font-bold text-slate-900 tracking-wider uppercase">
-            CONTAS A RECEBER (RESUMO)
+            ACCOUNTS RECEIVABLE (SUMMARY)
           </h2>
 
           <div className="space-y-3.5 my-auto">
-            {/* Em dia */}
+            {/* On track */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-full bg-emerald-50 text-emerald-700 flex items-center justify-center flex-shrink-0">
                   <Calendar className="w-4 h-4" />
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-slate-800 leading-tight">Em dia</p>
-                  <p className="text-[10.5px] text-slate-400">{inDayCount} cobranças</p>
+                  <p className="text-xs font-bold text-slate-800 leading-tight">On Track</p>
+                  <p className="text-[10.5px] text-slate-400">{inDayCount} charges</p>
                 </div>
               </div>
               <div className="text-right">
@@ -585,15 +584,15 @@ export const FinanceOverviewTab: React.FC<FinanceOverviewTabProps> = ({
               </div>
             </div>
 
-            {/* A vencer */}
+            {/* Upcoming */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center flex-shrink-0">
                   <Clock className="w-4 h-4" />
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-slate-800 leading-tight">A vencer</p>
-                  <p className="text-[10.5px] text-slate-400">{upcomingCount} cobranças</p>
+                  <p className="text-xs font-bold text-slate-800 leading-tight">Upcoming</p>
+                  <p className="text-[10.5px] text-slate-400">{upcomingCount} charges</p>
                 </div>
               </div>
               <div className="text-right">
@@ -604,15 +603,15 @@ export const FinanceOverviewTab: React.FC<FinanceOverviewTabProps> = ({
               </div>
             </div>
 
-            {/* Vencidas */}
+            {/* Overdue */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center flex-shrink-0">
                   <AlertTriangle className="w-4 h-4" />
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-slate-800 leading-tight">Vencidas</p>
-                  <p className="text-[10.5px] text-slate-400">{overdueCount} cobranças</p>
+                  <p className="text-xs font-bold text-slate-800 leading-tight">Overdue</p>
+                  <p className="text-[10.5px] text-slate-400">{overdueCount} charges</p>
                 </div>
               </div>
               <div className="text-right">
@@ -623,15 +622,15 @@ export const FinanceOverviewTab: React.FC<FinanceOverviewTabProps> = ({
               </div>
             </div>
 
-            {/* Canceladas */}
+            {/* Cancelled */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0">
                   <XCircle className="w-4 h-4" />
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-slate-800 leading-tight">Canceladas</p>
-                  <p className="text-[10.5px] text-slate-400">{cancelledCount} cobranças</p>
+                  <p className="text-xs font-bold text-slate-800 leading-tight">Cancelled</p>
+                  <p className="text-[10.5px] text-slate-400">{cancelledCount} charges</p>
                 </div>
               </div>
               <div className="text-right">
@@ -648,7 +647,7 @@ export const FinanceOverviewTab: React.FC<FinanceOverviewTabProps> = ({
             onClick={() => onNavigateTab('fin_charges')}
             className="text-xs font-bold text-emerald-800 hover:text-emerald-950 flex items-center justify-center gap-1 pt-1 cursor-pointer"
           >
-            <span>Ver todas as cobranças</span>
+            <span>View all charges</span>
             <ChevronRight className="w-4 h-4" />
           </button>
         </div>
@@ -658,21 +657,21 @@ export const FinanceOverviewTab: React.FC<FinanceOverviewTabProps> = ({
       {/* 3. BOTTOM ROW (2 COLUMNS: Recent Receipts Table + Quick Actions)          */}
       {/* ========================================================================= */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-        {/* LEFT COLUMN (8/12): ÚLTIMOS RECEBIMENTOS */}
+        {/* LEFT COLUMN (8/12): RECENT RECEIPTS */}
         <div className="lg:col-span-8 bg-white p-5 rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-4">
           <h2 className="text-xs font-bold text-slate-900 tracking-wider uppercase">
-            ÚLTIMOS RECEBIMENTOS
+            RECENT RECEIPTS
           </h2>
 
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead className="text-[10.5px] text-slate-400 font-bold uppercase tracking-wider border-b border-slate-100">
                 <tr>
-                  <th className="pb-3 font-bold">DATA</th>
-                  <th className="pb-3 font-bold">ALUNO / RESPONSÁVEL</th>
-                  <th className="pb-3 font-bold">DESCRIÇÃO</th>
-                  <th className="pb-3 font-bold">FORMA DE PAGAMENTO</th>
-                  <th className="pb-3 font-bold">VALOR</th>
+                  <th className="pb-3 font-bold">DATE</th>
+                  <th className="pb-3 font-bold">STUDENT / GUARDIAN</th>
+                  <th className="pb-3 font-bold">DESCRIPTION</th>
+                  <th className="pb-3 font-bold">PAYMENT METHOD</th>
+                  <th className="pb-3 font-bold">AMOUNT</th>
                   <th className="pb-3 font-bold">STATUS</th>
                   <th className="pb-3 text-right"></th>
                 </tr>
@@ -696,7 +695,7 @@ export const FinanceOverviewTab: React.FC<FinanceOverviewTabProps> = ({
                         <td className="py-3.5 pr-2">
                           <span className="font-bold text-slate-900 block">{rec.studentName}</span>
                           <span className="text-[10px] text-slate-400">
-                            {student?.guardianName ? `Resp: ${student.guardianName}` : rec.studentId}
+                            {student?.guardianName ? `Guardian: ${student.guardianName}` : rec.studentId}
                           </span>
                         </td>
                         <td className="py-3.5 pr-2">
@@ -713,14 +712,14 @@ export const FinanceOverviewTab: React.FC<FinanceOverviewTabProps> = ({
                         </td>
                         <td className="py-3.5 pr-2">
                           <span className="px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-full font-bold text-[10.5px] border border-emerald-200/60 inline-flex items-center">
-                            Pago
+                            Paid
                           </span>
                         </td>
                         <td className="py-3.5 text-right">
                           <button
                             onClick={() => onViewReceipt(rec)}
                             className="p-1 text-slate-400 hover:text-slate-800 hover:bg-slate-100 rounded-lg cursor-pointer"
-                            title="Ver Recibo Oficial"
+                            title="View Official Receipt"
                           >
                             <MoreVertical className="w-4 h-4" />
                           </button>
@@ -731,7 +730,7 @@ export const FinanceOverviewTab: React.FC<FinanceOverviewTabProps> = ({
                 ) : (
                   <tr>
                     <td colSpan={7} className="py-8 text-center text-slate-400 font-medium">
-                      Nenhum recebimento registrado.
+                      No payments recorded.
                     </td>
                   </tr>
                 )}
@@ -744,19 +743,19 @@ export const FinanceOverviewTab: React.FC<FinanceOverviewTabProps> = ({
             onClick={() => onNavigateTab('fin_receipts')}
             className="text-xs font-bold text-emerald-800 hover:text-emerald-950 flex items-center justify-center gap-1 pt-1 cursor-pointer"
           >
-            <span>Ver todos os recebimentos</span>
+            <span>View all payments</span>
             <ChevronRight className="w-4 h-4" />
           </button>
         </div>
 
-        {/* RIGHT COLUMN (4/12): AÇÕES RÁPIDAS */}
+        {/* RIGHT COLUMN (4/12): QUICK ACTIONS */}
         <div className="lg:col-span-4 bg-white p-5 rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-xs flex flex-col space-y-3">
           <h2 className="text-xs font-bold text-slate-900 tracking-wider uppercase">
-            AÇÕES RÁPIDAS
+            QUICK ACTIONS
           </h2>
 
           <div className="space-y-2">
-            {/* 1. Nova cobrança */}
+            {/* 1. New charge */}
             <button
               onClick={onOpenNewChargeModal}
               className="w-full flex items-center gap-3 p-3 rounded-xl bg-emerald-50/40 hover:bg-emerald-100/60 border border-emerald-100/80 text-left transition-colors group cursor-pointer"
@@ -765,11 +764,11 @@ export const FinanceOverviewTab: React.FC<FinanceOverviewTabProps> = ({
                 <PlusCircle className="w-4 h-4" />
               </div>
               <span className="text-xs font-bold text-slate-800 group-hover:text-emerald-950">
-                Nova cobrança
+                New charge
               </span>
             </button>
 
-            {/* 2. Registrar recebimento */}
+            {/* 2. Record payment */}
             <button
               onClick={() => onOpenQuickPaymentModal()}
               className="w-full flex items-center gap-3 p-3 rounded-xl bg-emerald-50/40 hover:bg-emerald-100/60 border border-emerald-100/80 text-left transition-colors group cursor-pointer"
@@ -778,11 +777,11 @@ export const FinanceOverviewTab: React.FC<FinanceOverviewTabProps> = ({
                 <DollarSign className="w-4 h-4" />
               </div>
               <span className="text-xs font-bold text-slate-800 group-hover:text-emerald-950">
-                Registrar recebimento
+                Record payment
               </span>
             </button>
 
-            {/* 3. Emitir recibo */}
+            {/* 3. Issue receipt */}
             <button
               onClick={() => onNavigateTab('fin_receipts')}
               className="w-full flex items-center gap-3 p-3 rounded-xl bg-emerald-50/40 hover:bg-emerald-100/60 border border-emerald-100/80 text-left transition-colors group cursor-pointer"
@@ -791,11 +790,11 @@ export const FinanceOverviewTab: React.FC<FinanceOverviewTabProps> = ({
                 <ReceiptIcon className="w-4 h-4" />
               </div>
               <span className="text-xs font-bold text-slate-800 group-hover:text-emerald-950">
-                Emitir recibo
+                Issue receipt
               </span>
             </button>
 
-            {/* 4. Gerar relatório */}
+            {/* 4. Generate report */}
             <button
               onClick={() => onNavigateTab('fin_reports')}
               className="w-full flex items-center gap-3 p-3 rounded-xl bg-emerald-50/40 hover:bg-emerald-100/60 border border-emerald-100/80 text-left transition-colors group cursor-pointer"
@@ -804,11 +803,11 @@ export const FinanceOverviewTab: React.FC<FinanceOverviewTabProps> = ({
                 <BarChart3 className="w-4 h-4" />
               </div>
               <span className="text-xs font-bold text-slate-800 group-hover:text-emerald-950">
-                Gerar relatório
+                Generate report
               </span>
             </button>
 
-            {/* 5. Gerenciar inadimplência */}
+            {/* 5. Manage overdue accounts */}
             <button
               onClick={() => onNavigateTab('fin_inadimplencia')}
               className="w-full flex items-center gap-3 p-3 rounded-xl bg-rose-50/40 hover:bg-rose-100/60 border border-rose-100/80 text-left transition-colors group cursor-pointer"
@@ -817,7 +816,7 @@ export const FinanceOverviewTab: React.FC<FinanceOverviewTabProps> = ({
                 <AlertTriangle className="w-4 h-4" />
               </div>
               <span className="text-xs font-bold text-slate-800 group-hover:text-rose-950">
-                Gerenciar inadimplência
+                Manage overdue accounts
               </span>
             </button>
           </div>

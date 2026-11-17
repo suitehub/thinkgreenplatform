@@ -75,10 +75,10 @@ export const FinanceReportsTab: React.FC = () => {
         <div>
           <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
             <FileSpreadsheet className="w-5 h-5 text-[#075e38]" />
-            Demonstrativo de Resultados & Relatórios Financeiros (DRE)
+            Income Statement & Financial Reports
           </h2>
           <p className="text-xs text-slate-400">
-            Balanço consolidado de receitas operacionais, despesas e fluxo de caixa da instituição
+            Consolidated overview of operating revenue, expenses and institutional cash flow
           </p>
         </div>
 
@@ -93,7 +93,7 @@ export const FinanceReportsTab: React.FC = () => {
             onClick={handlePrint}
             className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold text-xs transition-colors flex items-center gap-1.5 cursor-pointer"
           >
-            <Printer className="w-4 h-4" /> Imprimir Relatório
+            <Printer className="w-4 h-4" /> Print Report
           </button>
         </div>
       </div>
@@ -101,7 +101,7 @@ export const FinanceReportsTab: React.FC = () => {
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="p-4 bg-emerald-50/70 rounded-2xl border border-emerald-200 space-y-1">
-          <span className="text-xs font-bold text-emerald-800 uppercase">Receita Bruta Realizada</span>
+          <span className="text-xs font-bold text-emerald-800 uppercase">Gross Revenue Realized</span>
           <p className="text-2xl font-black font-mono text-emerald-950">
             {formatCurrency(totalRevenue, 'EGP')}
           </p>
@@ -116,33 +116,33 @@ export const FinanceReportsTab: React.FC = () => {
           >
             <TrendingUp className="w-3.5 h-3.5" />
             {revenueVariation === null
-              ? 'Sem base de comparação no mês anterior'
-              : `${revenueVariation >= 0 ? '+' : ''}${formatPercent(revenueVariation)} vs mês anterior`}
+              ? 'No comparison baseline for last month'
+              : `${revenueVariation >= 0 ? '+' : ''}${formatPercent(revenueVariation)} vs last month`}
           </span>
         </div>
 
         <div className="p-4 bg-rose-50/70 rounded-2xl border border-rose-200 space-y-1">
-          <span className="text-xs font-bold text-rose-800 uppercase">Despesas Operacionais</span>
+          <span className="text-xs font-bold text-rose-800 uppercase">Operating Expenses</span>
           <p className="text-2xl font-black font-mono text-rose-950">
             {formatCurrency(totalExpenses, 'EGP')}
           </p>
           <span className="text-[11px] text-rose-700 font-semibold flex items-center gap-1">
             <TrendingDown className="w-3.5 h-3.5" />
             {expenseRatio === null
-              ? 'Sem receita realizada no período'
-              : `${formatPercent(expenseRatio)} da receita`}
+              ? 'No revenue realized in the period'
+              : `${formatPercent(expenseRatio)} of revenue`}
           </span>
         </div>
 
         <div className="p-4 bg-slate-900 text-white rounded-2xl space-y-1 shadow-xs">
-          <span className="text-xs font-bold text-slate-400 uppercase">Superávit Líquido</span>
+          <span className="text-xs font-bold text-slate-400 uppercase">Net Surplus</span>
           <p className="text-2xl font-black font-mono text-emerald-400">
             {formatCurrency(netIncome, 'EGP')}
           </p>
           <span className="text-[11px] text-slate-300 font-semibold">
             {netMargin === null
-              ? 'Sem receita realizada no período'
-              : `Margem Líquida: ${formatPercent(netMargin)}`}
+              ? 'No revenue realized in the period'
+              : `Net Margin: ${formatPercent(netMargin)}`}
           </span>
         </div>
       </div>
@@ -150,24 +150,24 @@ export const FinanceReportsTab: React.FC = () => {
       {/* Breakdown by Category */}
       <div className="space-y-3">
         <h3 className="font-bold text-xs text-slate-900 uppercase tracking-wider">
-          Detalhamento por Curso / Programa
+          Breakdown by Course / Program
         </h3>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead className="bg-slate-50 text-slate-400 font-bold uppercase tracking-wider border-b border-slate-200">
               <tr>
-                <th className="px-4 py-3">Programa / Curso</th>
-                <th className="px-4 py-3">Matrículas Ativas</th>
-                <th className="px-4 py-3">Receita Prevista</th>
-                <th className="px-4 py-3">Receita Realizada</th>
-                <th className="px-4 py-3">Adimplência</th>
+                <th className="px-4 py-3">Program / Course</th>
+                <th className="px-4 py-3">Active Enrollments</th>
+                <th className="px-4 py-3">Expected Revenue</th>
+                <th className="px-4 py-3">Realized Revenue</th>
+                <th className="px-4 py-3">Collection Rate</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {state.courses.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="px-4 py-8 text-center text-slate-400 font-medium">
-                    Nenhum curso cadastrado.
+                    No courses registered.
                   </td>
                 </tr>
               ) : (
@@ -193,7 +193,7 @@ export const FinanceReportsTab: React.FC = () => {
                       <td className="px-4 py-3.5 font-bold text-slate-900">{course.name}</td>
                       <td className="px-4 py-3.5 text-slate-700">
                         {courseEnrollments.length}{' '}
-                        {courseEnrollments.length === 1 ? 'aluno' : 'alunos'}
+                        {courseEnrollments.length === 1 ? 'student' : 'students'}
                       </td>
                       <td className="px-4 py-3.5 font-mono text-slate-600">
                         {formatCurrency(expected, 'EGP')}

@@ -5,13 +5,13 @@ import { isMediaRef, resolveMediaUrl } from '../../lib/mediaStorage';
 interface MediaAudioPlayerProps {
   src: string;
   className?: string;
-  /** Mostra mensagem de erro amigável quando o áudio não puder ser carregado. */
+  /** Shows a friendly error message when the audio cannot be loaded. */
   showError?: boolean;
 }
 
 /**
- * Player de áudio que entende tanto URLs normais quanto áudios grandes
- * salvos em partes no Firestore (`firestore-media:<id>`).
+ * Audio player that understands both normal URLs and large audio files
+ * saved in chunks in Firestore (`firestore-media:<id>`).
  */
 export const MediaAudioPlayer: React.FC<MediaAudioPlayerProps> = ({
   src,
@@ -47,7 +47,7 @@ export const MediaAudioPlayer: React.FC<MediaAudioPlayerProps> = ({
   if (error) {
     return showError ? (
       <p className="text-[11px] font-semibold text-rose-600">
-        Não foi possível carregar o áudio ({error}).
+        Could not load the audio ({error}).
       </p>
     ) : null;
   }
@@ -55,7 +55,7 @@ export const MediaAudioPlayer: React.FC<MediaAudioPlayerProps> = ({
   if (!resolved) {
     return (
       <p className="text-[11px] text-slate-500 flex items-center gap-1.5">
-        <Loader2 className="w-3.5 h-3.5 animate-spin" /> Carregando áudio...
+        <Loader2 className="w-3.5 h-3.5 animate-spin" /> Loading audio...
       </p>
     );
   }
@@ -69,7 +69,7 @@ export const MediaAudioPlayer: React.FC<MediaAudioPlayerProps> = ({
       className={className}
       src={resolved}
     >
-      Seu navegador não suporta áudio.
+      Your browser does not support audio.
     </audio>
   );
 };

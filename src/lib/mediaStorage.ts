@@ -1,18 +1,18 @@
 /**
- * Armazenamento de mídias grandes (áudios de quiz) em partes no Firestore.
+ * Large media storage (quiz audio) in Firestore chunks.
  *
- * O Firestore limita cada documento a 1 MB, por isso um áudio grande é dividido
- * em vários documentos de ~600 KB. A coleção `test` é usada porque já está
- * liberada nas regras de segurança atuais (leitura/escrita por ID).
+ * Firestore limits each document to 1 MB, so a large audio file is split into
+ * several ~600 KB documents. The `test` collection is used because it is
+ * already allowed by the current security rules (read/write by ID).
  *
- * Referência salva no quiz: `firestore-media:<mediaId>`.
+ * Reference saved in the quiz: `firestore-media:<mediaId>`.
  */
 import { doc, getDoc } from 'firebase/firestore';
 import { db, saveDocument, deleteDocument } from './firebase';
 
 const MEDIA_COLLECTION = 'test';
 const MEDIA_PREFIX = 'tgmedia_';
-const CHUNK_CHARS = 600_000; // ~600 KB de base64 por documento (limite do Firestore é 1 MB)
+const CHUNK_CHARS = 600_000; // ~600 KB of base64 per document (Firestore limit is 1 MB)
 export const MAX_MEDIA_BYTES = 50 * 1024 * 1024; // 50 MB
 
 const metaDocId = (mediaId: string) => `${MEDIA_PREFIX}${mediaId}_meta`;
@@ -38,7 +38,7 @@ const readFileAsDataUrl = (file: File): Promise<string> =>
   new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(String(reader.result || ''));
-    reader.onerror = () => reject(reader.error || new Error('Falha ao ler o arquivo'));
+    reader.onerror = () => reject(reader.error || new Error('Failed to read the file'));
     reader.readAsDataURL(file);
   });
 
@@ -48,7 +48,7 @@ export const uploadMediaFile = async (
 ): Promise<UploadedMedia> => {
   if (file.size > MAX_MEDIA_BYTES) {
     throw new Error(
-      `Arquivo muito grande (${(file.size / (1024 * 1024)).toFixed(1)} MB). O limite é ${MAX_MEDIA_BYTES / (1024 * 1024)} MB.`
+      `File too large (${(file.size / (1024 * 1024)).toFixed(1)} MB). The limit is ${MAX_MEDIA_BYTES / (1024 * 1024)} MB.`
     );
   }
 
@@ -106,12 +106,12 @@ export const resolveMediaUrl = async (ref: string): Promise<string> => {
   if (cached) return cached;
 
   const metaSnap = await getDoc(doc(db, MEDIA_COLLECTION, metaDocId(mediaId)));
-  if (!metaSnap.exists()) throw new Error('Áudio não encontrado no armazenamento.');
+  if (!metaSnap.exists()) throw new Error('Audio not found in storage.');
   const meta = metaSnap.data() as { mime?: string; chunks?: number };
   const totalChunks = Number(meta.chunks || 0);
-  if (!totalChunks) throw new Error('Áudio não encontrado no armazenamento.');
+  if (!totalChunks) throw new Error('Audio not found in storage.');
 
-  // A coleção permite leitura por documento, mas não listagem: buscamos cada parte pelo ID.
+  // The collection allows reading by document, but not listing: we fetch each part by ID.
   const chunkSnaps = await Promise.all(
     Array.from({ length: totalChunks }, (_, index) =>
       getDoc(doc(db, MEDIA_COLLECTION, chunkDocId(mediaId, index)))
@@ -125,7 +125,7 @@ export const resolveMediaUrl = async (ref: string): Promise<string> => {
     })
     .filter((chunk) => typeof chunk.data === 'string');
 
-  if (chunks.length === 0) throw new Error('Áudio não encontrado no armazenamento.');
+  if (chunks.length === 0) throw new Error('Audio not found in storage.');
 
   const parts = chunks.map((chunk) => base64ToBytes(chunk.data as string));
   const blob = new Blob(parts, { type: meta.mime || 'audio/mpeg' });

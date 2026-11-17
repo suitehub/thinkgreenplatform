@@ -8,6 +8,12 @@ interface FinanceReceiptsTabProps {
   onViewReceipt: (receipt: PaymentReceipt) => void;
 }
 
+// Display labels for stored payment method values (values themselves stay unchanged).
+const paymentMethodLabels: Record<string, string> = {
+  DINHEIRO: 'Cash',
+  TRANSFERENCIA: 'Bank Transfer',
+};
+
 export const FinanceReceiptsTab: React.FC<FinanceReceiptsTabProps> = ({ onViewReceipt }) => {
   const { state } = useApp();
   const [searchQuery, setSearchQuery] = useState('');
@@ -28,10 +34,10 @@ export const FinanceReceiptsTab: React.FC<FinanceReceiptsTabProps> = ({ onViewRe
         <div>
           <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
             <Receipt className="w-5 h-5 text-[#075e38]" />
-            Arquivo de Recibos Emitidos ({filteredReceipts.length})
+            Issued Receipts Archive ({filteredReceipts.length})
           </h2>
           <p className="text-xs text-slate-400">
-            Documentos fiscais e comprovantes oficiais emitidos pela tesouraria
+            Official fiscal documents and payment vouchers issued by the treasury
           </p>
         </div>
 
@@ -39,7 +45,7 @@ export const FinanceReceiptsTab: React.FC<FinanceReceiptsTabProps> = ({ onViewRe
           <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
           <input
             type="text"
-            placeholder="Buscar por Nº do Recibo, Aluno ou ID..."
+            placeholder="Search by Receipt No., Student or ID..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-9 pr-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white transition-colors"
@@ -66,7 +72,7 @@ export const FinanceReceiptsTab: React.FC<FinanceReceiptsTabProps> = ({ onViewRe
                 {rec.courseName} • {rec.installmentDescription}
               </p>
               <p className="text-slate-400 text-[11px] mt-0.5">
-                Emitido por {rec.issuedBy} em {rec.date} • Forma: {rec.paymentMethod}
+                Issued by {rec.issuedBy} on {rec.date} • Method: {paymentMethodLabels[rec.paymentMethod] || rec.paymentMethod}
               </p>
             </div>
 
@@ -78,7 +84,7 @@ export const FinanceReceiptsTab: React.FC<FinanceReceiptsTabProps> = ({ onViewRe
                 onClick={() => onViewReceipt(rec)}
                 className="px-4 py-2 text-xs font-bold text-[#075e38] bg-emerald-50 hover:bg-emerald-100/80 rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs"
               >
-                <Printer className="w-3.5 h-3.5" /> Visualizar & Imprimir
+                <Printer className="w-3.5 h-3.5" /> View & Print
               </button>
             </div>
           </div>

@@ -9,33 +9,33 @@ import type { Course, CourseLevelPricing } from '../types';
 export const STANDARD_ENGLISH_LEVELS: CourseLevelPricing[] = [
   {
     level: 'CRIANCAS',
-    label: 'Crianças (Kids)',
-    targetAudience: 'Educação Infantil e Fundamental I (6 a 11 anos)',
+    label: 'Children (Kids)',
+    targetAudience: 'Preschool and Elementary School (ages 6 to 11)',
     defaultInstallments: 4,
     totalAmount: 2000,
     installmentAmount: 500,
     description:
-      'Abordagem lúdica, vocabulário cotidiano, contação de histórias e fonética infantil.',
+      'Play-based approach, everyday vocabulary, storytelling and phonics for children.',
   },
   {
     level: 'ADOLESCENTES',
-    label: 'Adolescentes (Teens)',
-    targetAudience: 'Ensino Fundamental II e Médio (12 a 17 anos)',
+    label: 'Teenagers (Teens)',
+    targetAudience: 'Middle and High School (ages 12 to 17)',
     defaultInstallments: 3,
     totalAmount: 1500,
     installmentAmount: 500,
     description:
-      'Conversação ativa, cultura jovem, produção textual, apresentações e debates.',
+      'Active conversation, youth culture, writing, presentations and debates.',
   },
   {
     level: 'ADULTO',
-    label: 'Adulto (Adults)',
-    targetAudience: 'Universitários e Profissionais (18+ anos)',
+    label: 'Adult (Adults)',
+    targetAudience: 'University Students and Professionals (18+)',
     defaultInstallments: 3,
     totalAmount: 1800,
     installmentAmount: 600,
     description:
-      'Fluência comunicativa, inglês profissional, viagens, entrevistas e negócios.',
+      'Communicative fluency, professional English, travel, interviews and business.',
   },
 ];
 
@@ -43,10 +43,10 @@ export const STANDARD_COURSES: Course[] = [
   {
     id: 'course_eng',
     code: 'ENG-100',
-    name: 'Curso Livre de Inglês',
+    name: 'General English Course',
     category: 'ENGLISH',
     description:
-      'Programa intensivo e conversacional de língua inglesa com metodologia comunicativa dividida em 3 níveis (Crianças, Adolescentes e Adulto).',
+      'Intensive, conversation-based English program with a communicative methodology divided into 3 levels (Children, Teenagers and Adults).',
     color: '#7C3AED',
     totalCourseAmount: 1800,
     defaultInstallmentsCount: 3,
@@ -61,7 +61,7 @@ export const STANDARD_COURSES: Course[] = [
     name: 'Preschool',
     category: 'PRESCHOOL',
     description:
-      'Educação infantil, desenvolvimento socioemocional, bilinguismo precoce e artes.',
+      'Early childhood education, social-emotional development, early bilingualism and arts.',
     color: '#F97316',
     totalCourseAmount: 3000,
     defaultInstallmentsCount: 4,
@@ -72,10 +72,10 @@ export const STANDARD_COURSES: Course[] = [
   {
     id: 'course_football',
     code: 'SPO-300',
-    name: 'Academia de Futebol Think Green',
+    name: 'Think Green Football Academy',
     category: 'FOOTBALL',
     description:
-      'Treinamento de futebol de alto rendimento, disciplina tática, saúde física e trabalho em equipe.',
+      'High-performance football training, tactical discipline, physical health and teamwork.',
     color: '#16A34A',
     totalCourseAmount: 1600,
     defaultInstallmentsCount: 4,
@@ -86,10 +86,10 @@ export const STANDARD_COURSES: Course[] = [
   {
     id: 'course_women_fit',
     code: 'FIT-400',
-    name: 'Academia & Treinos para Mulheres',
+    name: "Women's Gym & Training",
     category: 'WOMENS_FITNESS',
     description:
-      'Programa exclusivo de fortalecimento funcional, condicionamento aeróbico e bem-estar comunitário feminino.',
+      "Exclusive program for functional strengthening, aerobic conditioning and women's community well-being.",
     color: '#DB2777',
     totalCourseAmount: 1800,
     defaultInstallmentsCount: 4,

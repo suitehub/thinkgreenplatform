@@ -44,7 +44,7 @@ export const ClassLessonPlanTab: React.FC<ClassLessonPlanTabProps> = ({
   onSaveLessonPlan,
   onDeleteLessonPlan,
 }) => {
-  // View mode: 'cards' (prático e descritivo) or 'table' (planilha estilo Excel modernizado)
+  // View mode: 'cards' (practical and descriptive) or 'table' (modernized Excel-style spreadsheet)
   const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'PLANEJADA' | 'MINISTRADA'>('ALL');
@@ -79,7 +79,7 @@ export const ClassLessonPlanTab: React.FC<ClassLessonPlanTabProps> = ({
 
   // Filter plans for this class
   const classPlans = lessonPlans.filter((p) => {
-    // Match current class or fall back to all if general
+    // Match the current class or fall back to all if general
     const matchClass = p.classId === selectedClass.id || (!p.classId && selectedClass.id === 'class_eng_a');
     const matchStatus = statusFilter === 'ALL' || p.status === statusFilter;
     const matchSearch =
@@ -153,12 +153,12 @@ export const ClassLessonPlanTab: React.FC<ClassLessonPlanTabProps> = ({
       dateDisplay: formatDateDisplay(newDateStr),
       dateFormatted: formatDateFormatted(newDateStr),
       status: 'PLANEJADA',
-      observations: `Duplicado a partir do plano de ${plan.dateDisplay || plan.date}.`,
+      observations: `Duplicated from the plan of ${plan.dateDisplay || plan.date}.`,
       createdAt: new Date().toISOString(),
     };
 
     onSaveLessonPlan(duplicated);
-    showToast(`Plano de aula duplicado para ${duplicated.dateDisplay}!`);
+    showToast(`Lesson plan duplicated for ${duplicated.dateDisplay}!`);
   };
 
   const handleToggleStatus = (plan: ClassLessonPlan) => {
@@ -167,7 +167,7 @@ export const ClassLessonPlanTab: React.FC<ClassLessonPlanTabProps> = ({
       ...plan,
       status: nextStatus,
     });
-    showToast(`Status atualizado para: ${nextStatus === 'MINISTRADA' ? 'Ministrada' : 'Planejada'}`);
+    showToast(`Status updated to: ${nextStatus === 'MINISTRADA' ? 'Taught' : 'Planned'}`);
   };
 
   const formatDateDisplay = (dateStr: string) => {
@@ -176,8 +176,8 @@ export const ClassLessonPlanTab: React.FC<ClassLessonPlanTabProps> = ({
       const parts = dateStr.split('-');
       if (parts.length === 3) {
         const d = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
-        const monthsShort = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
-        const daysShort = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
+        const monthsShort = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+        const daysShort = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
         const m = monthsShort[d.getMonth()] || '';
         const day = String(d.getDate()).padStart(2, '0');
         const wd = daysShort[d.getDay()] || '';
@@ -196,11 +196,11 @@ export const ClassLessonPlanTab: React.FC<ClassLessonPlanTabProps> = ({
       if (parts.length === 3) {
         const d = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
         const monthsFull = [
-          'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
-          'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+          'January', 'February', 'March', 'April', 'May', 'June',
+          'July', 'August', 'September', 'October', 'November', 'December'
         ];
-        const daysFull = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
-        return `${d.getDate()} de ${monthsFull[d.getMonth()]} de ${d.getFullYear()} (${daysFull[d.getDay()]})`;
+        const daysFull = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        return `${monthsFull[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()} (${daysFull[d.getDay()]})`;
       }
     } catch {
       // ignore
@@ -213,7 +213,7 @@ export const ClassLessonPlanTab: React.FC<ClassLessonPlanTabProps> = ({
       `- LG1 book - U2 - Colors and shapes - p. 12-13;\nGreetings and social communication (Exercises And B p.12, C and D p.13):\n- Greeting with "Hi" and asking "How are you?";\n- Answering with "I'm fine".`
     );
     setFormHandwriting(
-      `- Handwritting worksheet about vocabulary - p.12 (spelling about greetings and answers).`
+      `- Handwriting worksheet about vocabulary - p.12 (spelling about greetings and answers).`
     );
     setFormReading(
       `- Reading Text:\nMohamed: Hi!\nFarida: Hi!\nMohamed: How are you?\nFarida: I'm fine, thank you!\nMohamed: How are you?\nFarida: I'm fine!`
@@ -222,15 +222,15 @@ export const ClassLessonPlanTab: React.FC<ClassLessonPlanTabProps> = ({
     setFormSpeakingTime(`- Greeting friends in class using the grammar - p.12-13.`);
     setFormHomework(`- Workbook - p.11.`);
     setFormMaterials(
-      `- Slides, handwritting worksheet, grammar worksheet, unit tests printed, colored pencils and LG1 books.`
+      `- Slides, handwriting worksheet, grammar worksheet, unit tests printed, colored pencils and LG1 books.`
     );
-    setFormObservations(`- Unit 1 teste today.`);
+    setFormObservations(`- Unit 1 test today.`);
   };
 
   const handleSaveForm = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formUnitContent.trim()) {
-      alert('Por favor, informe ao menos o Conteúdo da Unidade (Unit Content).');
+      alert('Please provide at least the Unit Content.');
       return;
     }
 
@@ -242,7 +242,7 @@ export const ClassLessonPlanTab: React.FC<ClassLessonPlanTabProps> = ({
       classId: selectedClass.id,
       className: selectedClass.name,
       teacherId: selectedClass.teacherId || '',
-      teacherName: selectedClass.teacherName || 'Professor não atribuído',
+      teacherName: selectedClass.teacherName || 'Teacher not assigned',
       date: formDate,
       dateDisplay: display,
       dateFormatted: formatted,
@@ -261,7 +261,7 @@ export const ClassLessonPlanTab: React.FC<ClassLessonPlanTabProps> = ({
 
     onSaveLessonPlan(planToSave);
     setIsModalOpen(false);
-    showToast(editingPlanId ? 'Plano de aula atualizado com sucesso!' : 'Novo plano de aula cadastrado com sucesso!');
+    showToast(editingPlanId ? 'Lesson plan updated successfully!' : 'New lesson plan created successfully!');
   };
 
   const handlePrint = () => {
@@ -278,7 +278,7 @@ export const ClassLessonPlanTab: React.FC<ClassLessonPlanTabProps> = ({
         </div>
       )}
 
-      {/* 1. INSTITUTIONAL HEADER REFERENCING EXCEL MODEL */}
+      {/* 1. INSTITUTIONAL HEADER REFERENCING THE EXCEL MODEL */}
       <div className="bg-gradient-to-r from-[#2e1065] via-[#4c1d95] to-[#581c87] text-white p-6 sm:p-7 rounded-3xl border border-purple-800 shadow-md relative overflow-hidden">
         <div className="absolute right-0 top-0 bottom-0 pointer-events-none opacity-10 flex items-center pr-6">
           <FileSpreadsheet className="w-64 h-64 text-white" />
@@ -288,11 +288,11 @@ export const ClassLessonPlanTab: React.FC<ClassLessonPlanTabProps> = ({
           <div className="space-y-2">
             <div className="flex items-center gap-2 flex-wrap">
               <span className="text-[10px] font-black uppercase tracking-wider bg-white/20 px-2.5 py-0.5 rounded-full border border-white/20">
-                Planejamento Pedagógico Oficial
+                Official Academic Planning
               </span>
               <span className="text-xs text-purple-200 font-semibold flex items-center gap-1.5">
                 <FileSpreadsheet className="w-3.5 h-3.5" />
-                Estrutura de 8 Dimensões (Excel Referência)
+                8-Dimension Structure (Excel Reference)
               </span>
             </div>
 
@@ -301,29 +301,29 @@ export const ClassLessonPlanTab: React.FC<ClassLessonPlanTabProps> = ({
             </h2>
 
             <p className="text-xs sm:text-sm text-purple-200/90 max-w-2xl leading-relaxed">
-              Plano de aula estruturado por data: <strong>Unit Content</strong>, <strong>Handwriting</strong>,{' '}
+              Lesson plan structured by date: <strong>Unit Content</strong>, <strong>Handwriting</strong>,{' '}
               <strong>Reading</strong>, <strong>Writing</strong>, <strong>Speaking Time</strong>,{' '}
-              <strong>Homework</strong>, <strong>Materials</strong> e <strong>Observations</strong>.
+              <strong>Homework</strong>, <strong>Materials</strong> and <strong>Observations</strong>.
             </p>
           </div>
 
-          {/* Quick Counter Badges */}
+          {/* Quick counter badges */}
           <div className="flex items-center gap-2.5 flex-wrap">
             <div className="bg-white/10 backdrop-blur-xs px-3.5 py-2 rounded-2xl border border-white/15 text-center min-w-[90px]">
               <span className="block text-lg font-black text-white">{classPlans.length}</span>
-              <span className="text-[10px] font-bold text-purple-200 uppercase">Aulas no Plano</span>
+              <span className="text-[10px] font-bold text-purple-200 uppercase">Lessons in Plan</span>
             </div>
             <div className="bg-emerald-500/20 backdrop-blur-xs px-3.5 py-2 rounded-2xl border border-emerald-400/30 text-center min-w-[90px]">
               <span className="block text-lg font-black text-emerald-300">
                 {classPlans.filter((p) => p.status === 'MINISTRADA').length}
               </span>
-              <span className="text-[10px] font-bold text-emerald-200 uppercase">Ministradas</span>
+              <span className="text-[10px] font-bold text-emerald-200 uppercase">Taught</span>
             </div>
             <div className="bg-blue-500/20 backdrop-blur-xs px-3.5 py-2 rounded-2xl border border-blue-400/30 text-center min-w-[90px]">
               <span className="block text-lg font-black text-blue-300">
                 {classPlans.filter((p) => p.status === 'PLANEJADA').length}
               </span>
-              <span className="text-[10px] font-bold text-blue-200 uppercase">Planejadas</span>
+              <span className="text-[10px] font-bold text-blue-200 uppercase">Planned</span>
             </div>
           </div>
         </div>
@@ -331,7 +331,7 @@ export const ClassLessonPlanTab: React.FC<ClassLessonPlanTabProps> = ({
 
       {/* 2. ACTION & FILTER TOOLBAR */}
       <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-3">
-        {/* Search & Status Filter */}
+        {/* Search & status filter */}
         <div className="flex items-center gap-2.5 flex-1 flex-wrap">
           <div className="relative flex-1 min-w-[200px] max-w-md">
             <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -339,7 +339,7 @@ export const ClassLessonPlanTab: React.FC<ClassLessonPlanTabProps> = ({
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Buscar por unidade, livro, gramática, material ou data..."
+              placeholder="Search by unit, book, grammar, material or date..."
               className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-[#075e38]/20 focus:border-[#075e38]"
             />
           </div>
@@ -351,7 +351,7 @@ export const ClassLessonPlanTab: React.FC<ClassLessonPlanTabProps> = ({
                 statusFilter === 'ALL' ? 'bg-white text-slate-900 shadow-2xs' : 'hover:text-slate-900'
               }`}
             >
-              Todas ({classPlans.length})
+              All ({classPlans.length})
             </button>
             <button
               onClick={() => setStatusFilter('PLANEJADA')}
@@ -359,7 +359,7 @@ export const ClassLessonPlanTab: React.FC<ClassLessonPlanTabProps> = ({
                 statusFilter === 'PLANEJADA' ? 'bg-white text-blue-700 shadow-2xs' : 'hover:text-slate-900'
               }`}
             >
-              Planejadas
+              Planned
             </button>
             <button
               onClick={() => setStatusFilter('MINISTRADA')}
@@ -367,12 +367,12 @@ export const ClassLessonPlanTab: React.FC<ClassLessonPlanTabProps> = ({
                 statusFilter === 'MINISTRADA' ? 'bg-white text-emerald-800 shadow-2xs' : 'hover:text-slate-900'
               }`}
             >
-              Ministradas
+              Taught
             </button>
           </div>
         </div>
 
-        {/* View Switcher + New Plan Button */}
+        {/* View switcher + new plan button */}
         <div className="flex items-center gap-2 flex-wrap">
           {/* View mode toggle */}
           <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200/60">
@@ -383,10 +383,10 @@ export const ClassLessonPlanTab: React.FC<ClassLessonPlanTabProps> = ({
                   ? 'bg-white text-[#075e38] shadow-2xs'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
-              title="Visualização em cards descritivos e práticos"
+              title="Descriptive, practical card view"
             >
               <LayoutList className="w-3.5 h-3.5" />
-              <span>Cards Descritivos</span>
+              <span>Descriptive Cards</span>
             </button>
 
             <button
@@ -396,20 +396,20 @@ export const ClassLessonPlanTab: React.FC<ClassLessonPlanTabProps> = ({
                   ? 'bg-white text-[#075e38] shadow-2xs'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
-              title="Visualização em grade/planilha estilo Excel"
+              title="Excel-style grid/spreadsheet view"
             >
               <TableIcon className="w-3.5 h-3.5" />
-              <span>Planilha Excel</span>
+              <span>Excel Spreadsheet</span>
             </button>
           </div>
 
           <button
             onClick={handlePrint}
             className="p-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer hidden sm:flex items-center gap-1.5 text-xs font-bold"
-            title="Imprimir plano de aula"
+            title="Print lesson plan"
           >
             <Printer className="w-4 h-4 text-slate-500" />
-            <span>Imprimir</span>
+            <span>Print</span>
           </button>
 
           <button
@@ -417,7 +417,7 @@ export const ClassLessonPlanTab: React.FC<ClassLessonPlanTabProps> = ({
             className="flex items-center gap-2 px-4 py-2 bg-[#075e38] hover:bg-[#064e2e] text-white rounded-xl text-xs font-black shadow-xs hover:shadow-md transition-all cursor-pointer"
           >
             <Plus className="w-4 h-4" />
-            <span>Novo Plano de Aula</span>
+            <span>New Lesson Plan</span>
           </button>
         </div>
       </div>
@@ -429,9 +429,9 @@ export const ClassLessonPlanTab: React.FC<ClassLessonPlanTabProps> = ({
             <FileSpreadsheet className="w-8 h-8" />
           </div>
           <div>
-            <h3 className="font-extrabold text-slate-900 text-base">Nenhum plano de aula encontrado</h3>
+            <h3 className="font-extrabold text-slate-900 text-base">No lesson plans found</h3>
             <p className="text-xs text-slate-500 max-w-md mx-auto mt-1">
-              Você ainda não registrou planos de aula para esta turma ou os filtros atuais não retornaram resultados.
+              You have not recorded any lesson plans for this class yet, or the current filters returned no results.
             </p>
           </div>
           <div className="pt-2">
@@ -440,13 +440,13 @@ export const ClassLessonPlanTab: React.FC<ClassLessonPlanTabProps> = ({
               className="px-5 py-2.5 bg-[#075e38] hover:bg-[#064e2e] text-white rounded-xl text-xs font-bold transition-all shadow-xs inline-flex items-center gap-2 cursor-pointer"
             >
               <Plus className="w-4 h-4" />
-              <span>Criar Primeiro Plano de Aula</span>
+              <span>Create First Lesson Plan</span>
             </button>
           </div>
         </div>
       ) : viewMode === 'cards' ? (
         /* ========================================================================= */
-        /* MODE A: CARDS DESCRITIVOS E PRÁTICOS (LAYOUT MODERNO SOLICITADO)          */
+        /* MODE A: DESCRIPTIVE, PRACTICAL CARDS (MODERN LAYOUT)                     */
         /* ========================================================================= */
         <div className="space-y-5">
           {classPlans.map((plan, idx) => {
@@ -457,10 +457,10 @@ export const ClassLessonPlanTab: React.FC<ClassLessonPlanTabProps> = ({
                 key={plan.id}
                 className="bg-white rounded-3xl border-2 border-slate-200/90 hover:border-purple-300 transition-all shadow-xs overflow-hidden"
               >
-                {/* Card Header Bar */}
+                {/* Card header bar */}
                 <div className="p-4 sm:p-5 bg-gradient-to-r from-slate-50 via-purple-50/20 to-slate-50 border-b border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div className="flex items-center gap-3 flex-wrap">
-                    {/* Date Badge in Excel format */}
+                    {/* Date badge in Excel format */}
                     <div className="flex items-center gap-2 bg-[#dc2626] text-white px-3 py-1.5 rounded-xl font-black text-xs shadow-2xs">
                       <Calendar className="w-3.5 h-3.5 text-white/90" />
                       <span className="uppercase tracking-wide">{plan.dateDisplay || plan.date}</span>
@@ -468,17 +468,17 @@ export const ClassLessonPlanTab: React.FC<ClassLessonPlanTabProps> = ({
 
                     <div>
                       <h3 className="font-extrabold text-sm sm:text-base text-slate-900 leading-snug">
-                        Aula {idx + 1} — {plan.dateFormatted || plan.date}
+                        Lesson {idx + 1} — {plan.dateFormatted || plan.date}
                       </h3>
                       <p className="text-[11px] text-slate-500 font-medium">
-                        Docente: {plan.teacherName || selectedClass.teacherName || 'Professor não atribuído'}
+                        Teacher: {plan.teacherName || selectedClass.teacherName || 'Teacher not assigned'}
                       </p>
                     </div>
                   </div>
 
-                  {/* Actions & Status on Right */}
+                  {/* Actions & status on the right */}
                   <div className="flex items-center gap-2 flex-wrap">
-                    {/* Status Pill Toggle */}
+                    {/* Status pill toggle */}
                     <button
                       type="button"
                       onClick={() => handleToggleStatus(plan)}
@@ -487,17 +487,17 @@ export const ClassLessonPlanTab: React.FC<ClassLessonPlanTabProps> = ({
                           ? 'bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100'
                           : 'bg-blue-50 text-blue-800 border-blue-300 hover:bg-blue-100'
                       }`}
-                      title="Clique para alternar entre Planejada e Ministrada"
+                      title="Click to switch between Planned and Taught"
                     >
                       {plan.status === 'MINISTRADA' ? (
                         <>
                           <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                          <span>Ministrada</span>
+                          <span>Taught</span>
                         </>
                       ) : (
                         <>
                           <Clock className="w-3.5 h-3.5 text-blue-600" />
-                          <span>Planejada</span>
+                          <span>Planned</span>
                         </>
                       )}
                     </button>
@@ -506,7 +506,7 @@ export const ClassLessonPlanTab: React.FC<ClassLessonPlanTabProps> = ({
                     <button
                       onClick={() => handleDuplicatePlan(plan)}
                       className="p-1.5 rounded-xl bg-slate-100 hover:bg-purple-100 text-slate-600 hover:text-purple-700 transition-colors cursor-pointer"
-                      title="Duplicar para a próxima aula (+7 dias)"
+                      title="Duplicate for the next lesson (+7 days)"
                     >
                       <Copy className="w-4 h-4" />
                     </button>
@@ -515,7 +515,7 @@ export const ClassLessonPlanTab: React.FC<ClassLessonPlanTabProps> = ({
                     <button
                       onClick={() => handleOpenEditModal(plan)}
                       className="p-1.5 rounded-xl bg-slate-100 hover:bg-emerald-100 text-slate-600 hover:text-[#075e38] transition-colors cursor-pointer"
-                      title="Editar este plano de aula"
+                      title="Edit this lesson plan"
                     >
                       <Edit3 className="w-4 h-4" />
                     </button>
@@ -523,46 +523,46 @@ export const ClassLessonPlanTab: React.FC<ClassLessonPlanTabProps> = ({
                     {/* Delete button */}
                     <button
                       onClick={() => {
-                        if (confirm('Tem certeza que deseja excluir este plano de aula?')) {
+                        if (confirm('Are you sure you want to delete this lesson plan?')) {
                           onDeleteLessonPlan(plan.id);
-                          showToast('Plano de aula removido.');
+                          showToast('Lesson plan removed.');
                         }
                       }}
                       className="p-1.5 rounded-xl bg-slate-100 hover:bg-rose-100 text-slate-400 hover:text-rose-600 transition-colors cursor-pointer"
-                      title="Excluir plano de aula"
+                      title="Delete lesson plan"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
 
-                    {/* Expand/Collapse Toggle */}
+                    {/* Expand/collapse toggle */}
                     <button
                       onClick={() => toggleCard(plan.id)}
                       className="p-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors cursor-pointer"
-                      title={isExpanded ? 'Recolher detalhes' : 'Expandir detalhes'}
+                      title={isExpanded ? 'Collapse details' : 'Expand details'}
                     >
                       {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                     </button>
                   </div>
                 </div>
 
-                {/* Card Body with the 8 Excel Sections */}
+                {/* Card body with the 8 Excel sections */}
                 {isExpanded && (
                   <div className="p-5 sm:p-6 space-y-5">
-                    {/* Top Row: Unit Content & Speaking Time (Core Communicative Elements) */}
+                    {/* Top row: Unit Content & Speaking Time (core communicative elements) */}
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                       {/* 1. UNIT CONTENT */}
                       <div className="p-4 rounded-2xl bg-sky-50/70 border border-sky-200/90 space-y-2">
                         <div className="flex items-center justify-between">
                           <span className="text-[11px] font-black uppercase tracking-wider text-sky-950 flex items-center gap-1.5">
                             <BookOpen className="w-3.5 h-3.5 text-sky-700" />
-                            1. Unit Content (Conteúdo da Unidade & Livro)
+                            1. Unit Content (Unit & Book Content)
                           </span>
                           <span className="text-[10px] font-bold text-sky-700 bg-sky-100 px-2 py-0.5 rounded-md">
                             Student Book
                           </span>
                         </div>
                         <p className="text-xs text-sky-950 font-medium whitespace-pre-line leading-relaxed">
-                          {plan.unitContent || <span className="italic text-slate-400">Não informado</span>}
+                          {plan.unitContent || <span className="italic text-slate-400">Not provided</span>}
                         </p>
                       </div>
 
@@ -571,30 +571,30 @@ export const ClassLessonPlanTab: React.FC<ClassLessonPlanTabProps> = ({
                         <div className="flex items-center justify-between">
                           <span className="text-[11px] font-black uppercase tracking-wider text-purple-950 flex items-center gap-1.5">
                             <Volume2 className="w-3.5 h-3.5 text-purple-700" />
-                            2. Speaking Time (Prática Oral & Dinâmicas)
+                            2. Speaking Time (Oral Practice & Activities)
                           </span>
                           <span className="text-[10px] font-bold text-purple-700 bg-purple-100 px-2 py-0.5 rounded-md">
                             Interactive
                           </span>
                         </div>
                         <p className="text-xs text-purple-950 font-medium whitespace-pre-line leading-relaxed">
-                          {plan.speakingTime || <span className="italic text-slate-400">Não informado</span>}
+                          {plan.speakingTime || <span className="italic text-slate-400">Not provided</span>}
                         </p>
                       </div>
                     </div>
 
-                    {/* Middle Row: Reading, Writing, Handwriting (Literacy Grid) */}
+                    {/* Middle row: Reading, Writing, Handwriting (literacy grid) */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       {/* 3. READING */}
                       <div className="p-4 rounded-2xl bg-amber-50/70 border border-amber-200/90 space-y-2">
                         <div className="flex items-center justify-between">
                           <span className="text-[11px] font-black uppercase tracking-wider text-amber-950 flex items-center gap-1.5">
                             <FileText className="w-3.5 h-3.5 text-amber-700" />
-                            3. Reading (Leitura)
+                            3. Reading
                           </span>
                         </div>
                         <p className="text-xs text-amber-950 font-medium whitespace-pre-line leading-relaxed">
-                          {plan.reading || <span className="italic text-slate-400">Não informado</span>}
+                          {plan.reading || <span className="italic text-slate-400">Not provided</span>}
                         </p>
                       </div>
 
@@ -603,11 +603,11 @@ export const ClassLessonPlanTab: React.FC<ClassLessonPlanTabProps> = ({
                         <div className="flex items-center justify-between">
                           <span className="text-[11px] font-black uppercase tracking-wider text-rose-950 flex items-center gap-1.5">
                             <Edit3 className="w-3.5 h-3.5 text-rose-700" />
-                            4. Writing (Escrita & Ortografia)
+                            4. Writing (Writing & Spelling)
                           </span>
                         </div>
                         <p className="text-xs text-rose-950 font-medium whitespace-pre-line leading-relaxed">
-                          {plan.writing || <span className="italic text-slate-400">Não informado</span>}
+                          {plan.writing || <span className="italic text-slate-400">Not provided</span>}
                         </p>
                       </div>
 
@@ -616,30 +616,30 @@ export const ClassLessonPlanTab: React.FC<ClassLessonPlanTabProps> = ({
                         <div className="flex items-center justify-between">
                           <span className="text-[11px] font-black uppercase tracking-wider text-teal-950 flex items-center gap-1.5">
                             <Edit3 className="w-3.5 h-3.5 text-teal-700" />
-                            5. Handwriting (Caligrafia)
+                            5. Handwriting (Penmanship)
                           </span>
                         </div>
                         <p className="text-xs text-teal-950 font-medium whitespace-pre-line leading-relaxed">
-                          {plan.handwriting || <span className="italic text-slate-400">Não informado</span>}
+                          {plan.handwriting || <span className="italic text-slate-400">Not provided</span>}
                         </p>
                       </div>
                     </div>
 
-                    {/* Bottom Row: Homework, Materials, Observations */}
+                    {/* Bottom row: Homework, Materials, Observations */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-1">
                       {/* 6. HOMEWORK */}
                       <div className="p-4 rounded-2xl bg-indigo-50/70 border border-indigo-200/90 space-y-2">
                         <div className="flex items-center justify-between">
                           <span className="text-[11px] font-black uppercase tracking-wider text-indigo-950 flex items-center gap-1.5">
                             <BookOpen className="w-3.5 h-3.5 text-indigo-700" />
-                            6. Homework (Lição de Casa)
+                            6. Homework (Take-Home Practice)
                           </span>
                           <span className="text-[10px] font-bold text-indigo-700 bg-indigo-100 px-2 py-0.5 rounded-md">
                             Workbook
                           </span>
                         </div>
                         <p className="text-xs text-indigo-950 font-medium whitespace-pre-line leading-relaxed">
-                          {plan.homework || <span className="italic text-slate-400">Não informado</span>}
+                          {plan.homework || <span className="italic text-slate-400">Not provided</span>}
                         </p>
                       </div>
 
@@ -648,11 +648,11 @@ export const ClassLessonPlanTab: React.FC<ClassLessonPlanTabProps> = ({
                         <div className="flex items-center justify-between">
                           <span className="text-[11px] font-black uppercase tracking-wider text-slate-900 flex items-center gap-1.5">
                             <Layers className="w-3.5 h-3.5 text-slate-600" />
-                            7. Materials (Materiais Necessários)
+                            7. Materials (Required Materials)
                           </span>
                         </div>
                         <p className="text-xs text-slate-800 font-medium whitespace-pre-line leading-relaxed">
-                          {plan.materials || <span className="italic text-slate-400">Não informado</span>}
+                          {plan.materials || <span className="italic text-slate-400">Not provided</span>}
                         </p>
                       </div>
 
@@ -661,11 +661,11 @@ export const ClassLessonPlanTab: React.FC<ClassLessonPlanTabProps> = ({
                         <div className="flex items-center justify-between">
                           <span className="text-[11px] font-black uppercase tracking-wider text-emerald-950 flex items-center gap-1.5">
                             <AlertCircle className="w-3.5 h-3.5 text-emerald-700" />
-                            8. Observations (Observações & Testes)
+                            8. Observations (Notes & Tests)
                           </span>
                         </div>
                         <p className="text-xs text-emerald-950 font-medium whitespace-pre-line leading-relaxed">
-                          {plan.observations || <span className="italic text-slate-400">Sem observações</span>}
+                          {plan.observations || <span className="italic text-slate-400">No observations</span>}
                         </p>
                       </div>
                     </div>
@@ -677,26 +677,26 @@ export const ClassLessonPlanTab: React.FC<ClassLessonPlanTabProps> = ({
         </div>
       ) : (
         /* ========================================================================= */
-        /* MODE B: PLANILHA / TABELA ESTILO EXCEL (REPLICA ESTRUTURAL MODERNIZADA)    */
+        /* MODE B: EXCEL-STYLE SPREADSHEET / TABLE (MODERNIZED STRUCTURAL REPLICA) */
         /* ========================================================================= */
         <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xs overflow-hidden">
-          {/* Excel Table Title Bar */}
+          {/* Excel table title bar */}
           <div className="bg-[#ede9fe] px-6 py-3 border-b border-purple-200 flex items-center justify-between text-purple-950">
             <div className="flex items-center gap-2">
               <FileSpreadsheet className="w-4 h-4 text-[#533499]" />
               <span className="text-xs sm:text-sm font-black">
-                Lesson Plan {selectedClass.name} — {selectedClass.teacherName || 'Professor não atribuído'}
+                Lesson Plan {selectedClass.name} — {selectedClass.teacherName || 'Teacher not assigned'}
               </span>
             </div>
             <span className="text-[10px] font-bold bg-white/80 px-2.5 py-1 rounded-md text-purple-900 border border-purple-200">
-              Formato Planilha D2L / Excel
+              D2L / Excel Spreadsheet Format
             </span>
           </div>
 
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
-                {/* Header Row: Matching the exact Excel image column colors & labels */}
+                {/* Header row: matching the exact Excel image column colors & labels */}
                 <tr className="border-b border-slate-300 font-extrabold text-[11px] uppercase tracking-wider text-slate-900">
                   <th className="py-3 px-3.5 bg-slate-100 border-r border-slate-200 w-28 text-center">
                     Date
@@ -726,11 +726,11 @@ export const ClassLessonPlanTab: React.FC<ClassLessonPlanTabProps> = ({
                     Observations
                   </th>
                   <th className="py-3 px-3.5 bg-slate-100 text-center w-24">
-                    Ações
+                    Actions
                   </th>
                 </tr>
 
-                {/* Second Header Row: Guidelines from row 2 in Excel */}
+                {/* Second header row: guidelines from row 2 in Excel */}
                 <tr className="border-b-2 border-slate-300 text-[10px] text-slate-600 bg-slate-50/80 font-normal leading-tight italic">
                   <td className="p-2 border-r border-slate-200 bg-red-100/70 font-black text-red-800 text-center not-italic">
                     INSTRUCTION
@@ -760,7 +760,7 @@ export const ClassLessonPlanTab: React.FC<ClassLessonPlanTabProps> = ({
                     - Other activities, incidents, special needs
                   </td>
                   <td className="p-2 text-center not-italic font-bold text-slate-400">
-                    Opções
+                    Options
                   </td>
                 </tr>
               </thead>
@@ -768,11 +768,11 @@ export const ClassLessonPlanTab: React.FC<ClassLessonPlanTabProps> = ({
               <tbody className="divide-y divide-slate-200 text-slate-800">
                 {classPlans.map((plan) => (
                   <tr key={plan.id} className="hover:bg-purple-50/30 transition-colors align-top text-[11px]">
-                    {/* Date Column (Red highlight like the Excel) */}
+                    {/* Date column (red highlight like the Excel) */}
                     <td className="p-3 border-r border-slate-200 bg-red-600 text-white font-black text-center whitespace-nowrap shadow-2xs">
                       {plan.dateDisplay || plan.date}
                       <span className="block text-[9px] font-bold text-red-200 mt-0.5">
-                        {plan.status === 'MINISTRADA' ? '✓ Feita' : 'Planejada'}
+                        {plan.status === 'MINISTRADA' ? '✓ Done' : 'Planned'}
                       </span>
                     </td>
 
@@ -814,26 +814,26 @@ export const ClassLessonPlanTab: React.FC<ClassLessonPlanTabProps> = ({
                         <button
                           onClick={() => handleOpenEditModal(plan)}
                           className="p-1 rounded-lg hover:bg-emerald-50 text-slate-500 hover:text-[#075e38] transition-colors cursor-pointer"
-                          title="Editar"
+                          title="Edit"
                         >
                           <Edit3 className="w-3.5 h-3.5" />
                         </button>
                         <button
                           onClick={() => handleDuplicatePlan(plan)}
                           className="p-1 rounded-lg hover:bg-purple-50 text-slate-500 hover:text-purple-700 transition-colors cursor-pointer"
-                          title="Duplicar para a próxima aula"
+                          title="Duplicate for the next lesson"
                         >
                           <Copy className="w-3.5 h-3.5" />
                         </button>
                         <button
                           onClick={() => {
-                            if (confirm('Excluir plano?')) {
+                            if (confirm('Delete plan?')) {
                               onDeleteLessonPlan(plan.id);
-                              showToast('Plano excluído.');
+                              showToast('Plan deleted.');
                             }
                           }}
                           className="p-1 rounded-lg hover:bg-rose-50 text-slate-400 hover:text-rose-600 transition-colors cursor-pointer"
-                          title="Excluir"
+                          title="Delete"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
@@ -848,12 +848,12 @@ export const ClassLessonPlanTab: React.FC<ClassLessonPlanTabProps> = ({
       )}
 
       {/* ========================================================================= */}
-      {/* 4. MODAL: CRIAR OU EDITAR PLANO DE AULA COM INSTRUÇÕES DO EXCEL           */}
+      {/* 4. MODAL: CREATE OR EDIT LESSON PLAN WITH EXCEL GUIDELINES              */}
       {/* ========================================================================= */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-slate-900/70 backdrop-blur-xs animate-in fade-in">
           <div className="bg-white rounded-3xl max-w-3xl w-full p-6 sm:p-7 space-y-6 shadow-2xl border border-slate-200 max-h-[92vh] overflow-y-auto">
-            {/* Modal Header */}
+            {/* Modal header */}
             <div className="flex items-start justify-between border-b border-slate-100 pb-4">
               <div className="flex items-center gap-3">
                 <div className="w-11 h-11 rounded-2xl bg-purple-100 text-[#533499] flex items-center justify-center shadow-2xs">
@@ -861,10 +861,10 @@ export const ClassLessonPlanTab: React.FC<ClassLessonPlanTabProps> = ({
                 </div>
                 <div>
                   <h3 className="font-black text-base sm:text-lg text-slate-900">
-                    {editingPlanId ? 'Editar Plano de Aula' : 'Novo Plano de Aula (Lesson Plan)'}
+                    {editingPlanId ? 'Edit Lesson Plan' : 'New Lesson Plan'}
                   </h3>
                   <p className="text-xs text-slate-500 mt-0.5">
-                    Turma: <strong>{selectedClass.name}</strong> • Modelo institucional Think Green
+                    Class: <strong>{selectedClass.name}</strong> • Think Green institutional template
                   </p>
                 </div>
               </div>
@@ -874,10 +874,10 @@ export const ClassLessonPlanTab: React.FC<ClassLessonPlanTabProps> = ({
                   type="button"
                   onClick={handlePreFillSampleLG1}
                   className="px-3 py-1.5 rounded-xl bg-purple-50 hover:bg-purple-100 text-[#533499] text-xs font-bold transition-all border border-purple-200 cursor-pointer flex items-center gap-1.5"
-                  title="Preencher rapidamente com o modelo da imagem do Excel (Let's Go 1 - U2)"
+                  title="Quickly fill in using the model from the Excel image (Let's Go 1 - U2)"
                 >
                   <Sparkles className="w-3.5 h-3.5 text-[#533499]" />
-                  <span>Exemplo Let's Go 1</span>
+                  <span>Let's Go 1 Example</span>
                 </button>
 
                 <button
@@ -891,11 +891,11 @@ export const ClassLessonPlanTab: React.FC<ClassLessonPlanTabProps> = ({
 
             {/* Form */}
             <form onSubmit={handleSaveForm} className="space-y-5">
-              {/* Row 1: Date & Status */}
+              {/* Row 1: Date & status */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-slate-50 p-4 rounded-2xl border border-slate-200/80">
                 <div>
                   <label className="block text-xs font-black text-slate-700 uppercase mb-1">
-                    Data da Aula *
+                    Lesson Date *
                   </label>
                   <input
                     type="date"
@@ -911,20 +911,20 @@ export const ClassLessonPlanTab: React.FC<ClassLessonPlanTabProps> = ({
 
                 <div>
                   <label className="block text-xs font-black text-slate-700 uppercase mb-1">
-                    Exibição Curta (ex: ago 25 (ter))
+                    Short Display (e.g. Aug 25 (Tue))
                   </label>
                   <input
                     type="text"
                     value={formDateDisplay}
                     onChange={(e) => setFormDateDisplay(e.target.value)}
-                    placeholder="Ex: ago 25 (ter)"
+                    placeholder="E.g. Aug 25 (Tue)"
                     className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs font-bold text-slate-800 focus:outline-hidden focus:border-[#075e38]"
                   />
                 </div>
 
                 <div>
                   <label className="block text-xs font-black text-slate-700 uppercase mb-1">
-                    Status da Aula
+                    Lesson Status
                   </label>
                   <select
                     value={formStatus}
@@ -933,21 +933,21 @@ export const ClassLessonPlanTab: React.FC<ClassLessonPlanTabProps> = ({
                     }
                     className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs font-bold text-slate-800 focus:outline-hidden focus:border-[#075e38]"
                   >
-                    <option value="PLANEJADA">📅 Planejada (Upcoming)</option>
-                    <option value="MINISTRADA">✓ Ministrada (Completed)</option>
-                    <option value="EM_ANDAMENTO">⏳ Em Andamento</option>
+                    <option value="PLANEJADA">📅 Planned (Upcoming)</option>
+                    <option value="MINISTRADA">✓ Taught (Completed)</option>
+                    <option value="EM_ANDAMENTO">⏳ In Progress</option>
                   </select>
                 </div>
               </div>
 
-              {/* 1. Unit Content */}
+                  {/* 1. Unit Content */}
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
                   <label className="block text-xs font-black text-sky-950 uppercase">
                     1. Unit Content *
                   </label>
                   <span className="text-[10px] text-slate-400 italic">
-                    Instrução do Excel: Describe the unit content from the Student Book
+                    Excel instruction: Describe the unit content from the Student Book
                   </span>
                 </div>
                 <textarea
@@ -1002,7 +1002,7 @@ export const ClassLessonPlanTab: React.FC<ClassLessonPlanTabProps> = ({
                     <label className="block text-xs font-black text-amber-950 uppercase">
                       4. Reading
                     </label>
-                    <span className="text-[10px] text-slate-400 italic">Diálogos e textos lidos</span>
+                    <span className="text-[10px] text-slate-400 italic">Dialogues and texts read</span>
                   </div>
                   <textarea
                     rows={3}
@@ -1018,7 +1018,7 @@ export const ClassLessonPlanTab: React.FC<ClassLessonPlanTabProps> = ({
                     <label className="block text-xs font-black text-purple-950 uppercase">
                       5. Speaking Time
                     </label>
-                    <span className="text-[10px] text-slate-400 italic">Atividades interativas</span>
+                    <span className="text-[10px] text-slate-400 italic">Interactive activities</span>
                   </div>
                   <textarea
                     rows={3}
@@ -1040,7 +1040,7 @@ export const ClassLessonPlanTab: React.FC<ClassLessonPlanTabProps> = ({
                     rows={2}
                     value={formHomework}
                     onChange={(e) => setFormHomework(e.target.value)}
-                    placeholder="- Workbook p.0-00 (ex: Workbook - p.11)..."
+                    placeholder="- Workbook p.0-00 (e.g. Workbook - p.11)..."
                     className="w-full p-3 bg-indigo-50/30 border border-indigo-200 rounded-xl text-xs text-slate-800 font-medium focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden"
                   />
                 </div>
@@ -1066,7 +1066,7 @@ export const ClassLessonPlanTab: React.FC<ClassLessonPlanTabProps> = ({
                     rows={2}
                     value={formObservations}
                     onChange={(e) => setFormObservations(e.target.value)}
-                    placeholder="- Any incidents, tests (Unit 1 teste today), special needs..."
+                    placeholder="- Any incidents, tests (Unit 1 test today), special needs..."
                     className="w-full p-3 bg-emerald-50/30 border border-emerald-200 rounded-xl text-xs text-slate-800 font-medium focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 focus:outline-hidden"
                   />
                 </div>
@@ -1079,7 +1079,7 @@ export const ClassLessonPlanTab: React.FC<ClassLessonPlanTabProps> = ({
                   onClick={() => setIsModalOpen(false)}
                   className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition-colors cursor-pointer"
                 >
-                  Cancelar
+                  Cancel
                 </button>
 
                 <button
@@ -1087,7 +1087,7 @@ export const ClassLessonPlanTab: React.FC<ClassLessonPlanTabProps> = ({
                   className="px-7 py-2.5 bg-[#075e38] hover:bg-[#064e2e] text-white font-black text-xs rounded-xl transition-all shadow-md hover:shadow-lg flex items-center gap-2 cursor-pointer"
                 >
                   <Save className="w-4 h-4" />
-                  <span>Salvar Plano de Aula</span>
+                  <span>Save Lesson Plan</span>
                 </button>
               </div>
             </form>

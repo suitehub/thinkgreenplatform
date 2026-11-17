@@ -102,7 +102,7 @@ export const EmployeeReimbursementPortal: React.FC<EmployeeReimbursementPortalPr
 
   const handleRemoveItem = (id: string) => {
     if (items.length <= 1) {
-      showToast('O relatório precisa conter pelo menos um item de despesa.');
+      showToast('The report must contain at least one expense item.');
       return;
     }
     setItems((prev) => prev.filter((it) => it.id !== id));
@@ -120,7 +120,7 @@ export const EmployeeReimbursementPortal: React.FC<EmployeeReimbursementPortalPr
       const reader = new FileReader();
       reader.onload = () => {
         setReceiptPhotoUrl(reader.result as string);
-        showToast('Foto do comprovante anexada com sucesso!');
+        showToast('Receipt photo attached successfully!');
       };
       reader.readAsDataURL(file);
     }
@@ -130,15 +130,15 @@ export const EmployeeReimbursementPortal: React.FC<EmployeeReimbursementPortalPr
     e.preventDefault();
 
     if (!fullName.trim()) {
-      alert('Informe seu nome completo.');
+      alert('Enter your full name.');
       return;
     }
     if (!event.trim()) {
-      alert('Informe o evento ou projeto a que se referem os gastos.');
+      alert('Enter the event or project these expenses refer to.');
       return;
     }
     if (items.some((it) => !it.description.trim() || it.amount <= 0)) {
-      alert('Preencha a descrição e um valor válido (> 0) para todos os itens da lista.');
+      alert('Fill in a description and a valid amount (> 0) for every item in the list.');
       return;
     }
 
@@ -175,7 +175,7 @@ export const EmployeeReimbursementPortal: React.FC<EmployeeReimbursementPortalPr
       },
     ]);
 
-    showToast(`Relatório ${newReport.reportCode} enviado para a Contabilidade como Pendente de Análise!`);
+    showToast(`Report ${newReport.reportCode} sent to Accounting as Pending Review!`);
   };
 
   const handleApproveFromPortal = (report: StaffExpenseReport) => {
@@ -207,14 +207,14 @@ export const EmployeeReimbursementPortal: React.FC<EmployeeReimbursementPortalPr
         id: `exp_rep_${report.id}_${item.id}`,
         receiptNumber: receiptNo,
         date: formatDateToDDMMYYYY(item.date || report.date),
-        product: `${item.description} (Reembolso: ${report.fullName})`,
+        product: `${item.description} (Reimbursement: ${report.fullName})`,
         price: Number(item.amount),
         budget,
         category: item.category,
         paidTo: report.fullName,
         sourceReportId: report.id,
         receiptPhotoUrl: report.receiptPhotoUrl,
-        notes: `Aprovado a partir do Relatório ${report.reportCode} (${report.event})`,
+        notes: `Approved from Report ${report.reportCode} (${report.event})`,
         createdAt: new Date().toISOString(),
       });
     });
@@ -227,9 +227,9 @@ export const EmployeeReimbursementPortal: React.FC<EmployeeReimbursementPortalPr
         ? {
             ...r,
             status: 'APROVADO' as const,
-            reviewedBy: `${currentUser.name} (Contabilidade)`,
+            reviewedBy: `${currentUser.name} (Accounting)`,
             reviewedAt: new Date().toISOString().replace('T', ' ').substring(0, 16),
-            reviewNotes: `Reembolso aprovado e lançado na planilha oficial de gastos (Recibos #${generatedReceiptNumbers.join(', #')}).`,
+            reviewNotes: `Reimbursement approved and posted to the official expense spreadsheet (Receipts #${generatedReceiptNumbers.join(', #')}).`,
             assignedExpenseReceipts: generatedReceiptNumbers,
           }
         : r
@@ -238,7 +238,7 @@ export const EmployeeReimbursementPortal: React.FC<EmployeeReimbursementPortalPr
     saveStoredExpenseReports(updatedReports);
     setSelectedReportForView(null);
     showToast(
-      `Reembolso ${report.reportCode} APROVADO! ${generatedReceiptNumbers.length} despesa(s) inserida(s) direto na planilha oficial de gastos (#${generatedReceiptNumbers.join(', #')}).`
+      `Reimbursement ${report.reportCode} APPROVED! ${generatedReceiptNumbers.length} expense(s) added directly to the official expense spreadsheet (#${generatedReceiptNumbers.join(', #')}).`
     );
   };
 
@@ -261,34 +261,34 @@ export const EmployeeReimbursementPortal: React.FC<EmployeeReimbursementPortalPr
               className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-200 hover:text-white mb-1 transition-colors cursor-pointer"
             >
               <ArrowLeft className="w-4 h-4" />
-              <span>Voltar ao Sistema</span>
+              <span>Back to System</span>
             </button>
           )}
 
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-[10px] font-black uppercase tracking-wider bg-white/20 px-2.5 py-0.5 rounded-full text-emerald-100">
-              Formulário Oficial de Gastos
+              Official Expense Form
             </span>
             <span className="text-xs text-emerald-200 font-semibold flex items-center gap-1">
               <Smartphone className="w-3.5 h-3.5" />
-              Portal do Funcionário & Voluntário
+              Employee & Volunteer Portal
             </span>
           </div>
 
           <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight">
-            Solicitação de Reembolso (Expense Report)
+            Reimbursement Request (Expense Report)
           </h1>
 
           <p className="text-xs sm:text-sm text-emerald-100/90 max-w-xl leading-relaxed">
-            Preencha seus gastos com produtos, materiais ou transporte. Ao enviar, sua solicitação vai direto para a fila de análise da <strong>Contabilidade (Rony)</strong>.
+            Enter your expenses for products, materials or transportation. When you submit, your request goes straight to the review queue of <strong>Accounting (Rony)</strong>.
           </p>
         </div>
 
         <div className="bg-white/10 backdrop-blur-xs p-3.5 rounded-2xl border border-white/20 text-center min-w-[130px] flex-shrink-0">
-          <span className="text-[10px] font-bold text-emerald-200 uppercase block">Meus Relatórios</span>
+          <span className="text-[10px] font-bold text-emerald-200 uppercase block">My Reports</span>
           <span className="text-xl font-black text-white">{userReports.length}</span>
           <span className="text-[10px] text-emerald-300 font-semibold block mt-0.5">
-            {userReports.filter((r) => r.status === 'PENDENTE').length} pendentes
+            {userReports.filter((r) => r.status === 'PENDENTE').length} pending
           </span>
         </div>
       </div>
@@ -303,16 +303,16 @@ export const EmployeeReimbursementPortal: React.FC<EmployeeReimbursementPortalPr
             </div>
             <div>
               <h2 className="text-base font-extrabold text-slate-900">
-                Novo Relatório de Despesas (Expense Report)
+                New Expense Report
               </h2>
               <p className="text-xs text-slate-600">
-                Referência direta do modelo padrão Think Green Community Center
+                Based directly on the Think Green Community Center standard template
               </p>
             </div>
           </div>
 
           <span className="text-[11px] font-extrabold text-emerald-800 bg-white px-3 py-1 rounded-xl border border-emerald-300 shadow-2xs">
-            Moeda Oficial: EGP (Libras Egípcias)
+            Official Currency: EGP (Egyptian Pounds)
           </span>
         </div>
 
@@ -321,7 +321,7 @@ export const EmployeeReimbursementPortal: React.FC<EmployeeReimbursementPortalPr
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="space-y-1.5">
               <label className="block text-xs font-black text-slate-700 uppercase">
-                Nome Completo (Full Name) *
+                Full Name (Full Name) *
               </label>
               <div className="relative">
                 <User className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -330,7 +330,7 @@ export const EmployeeReimbursementPortal: React.FC<EmployeeReimbursementPortalPr
                   required
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  placeholder="Seu nome completo..."
+                  placeholder="Your full name..."
                   className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold text-slate-900 focus:outline-hidden focus:border-[#075e38]"
                 />
               </div>
@@ -338,7 +338,7 @@ export const EmployeeReimbursementPortal: React.FC<EmployeeReimbursementPortalPr
 
             <div className="space-y-1.5">
               <label className="block text-xs font-black text-slate-700 uppercase">
-                Evento / Finalidade (Event) *
+                Event / Purpose (Event) *
               </label>
               <div className="relative">
                 <Tag className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -347,7 +347,7 @@ export const EmployeeReimbursementPortal: React.FC<EmployeeReimbursementPortalPr
                   required
                   value={event}
                   onChange={(e) => setEvent(e.target.value)}
-                  placeholder="Ex: Acolhimento de Voluntários, Materiais Pré-Escola..."
+                  placeholder="E.g.: Volunteer Welcome, Preschool Materials..."
                   className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold text-slate-900 focus:outline-hidden focus:border-[#075e38]"
                 />
               </div>
@@ -355,7 +355,7 @@ export const EmployeeReimbursementPortal: React.FC<EmployeeReimbursementPortalPr
 
             <div className="space-y-1.5">
               <label className="block text-xs font-black text-slate-700 uppercase">
-                Data do Relatório (Date) *
+                Report Date (Date) *
               </label>
               <div className="relative">
                 <Calendar className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -374,7 +374,7 @@ export const EmployeeReimbursementPortal: React.FC<EmployeeReimbursementPortalPr
           <div className="space-y-3 pt-2">
             <div className="flex items-center justify-between">
               <label className="block text-xs font-black text-slate-800 uppercase tracking-wide">
-                Itens de Gastos Detalhados (Planilha de Itens)
+                Detailed Expense Items (Item Spreadsheet)
               </label>
               <button
                 type="button"
@@ -382,7 +382,7 @@ export const EmployeeReimbursementPortal: React.FC<EmployeeReimbursementPortalPr
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-[#075e38] rounded-xl text-xs font-bold border border-emerald-200 transition-colors cursor-pointer"
               >
                 <Plus className="w-3.5 h-3.5" />
-                <span>+ Adicionar Outro Item / Linha</span>
+                <span>+ Add Another Item / Row</span>
               </button>
             </div>
 
@@ -390,11 +390,11 @@ export const EmployeeReimbursementPortal: React.FC<EmployeeReimbursementPortalPr
               <table className="w-full text-left text-xs border-collapse">
                 <thead>
                   <tr className="bg-[#bbf7d0]/60 text-emerald-950 font-black uppercase text-[11px] border-b border-emerald-200">
-                    <th className="py-2.5 px-3 w-56">Categoria (Category)</th>
-                    <th className="py-2.5 px-3 min-w-[200px]">Descrição do Produto/Serviço</th>
-                    <th className="py-2.5 px-3 w-36">Data (Date)</th>
-                    <th className="py-2.5 px-3 w-36 text-right">Valor (Amount EGP)</th>
-                    <th className="py-2.5 px-2 w-12 text-center">Ação</th>
+                    <th className="py-2.5 px-3 w-56">Category (Category)</th>
+                    <th className="py-2.5 px-3 min-w-[200px]">Product/Service Description</th>
+                    <th className="py-2.5 px-3 w-36">Date (Date)</th>
+                    <th className="py-2.5 px-3 w-36 text-right">Amount (Amount EGP)</th>
+                    <th className="py-2.5 px-2 w-12 text-center">Action</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 bg-white">
@@ -422,7 +422,7 @@ export const EmployeeReimbursementPortal: React.FC<EmployeeReimbursementPortalPr
                           required
                           value={item.description}
                           onChange={(e) => handleItemChange(item.id, 'description', e.target.value)}
-                          placeholder="Ex: Transporte Van, Livros de Inglês, Lanche..."
+                          placeholder="E.g.: Van Transport, English Books, Snacks..."
                           className="w-full p-2 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-hidden focus:border-[#075e38]"
                         />
                       </td>
@@ -457,7 +457,7 @@ export const EmployeeReimbursementPortal: React.FC<EmployeeReimbursementPortalPr
                           type="button"
                           onClick={() => handleRemoveItem(item.id)}
                           className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
-                          title="Remover linha"
+                          title="Remove row"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
@@ -482,12 +482,12 @@ export const EmployeeReimbursementPortal: React.FC<EmployeeReimbursementPortalPr
 
           {/* Receipt Photo Upload & Signature Section */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-2">
-            {/* Foto do Comprovante (Câmera ou Upload de Arquivo) */}
+            {/* Receipt Photo (Camera or File Upload) */}
             <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
               <label className="block text-xs font-black text-slate-800 uppercase flex items-center justify-between">
-                <span>Foto do Comprovante (Nota / Recibo)</span>
+                <span>Receipt Photo (Invoice / Receipt)</span>
                 <span className="text-[10px] font-medium text-slate-400 lowercase italic">
-                  (recomendado se tiver)
+                  (recommended if available)
                 </span>
               </label>
 
@@ -496,48 +496,48 @@ export const EmployeeReimbursementPortal: React.FC<EmployeeReimbursementPortalPr
                   <div className="relative rounded-xl overflow-hidden border border-slate-200 max-h-48 bg-slate-900">
                     <img
                       src={receiptPhotoUrl}
-                      alt="Comprovante"
+                      alt="Receipt"
                       className="w-full h-44 object-cover object-center"
                     />
                     <button
                       type="button"
                       onClick={() => setReceiptPhotoUrl(null)}
                       className="absolute top-2 right-2 p-1.5 bg-black/60 hover:bg-rose-600 text-white rounded-lg transition-colors"
-                      title="Remover imagem"
+                      title="Remove image"
                     >
                       <X className="w-4 h-4" />
                     </button>
                   </div>
                   <p className="text-[11px] text-emerald-700 font-bold flex items-center gap-1">
                     <CheckCircle2 className="w-3.5 h-3.5" />
-                    Comprovante anexado pronto para envio.
+                    Receipt attached and ready to submit.
                   </p>
                 </div>
               ) : (
                 <div className="space-y-2.5">
                   <p className="text-xs text-slate-500">
-                    Tire uma foto direta do comprovante ou selecione um arquivo de imagem da sua galeria:
+                    Take a photo of the receipt directly or select an image file from your gallery:
                   </p>
 
                   <div className="grid grid-cols-2 gap-2">
-                    {/* Tirar Foto */}
+                    {/* Take Photo */}
                     <button
                       type="button"
                       onClick={() => cameraInputRef.current?.click()}
                       className="p-3 rounded-xl border border-dashed border-emerald-300 bg-emerald-50/50 hover:bg-emerald-50 text-[#075e38] flex flex-col items-center justify-center gap-1.5 font-bold text-xs transition-colors cursor-pointer"
                     >
                       <Camera className="w-5 h-5 text-emerald-700" />
-                      <span>Tirar Foto</span>
+                      <span>Take Photo</span>
                     </button>
 
-                    {/* Upload de Arquivo */}
+                    {/* File Upload */}
                     <button
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
                       className="p-3 rounded-xl border border-dashed border-slate-300 bg-white hover:bg-slate-100 text-slate-700 flex flex-col items-center justify-center gap-1.5 font-bold text-xs transition-colors cursor-pointer"
                     >
                       <Upload className="w-5 h-5 text-slate-500" />
-                      <span>Upload de Imagem</span>
+                      <span>Upload Image</span>
                     </button>
                   </div>
 
@@ -565,30 +565,30 @@ export const EmployeeReimbursementPortal: React.FC<EmployeeReimbursementPortalPr
             <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex flex-col justify-between space-y-3">
               <div>
                 <label className="block text-xs font-black text-slate-800 uppercase mb-1">
-                  Confirmação / Assinatura (Signature) *
+                  Confirmation / Signature (Signature) *
                 </label>
                 <p className="text-xs text-slate-500 leading-relaxed mb-2">
-                  Ao assinar, você confirma que as despesas acima foram realizadas em benefício dos projetos e atividades do Think Green Community Center.
+                  By signing, you confirm that the expenses above were incurred for the benefit of Think Green Community Center projects and activities.
                 </p>
                 <input
                   type="text"
                   required
                   value={signatureName}
                   onChange={(e) => setSignatureName(e.target.value)}
-                  placeholder="Digite seu nome como assinatura..."
+                  placeholder="Type your name as signature..."
                   className="w-full p-2.5 bg-white border border-slate-300 rounded-xl text-xs font-bold text-slate-900 focus:outline-hidden focus:border-[#075e38]"
                 />
               </div>
 
               <div className="p-3 bg-white rounded-xl border border-slate-200/80 flex items-center justify-between">
                 <div>
-                  <span className="text-[10px] font-bold text-slate-400 uppercase block">Total a Reembolsar</span>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase block">Total to Reimburse</span>
                   <span className="text-base font-black text-[#075e38] font-mono">
                     {formatCurrency(totalAmount, 'EGP')}
                   </span>
                 </div>
                 <div className="text-right text-[11px] text-slate-500">
-                  <span>{items.length} item(ns) na lista</span>
+                  <span>{items.length} item(s) in the list</span>
                 </div>
               </div>
             </div>
@@ -597,7 +597,7 @@ export const EmployeeReimbursementPortal: React.FC<EmployeeReimbursementPortalPr
           {/* Submit Button */}
           <div className="pt-4 border-t border-slate-100 flex items-center justify-between gap-4">
             <span className="text-xs text-slate-500 hidden sm:inline">
-              Ficará registrado como <strong>Pendente</strong> para aprovação pelo Rony na Contabilidade.
+              It will be recorded as <strong>Pending</strong> for approval by Rony in Accounting.
             </span>
 
             <button
@@ -605,29 +605,29 @@ export const EmployeeReimbursementPortal: React.FC<EmployeeReimbursementPortalPr
               className="w-full sm:w-auto px-8 py-3 bg-[#075e38] hover:bg-[#064e2e] text-white font-black text-xs rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98"
             >
               <Check className="w-4 h-4" />
-              <span>ENVIAR FORMULÁRIO DE GASTO PARA O CONTÁBIL</span>
+              <span>SUBMIT EXPENSE FORM TO ACCOUNTING</span>
             </button>
           </div>
         </form>
       </div>
 
-      {/* 2. MEUS RELATÓRIOS ENVIADOS (HISTÓRICO DO COLABORADOR) */}
+      {/* 2. MY SUBMITTED REPORTS (EMPLOYEE HISTORY) */}
       <div className="bg-white rounded-3xl border border-slate-200/90 shadow-xs p-6 sm:p-7 space-y-4">
         <div className="flex items-center justify-between border-b border-slate-100 pb-4">
           <div className="flex items-center gap-2.5">
             <Clock className="w-4 h-4 text-[#075e38]" />
             <h3 className="text-sm sm:text-base font-extrabold text-slate-900">
-              Histórico de Reembolsos de {fullName || currentUser.name}
+              Reimbursement History for {fullName || currentUser.name}
             </h3>
           </div>
           <span className="text-xs font-semibold text-slate-500">
-            {userReports.length} solicitação(ões)
+            {userReports.length} request(s)
           </span>
         </div>
 
         {userReports.length === 0 ? (
           <div className="text-center py-8 text-slate-400 text-xs">
-            Nenhuma solicitação de reembolso enviada por você até o momento.
+            No reimbursement requests submitted by you so far.
           </div>
         ) : (
           <div className="space-y-3">
@@ -642,19 +642,19 @@ export const EmployeeReimbursementPortal: React.FC<EmployeeReimbursementPortalPr
                       {rep.reportCode}
                     </span>
                     <span className="text-slate-400">•</span>
-                    <span className="text-slate-500 font-medium">Data: {rep.date}</span>
+                    <span className="text-slate-500 font-medium">Date: {rep.date}</span>
                     <span className="text-slate-400">•</span>
                     <span className="text-slate-700 font-bold">{rep.event}</span>
                   </div>
                   <p className="text-[11px] text-slate-500">
-                    {rep.items.length} item(ns) listado(s) • Total:{' '}
+                    {rep.items.length} item(s) listed • Total:{' '}
                     <strong className="text-slate-900 font-mono">
                       {formatCurrency(rep.totalAmount, 'EGP')}
                     </strong>
                   </p>
                   {rep.reviewNotes && (
                     <p className="text-[11px] text-purple-900 italic bg-purple-50 p-1.5 rounded-lg border border-purple-100 mt-1">
-                      Parecer Contabilidade: "{rep.reviewNotes}"
+                      Accounting Note: "{rep.reviewNotes}"
                     </p>
                   )}
                 </div>
@@ -674,10 +674,10 @@ export const EmployeeReimbursementPortal: React.FC<EmployeeReimbursementPortalPr
                     {rep.status === 'REJEITADO' && <AlertCircle className="w-3.5 h-3.5 text-rose-700" />}
                     <span>
                       {rep.status === 'APROVADO'
-                        ? 'Aprovado & Pago'
+                        ? 'Approved & Paid'
                         : rep.status === 'REJEITADO'
-                        ? 'Recusado'
-                        : 'Pendente de Análise'}
+                        ? 'Rejected'
+                        : 'Pending Review'}
                     </span>
                   </span>
 
@@ -686,7 +686,7 @@ export const EmployeeReimbursementPortal: React.FC<EmployeeReimbursementPortalPr
                     className="px-3 py-1 bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 font-bold rounded-xl transition-colors cursor-pointer flex items-center gap-1"
                   >
                     <Eye className="w-3.5 h-3.5" />
-                    <span>Ver</span>
+                    <span>View</span>
                   </button>
                 </div>
               </div>
@@ -708,7 +708,7 @@ export const EmployeeReimbursementPortal: React.FC<EmployeeReimbursementPortalPr
                   {selectedReportForView.event}
                 </h3>
                 <p className="text-xs text-slate-500">
-                  Colaborador: <strong>{selectedReportForView.fullName}</strong> • Data:{' '}
+                  Employee: <strong>{selectedReportForView.fullName}</strong> • Date:{' '}
                   {selectedReportForView.date}
                 </p>
               </div>
@@ -722,15 +722,15 @@ export const EmployeeReimbursementPortal: React.FC<EmployeeReimbursementPortalPr
 
             {/* Items */}
             <div className="space-y-2">
-              <span className="text-xs font-black text-slate-700 uppercase">Itens da Solicitação:</span>
+              <span className="text-xs font-black text-slate-700 uppercase">Request Items:</span>
               <div className="border border-slate-200 rounded-xl overflow-hidden text-xs">
                 <table className="w-full text-left">
                   <thead className="bg-slate-100 font-bold text-slate-600 border-b border-slate-200">
                     <tr>
-                      <th className="p-2.5">Categoria</th>
-                      <th className="p-2.5">Descrição</th>
-                      <th className="p-2.5">Data</th>
-                      <th className="p-2.5 text-right">Valor</th>
+                      <th className="p-2.5">Category</th>
+                      <th className="p-2.5">Description</th>
+                      <th className="p-2.5">Date</th>
+                      <th className="p-2.5 text-right">Amount</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
@@ -748,7 +748,7 @@ export const EmployeeReimbursementPortal: React.FC<EmployeeReimbursementPortalPr
                   <tfoot>
                     <tr className="bg-emerald-50/70 font-black text-emerald-950 border-t border-emerald-200">
                       <td colSpan={3} className="p-2.5 text-right uppercase">
-                        TOTAL REQUERIDO:
+                        TOTAL REQUESTED:
                       </td>
                       <td className="p-2.5 text-right font-mono text-sm">
                         {formatCurrency(selectedReportForView.totalAmount, 'EGP')}
@@ -762,11 +762,11 @@ export const EmployeeReimbursementPortal: React.FC<EmployeeReimbursementPortalPr
             {/* Receipt image */}
             {selectedReportForView.receiptPhotoUrl && (
               <div className="space-y-1.5">
-                <span className="text-xs font-black text-slate-700 uppercase">Comprovante Anexado:</span>
+                <span className="text-xs font-black text-slate-700 uppercase">Receipt Attached:</span>
                 <div className="rounded-2xl overflow-hidden border border-slate-200 max-h-64 bg-slate-100">
                   <img
                     src={selectedReportForView.receiptPhotoUrl}
-                    alt="Comprovante"
+                    alt="Receipt"
                     className="w-full h-56 object-contain"
                   />
                 </div>
@@ -775,25 +775,25 @@ export const EmployeeReimbursementPortal: React.FC<EmployeeReimbursementPortalPr
 
             <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
-                <span className="text-[10px] text-slate-400 block uppercase font-bold">Status do Reembolso</span>
+                <span className="text-[10px] text-slate-400 block uppercase font-bold">Reimbursement Status</span>
                 {selectedReportForView.status === 'APROVADO' ? (
                   <div className="space-y-0.5">
                     <span className="font-extrabold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded border border-emerald-300 inline-block">
-                      APROVADO • Lançado na Planilha Oficial de Gastos
+                      APPROVED • Posted to the Official Expense Spreadsheet
                     </span>
                     {selectedReportForView.assignedExpenseReceipts && (
                       <span className="text-[11px] text-purple-700 font-bold block">
-                        Recibos Gerados na Planilha: #{selectedReportForView.assignedExpenseReceipts.join(', #')}
+                        Receipts Generated in the Spreadsheet: #{selectedReportForView.assignedExpenseReceipts.join(', #')}
                       </span>
                     )}
                   </div>
                 ) : selectedReportForView.status === 'REJEITADO' ? (
                   <span className="font-bold text-rose-700 bg-rose-100 px-2 py-0.5 rounded border border-rose-300">
-                    REJEITADO
+                    REJECTED
                   </span>
                 ) : (
                   <span className="font-bold text-amber-800 bg-amber-100 px-2 py-0.5 rounded border border-amber-300">
-                    PENDENTE (Aguardando Análise Contábil)
+                    PENDING (Awaiting Accounting Review)
                   </span>
                 )}
               </div>
@@ -808,7 +808,7 @@ export const EmployeeReimbursementPortal: React.FC<EmployeeReimbursementPortalPr
                       className="px-4 py-2 bg-[#075e38] hover:bg-[#064e2e] text-white font-black text-xs rounded-xl shadow-md transition-all flex items-center gap-1.5 cursor-pointer active:scale-95"
                     >
                       <Check className="w-3.5 h-3.5" />
-                      <span>Aprovar e Lançar nos Gastos</span>
+                      <span>Approve and Post to Expenses</span>
                     </button>
                   )}
 
@@ -816,7 +816,7 @@ export const EmployeeReimbursementPortal: React.FC<EmployeeReimbursementPortalPr
                   onClick={() => setSelectedReportForView(null)}
                   className="px-4 py-2 bg-slate-900 text-white rounded-xl font-bold text-xs hover:bg-slate-800 transition-colors cursor-pointer"
                 >
-                  Fechar
+                  Close
                 </button>
               </div>
             </div>

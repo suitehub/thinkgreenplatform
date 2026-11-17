@@ -44,7 +44,7 @@ export const SecretariatImportTab: React.FC = () => {
   ) => {
     const parsed = parseOfficialSpreadsheet(text, courseId, classId);
 
-    // Conta alunos já matriculados para distribuir turmas do mesmo nível
+    // Count already-enrolled students to distribute classes of the same level
     const usage: Record<string, number> = {};
     state.enrollments.forEach((enr) => {
       if (enr.status === 'ATIVA') usage[enr.classId] = (usage[enr.classId] || 0) + 1;
@@ -99,13 +99,13 @@ export const SecretariatImportTab: React.FC = () => {
 
   const handleDownloadTemplate = () => {
     const headerLine = 'Timestamp\tSTU_ID\tName\tDate of birth\tGender\tEmail\tCountry Code\tPhone number\tStudent ID\tIsParent\tResponsible Email\tResponsible ID\tFather Name\tMother Name\tLevel\n';
-    const sampleLine = '01/08/2026 10:00\tSTU00001\tNOME DO ALUNO\t07/12/2014\tFemale\taluno@thinkgreen.org\t20\t1142048695\t31401300000000\tYes\t\t\tPai do Aluno\tMãe do Aluno\tA1\n';
+    const sampleLine = '01/08/2026 10:00\tSTU00001\tSTUDENT NAME\t07/12/2014\tFemale\tstudent@thinkgreen.org\t20\t1142048695\t31401300000000\tYes\t\t\tStudent\'s Father\tStudent\'s Mother\tA1\n';
     const content = headerLine + sampleLine;
     const blob = new Blob([content], { type: 'text/tab-separated-values;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.setAttribute('href', url);
-    link.setAttribute('download', 'modelo_planilha_think_green.tsv');
+    link.setAttribute('download', 'think_green_spreadsheet_template.tsv');
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -121,17 +121,17 @@ export const SecretariatImportTab: React.FC = () => {
         <div>
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-xs font-bold text-purple-700 bg-purple-50 px-2.5 py-0.5 rounded-full border border-purple-200">
-              Secretaria • Ordem Oficial de Planilha
+              Registrar's Office • Official Spreadsheet Order
             </span>
             <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
-              Layout Student Management (Level na última coluna)
+              Student Management Layout (Level in the last column)
             </span>
           </div>
           <h2 className="text-xl font-bold text-slate-900 mt-1">
-            Importador de Planilha do Centro Comunitário
+            Community Center Spreadsheet Importer
           </h2>
           <p className="text-xs text-slate-500">
-            Estrutura configurada para ler: <span className="font-mono font-semibold text-slate-700">Timestamp, STU_ID, Name, Date of birth, Gender, Email, Country Code, Phone number, Student ID, IsParent, Responsible Email, Responsible ID, Father Name, Mother Name, Level</span>.
+            Configured to read: <span className="font-mono font-semibold text-slate-700">Timestamp, STU_ID, Name, Date of birth, Gender, Email, Country Code, Phone number, Student ID, IsParent, Responsible Email, Responsible ID, Father Name, Mother Name, Level</span>.
           </p>
         </div>
 
@@ -139,9 +139,9 @@ export const SecretariatImportTab: React.FC = () => {
           <button
             onClick={handleDownloadTemplate}
             className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl font-bold text-xs transition-colors flex items-center gap-1.5 cursor-pointer"
-            title="Baixar modelo compatível com Excel e Google Sheets"
+            title="Download a template compatible with Excel and Google Sheets"
           >
-            <Download className="w-4 h-4" /> Baixar Modelo TSV
+            <Download className="w-4 h-4" /> Download TSV Template
           </button>
         </div>
       </div>
@@ -150,9 +150,9 @@ export const SecretariatImportTab: React.FC = () => {
       <div className="bg-slate-900 text-white p-4 rounded-2xl border border-slate-800 space-y-2">
         <div className="flex items-center justify-between">
           <span className="text-[11px] font-bold text-purple-300 uppercase tracking-wider flex items-center gap-1.5">
-            <FileSpreadsheet className="w-4 h-4 text-purple-400" /> Ordem Exata das Colunas da Planilha
+            <FileSpreadsheet className="w-4 h-4 text-purple-400" /> Exact Spreadsheet Column Order
           </span>
-          <span className="text-[10px] text-slate-400 font-mono">15 Colunas Mapeadas</span>
+          <span className="text-[10px] text-slate-400 font-mono">15 Mapped Columns</span>
         </div>
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-[11px] font-mono no-scrollbar">
           {['Timestamp', 'STU_ID', 'Name', 'Date of birth', 'Gender', 'Email', 'Country Code', 'Phone number', 'Student ID', 'IsParent', 'Responsible Email', 'Responsible ID', 'Father Name', 'Mother Name', 'Level'].map((label, idx) => (
@@ -174,28 +174,28 @@ export const SecretariatImportTab: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="p-4 bg-purple-50/70 border border-purple-200 rounded-2xl space-y-1">
           <span className="text-xs font-bold text-purple-900 flex items-center gap-1.5">
-            <Users className="w-4 h-4 text-purple-700" /> Preservação de STU ID
+            <Users className="w-4 h-4 text-purple-700" /> STU ID Preservation
           </span>
           <p className="text-[11px] text-purple-800 leading-relaxed">
-            Se a planilha já contiver códigos (ex: <code className="bg-purple-100 px-1 py-0.5 rounded text-purple-950 font-bold">STU00001</code>), eles são mantidos. Se vazios, novos códigos são gerados sequencialmente.
+            If the spreadsheet already contains codes (e.g. <code className="bg-purple-100 px-1 py-0.5 rounded text-purple-950 font-bold">STU00001</code>), they are kept. If empty, new codes are generated sequentially.
           </p>
         </div>
 
         <div className="p-4 bg-emerald-50/70 border border-emerald-200 rounded-2xl space-y-1">
           <span className="text-xs font-bold text-emerald-900 flex items-center gap-1.5">
-            <Layers className="w-4 h-4 text-emerald-700" /> Mensalidades & Recibos
+            <Layers className="w-4 h-4 text-emerald-700" /> Installments & Receipts
           </span>
           <p className="text-[11px] text-emerald-800 leading-relaxed">
-            Quando a planilha trouxer colunas de meses (Agu..July), os valores geram recibos automáticos para a Tesouraria e lançamentos de Receita no Contábil.
+            When the spreadsheet includes month columns (Aug..July), the amounts generate automatic receipts for the Treasury and Revenue entries in Accounting.
           </p>
         </div>
 
         <div className="p-4 bg-sky-50/70 border border-sky-200 rounded-2xl space-y-1">
           <span className="text-xs font-bold text-sky-900 flex items-center gap-1.5">
-            <CheckCircle className="w-4 h-4 text-sky-700" /> Acesso Automático ao Portal
+            <CheckCircle className="w-4 h-4 text-sky-700" /> Automatic Portal Access
           </span>
           <p className="text-[11px] text-sky-800 leading-relaxed">
-            Cria as contas de login de estudante para acesso imediato ao ambiente AVA e consulta de boletins.
+            Creates student login accounts for immediate access to the LMS environment and grade reports.
           </p>
         </div>
       </div>
@@ -209,10 +209,10 @@ export const SecretariatImportTab: React.FC = () => {
             </div>
             <div>
               <h4 className="font-bold text-emerald-950 text-sm">
-                Importação Concluída com Sucesso!
+                Import Completed Successfully!
               </h4>
               <p className="text-xs text-emerald-800">
-                {importResult.count} alunos foram cadastrados e vinculados automaticamente às turmas pelo LEVEL. {importResult.totalAmount > 0 && `${importResult.totalAmount.toLocaleString()} EGP foram conciliados em recibos.`}
+                {importResult.count} students were registered and automatically assigned to classes by LEVEL. {importResult.totalAmount > 0 && `${importResult.totalAmount.toLocaleString()} EGP were reconciled into receipts.`}
               </p>
             </div>
           </div>
@@ -220,7 +220,7 @@ export const SecretariatImportTab: React.FC = () => {
             onClick={() => setImportResult(null)}
             className="text-xs font-bold text-emerald-800 hover:underline cursor-pointer"
           >
-            Fechar
+            Close
           </button>
         </div>
       )}
@@ -231,14 +231,14 @@ export const SecretariatImportTab: React.FC = () => {
         <div className="space-y-3 pb-4 border-b border-slate-100 text-xs">
           <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-[11px] text-emerald-900 font-semibold leading-relaxed">
             <span className="flex items-center gap-1.5 font-bold">
-              <Layers className="w-4 h-4 text-emerald-700" /> Turma identificada automaticamente pelo LEVEL
+              <Layers className="w-4 h-4 text-emerald-700" /> Class identified automatically by LEVEL
             </span>
-            A planilha não precisa da coluna de turma: o sistema compara o LEVEL de cada aluno (A1, A2, A2+, B1, B2, C1...) com o nível das turmas já cadastradas e vincula o aluno à turma correspondente. Se existirem várias turmas do mesmo nível (ex.: A2 (A) e A2 (B)), os alunos são distribuídos equilibrando a quantidade de matriculados. Os campos abaixo só são usados quando o nível não bater com nenhuma turma.
+            The spreadsheet does not need a class column: the system compares each student's LEVEL (A1, A2, A2+, B1, B2, C1...) with the levels of already-registered classes and assigns the student to the matching class. If multiple classes exist for the same level (e.g. A2 (A) and A2 (B)), students are distributed to balance enrollment counts. The fields below are only used when the level does not match any class.
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block font-bold text-slate-700 mb-1">Curso Padrão (quando o nível não bater com nenhuma turma):</label>
+            <label className="block font-bold text-slate-700 mb-1">Default Course (when the level does not match any class):</label>
             <select
               value={selectedCourseId}
               onChange={(e) => handleCourseChange(e.target.value)}
@@ -246,14 +246,14 @@ export const SecretariatImportTab: React.FC = () => {
             >
               {state.courses.map((course) => (
                 <option key={course.id} value={course.id}>
-                  {course.name} ({course.monthlyFee} EGP/mês)
+                  {course.name} ({course.monthlyFee} EGP/month)
                 </option>
               ))}
             </select>
           </div>
 
           <div>
-            <label className="block font-bold text-slate-700 mb-1">Turma Padrão (fallback):</label>
+            <label className="block font-bold text-slate-700 mb-1">Default Class (fallback):</label>
             <select
               value={selectedClassId}
               onChange={(e) => handleClassChange(e.target.value)}
@@ -273,10 +273,10 @@ export const SecretariatImportTab: React.FC = () => {
           <div className="flex items-center justify-between mb-2">
             <h3 className="font-bold text-slate-900 text-sm flex items-center gap-2">
               <FileSpreadsheet className="w-4 h-4 text-purple-700" />
-              Cole as linhas da sua Planilha (Google Sheets / Excel / CSV)
+              Paste Rows from Your Spreadsheet (Google Sheets / Excel / CSV)
             </h3>
             <span className="text-[11px] text-slate-400 font-mono">
-              {parsedRows.length} linha(s) reconhecida(s)
+              {parsedRows.length} row(s) recognized
             </span>
           </div>
 
@@ -284,7 +284,7 @@ export const SecretariatImportTab: React.FC = () => {
             rows={7}
             value={rawText}
             onChange={handleTextChange}
-            placeholder={`Cole aqui as linhas copiadas da sua planilha do Excel ou Google Sheets...\nExemplo:\n01/08/2026 10:00\tSTU00001\tNOME DO ALUNO\t07/12/2014\tFemale\taluno@thinkgreen.org\t20\t1142048695\t31401300000000\tYes\t\t\tPai do Aluno\tMãe do Aluno\tA1`}
+            placeholder={`Paste the rows copied from your Excel or Google Sheets spreadsheet here...\nExample:\n01/08/2026 10:00\tSTU00001\tSTUDENT NAME\t07/12/2014\tFemale\tstudent@thinkgreen.org\t20\t1142048695\t31401300000000\tYes\t\t\tStudent's Father\tStudent's Mother\tA1`}
             className="w-full p-4 border border-slate-300 rounded-2xl font-mono text-xs focus:ring-2 focus:ring-purple-500 focus:outline-hidden bg-slate-50/50"
           />
         </div>
@@ -296,16 +296,16 @@ export const SecretariatImportTab: React.FC = () => {
               <div className="flex items-center gap-2">
                 <CheckCircle className="w-4 h-4 text-emerald-600" />
                 <span className="font-bold text-slate-900 text-xs">
-                  Prévia da Importação ({parsedRows.length} alunos detectados):
+                  Import Preview ({parsedRows.length} students detected):
                 </span>
               </div>
 
               <div className="flex items-center gap-4 text-xs">
                 <span className="text-emerald-700 font-bold">
-                  Total Pago na Carga: {totalImportPaid.toLocaleString()} EGP
+                  Total Paid in Batch: {totalImportPaid.toLocaleString()} EGP
                 </span>
                 <span className="text-amber-700 font-semibold">
-                  A Vencer/Pendente: {totalImportPending.toLocaleString()} EGP
+                  Upcoming/Pending: {totalImportPending.toLocaleString()} EGP
                 </span>
               </div>
             </div>
@@ -318,7 +318,7 @@ export const SecretariatImportTab: React.FC = () => {
                     <th className="px-3 py-2.5">STUDENT ID</th>
                     <th className="px-3 py-2.5">NAME</th>
                     <th className="px-3 py-2.5">LEVEL</th>
-                    <th className="px-3 py-2.5">TURMA (AUTO)</th>
+                    <th className="px-3 py-2.5">CLASS (AUTO)</th>
                     <th className="px-3 py-2.5">DATE OF BIRTH</th>
                     <th className="px-3 py-2.5">TELEPHONE</th>
                     <th className="px-3 py-2.5">START DATE</th>
@@ -336,7 +336,7 @@ export const SecretariatImportTab: React.FC = () => {
                     <tr key={idx} className="hover:bg-slate-50 transition-colors">
                       <td className="px-3 py-2 text-slate-400 font-mono text-[11px]">{idx + 1}</td>
                       <td className="px-3 py-2 font-mono font-bold text-purple-700">
-                        {row.studentId || <span className="text-slate-400 font-normal italic">Auto-gerar</span>}
+                        {row.studentId || <span className="text-slate-400 font-normal italic">Auto-generate</span>}
                       </td>
                       <td className="px-3 py-2 font-bold text-slate-900">{row.name}</td>
                       <td className="px-3 py-2">
@@ -350,13 +350,13 @@ export const SecretariatImportTab: React.FC = () => {
                             {row.className.split('|')[0].trim()}
                           </span>
                         ) : (
-                          <span className="text-[10px] text-slate-400 italic">Turma padrão</span>
+                          <span className="text-[10px] text-slate-400 italic">Default class</span>
                         )}
                       </td>
                       <td className="px-3 py-2 text-slate-600 font-mono text-[11px]">{row.birthDate || '—'}</td>
                       <td className="px-3 py-2 text-slate-600 font-mono text-[11px]">{row.phone}</td>
                       <td className="px-3 py-2 text-slate-600 font-mono text-[11px]">{row.startDate}</td>
-                      <td className="px-3 py-2 text-slate-600 text-center">{row.age ? `${row.age} anos` : '—'}</td>
+                      <td className="px-3 py-2 text-slate-600 text-center">{row.age ? `${row.age} years` : '—'}</td>
 
                       {/* Month badges */}
                       {row.months.map((m) => (
@@ -364,14 +364,14 @@ export const SecretariatImportTab: React.FC = () => {
                           {m.isPaid ? (
                             <span
                               className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 font-mono"
-                              title={`${m.fullName}: ${m.amount} EGP PAGO`}
+                              title={`${m.fullName}: ${m.amount} EGP PAID`}
                             >
                               {m.amount}
                             </span>
                           ) : (
                             <span
                               className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-400 font-mono"
-                              title={`${m.fullName}: Pendente`}
+                              title={`${m.fullName}: Pending`}
                             >
                               —
                             </span>
@@ -397,7 +397,7 @@ export const SecretariatImportTab: React.FC = () => {
                 }}
                 className="px-4 py-2 text-xs font-semibold text-slate-500 hover:text-slate-800"
               >
-                Limpar Dados
+                Clear Data
               </button>
 
               <button
@@ -408,11 +408,11 @@ export const SecretariatImportTab: React.FC = () => {
               >
                 {isProcessing ? (
                   <>
-                    <RefreshCw className="w-4 h-4 animate-spin" /> Processando Carga...
+                    <RefreshCw className="w-4 h-4 animate-spin" /> Processing Batch...
                   </>
                 ) : (
                   <>
-                    <Upload className="w-4 h-4" /> Importar {parsedRows.length} Aluno(s) e vincular às turmas
+                    <Upload className="w-4 h-4" /> Import {parsedRows.length} Student(s) and Assign to Classes
                   </>
                 )}
               </button>

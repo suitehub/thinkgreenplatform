@@ -108,7 +108,7 @@ export function saveStoredTopics(topics: ClassTopic[]) {
   const previous = topicsCache;
   topicsCache = topics;
   syncCollectionDiff(TOPICS_COLLECTION, previous, topics).catch((e) =>
-    console.warn('[teacher] Falha ao salvar tópicos no Firestore.', e)
+    console.warn('[teacher] Failed to save topics to Firestore.', e)
   );
 }
 
@@ -120,7 +120,7 @@ export function saveStoredAnnouncements(announcements: ClassAnnouncement[]) {
   const previous = announcementsCache;
   announcementsCache = announcements;
   syncCollectionDiff(ANNOUNCEMENTS_COLLECTION, previous, announcements).catch((e) =>
-    console.warn('[teacher] Falha ao salvar avisos no Firestore.', e)
+    console.warn('[teacher] Failed to save announcements to Firestore.', e)
   );
 }
 
@@ -132,7 +132,7 @@ export function saveStoredDidacticMaterials(materials: DidacticMaterial[]) {
   const previous = materialsCache;
   materialsCache = materials;
   syncCollectionDiff(MATERIALS_COLLECTION, previous, materials).catch((e) =>
-    console.warn('[teacher] Falha ao salvar materiais no Firestore.', e)
+    console.warn('[teacher] Failed to save materials to Firestore.', e)
   );
 }
 
@@ -144,7 +144,7 @@ export function saveStoredQuizzes(quizzes: Quiz[]) {
   const previous = quizzesCache;
   quizzesCache = quizzes;
   syncCollectionDiff(QUIZZES_COLLECTION, previous, quizzes).catch((e) =>
-    console.warn('[teacher] Falha ao salvar quizzes no Firestore.', e)
+    console.warn('[teacher] Failed to save quizzes to Firestore.', e)
   );
 }
 
@@ -156,7 +156,7 @@ export function saveStoredQuizSubmissions(submissions: QuizSubmission[]) {
   const previous = quizSubmissionsCache;
   quizSubmissionsCache = submissions;
   syncCollectionDiff(QUIZ_SUBMISSIONS_COLLECTION, previous, submissions).catch((e) =>
-    console.warn('[teacher] Falha ao salvar respostas de quiz no Firestore.', e)
+    console.warn('[teacher] Failed to save quiz answers to Firestore.', e)
   );
 }
 
@@ -168,7 +168,7 @@ export function saveStoredGeneralAnnouncements(announcements: GeneralAnnouncemen
   const previous = generalAnnouncementsCache;
   generalAnnouncementsCache = announcements;
   syncCollectionDiff(GENERAL_ANNOUNCEMENTS_COLLECTION, previous, announcements).catch((e) =>
-    console.warn('[teacher] Falha ao salvar comunicados gerais no Firestore.', e)
+    console.warn('[teacher] Failed to save general announcements to Firestore.', e)
   );
 }
 
@@ -180,7 +180,7 @@ export function saveStoredLessonPlans(plans: ClassLessonPlan[]) {
   const previous = lessonPlansCache;
   lessonPlansCache = plans;
   syncCollectionDiff(LESSON_PLANS_COLLECTION, previous, plans).catch((e) =>
-    console.warn('[teacher] Falha ao salvar planos de aula no Firestore.', e)
+    console.warn('[teacher] Failed to save lesson plans to Firestore.', e)
   );
 }
 

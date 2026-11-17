@@ -80,7 +80,7 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
 }) => {
   const { currentUser, logout } = useApp();
 
-  // URL sync: Sincroniza a URL com '/contabil' preservando o repositório GitHub Pages (ex: /thinkgreenplatform/contabil)
+  // URL sync: Syncs the URL with '/contabil' while preserving the GitHub Pages repository (e.g. /thinkgreenplatform/contabil)
   useEffect(() => {
     updateAppRoute('contabil', { module: 'accounting' });
   }, []);
@@ -129,7 +129,7 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
     else if (tab === 'pendencias_reembolso') setCurrentTab('acc_reimbursements');
   };
 
-  // Initial Capital / Cash Balance config (zerado para banco de dados)
+  // Initial Capital / Cash Balance config (zeroed for the database)
   const [initialCapital, setInitialCapital] = useState<number>(0);
   const [isEditingCapital, setIsEditingCapital] = useState(false);
   const [tempCapitalInput, setTempCapitalInput] = useState<number>(0);
@@ -143,7 +143,7 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
   };
 
   // =========================================================================
-  // 1. RECEBIMENTOS (FILTROS & ESTADO)
+  // 1. REVENUES (FILTERS & STATE)
   // =========================================================================
   const [revMacroFilter, setRevMacroFilter] = useState<'ALL' | AccountingMacroArea>('ALL');
   const [revSubFilter, setRevSubFilter] = useState<'ALL' | RevenueSubArea>('ALL');
@@ -152,7 +152,7 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
   const [revDayFilter, setRevDayFilter] = useState<string>('');
   const [revSearch, setRevSearch] = useState('');
 
-  // Modal Novo / Editar Recebimento
+  // New / Edit Revenue Modal
   const [isRevModalOpen, setIsRevModalOpen] = useState(false);
   const [editingRevId, setEditingRevId] = useState<string | null>(null);
   const [formRevMacro, setFormRevMacro] = useState<AccountingMacroArea>('CENTRO_COMUNITARIO');
@@ -192,7 +192,7 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
     return filteredRevenues.reduce((acc, r) => acc + r.amount, 0);
   }, [filteredRevenues]);
 
-  // Totais por Macroárea
+  // Totals by Macro Area
   const totalRevLixo = useMemo(
     () => revenues.filter((r) => r.macroArea === 'LIXO').reduce((acc, r) => acc + r.amount, 0),
     [revenues]
@@ -209,7 +209,7 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
   const grandTotalRevenues = totalRevLixo + totalRevPreEscola + totalRevCentro;
 
   // =========================================================================
-  // 2. GASTOS (PLANILHA OFICIAL EXCEL - FILTROS & ESTADO)
+  // 2. EXPENSES (OFFICIAL EXCEL SHEET - FILTERS & STATE)
   // =========================================================================
   const [expBudgetFilter, setExpBudgetFilter] = useState<'ALL' | ExpenseBudget>('ALL');
   const [expCategoryFilter, setExpCategoryFilter] = useState<'ALL' | string>('ALL');
@@ -217,7 +217,7 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
   const [expMonthFilter, setExpMonthFilter] = useState<'ALL' | string>('ALL');
   const [expOriginFilter, setExpOriginFilter] = useState<'ALL' | 'REIMBURSEMENT' | 'DIRECT'>('ALL');
 
-  // Modal Novo Gasto Manual
+  // New Manual Expense Modal
   const [isExpModalOpen, setIsExpModalOpen] = useState(false);
   const [editingExpId, setEditingExpId] = useState<string | null>(null);
   const [formExpDate, setFormExpDate] = useState(() => {
@@ -253,9 +253,9 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
 
       let matchOrigin = true;
       if (expOriginFilter === 'REIMBURSEMENT') {
-        matchOrigin = Boolean(e.sourceReportId || e.product.toLowerCase().includes('reembolso'));
+        matchOrigin = Boolean(e.sourceReportId || (e.product.toLowerCase().includes('reembolso') || e.product.toLowerCase().includes('reimbursement')));
       } else if (expOriginFilter === 'DIRECT') {
-        matchOrigin = !e.sourceReportId && !e.product.toLowerCase().includes('reembolso');
+        matchOrigin = !e.sourceReportId && !(e.product.toLowerCase().includes('reembolso') || e.product.toLowerCase().includes('reimbursement'));
       }
 
       return matchBudget && matchCat && matchSearch && matchMonth && matchOrigin;
@@ -272,12 +272,12 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
 
   const totalReimbursementsExpenses = useMemo(() => {
     return expenses
-      .filter((e) => Boolean(e.sourceReportId || e.product.toLowerCase().includes('reembolso')))
+      .filter((e) => Boolean(e.sourceReportId || (e.product.toLowerCase().includes('reembolso') || e.product.toLowerCase().includes('reimbursement'))))
       .reduce((acc, e) => acc + e.price, 0);
   }, [expenses]);
 
   const countReimbursementsExpenses = useMemo(() => {
-    return expenses.filter((e) => Boolean(e.sourceReportId || e.product.toLowerCase().includes('reembolso'))).length;
+    return expenses.filter((e) => Boolean(e.sourceReportId || (e.product.toLowerCase().includes('reembolso') || e.product.toLowerCase().includes('reimbursement')))).length;
   }, [expenses]);
 
   const countDirectExpenses = expenses.length - countReimbursementsExpenses;
@@ -302,7 +302,7 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
   const netCashBalance = initialCapital - grandTotalExpenses;
 
   // =========================================================================
-  // 3. PENDÊNCIAS DE REEMBOLSO (EXPENSE REPORTS)
+  // 3. PENDING REIMBURSEMENTS (EXPENSE REPORTS)
   // =========================================================================
   const pendingReports = useMemo(
     () => expenseReports.filter((r) => r.status === 'PENDENTE'),
@@ -347,14 +347,14 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
         id: `exp_rep_${report.id}_${item.id}`,
         receiptNumber: receiptNo,
         date: formatDateToDDMMYYYY(item.date || report.date),
-        product: `${item.description} (Reembolso: ${report.fullName})`,
+        product: `${item.description} (Reimbursement: ${report.fullName})`,
         price: Number(item.amount),
         budget,
         category: item.category,
         paidTo: report.fullName,
         sourceReportId: report.id,
         receiptPhotoUrl: report.receiptPhotoUrl,
-        notes: `Aprovado a partir do Relatório ${report.reportCode} (${report.event})`,
+        notes: `Approved from Report ${report.reportCode} (${report.event})`,
         createdAt: new Date().toISOString(),
       });
     });
@@ -370,9 +370,9 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
         ? {
             ...r,
             status: 'APROVADO' as const,
-            reviewedBy: `${currentUser.name} (Contabilidade)`,
+            reviewedBy: `${currentUser.name} (Accounting)`,
             reviewedAt: new Date().toISOString().replace('T', ' ').substring(0, 16),
-            reviewNotes: `Reembolso aprovado. Gerados ${generatedReceiptNumbers.length} lançamento(s) na planilha oficial de gastos (Recibos #${generatedReceiptNumbers.join(', #')}).`,
+            reviewNotes: `Reimbursement approved. Generated ${generatedReceiptNumbers.length} entry(ies) in the official expense sheet (Receipts #${generatedReceiptNumbers.join(', #')}).`,
             assignedExpenseReceipts: generatedReceiptNumbers,
           }
         : r
@@ -383,19 +383,19 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
     setRecentlyAddedReceipts(generatedReceiptNumbers);
     setSelectedReportForReview(null);
 
-    // Switch to Gastos tab to immediately show the added rows
+    // Switch to the Expenses tab to immediately show the added rows
     setActiveSubTab('gastos');
     setCurrentTab('acc_expenses');
 
     showToast(
-      `Reembolso ${report.reportCode} APROVADO! ${generatedReceiptNumbers.length} despesa(s) inserida(s) com sucesso na Planilha Oficial de Gastos (Recibos #${generatedReceiptNumbers.join(', #')}).`
+      `Reimbursement ${report.reportCode} APPROVED! ${generatedReceiptNumbers.length} expense(s) successfully inserted into the Official Expense Sheet (Receipts #${generatedReceiptNumbers.join(', #')}).`
     );
   };
 
   const handleRejectReimbursement = () => {
     if (!selectedReportForReview) return;
     if (!rejectReason.trim()) {
-      alert('Informe o motivo da recusa.');
+      alert('Please enter the rejection reason.');
       return;
     }
 
@@ -404,7 +404,7 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
         ? {
             ...r,
             status: 'REJEITADO' as const,
-            reviewedBy: `${currentUser.name} (Contabilidade)`,
+            reviewedBy: `${currentUser.name} (Accounting)`,
             reviewedAt: new Date().toISOString().replace('T', ' ').substring(0, 16),
             reviewNotes: rejectReason,
           }
@@ -416,11 +416,11 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
     setIsRejectModalOpen(false);
     setSelectedReportForReview(null);
     setRejectReason('');
-    showToast(`Relatório ${selectedReportForReview.reportCode} recusado.`);
+    showToast(`Report ${selectedReportForReview.reportCode} rejected.`);
   };
 
   // =========================================================================
-  // ACTIONS: RECEBIMENTOS
+  // ACTIONS: REVENUES
   // =========================================================================
   const handleOpenNewRevModal = (macro?: AccountingMacroArea, sub?: RevenueSubArea) => {
     setEditingRevId(null);
@@ -432,10 +432,10 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
     setFormRevPayer('');
     setFormRevInstallment(
       sub === 'CURSO_INGLES'
-        ? 'Parcela trimestral (2.000 EGP)'
+        ? 'Quarterly installment (2,000 EGP)'
         : sub === 'PRE_ESCOLA'
-        ? 'Semestre 1 (9.000 EGP)'
-        : 'Mensalidade'
+        ? 'Semester 1 (9,000 EGP)'
+        : 'Monthly Tuition'
     );
     setFormRevMethod('DINHEIRO');
     setFormRevNotes('');
@@ -459,7 +459,7 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
   const handleSaveRevForm = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formRevTitle.trim()) {
-      alert('Informe o título / descrição da receita.');
+      alert('Please enter the revenue title / description.');
       return;
     }
 
@@ -499,7 +499,7 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
     setRevenues(updated);
     saveStoredAccountingRevenues(updated);
     setIsRevModalOpen(false);
-    showToast(editingRevId ? 'Receita atualizada com sucesso!' : 'Novo recebimento registrado com sucesso!');
+    showToast(editingRevId ? 'Revenue updated successfully!' : 'New revenue recorded successfully!');
   };
 
   const handleSaveQuickEditAmount = () => {
@@ -510,20 +510,20 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
     setRevenues(updated);
     saveStoredAccountingRevenues(updated);
     setQuickEditRev(null);
-    showToast(`Valor do recebimento atualizado para ${formatCurrency(quickEditAmount, 'EGP')}!`);
+    showToast(`Revenue amount updated to ${formatCurrency(quickEditAmount, 'EGP')}!`);
   };
 
   const handleDeleteRevenue = (id: string) => {
-    if (confirm('Tem certeza que deseja remover este recebimento?')) {
+    if (confirm('Are you sure you want to remove this revenue?')) {
       const updated = revenues.filter((r) => r.id !== id);
       setRevenues(updated);
       saveStoredAccountingRevenues(updated);
-      showToast('Recebimento removido.');
+      showToast('Revenue removed.');
     }
   };
 
   // =========================================================================
-  // ACTIONS: GASTOS (OFICIAL)
+  // ACTIONS: EXPENSES (OFFICIAL)
   // =========================================================================
   const handleOpenNewExpModal = () => {
     setEditingExpId(null);
@@ -553,11 +553,11 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
   const handleSaveExpForm = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formExpProduct.trim()) {
-      alert('Informe a descrição do produto / despesa.');
+      alert('Please enter the product / expense description.');
       return;
     }
     if (formExpPrice <= 0) {
-      alert('Informe um valor de preço válido (> 0).');
+      alert('Please enter a valid price amount (> 0).');
       return;
     }
 
@@ -590,15 +590,15 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
     setExpenses(updated);
     saveStoredAccountingExpenses(updated);
     setIsExpModalOpen(false);
-    showToast(editingExpId ? 'Despesa atualizada com sucesso!' : `Novo gasto registrado (Recibo #${nextReceiptNo})!`);
+    showToast(editingExpId ? 'Expense updated successfully!' : `New expense recorded (Receipt #${nextReceiptNo})!`);
   };
 
   const handleDeleteExpense = (id: string) => {
-    if (confirm('Tem certeza que deseja remover esta linha de despesa da planilha oficial?')) {
+    if (confirm('Are you sure you want to remove this expense row from the official sheet?')) {
       const updated = expenses.filter((e) => e.id !== id);
       setExpenses(updated);
       saveStoredAccountingExpenses(updated);
-      showToast('Despesa removida da planilha oficial.');
+      showToast('Expense removed from the official sheet.');
     }
   };
 
@@ -623,17 +623,17 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
       )}
 
       {/* ========================================================================= */}
-      {/* BARRA DE SESSÃO DO PAINEL CONTÁBIL                                        */}
+      {/* ACCOUNTING PANEL SESSION BAR                                           */}
       {/* ========================================================================= */}
       <div className="bg-white rounded-3xl border-2 border-emerald-500/40 p-4 sm:p-5 shadow-md space-y-3.5">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 border-b border-slate-100 pb-3">
           <div className="flex items-center gap-2.5 flex-wrap">
             <span className="px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-900 border border-emerald-300 flex items-center gap-1.5 shadow-2xs">
               <span className="w-2 h-2 rounded-full bg-emerald-500" />
-              Sessão Atual
+              Current Session
             </span>
             <span className="text-xs font-bold text-slate-800">
-              Perfil Atual: <strong className="text-emerald-800">{currentUser.name}</strong> ({currentUser.role})
+              Current Profile: <strong className="text-emerald-800">{currentUser.name}</strong> ({currentUser.role})
             </span>
           </div>
 
@@ -652,25 +652,25 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
                 showToast(`URL copiada: ${fullUrl}`);
               }}
               className="text-xs px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs active:scale-95"
-              title="Copiar URL direta da Controladoria e Contábil"
+              title="Copy the direct URL for Controlling & Accounting"
             >
               <Copy className="w-3.5 h-3.5 text-slate-500" />
-              <span>Copiar URL</span>
+              <span>Copy URL</span>
             </button>
 
             <button
               onClick={logout}
               className="text-xs px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold transition-all cursor-pointer flex items-center gap-1.5 border border-rose-200 shadow-2xs active:scale-95"
-              title="Sair para a tela de login"
+              title="Sign out to the login screen"
             >
               <LogOut className="w-3.5 h-3.5" />
-              <span>Sair</span>
+              <span>Sign out</span>
             </button>
           </div>
         </div>
       </div>
 
-      {/* TOP INSTITUTIONAL CONTABILIDADE BANNER */}
+      {/* TOP INSTITUTIONAL ACCOUNTING BANNER */}
       <div className="bg-gradient-to-r from-[#064e2e] via-[#075e38] to-[#14532d] text-white p-6 sm:p-7 rounded-3xl shadow-md border border-emerald-700 flex flex-col md:flex-row items-start md:items-center justify-between gap-5 relative overflow-hidden">
         <div className="absolute right-0 top-0 bottom-0 pointer-events-none opacity-10 flex items-center pr-6">
           <FileSpreadsheet className="w-64 h-64 text-white" />
@@ -679,19 +679,19 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
         <div className="relative z-10 space-y-2">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-[10px] font-black uppercase tracking-wider bg-white/20 px-2.5 py-0.5 rounded-full text-emerald-100">
-              Controladoria & Contabilidade Oficial
+              Official Controlling & Accounting
             </span>
             <span className="text-xs text-emerald-200 font-semibold">
-              Sistema do Rony • Think Green Community Center
+              Rony's System • Think Green Community Center
             </span>
           </div>
 
           <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
-            Gestão Contábil, Recebimentos & Gastos
+            Accounting, Revenue & Expense Management
           </h1>
 
           <p className="text-xs sm:text-sm text-emerald-100/90 max-w-2xl leading-relaxed">
-            Controle unificado de entradas nas 3 Macroáreas (Lixo, Pré-Escola e Centro Comunitário), planilha oficial de despesas (Think Green Expense Report) e aprovação de reembolsos dos colaboradores.
+            Unified control of inflows across the 3 Macro Areas (Garbage, Preschool and Community Center), official expense sheet (Think Green Expense Report) and approval of staff reimbursements.
           </p>
         </div>
 
@@ -700,17 +700,17 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
           <button
             onClick={() => setIsEmployeePortalOpen(true)}
             className="px-4 py-2.5 bg-white hover:bg-emerald-50 text-[#075e38] font-black text-xs rounded-xl shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98"
-            title="Abrir o formulário de reembolso para funcionários e voluntários"
+            title="Open the reimbursement form for staff and volunteers"
           >
             <Smartphone className="w-4 h-4 text-[#075e38]" />
-            <span>Portal do Funcionário (Reembolsos)</span>
+            <span>Employee Portal (Reimbursements)</span>
           </button>
         </div>
       </div>
 
-      {/* 4 MAIN CONTABILIDADE TABS */}
+      {/* 4 MAIN ACCOUNTING TABS */}
       <div className="bg-white rounded-2xl border border-slate-200/80 p-1.5 shadow-2xs flex items-center justify-between sm:justify-start gap-1 sm:gap-2 overflow-x-auto no-scrollbar">
-        {/* Tab 1: Visão Geral & DRE */}
+        {/* Tab 1: Overview & Income Statement */}
         <button
           onClick={() => setActiveSubTab('visao_geral')}
           className={`flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap cursor-pointer ${
@@ -720,10 +720,10 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
           }`}
         >
           <PieChart className="w-4 h-4" />
-          <span>Visão Geral & Balanço</span>
+          <span>Overview & Balance</span>
         </button>
 
-        {/* Tab 2: Recebimentos */}
+        {/* Tab 2: Revenues */}
         <button
           onClick={() => setActiveSubTab('recebimentos')}
           className={`flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap cursor-pointer ${
@@ -733,17 +733,17 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
           }`}
         >
           <TrendingUp className="w-4 h-4" />
-          <span>Recebimentos (Entradas)</span>
+          <span>Revenues (Inflows)</span>
           <span
             className={`text-[10px] px-1.5 py-0.2 rounded-md font-extrabold ${
               activeSubTab === 'recebimentos' ? 'bg-white/20 text-white' : 'bg-emerald-100 text-[#075e38]'
             }`}
           >
-            3 Macroáreas
+            3 Macro Areas
           </span>
         </button>
 
-        {/* Tab 3: Gastos (Planilha Oficial) */}
+        {/* Tab 3: Expenses (Official Sheet) */}
         <button
           onClick={() => setActiveSubTab('gastos')}
           className={`flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap cursor-pointer ${
@@ -753,17 +753,17 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
           }`}
         >
           <FileSpreadsheet className="w-4 h-4" />
-          <span>Gastos (Expense Report)</span>
+          <span>Expenses (Expense Report)</span>
           <span
             className={`text-[10px] px-1.5 py-0.2 rounded-md font-extrabold ${
               activeSubTab === 'gastos' ? 'bg-white/20 text-white' : 'bg-purple-100 text-purple-800'
             }`}
           >
-            {expenses.length} Linhas
+            {expenses.length} Rows
           </span>
         </button>
 
-        {/* Tab 4: Pendências de Reembolso */}
+        {/* Tab 4: Pending Reimbursements */}
         <button
           onClick={() => setActiveSubTab('pendencias_reembolso')}
           className={`flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap cursor-pointer ${
@@ -773,7 +773,7 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
           }`}
         >
           <Clock className="w-4 h-4" />
-          <span>Pendências de Reembolso</span>
+          <span>Pending Reimbursements</span>
           {pendingReports.length > 0 && (
             <span className="bg-amber-400 text-amber-950 text-[10px] font-black px-1.5 py-0.2 rounded-full animate-pulse">
               {pendingReports.length}
@@ -783,7 +783,7 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
       </div>
 
       {/* ========================================================================= */}
-      {/* SUB-TAB 1: VISÃO GERAL & BALANÇO GERAL                                    */}
+      {/* SUB-TAB 1: GENERAL OVERVIEW & BALANCE                                    */}
       {/* ========================================================================= */}
       {activeSubTab === 'visao_geral' && (
         <div className="space-y-6">
@@ -793,7 +793,7 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
             <div className="bg-white p-5 rounded-3xl border border-slate-200/90 shadow-2xs space-y-2">
               <div className="flex items-center justify-between text-slate-400">
                 <span className="text-[11px] font-black uppercase tracking-wider text-emerald-800">
-                  Total Recebimentos
+                  Total Revenues
                 </span>
                 <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center">
                   <TrendingUp className="w-4 h-4" />
@@ -803,7 +803,7 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
                 {formatCurrency(grandTotalRevenues, 'EGP')}
               </div>
               <p className="text-[11px] text-slate-500 font-medium">
-                {revenues.length} recebimentos lançados
+                {revenues.length} revenues recorded
               </p>
             </div>
 
@@ -811,7 +811,7 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
             <div className="bg-white p-5 rounded-3xl border border-slate-200/90 shadow-2xs space-y-2">
               <div className="flex items-center justify-between text-slate-400">
                 <span className="text-[11px] font-black uppercase tracking-wider text-rose-800">
-                  Total de Gastos
+                  Total Expenses
                 </span>
                 <div className="w-8 h-8 rounded-xl bg-rose-50 text-rose-700 flex items-center justify-center">
                   <TrendingDown className="w-4 h-4" />
@@ -821,15 +821,15 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
                 {formatCurrency(grandTotalExpenses, 'EGP')}
               </div>
               <p className="text-[11px] text-slate-500 font-medium">
-                {expenses.length} despesas na planilha oficial
+                {expenses.length} expenses in the official sheet
               </p>
             </div>
 
-            {/* Caixa / Saldo Líquido do Rony (image 2) */}
+            {/* Rony's Cash / Net Balance (image 2) */}
             <div className="bg-white p-5 rounded-3xl border border-slate-200/90 shadow-2xs space-y-2">
               <div className="flex items-center justify-between text-slate-400">
                 <span className="text-[11px] font-black uppercase tracking-wider text-purple-900">
-                  Saldo Líquido / Caixa
+                  Net Balance / Cash
                 </span>
                 <div className="w-8 h-8 rounded-xl bg-purple-50 text-purple-700 flex items-center justify-center">
                   <DollarSign className="w-4 h-4" />
@@ -839,7 +839,7 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
                 {formatCurrency(netCashBalance, 'EGP')}
               </div>
               <div className="flex items-center justify-between text-[11px] text-slate-500">
-                <span>Fundo Base: {formatCurrency(initialCapital, 'EGP')}</span>
+                <span>Base Fund: {formatCurrency(initialCapital, 'EGP')}</span>
                 <button
                   onClick={() => {
                     setTempCapitalInput(initialCapital);
@@ -847,19 +847,19 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
                   }}
                   className="text-purple-700 hover:underline font-bold"
                 >
-                  Editar
+                  Edit
                 </button>
               </div>
             </div>
 
-            {/* Reembolsos Pendentes */}
+            {/* Pending Reimbursements */}
             <div
               onClick={() => setActiveSubTab('pendencias_reembolso')}
               className="bg-white p-5 rounded-3xl border border-amber-200 bg-amber-50/20 shadow-2xs space-y-2 cursor-pointer hover:border-amber-400 transition-all group"
             >
               <div className="flex items-center justify-between text-slate-400">
                 <span className="text-[11px] font-black uppercase tracking-wider text-amber-900">
-                  Reembolsos Pendentes
+                  Pending Reimbursements
                 </span>
                 <div className="w-8 h-8 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center group-hover:scale-110 transition-transform">
                   <Clock className="w-4 h-4" />
@@ -869,21 +869,21 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
                 {pendingReports.length}
               </div>
               <p className="text-[11px] text-amber-800 font-bold flex items-center gap-1">
-                <span>Clique para revisar na fila</span>
+                <span>Click to review in the queue</span>
                 <ChevronRight className="w-3.5 h-3.5" />
               </p>
             </div>
           </div>
 
-          {/* AS 3 GRANDES MACROÁREAS DO RONY */}
+          {/* RONY'S 3 MAJOR MACRO AREAS */}
           <div className="bg-white p-6 sm:p-7 rounded-3xl border border-slate-200/90 shadow-xs space-y-5">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div>
                 <h3 className="text-base font-extrabold text-slate-900">
-                  As 3 Grandes Macroáreas de Receita (Padrão do Rony)
+                  Rony's 3 Major Revenue Macro Areas (Default)
                 </h3>
                 <p className="text-xs text-slate-500">
-                  Divisão oficial: 1. Lixo (Recycle), 2. Pré-Escola e 3. Centro Comunitário (todo o restante)
+                  Official breakdown: 1. Garbage (Recycle), 2. Preschool and 3. Community Center (everything else)
                 </p>
               </div>
               <span className="text-xs font-black text-emerald-800 bg-emerald-50 px-3 py-1 rounded-xl border border-emerald-200">
@@ -892,7 +892,7 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-              {/* Macro 1: Lixo */}
+              {/* Macro 1: Garbage */}
               <div
                 onClick={() => {
                   setRevMacroFilter('LIXO');
@@ -903,25 +903,25 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-black uppercase text-emerald-900 flex items-center gap-1.5">
                     <RecycleIcon className="w-4 h-4 text-emerald-700" />
-                    1. Macroárea Lixo (Recycle)
+                    1. Garbage Macro Area (Recycle)
                   </span>
                   <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-md">
-                    Reciclagem
+                    Recycling
                   </span>
                 </div>
                 <div className="text-2xl font-black text-emerald-950 font-mono">
                   {formatCurrency(totalRevLixo, 'EGP')}
                 </div>
                 <p className="text-xs text-slate-600 leading-relaxed">
-                  Venda de fardos de papelão, plástico prensado, sucata metálica e flakes moídos.
+                  Sale of cardboard bales, baled plastic, metal scraps and ground flakes.
                 </p>
                 <div className="pt-2 border-t border-emerald-200/60 flex items-center justify-between text-xs font-bold text-emerald-800">
-                  <span>Ver detalhes</span>
+                  <span>View details</span>
                   <ChevronRight className="w-4 h-4" />
                 </div>
               </div>
 
-              {/* Macro 2: Pré-Escola */}
+              {/* Macro 2: Preschool */}
               <div
                 onClick={() => {
                   setRevMacroFilter('PRE_ESCOLA');
@@ -932,7 +932,7 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-black uppercase text-orange-950 flex items-center gap-1.5">
                     <Building className="w-4 h-4 text-orange-700" />
-                    2. Macroárea Pré-Escola
+                    2. Preschool Macro Area
                   </span>
                   <span className="text-[10px] font-bold text-orange-800 bg-orange-100 px-2 py-0.5 rounded-md">
                     Girassol
@@ -942,15 +942,15 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
                   {formatCurrency(totalRevPreEscola, 'EGP')}
                 </div>
                 <p className="text-xs text-slate-600 leading-relaxed">
-                  Matrículas e semestres da Turma Girassol (máx 2 vezes ou semestral de 9.000 EGP).
+                  Enrollments and semesters for the Sunflower Class (max 2 installments or 9,000 EGP per semester).
                 </p>
                 <div className="pt-2 border-t border-orange-200/60 flex items-center justify-between text-xs font-bold text-orange-800">
-                  <span>Ver detalhes</span>
+                  <span>View details</span>
                   <ChevronRight className="w-4 h-4" />
                 </div>
               </div>
 
-              {/* Macro 3: Centro Comunitário */}
+              {/* Macro 3: Community Center */}
               <div
                 onClick={() => {
                   setRevMacroFilter('CENTRO_COMUNITARIO');
@@ -961,20 +961,20 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-black uppercase text-purple-950 flex items-center gap-1.5">
                     <BookOpen className="w-4 h-4 text-purple-700" />
-                    3. Centro Comunitário
+                    3. Community Center
                   </span>
                   <span className="text-[10px] font-bold text-purple-800 bg-purple-100 px-2 py-0.5 rounded-md">
-                    Cursos & Outros
+                    Courses & Others
                   </span>
                 </div>
                 <div className="text-2xl font-black text-purple-950 font-mono">
                   {formatCurrency(totalRevCentro, 'EGP')}
                 </div>
                 <p className="text-xs text-slate-600 leading-relaxed">
-                  Curso de Inglês (2.000 EGP), Futebol, Academia/Ginástica, Cantina, Aluguel de Campo/Ping Pong e Summer Camp.
+                  English Course (2,000 EGP), Soccer, Gymnastics/Fitness, Cafeteria, Field/Ping Pong Rental and Summer Camp.
                 </p>
                 <div className="pt-2 border-t border-purple-200/60 flex items-center justify-between text-xs font-bold text-purple-800">
-                  <span>Ver detalhes</span>
+                  <span>View details</span>
                   <ChevronRight className="w-4 h-4" />
                 </div>
               </div>
@@ -984,7 +984,7 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
       )}
 
       {/* ========================================================================= */}
-      {/* SUB-TAB 2: ÁREA DE RECEBIMENTOS (MACROÁREAS & SUBÁREAS DETALHADAS)         */}
+      {/* SUB-TAB 2: REVENUES AREA (MACRO AREAS & DETAILED SUB-AREAS)              */}
       {/* ========================================================================= */}
       {activeSubTab === 'recebimentos' && (
         <div className="space-y-6">
@@ -992,14 +992,14 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
           <div className="bg-white p-4 rounded-3xl border border-slate-200/90 shadow-2xs space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-xs font-black text-slate-700 uppercase tracking-wide">
-                Filtro por Macroárea Principal:
+                Filter by Main Macro Area:
               </span>
               <button
                 onClick={() => handleOpenNewRevModal()}
                 className="px-4 py-2 bg-[#075e38] hover:bg-[#064e2e] text-white rounded-xl text-xs font-black flex items-center gap-1.5 shadow-xs cursor-pointer"
               >
                 <Plus className="w-4 h-4" />
-                <span>+ Lançar Novo Recebimento</span>
+                <span>+ Record New Revenue</span>
               </button>
             </div>
 
@@ -1012,7 +1012,7 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
                     : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
                 }`}
               >
-                <span className="block text-sm font-black">Todas as Macroáreas</span>
+                <span className="block text-sm font-black">All Macro Areas</span>
                 <span className="text-[11px] opacity-80 font-mono">
                   {formatCurrency(grandTotalRevenues, 'EGP')}
                 </span>
@@ -1026,7 +1026,7 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
                     : 'bg-emerald-50 text-emerald-900 border-emerald-200 hover:bg-emerald-100'
                 }`}
               >
-                <span className="block text-sm font-black">1. Lixo (Recycle)</span>
+                <span className="block text-sm font-black">1. Garbage (Recycle)</span>
                 <span className="text-[11px] opacity-80 font-mono">
                   {formatCurrency(totalRevLixo, 'EGP')}
                 </span>
@@ -1040,7 +1040,7 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
                     : 'bg-orange-50 text-orange-900 border-orange-200 hover:bg-orange-100'
                 }`}
               >
-                <span className="block text-sm font-black">2. Pré-Escola</span>
+                <span className="block text-sm font-black">2. Preschool</span>
                 <span className="text-[11px] opacity-80 font-mono">
                   {formatCurrency(totalRevPreEscola, 'EGP')}
                 </span>
@@ -1054,7 +1054,7 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
                     : 'bg-purple-50 text-purple-900 border-purple-200 hover:bg-purple-100'
                 }`}
               >
-                <span className="block text-sm font-black">3. Centro Comunitário</span>
+                <span className="block text-sm font-black">3. Community Center</span>
                 <span className="text-[11px] opacity-80 font-mono">
                   {formatCurrency(totalRevCentro, 'EGP')}
                 </span>
@@ -1067,18 +1067,18 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
             {/* Sub-areas Pills */}
             <div>
               <span className="text-xs font-black text-slate-700 uppercase block mb-2">
-                Subáreas Específicas:
+                Specific Sub-areas:
               </span>
               <div className="flex items-center gap-1.5 flex-wrap text-xs">
                 {[
-                  { id: 'ALL', label: 'Todas as Subáreas' },
-                  { id: 'CURSO_INGLES', label: 'Curso Livre de Inglês (2.000 EGP)' },
-                  { id: 'PRE_ESCOLA', label: 'Pré-Escola (9.000 EGP Semestral)' },
-                  { id: 'ACADEMIA_GINASTICA', label: 'Academia & Ginástica Feminina' },
-                  { id: 'AULAS_FUTEBOL', label: 'Aulas de Futebol Sub-15' },
-                  { id: 'CANTINA', label: 'Cantina Comunitária' },
-                  { id: 'VENDA_LIXO', label: 'Venda de Lixo (Recycle)' },
-                  { id: 'ALUGUEL_CAMPO_PINGPONG', label: 'Aluguel Campo & Ping Pong' },
+                  { id: 'ALL', label: 'All Sub-areas' },
+                  { id: 'CURSO_INGLES', label: 'English Language Course (2,000 EGP)' },
+                  { id: 'PRE_ESCOLA', label: 'Preschool (9,000 EGP per Semester)' },
+                  { id: 'ACADEMIA_GINASTICA', label: "Gym & Women's Gymnastics" },
+                  { id: 'AULAS_FUTEBOL', label: 'Under-15 Soccer Lessons' },
+                  { id: 'CANTINA', label: 'Community Cafeteria' },
+                  { id: 'VENDA_LIXO', label: 'Recyclables Sales (Recycle)' },
+                  { id: 'ALUGUEL_CAMPO_PINGPONG', label: 'Field & Ping Pong Rental' },
                   { id: 'SUMMER_CAMPING', label: 'Summer Camping' },
                 ].map((s) => (
                   <button
@@ -1100,14 +1100,14 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
             <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 pt-2 border-t border-slate-100">
               <div>
                 <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">
-                  Ano
+                  Year
                 </label>
                 <select
                   value={revYearFilter}
                   onChange={(e) => setRevYearFilter(e.target.value)}
                   className="w-full p-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold text-slate-800"
                 >
-                  <option value="ALL">Todos os Anos</option>
+                  <option value="ALL">All Years</option>
                   <option value="2026">2026</option>
                   <option value="2025">2025</option>
                 </select>
@@ -1115,32 +1115,32 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
 
               <div>
                 <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">
-                  Mês
+                  Month
                 </label>
                 <select
                   value={revMonthFilter}
                   onChange={(e) => setRevMonthFilter(e.target.value)}
                   className="w-full p-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold text-slate-800"
                 >
-                  <option value="ALL">Todos os Meses</option>
-                  <option value="01">Janeiro (01)</option>
-                  <option value="02">Fevereiro (02)</option>
-                  <option value="03">Março (03)</option>
-                  <option value="04">Abril (04)</option>
-                  <option value="05">Maio (05)</option>
-                  <option value="06">Junho (06)</option>
-                  <option value="07">Julho (07)</option>
-                  <option value="08">Agosto (08)</option>
-                  <option value="09">Setembro (09)</option>
-                  <option value="10">Outubro (10)</option>
-                  <option value="11">Novembro (11)</option>
-                  <option value="12">Dezembro (12)</option>
+                  <option value="ALL">All Months</option>
+                  <option value="01">January (01)</option>
+                  <option value="02">February (02)</option>
+                  <option value="03">March (03)</option>
+                  <option value="04">April (04)</option>
+                  <option value="05">May (05)</option>
+                  <option value="06">June (06)</option>
+                  <option value="07">July (07)</option>
+                  <option value="08">August (08)</option>
+                  <option value="09">September (09)</option>
+                  <option value="10">October (10)</option>
+                  <option value="11">November (11)</option>
+                  <option value="12">December (12)</option>
                 </select>
               </div>
 
               <div>
                 <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">
-                  Dia Específico
+                  Specific Day
                 </label>
                 <input
                   type="date"
@@ -1152,7 +1152,7 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
 
               <div>
                 <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">
-                  Busca Textual
+                  Text Search
                 </label>
                 <div className="relative">
                   <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -1160,7 +1160,7 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
                     type="text"
                     value={revSearch}
                     onChange={(e) => setRevSearch(e.target.value)}
-                    placeholder="Buscar aluno, recibo, título..."
+                    placeholder="Search student, receipt, title..."
                     className="w-full pl-8 pr-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-800"
                   />
                 </div>
@@ -1173,15 +1173,15 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
             <div className="p-4 sm:p-5 bg-slate-50/80 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
                 <h3 className="font-extrabold text-sm sm:text-base text-slate-900">
-                  Lançamentos de Recebimentos ({filteredRevenues.length})
+                  Revenue Entries ({filteredRevenues.length})
                 </h3>
                 <p className="text-xs text-slate-500">
-                  Valores recebidos com identificação de macroárea, parcelas e opções de edição
+                  Amounts received with macro area, installments and editing options
                 </p>
               </div>
 
               <div className="bg-emerald-100 text-[#075e38] px-4 py-2 rounded-2xl font-black text-sm font-mono border border-emerald-300 shadow-2xs">
-                Total Filtrado: {formatCurrency(totalFilteredRevenues, 'EGP')}
+                Filtered Total: {formatCurrency(totalFilteredRevenues, 'EGP')}
               </div>
             </div>
 
@@ -1189,13 +1189,13 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
               <table className="w-full text-left text-xs border-collapse">
                 <thead>
                   <tr className="bg-slate-100/70 text-slate-500 font-black uppercase text-[10px] border-b border-slate-200">
-                    <th className="py-3 px-3.5">Recibo / Data</th>
-                    <th className="py-3 px-3.5">Macroárea</th>
-                    <th className="py-3 px-3.5">Subárea / Descrição</th>
-                    <th className="py-3 px-3.5">Pagante / Parcelas</th>
-                    <th className="py-3 px-3.5">Método</th>
-                    <th className="py-3 px-3.5 text-right">Valor (EGP)</th>
-                    <th className="py-3 px-3.5 text-center">Ações</th>
+                    <th className="py-3 px-3.5">Receipt / Date</th>
+                    <th className="py-3 px-3.5">Macro Area</th>
+                    <th className="py-3 px-3.5">Sub-area / Description</th>
+                    <th className="py-3 px-3.5">Payer / Installments</th>
+                    <th className="py-3 px-3.5">Method</th>
+                    <th className="py-3 px-3.5 text-right">Amount (EGP)</th>
+                    <th className="py-3 px-3.5 text-center">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -1219,10 +1219,10 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
                           }`}
                         >
                           {rev.macroArea === 'LIXO'
-                            ? '♻️ Lixo'
+                            ? '♻️ Garbage'
                             : rev.macroArea === 'PRE_ESCOLA'
-                            ? '🌻 Pré-Escola'
-                            : '🏢 Centro'}
+                            ? '🌻 Preschool'
+                            : '🏢 Community'}
                         </span>
                       </td>
 
@@ -1235,7 +1235,7 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
 
                       <td className="p-3.5">
                         <span className="font-semibold text-slate-800 block">
-                          {rev.payerName || 'Não especificado'}
+                          {rev.payerName || 'Not specified'}
                         </span>
                         <span className="text-[10px] text-purple-700 font-medium">
                           {rev.installmentsInfo || '-'}
@@ -1244,7 +1244,7 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
 
                       <td className="p-3.5">
                         <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-bold text-[10px]">
-                          {rev.paymentMethod === 'TRANSFERENCIA' ? 'Transferência Bancária' : 'Dinheiro Físico'}
+                          {rev.paymentMethod === 'TRANSFERENCIA' ? 'Bank Transfer' : 'Physical Cash'}
                         </span>
                       </td>
 
@@ -1257,7 +1257,7 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
                               setQuickEditAmount(rev.amount);
                             }}
                             className="p-1 rounded-md hover:bg-slate-200 text-slate-400 hover:text-slate-700 transition-colors"
-                            title="Editar valor rapidamente"
+                            title="Quick edit amount"
                           >
                             <Edit3 className="w-3 h-3" />
                           </button>
@@ -1269,14 +1269,14 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
                           <button
                             onClick={() => handleOpenEditRevModal(rev)}
                             className="p-1.5 rounded-lg hover:bg-emerald-50 text-slate-500 hover:text-[#075e38] transition-colors"
-                            title="Editar dados completos"
+                            title="Edit full details"
                           >
                             <Edit3 className="w-3.5 h-3.5" />
                           </button>
                           <button
                             onClick={() => handleDeleteRevenue(rev.id)}
                             className="p-1.5 rounded-lg hover:bg-rose-50 text-slate-400 hover:text-rose-600 transition-colors"
-                            title="Remover recebimento"
+                            title="Remove revenue"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
@@ -1292,16 +1292,16 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
       )}
 
       {/* ========================================================================= */}
-      {/* SUB-TAB 3: ÁREA DE GASTOS (PLANILHA OFICIAL EXPENSE REPORT)                */}
+      {/* SUB-TAB 3: EXPENSES AREA (OFFICIAL EXPENSE REPORT SHEET)                */}
       {/* ========================================================================= */}
       {activeSubTab === 'gastos' && (
         <div className="space-y-6">
           {/* Header Summary & Cash Controls (image 2) */}
           <div className="bg-white p-5 rounded-3xl border border-slate-200/90 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex items-center gap-4 flex-wrap">
-              {/* Entradas Base */}
+              {/* Base Inflows */}
               <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200">
-                <span className="text-[10px] font-bold text-slate-400 uppercase block">Fundo de Caixa (Entrada)</span>
+                <span className="text-[10px] font-bold text-slate-400 uppercase block">Cash Fund (Inflow)</span>
                 {isEditingCapital ? (
                   <div className="flex items-center gap-1.5 mt-0.5">
                     <input
@@ -1314,7 +1314,7 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
                       onClick={() => {
                         setInitialCapital(tempCapitalInput);
                         setIsEditingCapital(false);
-                        showToast('Fundo de caixa atualizado.');
+                        showToast('Cash fund updated.');
                       }}
                       className="px-2 py-1 bg-emerald-600 text-white rounded text-xs font-bold"
                     >
@@ -1328,30 +1328,30 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
                 )}
               </div>
 
-              {/* Subtotal Gastos */}
+              {/* Expense Subtotal */}
               <div className="p-3 bg-rose-50 rounded-2xl border border-rose-200">
-                <span className="text-[10px] font-bold text-rose-700 uppercase block">Subtotal Despesas</span>
+                <span className="text-[10px] font-bold text-rose-700 uppercase block">Expense Subtotal</span>
                 <span className="text-base font-black text-rose-800 font-mono">
                   -{formatCurrency(grandTotalExpenses, 'EGP')}
                 </span>
               </div>
 
-              {/* Reembolsos de Colaboradores Integrados */}
+              {/* Integrated Staff Reimbursements */}
               <div className="p-3 bg-indigo-50 rounded-2xl border border-indigo-200">
-                <span className="text-[10px] font-bold text-indigo-700 uppercase block">Reembolsos Integrados</span>
+                <span className="text-[10px] font-bold text-indigo-700 uppercase block">Integrated Reimbursements</span>
                 <div className="flex items-baseline gap-1.5">
                   <span className="text-base font-black text-indigo-950 font-mono">
                     {formatCurrency(totalReimbursementsExpenses, 'EGP')}
                   </span>
                   <span className="text-[10px] text-indigo-600 font-extrabold">
-                    ({countReimbursementsExpenses} itens)
+                    ({countReimbursementsExpenses} items)
                   </span>
                 </div>
               </div>
 
-              {/* Saldo Restante */}
+              {/* Remaining Balance */}
               <div className="p-3 bg-purple-50 rounded-2xl border border-purple-200">
-                <span className="text-[10px] font-bold text-purple-700 uppercase block">Saldo Total em Caixa</span>
+                <span className="text-[10px] font-bold text-purple-700 uppercase block">Total Cash Balance</span>
                 <span className="text-base font-black text-purple-950 font-mono">
                   {formatCurrency(netCashBalance, 'EGP')}
                 </span>
@@ -1363,11 +1363,11 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
               className="px-4 py-2.5 bg-[#075e38] hover:bg-[#064e2e] text-white rounded-xl text-xs font-black shadow-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer"
             >
               <Plus className="w-4 h-4" />
-              <span>+ Lançar Novo Gasto na Planilha</span>
+              <span>+ Record New Expense in Sheet</span>
             </button>
           </div>
 
-          {/* Banner de Recibos Recém-Lançados a partir de Reembolso Aprovado */}
+          {/* Banner for Recently Added Receipts from Approved Reimbursement */}
           {recentlyAddedReceipts.length > 0 && (
             <div className="p-4 bg-emerald-50 border border-emerald-300 rounded-3xl flex items-center justify-between gap-3 text-xs text-emerald-950 shadow-xs animate-in fade-in">
               <div className="flex items-center gap-2.5">
@@ -1376,11 +1376,11 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
                 </div>
                 <div>
                   <strong className="text-emerald-900 block font-black">
-                    Reembolso integrado com sucesso na Planilha Oficial de Gastos!
+                    Reimbursement successfully integrated into the Official Expense Sheet!
                   </strong>
                   <span className="text-emerald-800">
-                    Foram adicionadas novas linhas de despesas com os{' '}
-                    <strong className="underline">Recibos #{recentlyAddedReceipts.join(', #')}</strong> destacados em verde na planilha abaixo.
+                    New expense rows were added with Receipts{' '}
+                    <strong className="underline">#{recentlyAddedReceipts.join(', #')}</strong> highlighted in green in the sheet below.
                   </span>
                 </div>
               </div>
@@ -1388,7 +1388,7 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
                 onClick={() => setRecentlyAddedReceipts([])}
                 className="px-3 py-1.5 bg-emerald-200/70 hover:bg-emerald-200 text-emerald-900 rounded-xl font-bold text-xs transition-colors flex-shrink-0 cursor-pointer"
               >
-                Dispensar Destaque
+                Dismiss Highlight
               </button>
             </div>
           )}
@@ -1406,7 +1406,7 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
                       type="text"
                       value={expSearch}
                       onChange={(e) => setExpSearch(e.target.value)}
-                      placeholder="Buscar produto, colaborador, recibo #..."
+                      placeholder="Search product, staff member, receipt #..."
                       className="w-full pl-8 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800"
                     />
                   </div>
@@ -1416,7 +1416,7 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
                     onChange={(e) => setExpBudgetFilter(e.target.value as any)}
                     className="p-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800"
                   >
-                    <option value="ALL">Todos os Budgets</option>
+                    <option value="ALL">All Budgets</option>
                     {OFFICIAL_BUDGET_MENUS.map((b) => (
                       <option key={b} value={b}>
                         Budget: {b}
@@ -1429,19 +1429,19 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
                     onChange={(e) => setExpMonthFilter(e.target.value)}
                     className="p-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800"
                   >
-                    <option value="ALL">Todos os Meses</option>
-                    <option value="10">Outubro (10)</option>
-                    <option value="11">Novembro (11)</option>
-                    <option value="12">Dezembro (12)</option>
-                    <option value="01">Janeiro (01)</option>
-                    <option value="02">Fevereiro (02)</option>
-                    <option value="03">Março (03)</option>
+                    <option value="ALL">All Months</option>
+                    <option value="10">October (10)</option>
+                    <option value="11">November (11)</option>
+                    <option value="12">December (12)</option>
+                    <option value="01">January (01)</option>
+                    <option value="02">February (02)</option>
+                    <option value="03">March (03)</option>
                   </select>
                 </div>
 
-                {/* Quick Filter Chips: Origem do Gasto */}
+                {/* Quick Filter Chips: Expense Origin */}
                 <div className="flex items-center gap-2 pt-1 border-t border-slate-100 flex-wrap text-xs">
-                  <span className="text-[11px] font-bold text-slate-400 uppercase mr-1">Origem:</span>
+                  <span className="text-[11px] font-bold text-slate-400 uppercase mr-1">Origin:</span>
                   <button
                     onClick={() => setExpOriginFilter('ALL')}
                     className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
@@ -1450,7 +1450,7 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
                         : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                     }`}
                   >
-                    Todos os Gastos ({expenses.length})
+                    All Expenses ({expenses.length})
                   </button>
                   <button
                     onClick={() => setExpOriginFilter('REIMBURSEMENT')}
@@ -1461,7 +1461,7 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
                     }`}
                   >
                     <CheckCircle2 className="w-3.5 h-3.5" />
-                    <span>Reembolsos Aprovados ({countReimbursementsExpenses})</span>
+                    <span>Approved Reimbursements ({countReimbursementsExpenses})</span>
                   </button>
                   <button
                     onClick={() => setExpOriginFilter('DIRECT')}
@@ -1471,7 +1471,7 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
                         : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                     }`}
                   >
-                    Despesas Diretas ({countDirectExpenses})
+                    Direct Expenses ({countDirectExpenses})
                   </button>
                 </div>
               </div>
@@ -1501,14 +1501,14 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
                         <th className="py-2.5 px-3 border-r border-slate-200 min-w-[180px]">
                           Category
                         </th>
-                        <th className="py-2.5 px-2 text-center w-16">Ação</th>
+                        <th className="py-2.5 px-2 text-center w-16">Action</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-200 font-sans">
                       {filteredExpenses.map((exp) => {
                         const isRecentlyAdded = recentlyAddedReceipts.includes(exp.receiptNumber);
                         const isReimbursement = Boolean(
-                          exp.sourceReportId || exp.product.toLowerCase().includes('reembolso')
+                          exp.sourceReportId || (exp.product.toLowerCase().includes('reembolso') || exp.product.toLowerCase().includes('reimbursement'))
                         );
 
                         return (
@@ -1525,7 +1525,7 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
                                 <span>{exp.receiptNumber}</span>
                                 {isRecentlyAdded && (
                                   <span className="text-[9px] font-black text-emerald-700 uppercase bg-emerald-100 px-1 rounded animate-pulse">
-                                    Novo
+                                    New
                                   </span>
                                 )}
                               </div>
@@ -1541,7 +1541,7 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
                                     <button
                                       onClick={() => setSelectedReceiptPhotoModal(exp.receiptPhotoUrl || null)}
                                       className="text-purple-600 hover:text-purple-800 p-0.5 rounded hover:bg-purple-100 transition-colors"
-                                      title="Ver foto do comprovante anexado"
+                                      title="View photo of attached receipt"
                                     >
                                       <Paperclip className="w-3.5 h-3.5" />
                                     </button>
@@ -1552,7 +1552,7 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
                                   <div className="flex items-center gap-2 flex-wrap">
                                     <span className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-[10px] font-bold bg-purple-100 text-purple-900 border border-purple-200">
                                       <CheckCircle2 className="w-3 h-3 text-purple-700" />
-                                      Reembolso Aprovado
+                                      Approved Reimbursement
                                     </span>
                                     {exp.sourceReportId && (
                                       <button
@@ -1561,10 +1561,10 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
                                           if (rep) setSelectedReportDetail(rep);
                                         }}
                                         className="inline-flex items-center gap-1 text-[10px] font-semibold text-purple-700 hover:text-purple-900 underline cursor-pointer"
-                                        title="Ver formulário original de solicitação deste reembolso"
+                                        title="View original reimbursement request form"
                                       >
                                         <FileText className="w-3 h-3" />
-                                        <span>Ver Relatório Original</span>
+                                        <span>View Original Report</span>
                                       </button>
                                     )}
                                   </div>
@@ -1597,14 +1597,14 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
                                 <button
                                   onClick={() => handleOpenEditExpModal(exp)}
                                   className="p-1 rounded hover:bg-slate-200 text-slate-500 hover:text-slate-900"
-                                  title="Editar linha"
+                                  title="Edit row"
                                 >
                                   <Edit3 className="w-3.5 h-3.5" />
                                 </button>
                                 <button
                                   onClick={() => handleDeleteExpense(exp.id)}
                                   className="p-1 rounded hover:bg-rose-100 text-slate-400 hover:text-rose-600"
-                                  title="Remover linha"
+                                  title="Remove row"
                                 >
                                   <Trash2 className="w-3.5 h-3.5" />
                                 </button>
@@ -1635,7 +1635,7 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
               {/* Budget Menu Selector */}
               <div className="bg-white rounded-3xl border border-slate-200/90 shadow-2xs p-5 space-y-3">
                 <span className="text-xs font-black uppercase tracking-wider text-slate-700 block">
-                  Budget Menu (Orçamentos)
+                  Budget Menu (Budgets)
                 </span>
                 <div className="space-y-1.5 text-xs font-bold">
                   {OFFICIAL_BUDGET_MENUS.map((menu) => (
@@ -1657,7 +1657,7 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
                       onClick={() => setExpBudgetFilter('ALL')}
                       className="text-xs text-purple-700 hover:underline font-bold text-center w-full pt-1"
                     >
-                      Limpar filtro de Budget
+                      Clear budget filter
                     </button>
                   )}
                 </div>
@@ -1701,17 +1701,17 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
       )}
 
       {/* ========================================================================= */}
-      {/* SUB-TAB 4: PENDÊNCIAS DE REEMBOLSO (REPORTS ENVIADOS POR FUNCIONÁRIOS)     */}
+      {/* SUB-TAB 4: PENDING REIMBURSEMENTS (REPORTS SUBMITTED BY STAFF)        */}
       {/* ========================================================================= */}
       {activeSubTab === 'pendencias_reembolso' && (
         <div className="space-y-6">
           <div className="bg-white p-5 rounded-3xl border border-slate-200/90 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <h3 className="font-extrabold text-base text-slate-900">
-                Fila de Reembolsos Pendentes ({pendingReports.length})
+                Pending Reimbursement Queue ({pendingReports.length})
               </h3>
               <p className="text-xs text-slate-500">
-                Relatórios preenchidos por funcionários e voluntários via formulário Expense Report. Ao aprovar, os itens vão automaticamente para a planilha de gastos oficial.
+                Reports filled out by staff and volunteers via the Expense Report form. Once approved, items are automatically added to the official expense sheet.
               </p>
             </div>
 
@@ -1720,7 +1720,7 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
               className="px-4 py-2 bg-emerald-50 hover:bg-emerald-100 text-[#075e38] font-bold text-xs rounded-xl border border-emerald-200 transition-colors flex items-center gap-1.5 cursor-pointer"
             >
               <Plus className="w-4 h-4" />
-              <span>Simular Novo Relatório de Colaborador</span>
+              <span>Simulate New Staff Report</span>
             </button>
           </div>
 
@@ -1730,10 +1730,10 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
               <div className="bg-white p-12 rounded-3xl border border-slate-200 text-center space-y-3">
                 <CheckCircle2 className="w-12 h-12 text-emerald-600 mx-auto" />
                 <h4 className="font-extrabold text-slate-900 text-base">
-                  Nenhum reembolso pendente de aprovação!
+                  No reimbursements pending approval!
                 </h4>
                 <p className="text-xs text-slate-500 max-w-md mx-auto">
-                  Todos os relatórios de gastos enviados pelos colaboradores já foram analisados e processados na contabilidade.
+                  All expense reports submitted by staff have already been reviewed and processed in accounting.
                 </p>
               </div>
             ) : (
@@ -1752,16 +1752,16 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
                           {report.fullName}
                         </span>
                         <span className="text-slate-400">•</span>
-                        <span className="text-xs text-slate-500">Data: {report.date}</span>
+                        <span className="text-xs text-slate-500">Date: {report.date}</span>
                       </div>
                       <h4 className="font-bold text-xs text-purple-900">
-                        Finalidade / Evento: {report.event}
+                        Final Purpose / Event: {report.event}
                       </h4>
                     </div>
 
                     <div className="text-right">
                       <span className="text-[10px] text-slate-400 uppercase block font-bold">
-                        Total Solicitado
+                        Total Requested
                       </span>
                       <span className="text-xl font-black text-[#075e38] font-mono">
                         {formatCurrency(report.totalAmount, 'EGP')}
@@ -1774,10 +1774,10 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
                     <table className="w-full text-left">
                       <thead className="bg-slate-50 font-black text-slate-600 border-b border-slate-200 uppercase text-[10px]">
                         <tr>
-                          <th className="p-2.5">Categoria Orçamentária</th>
-                          <th className="p-2.5">Descrição</th>
-                          <th className="p-2.5">Data</th>
-                          <th className="p-2.5 text-right">Valor (EGP)</th>
+                          <th className="p-2.5">Budget Category</th>
+                          <th className="p-2.5">Description</th>
+                          <th className="p-2.5">Date</th>
+                          <th className="p-2.5 text-right">Amount (EGP)</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-100 bg-white">
@@ -1804,10 +1804,10 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
                           className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-purple-50 text-purple-800 font-bold text-xs hover:bg-purple-100 transition-colors"
                         >
                           <Paperclip className="w-3.5 h-3.5" />
-                          <span>Ver Comprovante Anexado (Foto)</span>
+                          <span>View Attached Proof of Payment (Photo)</span>
                         </button>
                       ) : (
-                        <span className="text-xs text-slate-400 italic">Sem foto de comprovante anexada</span>
+                        <span className="text-xs text-slate-400 italic">No receipt photo attached</span>
                       )}
                     </div>
 
@@ -1819,7 +1819,7 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
                         }}
                         className="px-4 py-2 border border-rose-300 text-rose-700 hover:bg-rose-50 font-bold text-xs rounded-xl transition-colors cursor-pointer"
                       >
-                        Recusar
+                        Reject
                       </button>
 
                       <button
@@ -1827,7 +1827,7 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
                         className="px-5 py-2 bg-[#075e38] hover:bg-[#064e2e] text-white font-black text-xs rounded-xl shadow-md transition-all flex items-center gap-1.5 cursor-pointer active:scale-95"
                       >
                         <Check className="w-4 h-4" />
-                        <span>Aprovar e Lançar nos Gastos</span>
+                        <span>Approve and Post to Expenses</span>
                       </button>
                     </div>
                   </div>
@@ -1839,7 +1839,7 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
           {/* Processed Reports Section */}
           <div className="bg-white rounded-3xl border border-slate-200/90 shadow-xs p-6 space-y-4">
             <h4 className="font-extrabold text-sm text-slate-900">
-              Histórico de Reembolsos Já Processados
+              History of Already Processed Reimbursements
             </h4>
             <div className="space-y-2">
               {expenseReports
@@ -1854,7 +1854,7 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
                       <strong className="text-slate-800">{r.fullName}</strong> — {r.event} ({r.date})
                       {r.assignedExpenseReceipts && (
                         <span className="ml-2 text-purple-700 font-semibold text-[11px]">
-                          [Recibos na Planilha: #{r.assignedExpenseReceipts.join(', #')}]
+                          [Receipts in Sheet: #{r.assignedExpenseReceipts.join(', #')}]
                         </span>
                       )}
                     </div>
@@ -1867,7 +1867,13 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
                             : 'bg-rose-100 text-rose-800'
                         }`}
                       >
-                        {r.status}
+                        {r.status === 'APROVADO'
+                          ? 'Approved'
+                          : r.status === 'REJEITADO'
+                          ? 'Rejected'
+                          : r.status === 'PENDENTE'
+                          ? 'Pending'
+                          : r.status}
                       </span>
                     </div>
                   </div>
@@ -1878,7 +1884,7 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
       )}
 
       {/* ========================================================================= */}
-      {/* MODAL 1: NOVO / EDITAR RECEBIMENTO                                        */}
+      {/* MODAL 1: NEW / EDIT REVENUE                                             */}
       {/* ========================================================================= */}
       {isRevModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-slate-900/70 backdrop-blur-xs animate-in fade-in">
@@ -1886,10 +1892,10 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
             <div className="flex items-start justify-between border-b border-slate-100 pb-3">
               <div>
                 <h3 className="font-black text-base text-slate-900">
-                  {editingRevId ? 'Editar Recebimento' : 'Novo Lançamento de Recebimento'}
+                  {editingRevId ? 'Edit Revenue' : 'New Revenue Entry'}
                 </h3>
                 <p className="text-xs text-slate-500">
-                  Valores configuráveis nas 3 macroáreas e subáreas oficiais
+                  Configurable amounts across the 3 macro areas and official sub-areas
                 </p>
               </div>
               <button
@@ -1903,20 +1909,20 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
             <form onSubmit={handleSaveRevForm} className="space-y-4 text-xs">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">Macroárea Principal *</label>
+                  <label className="block font-bold text-slate-700 mb-1">Main Macro Area *</label>
                   <select
                     value={formRevMacro}
                     onChange={(e) => setFormRevMacro(e.target.value as AccountingMacroArea)}
                     className="w-full p-2.5 border border-slate-300 rounded-xl font-bold bg-white"
                   >
-                    <option value="CENTRO_COMUNITARIO">🏢 3. Centro Comunitário</option>
-                    <option value="PRE_ESCOLA">🌻 2. Pré-Escola</option>
-                    <option value="LIXO">♻️ 1. Lixo (Recycle)</option>
+                    <option value="CENTRO_COMUNITARIO">🏢 3. Community Center</option>
+                    <option value="PRE_ESCOLA">🌻 2. Preschool</option>
+                    <option value="LIXO">♻️ 1. Garbage (Recycle)</option>
                   </select>
                 </div>
 
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">Subárea *</label>
+                  <label className="block font-bold text-slate-700 mb-1">Sub-area *</label>
                   <select
                     value={formRevSub}
                     onChange={(e) => {
@@ -1924,41 +1930,41 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
                       setFormRevSub(val);
                       if (val === 'CURSO_INGLES') {
                         setFormRevAmount(2000);
-                        setFormRevInstallment('Parcela trimestral (2.000 EGP)');
+                        setFormRevInstallment('Quarterly installment (2,000 EGP)');
                       } else if (val === 'PRE_ESCOLA') {
                         setFormRevAmount(9000);
-                        setFormRevInstallment('Semestre 1 (9.000 EGP)');
+                        setFormRevInstallment('Semester 1 (9,000 EGP)');
                       } else if (val === 'ACADEMIA_GINASTICA') {
                         setFormRevAmount(1500);
-                        setFormRevInstallment('Mensalidade');
+                        setFormRevInstallment('Monthly Tuition');
                       } else if (val === 'AULAS_FUTEBOL') {
                         setFormRevAmount(1200);
-                        setFormRevInstallment('Mensalidade');
+                        setFormRevInstallment('Monthly Tuition');
                       }
                     }}
                     className="w-full p-2.5 border border-slate-300 rounded-xl font-bold bg-white"
                   >
-                    <option value="CURSO_INGLES">Curso Livre de Inglês (2.000 EGP)</option>
-                    <option value="PRE_ESCOLA">Pré-Escola (9.000 EGP Semestral)</option>
-                    <option value="ACADEMIA_GINASTICA">Academia & Ginástica Feminina</option>
-                    <option value="AULAS_FUTEBOL">Aulas de Futebol Sub-15</option>
-                    <option value="CANTINA">Cantina Comunitária</option>
-                    <option value="VENDA_LIXO">Venda de Lixo (Recycle)</option>
-                    <option value="ALUGUEL_CAMPO_PINGPONG">Aluguel Campo & Ping Pong</option>
+                    <option value="CURSO_INGLES">English Language Course (2,000 EGP)</option>
+                    <option value="PRE_ESCOLA">Preschool (9,000 EGP per Semester)</option>
+                    <option value="ACADEMIA_GINASTICA">Gym & Women's Gymnastics</option>
+                    <option value="AULAS_FUTEBOL">Under-15 Soccer Lessons</option>
+                    <option value="CANTINA">Community Cafeteria</option>
+                    <option value="VENDA_LIXO">Recyclables Sales (Recycle)</option>
+                    <option value="ALUGUEL_CAMPO_PINGPONG">Field & Ping Pong Rental</option>
                     <option value="SUMMER_CAMPING">Summer Camping</option>
-                    <option value="OUTROS">Outros Recebimentos</option>
+                    <option value="OUTROS">Other Revenues</option>
                   </select>
                 </div>
               </div>
 
               <div>
-                <label className="block font-bold text-slate-700 mb-1">Título / Descrição *</label>
+                <label className="block font-bold text-slate-700 mb-1">Title / Description *</label>
                 <input
                   type="text"
                   required
                   value={formRevTitle}
                   onChange={(e) => setFormRevTitle(e.target.value)}
-                  placeholder="Ex: Curso Livre de Inglês - Parcela 2/3 (Adolescente)"
+                  placeholder="Ex: English Language Course - Installment 2/3 (Teen)"
                   className="w-full p-2.5 border border-slate-300 rounded-xl font-medium"
                 />
               </div>
@@ -1966,7 +1972,7 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block font-bold text-slate-700 mb-1">
-                    Valor Recebido (EGP) * <span className="text-emerald-700">(editável)</span>
+                    Amount Received (EGP) * <span className="text-emerald-700">(editable)</span>
                   </label>
                   <input
                     type="number"
@@ -1980,7 +1986,7 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
                 </div>
 
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">Data do Recebimento *</label>
+                  <label className="block font-bold text-slate-700 mb-1">Revenue Date *</label>
                   <input
                     type="date"
                     required
@@ -1993,37 +1999,37 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">Nome do Pagante / Aluno</label>
+                  <label className="block font-bold text-slate-700 mb-1">Payer / Student Name</label>
                   <input
                     type="text"
                     value={formRevPayer}
                     onChange={(e) => setFormRevPayer(e.target.value)}
-                    placeholder="Ex: Nome do fornecedor"
+                    placeholder="Ex: Supplier name"
                     className="w-full p-2.5 border border-slate-300 rounded-xl"
                   />
                 </div>
 
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">Info das Parcelas</label>
+                  <label className="block font-bold text-slate-700 mb-1">Installment Info</label>
                   <input
                     type="text"
                     value={formRevInstallment}
                     onChange={(e) => setFormRevInstallment(e.target.value)}
-                    placeholder="Ex: Parcela 2 de 3 (Adolescente)"
+                    placeholder="Ex: Installment 2 of 3 (Teen)"
                     className="w-full p-2.5 border border-slate-300 rounded-xl"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block font-bold text-slate-700 mb-1">Forma de Pagamento</label>
+                <label className="block font-bold text-slate-700 mb-1">Payment Method</label>
                 <select
                   value={formRevMethod}
                   onChange={(e) => setFormRevMethod(e.target.value as PaymentMethod)}
                   className="w-full p-2.5 border border-slate-300 rounded-xl font-bold bg-white"
                 >
-                  <option value="DINHEIRO">Dinheiro Físico (Balcão / Rony)</option>
-                  <option value="TRANSFERENCIA">Transferência Bancária</option>
+                  <option value="DINHEIRO">Physical Cash (Counter / Rony)</option>
+                  <option value="TRANSFERENCIA">Bank Transfer</option>
                 </select>
               </div>
 
@@ -2033,13 +2039,13 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
                   onClick={() => setIsRevModalOpen(false)}
                   className="px-4 py-2 border border-slate-300 rounded-xl font-semibold text-slate-700"
                 >
-                  Cancelar
+                  Cancel
                 </button>
                 <button
                   type="submit"
                   className="px-6 py-2 bg-[#075e38] hover:bg-[#064e2e] text-white rounded-xl font-black shadow-xs"
                 >
-                  Salvar Recebimento
+                  Save Revenue
                 </button>
               </div>
             </form>
@@ -2053,11 +2059,11 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
       {quickEditRev && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in">
           <div className="bg-white rounded-3xl p-6 max-w-sm w-full space-y-4 shadow-xl border border-slate-200">
-            <h4 className="font-extrabold text-sm text-slate-900">Editar Valor do Recebimento</h4>
+            <h4 className="font-extrabold text-sm text-slate-900">Edit Revenue Amount</h4>
             <p className="text-xs text-slate-600 font-medium">{quickEditRev.title}</p>
             <div>
               <label className="block text-xs font-bold text-slate-500 uppercase mb-1">
-                Novo Valor em EGP:
+                New Amount in EGP:
               </label>
               <input
                 type="number"
@@ -2074,14 +2080,14 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
                 onClick={() => setQuickEditRev(null)}
                 className="px-4 py-2 bg-slate-100 rounded-xl text-xs font-bold text-slate-700"
               >
-                Cancelar
+                Cancel
               </button>
               <button
                 type="button"
                 onClick={handleSaveQuickEditAmount}
                 className="px-5 py-2 bg-[#075e38] text-white rounded-xl text-xs font-black shadow-xs"
               >
-                Salvar Valor
+                Save Amount
               </button>
             </div>
           </div>
@@ -2089,7 +2095,7 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
       )}
 
       {/* ========================================================================= */}
-      {/* MODAL 3: NOVO / EDITAR GASTO MANUAL                                       */}
+      {/* MODAL 3: NEW / EDIT MANUAL EXPENSE                                        */}
       {/* ========================================================================= */}
       {isExpModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-slate-900/70 backdrop-blur-xs animate-in fade-in">
@@ -2097,10 +2103,10 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
             <div className="flex items-start justify-between border-b border-slate-100 pb-3">
               <div>
                 <h3 className="font-black text-base text-slate-900">
-                  {editingExpId ? 'Editar Despesa' : 'Novo Lançamento na Planilha de Gastos'}
+                  {editingExpId ? 'Edit Expense' : 'New Expense Sheet Entry'}
                 </h3>
                 <p className="text-xs text-slate-500">
-                  Modelo oficial: Think Green Expense Report (Receipt # sequencial)
+                  Official template: Think Green Expense Report (sequential Receipt #)
                 </p>
               </div>
               <button
@@ -2114,7 +2120,7 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
             <form onSubmit={handleSaveExpForm} className="space-y-4 text-xs">
               <div>
                 <label className="block font-bold text-slate-700 mb-1">
-                  Descrição do Produto / Serviço (Product) *
+                  Product / Service Description (Product) *
                 </label>
                 <input
                   type="text"
@@ -2128,7 +2134,7 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">Preço (Price EGP) *</label>
+                  <label className="block font-bold text-slate-700 mb-1">Price (Price EGP) *</label>
                   <input
                     type="number"
                     step="0.01"
@@ -2142,7 +2148,7 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
                 </div>
 
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">Data (DD/MM/YYYY) *</label>
+                  <label className="block font-bold text-slate-700 mb-1">Date (DD/MM/YYYY) *</label>
                   <input
                     type="text"
                     required
@@ -2187,12 +2193,12 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
               </div>
 
               <div>
-                <label className="block font-bold text-slate-700 mb-1">Observações Adicionais</label>
+                <label className="block font-bold text-slate-700 mb-1">Additional Notes</label>
                 <textarea
                   rows={2}
                   value={formExpNotes}
                   onChange={(e) => setFormExpNotes(e.target.value)}
-                  placeholder="Informações adicionais..."
+                  placeholder="Additional information..."
                   className="w-full p-2.5 border border-slate-300 rounded-xl"
                 />
               </div>
@@ -2203,13 +2209,13 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
                   onClick={() => setIsExpModalOpen(false)}
                   className="px-4 py-2 border border-slate-300 rounded-xl font-semibold text-slate-700"
                 >
-                  Cancelar
+                  Cancel
                 </button>
                 <button
                   type="submit"
                   className="px-6 py-2 bg-[#075e38] hover:bg-[#064e2e] text-white rounded-xl font-black shadow-xs"
                 >
-                  Salvar na Planilha Oficial
+                  Save to Official Sheet
                 </button>
               </div>
             </form>
@@ -2218,24 +2224,24 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
       )}
 
       {/* ========================================================================= */}
-      {/* MODAL 4: RECUSAR REEMBOLSO                                                */}
+      {/* MODAL 4: REJECT REIMBURSEMENT                                              */}
       {/* ========================================================================= */}
       {isRejectModalOpen && selectedReportForReview && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in">
           <div className="bg-white rounded-3xl p-6 max-w-md w-full space-y-4 shadow-2xl border border-slate-200">
             <h4 className="font-extrabold text-sm text-slate-900">
-              Recusar Reembolso — {selectedReportForReview.reportCode}
+              Reject Reimbursement — {selectedReportForReview.reportCode}
             </h4>
             <p className="text-xs text-slate-600">
-              Informe a justificativa para que o colaborador{' '}
-              <strong>{selectedReportForReview.fullName}</strong> possa verificar e corrigir:
+              Please provide a justification so the staff member{' '}
+              <strong>{selectedReportForReview.fullName}</strong> can review and correct it:
             </p>
             <textarea
               rows={3}
               required
               value={rejectReason}
               onChange={(e) => setRejectReason(e.target.value)}
-              placeholder="Ex: Comprovante ilegível ou despesa não autorizada previamente..."
+              placeholder="Ex: Illegible receipt or expense not previously authorized..."
               className="w-full p-2.5 border border-slate-300 rounded-xl text-xs"
             />
             <div className="flex justify-end gap-2 pt-2">
@@ -2244,14 +2250,14 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
                 onClick={() => setIsRejectModalOpen(false)}
                 className="px-4 py-2 bg-slate-100 rounded-xl text-xs font-bold text-slate-700"
               >
-                Voltar
+                Back
               </button>
               <button
                 type="button"
                 onClick={handleRejectReimbursement}
                 className="px-5 py-2 bg-rose-600 text-white rounded-xl text-xs font-black shadow-xs"
               >
-                Confirmar Recusa
+                Confirm Rejection
               </button>
             </div>
           </div>
@@ -2259,13 +2265,13 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
       )}
 
       {/* ========================================================================= */}
-      {/* MODAL 5: RECEIPT PHOTO VIEWER (AMPLIAÇÃO DE COMPROVANTE)                  */}
+      {/* MODAL 5: RECEIPT PHOTO VIEWER (ENLARGED PROOF OF PAYMENT)                */}
       {/* ========================================================================= */}
       {selectedReceiptPhotoModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xs animate-in fade-in">
           <div className="bg-white rounded-3xl max-w-xl w-full p-5 space-y-4 shadow-2xl">
             <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-              <span className="text-xs font-bold text-slate-900">Visualização do Comprovante</span>
+              <span className="text-xs font-bold text-slate-900">Proof of Payment Preview</span>
               <button
                 onClick={() => setSelectedReceiptPhotoModal(null)}
                 className="p-1 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600"
@@ -2276,7 +2282,7 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
             <div className="rounded-2xl overflow-hidden bg-slate-950 flex items-center justify-center max-h-[70vh]">
               <img
                 src={selectedReceiptPhotoModal}
-                alt="Comprovante Fiscal"
+                alt="Fiscal Receipt"
                 className="max-h-[68vh] object-contain"
               />
             </div>
@@ -2285,7 +2291,7 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
                 onClick={() => setSelectedReceiptPhotoModal(null)}
                 className="px-4 py-2 bg-slate-900 text-white text-xs font-bold rounded-xl cursor-pointer"
               >
-                Fechar
+                Close
               </button>
             </div>
           </div>
@@ -2293,7 +2299,7 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
       )}
 
       {/* ========================================================================= */}
-      {/* MODAL 6: DETALHES DO RELATÓRIO DE REEMBOLSO ORIGINÁRIO                    */}
+      {/* MODAL 6: ORIGINAL REIMBURSEMENT REPORT DETAILS                           */}
       {/* ========================================================================= */}
       {selectedReportDetail && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-xs animate-in fade-in">
@@ -2305,14 +2311,14 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
                     {selectedReportDetail.reportCode}
                   </span>
                   <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
-                    Lançado nos Gastos Oficiais
+                    Posted to Official Expenses
                   </span>
                 </div>
                 <h3 className="font-extrabold text-base text-slate-900 mt-1.5">
                   {selectedReportDetail.event}
                 </h3>
                 <p className="text-xs text-slate-500">
-                  Colaborador: <strong>{selectedReportDetail.fullName}</strong> • Enviado em:{' '}
+                  Staff Member: <strong>{selectedReportDetail.fullName}</strong> • Submitted on:{' '}
                   {selectedReportDetail.date}
                 </p>
               </div>
@@ -2324,33 +2330,33 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
               </button>
             </div>
 
-            {/* Auditoria de Aprovação */}
+            {/* Approval Audit */}
             <div className="p-3 bg-purple-50 rounded-2xl border border-purple-200 text-xs space-y-1">
               <span className="text-[10px] uppercase font-bold text-purple-700 block">
-                Auditoria de Aprovação Contábil
+                Accounting Approval Audit
               </span>
               <p className="text-slate-800">
-                Aprovado por: <strong>{selectedReportDetail.reviewedBy || 'Contabilidade (Rony)'}</strong>{' '}
-                {selectedReportDetail.reviewedAt && `em ${selectedReportDetail.reviewedAt}`}
+                Approved by: <strong>{selectedReportDetail.reviewedBy || 'Accounting (Rony)'}</strong>{' '}
+                {selectedReportDetail.reviewedAt && `on ${selectedReportDetail.reviewedAt}`}
               </p>
               {selectedReportDetail.assignedExpenseReceipts && (
                 <p className="text-purple-900 font-bold">
-                  Recibos Oficiais na Planilha: #{selectedReportDetail.assignedExpenseReceipts.join(', #')}
+                  Official Receipts in Sheet: #{selectedReportDetail.assignedExpenseReceipts.join(', #')}
                 </p>
               )}
             </div>
 
-            {/* Lista de Itens */}
+            {/* Reimbursed Items List */}
             <div className="space-y-2">
-              <span className="text-xs font-black text-slate-700 uppercase">Itens Reembolsados:</span>
+              <span className="text-xs font-black text-slate-700 uppercase">Reimbursed Items:</span>
               <div className="border border-slate-200 rounded-xl overflow-hidden text-xs">
                 <table className="w-full text-left">
                   <thead className="bg-slate-100 font-bold text-slate-600 border-b border-slate-200">
                     <tr>
-                      <th className="p-2.5">Categoria</th>
-                      <th className="p-2.5">Descrição</th>
-                      <th className="p-2.5">Data</th>
-                      <th className="p-2.5 text-right">Valor</th>
+                      <th className="p-2.5">Category</th>
+                      <th className="p-2.5">Description</th>
+                      <th className="p-2.5">Date</th>
+                      <th className="p-2.5 text-right">Amount</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
@@ -2368,7 +2374,7 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
                   <tfoot>
                     <tr className="bg-emerald-50 font-black text-emerald-950 border-t border-emerald-200">
                       <td colSpan={3} className="p-2.5 text-right uppercase">
-                        TOTAL REEMBOLSADO:
+                        TOTAL REIMBURSED:
                       </td>
                       <td className="p-2.5 text-right font-mono text-sm">
                         {formatCurrency(selectedReportDetail.totalAmount, 'EGP')}
@@ -2379,23 +2385,23 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
               </div>
             </div>
 
-            {/* Foto do Comprovante */}
+            {/* Receipt Photo */}
             {selectedReportDetail.receiptPhotoUrl && (
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-black text-slate-700 uppercase">Comprovante Anexado:</span>
+                  <span className="text-xs font-black text-slate-700 uppercase">Attached Proof of Payment:</span>
                   <button
                     onClick={() => setSelectedReceiptPhotoModal(selectedReportDetail.receiptPhotoUrl || null)}
                     className="text-xs text-purple-700 hover:text-purple-900 font-bold inline-flex items-center gap-1 cursor-pointer"
                   >
                     <ExternalLink className="w-3.5 h-3.5" />
-                    <span>Ampliar Imagem</span>
+                    <span>Enlarge Image</span>
                   </button>
                 </div>
                 <div className="rounded-2xl overflow-hidden border border-slate-200 max-h-56 bg-slate-100 flex items-center justify-center">
                   <img
                     src={selectedReportDetail.receiptPhotoUrl}
-                    alt="Comprovante"
+                    alt="Proof of Payment"
                     className="w-full h-52 object-contain"
                   />
                 </div>
@@ -2407,7 +2413,7 @@ export const AccountingModule: React.FC<AccountingModuleProps> = ({
                 onClick={() => setSelectedReportDetail(null)}
                 className="px-4 py-2 bg-slate-900 text-white rounded-xl font-bold text-xs hover:bg-slate-800 transition-colors cursor-pointer"
               >
-                Fechar
+                Close
               </button>
             </div>
           </div>

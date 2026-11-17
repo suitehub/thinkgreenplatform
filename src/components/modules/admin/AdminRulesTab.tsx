@@ -127,17 +127,17 @@ export const AdminRulesTab: React.FC = () => {
         <div>
           <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
             <ShieldAlert className="w-5 h-5 text-purple-700" />
-            Motor de Regras de Negócio & Travas Automáticas (Gates)
+            Business Rules Engine & Automatic Gates
           </h2>
           <p className="text-xs text-slate-500 mt-0.5">
-            Configure as travas de liberação acadêmica por adimplência financeira e teste em tempo real.
+            Configure the academic release gates based on financial standing and test them in real time.
           </p>
         </div>
 
         {savedFeedback && (
           <div className="px-3.5 py-1.5 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-xl text-xs font-bold flex items-center gap-1.5 animate-in fade-in">
             <CheckCircle className="w-4 h-4 text-emerald-600" />
-            Regras atualizadas em todos os portais!
+            Rules updated across all portals!
           </div>
         )}
       </div>
@@ -146,10 +146,10 @@ export const AdminRulesTab: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs flex items-center justify-between gap-4">
           <div>
-            <span className="text-[10px] font-bold text-purple-700 uppercase tracking-wider">Gate Financeiro de Provas</span>
-            <h4 className="text-sm font-bold text-slate-900 mt-0.5">Bloqueio Automático em Avaliações (AVA)</h4>
+            <span className="text-[10px] font-bold text-purple-700 uppercase tracking-wider">Financial Exam Gate</span>
+            <h4 className="text-sm font-bold text-slate-900 mt-0.5">Automatic Lock on Assessments (LMS)</h4>
             <p className="text-xs text-slate-500 mt-1">
-              Impede que alunos com mensalidades pendentes realizem Prova 1 ou Prova Final no portal do aluno.
+              Prevents students with pending tuition from taking Exam 1 or the Final Exam in the student portal.
             </p>
           </div>
 
@@ -161,16 +161,16 @@ export const AdminRulesTab: React.FC = () => {
                 : 'bg-slate-200 text-slate-600'
             }`}
           >
-            {settings.enableAutomaticExamGates ? 'LIGADO' : 'DESLIGADO'}
+            {settings.enableAutomaticExamGates ? 'ON' : 'OFF'}
           </button>
         </div>
 
         <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs flex items-center justify-between gap-4">
           <div>
-            <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-wider">Gate de Frequência & Acesso</span>
-            <h4 className="text-sm font-bold text-slate-900 mt-0.5">Bloqueio de Entrada em Sala / Presença</h4>
+            <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-wider">Attendance & Access Gate</span>
+            <h4 className="text-sm font-bold text-slate-900 mt-0.5">Classroom Entry / Attendance Lock</h4>
             <p className="text-xs text-slate-500 mt-1">
-              Sinaliza alerta no diário do professor e bloqueia materiais didáticos caso a 1ª parcela não esteja quitada.
+              Flags an alert in the teacher's log and blocks course materials if the 1st installment is not paid.
             </p>
           </div>
 
@@ -182,7 +182,7 @@ export const AdminRulesTab: React.FC = () => {
                 : 'bg-slate-200 text-slate-600'
             }`}
           >
-            {settings.enableAutomaticClassroomGates ? 'LIGADO' : 'DESLIGADO'}
+            {settings.enableAutomaticClassroomGates ? 'ON' : 'OFF'}
           </button>
         </div>
       </div>
@@ -191,7 +191,7 @@ export const AdminRulesTab: React.FC = () => {
       <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs space-y-4">
         <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2 border-b border-slate-100 pb-3">
           <Sliders className="w-4 h-4 text-purple-600" />
-          Configuração Individual das 3 Regras Estratégicas
+          Individual Configuration of the 3 Strategic Rules
         </h3>
 
         <div className="space-y-3.5 text-xs">
@@ -201,11 +201,11 @@ export const AdminRulesTab: React.FC = () => {
               <div className="flex items-center gap-2">
                 <Lock className="w-4 h-4 text-purple-700" />
                 <h4 className="font-bold text-slate-900 text-sm">
-                  Regra 1: Acesso à Sala de Aula / Campo Exige 1ª Parcela (Matrícula)
+                  Rule 1: Classroom / Field Access Requires 1st Installment (Enrollment)
                 </h4>
               </div>
               <p className="text-slate-600">
-                Alunos recém-cadastrados necessitam ter o pagamento da primeira parcela (ou taxa de inscrição) quitado na tesouraria para constar como liberados na lista de chamada do docente.
+                Newly registered students must have the first installment (or registration fee) paid at the treasury to appear as released on the teacher's attendance list.
               </p>
             </div>
 
@@ -217,7 +217,7 @@ export const AdminRulesTab: React.FC = () => {
                   : 'bg-slate-200 text-slate-600'
               }`}
             >
-              {settings.rulesConfig?.rule1_classroomRequiresFirstPayment ? 'ATIVADA' : 'DESATIVADA'}
+              {settings.rulesConfig?.rule1_classroomRequiresFirstPayment ? 'ENABLED' : 'DISABLED'}
             </button>
           </div>
 
@@ -227,11 +227,11 @@ export const AdminRulesTab: React.FC = () => {
               <div className="flex items-center gap-2">
                 <ShieldAlert className="w-4 h-4 text-emerald-600" />
                 <h4 className="font-bold text-slate-900 text-sm">
-                  Regra 2: Bloqueio de 1ª Avaliação / Prova Intermediária (Exige 2ª Parcela)
+                  Rule 2: Lock on 1st Assessment / Midterm (Requires 2nd Installment)
                 </h4>
               </div>
               <p className="text-slate-600">
-                Ao chegar no meio do curso (Prova 1), o aluno só consegue abrir o teste caso a 2ª mensalidade esteja confirmada no sistema financeiro. Exibe instruções para regularização imediata.
+                At the midpoint of the course (Exam 1), the student can only open the test if the 2nd tuition payment is confirmed in the financial system. Instructions for immediate regularization are shown.
               </p>
             </div>
 
@@ -243,7 +243,7 @@ export const AdminRulesTab: React.FC = () => {
                   : 'bg-slate-200 text-slate-600'
               }`}
             >
-              {settings.rulesConfig?.rule2_exam1RequiresSecondPayment ? 'ATIVADA' : 'DESATIVADA'}
+              {settings.rulesConfig?.rule2_exam1RequiresSecondPayment ? 'ENABLED' : 'DISABLED'}
             </button>
           </div>
 
@@ -253,11 +253,11 @@ export const AdminRulesTab: React.FC = () => {
               <div className="flex items-center gap-2">
                 <Lock className="w-4 h-4 text-amber-600" />
                 <h4 className="font-bold text-slate-900 text-sm">
-                  Regra 3: Bloqueio de Prova Final e Emissão de Certificados (Exige Quitação Integral)
+                  Rule 3: Final Exam Lock and Certificate Issuance (Requires Full Payment)
                 </h4>
               </div>
               <p className="text-slate-600">
-                Exige que 100% das parcelas da matrícula (ex: 4 parcelas) estejam integralmente quitadas antes de liberar a Prova Final do curso e a impressão do certificado oficial de conclusão.
+                Requires 100% of enrollment installments (e.g., 4 installments) to be fully paid before releasing the course Final Exam and printing the official completion certificate.
               </p>
             </div>
 
@@ -269,7 +269,7 @@ export const AdminRulesTab: React.FC = () => {
                   : 'bg-slate-200 text-slate-600'
               }`}
             >
-              {settings.rulesConfig?.rule3_finalExamRequiresFullPayment ? 'ATIVADA' : 'DESATIVADA'}
+              {settings.rulesConfig?.rule3_finalExamRequiresFullPayment ? 'ENABLED' : 'DISABLED'}
             </button>
           </div>
         </div>
@@ -279,13 +279,13 @@ export const AdminRulesTab: React.FC = () => {
       <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs space-y-4">
         <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2 border-b border-slate-100 pb-3">
           <Award className="w-4 h-4 text-emerald-600" />
-          Critérios Acadêmicos de Aprovação & Frequência
+          Academic Passing Criteria & Attendance
         </h3>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
           <div>
             <label className="block font-bold text-slate-700 mb-1">
-              Média Mínima para Aprovação (0 a 100 pontos):
+              Minimum Passing Average (0 to 100 points):
             </label>
             <div className="flex items-center gap-2">
               <input
@@ -296,13 +296,13 @@ export const AdminRulesTab: React.FC = () => {
                 onChange={(e) => setMinGrade(Number(e.target.value))}
                 className="w-32 p-2.5 border border-slate-300 rounded-xl font-bold text-slate-900 focus:ring-2 focus:ring-purple-500"
               />
-              <span className="text-slate-500">pontos mínimos exigidos</span>
+              <span className="text-slate-500">minimum points required</span>
             </div>
           </div>
 
           <div>
             <label className="block font-bold text-slate-700 mb-1">
-              Meta de Frequência para Acompanhamento (%):
+              Attendance Tracking Target (%):
             </label>
             <div className="flex items-center gap-2">
               <input
@@ -313,10 +313,10 @@ export const AdminRulesTab: React.FC = () => {
                 onChange={(e) => setMinAttendance(Number(e.target.value))}
                 className="w-32 p-2.5 border border-slate-300 rounded-xl font-bold text-slate-900 focus:ring-2 focus:ring-purple-500"
               />
-              <span className="text-slate-500">% de presença (apenas informativa)</span>
+              <span className="text-slate-500">% attendance (informational only)</span>
             </div>
             <p className="text-[11px] text-slate-500 mt-1">
-              A aprovação do aluno independe de frequência mínima (sem reprovação por falta). A visualização de presenças é mantida para acompanhamento pedagógico.
+              Student passing does not depend on minimum attendance (no failing for absence). Attendance viewing is kept for pedagogical monitoring.
             </p>
           </div>
         </div>
@@ -326,7 +326,7 @@ export const AdminRulesTab: React.FC = () => {
             onClick={handleSaveAcademicCriteria}
             className="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl font-bold text-xs shadow-2xs cursor-pointer"
           >
-            Salvar Critérios Acadêmicos
+            Save Academic Criteria
           </button>
         </div>
       </div>
@@ -337,10 +337,10 @@ export const AdminRulesTab: React.FC = () => {
           <div>
             <h3 className="text-sm font-bold text-purple-950 flex items-center gap-2">
               <Play className="w-4 h-4 text-purple-700" />
-              Simulador Interativo do Motor de Travas (Gate Tester)
+              Live Rule Engine Simulator (Gate Tester)
             </h3>
             <p className="text-xs text-slate-500 mt-0.5">
-              Selecione um aluno e simule instantaneamente o comportamento das travas financeiras e acadêmicas
+              Select a student and instantly simulate the behavior of the financial and academic gates
             </p>
           </div>
         </div>
@@ -348,7 +348,7 @@ export const AdminRulesTab: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
           {/* Select Student */}
           <div>
-            <label className="block font-bold text-slate-700 mb-1">1. Selecione o Aluno:</label>
+            <label className="block font-bold text-slate-700 mb-1">1. Select the Student:</label>
             <select
               value={simulatorStudentId}
               onChange={(e) => {
@@ -368,7 +368,7 @@ export const AdminRulesTab: React.FC = () => {
 
           {/* Select Assessment */}
           <div>
-            <label className="block font-bold text-slate-700 mb-1">2. Selecione a Avaliação:</label>
+            <label className="block font-bold text-slate-700 mb-1">2. Select the Assessment:</label>
             <select
               value={simulatorAssessmentId}
               onChange={(e) => {
@@ -387,7 +387,7 @@ export const AdminRulesTab: React.FC = () => {
 
           {/* Select Class */}
           <div>
-            <label className="block font-bold text-slate-700 mb-1">3. Selecione a Turma:</label>
+            <label className="block font-bold text-slate-700 mb-1">3. Select the Class:</label>
             <select
               value={simulatorClassId}
               onChange={(e) => {
@@ -411,7 +411,7 @@ export const AdminRulesTab: React.FC = () => {
             className="px-5 py-2.5 bg-purple-700 hover:bg-purple-800 text-white font-bold rounded-xl text-xs flex items-center gap-2 shadow-2xs cursor-pointer"
           >
             <RefreshCw className="w-3.5 h-3.5" />
-            Executar Simulação de Gates
+            Run Gate Simulation
           </button>
         </div>
 
@@ -431,21 +431,21 @@ export const AdminRulesTab: React.FC = () => {
                   {simulatorExamResult.allowed ? (
                     <>
                       <CheckCircle className="w-4 h-4 text-emerald-600" />
-                      Avaliação: LIBERADA PARA REALIZAÇÃO
+                      Assessment: RELEASED TO TAKE
                     </>
                   ) : (
                     <>
                       <Lock className="w-4 h-4 text-rose-600" />
-                      Avaliação: BLOQUEADA POR REGRA DE NEGÓCIO
+                      Assessment: BLOCKED BY BUSINESS RULE
                     </>
                   )}
                 </div>
                 <p className="text-[11px] mt-1">
-                  {simulatorExamResult.reason || 'Aluno cumpre todos os requisitos financeiros para esta avaliação.'}
+                  {simulatorExamResult.reason || 'Student meets all financial requirements for this assessment.'}
                 </p>
                 {simulatorExamResult.requiredStage && (
                   <p className="text-[10px] font-mono mt-2 font-bold text-slate-600">
-                    Estágio Exigido: {simulatorExamResult.requiredStage}
+                    Required Stage: {simulatorExamResult.requiredStage}
                   </p>
                 )}
               </div>
@@ -464,21 +464,21 @@ export const AdminRulesTab: React.FC = () => {
                   {simulatorClassResult.allowed ? (
                     <>
                       <CheckCircle className="w-4 h-4 text-emerald-600" />
-                      Sala de Aula: ACESSO PERMITIDO
+                      Classroom: ACCESS GRANTED
                     </>
                   ) : (
                     <>
                       <AlertTriangle className="w-4 h-4 text-amber-600" />
-                      Sala de Aula: PENDÊNCIA IDENTIFICADA
+                      Classroom: OUTSTANDING ISSUE FOUND
                     </>
                   )}
                 </div>
                 <p className="text-[11px] mt-1">
-                  {simulatorClassResult.reason || 'Aluno regular com a primeira parcela da matrícula.'}
+                  {simulatorClassResult.reason || 'Student in good standing with the first enrollment installment.'}
                 </p>
                 {simulatorClassResult.unpaidInstallments && simulatorClassResult.unpaidInstallments.length > 0 && (
                   <p className="text-[10px] font-mono mt-2 font-bold text-slate-600">
-                    Parcelas em Aberto: {simulatorClassResult.unpaidInstallments.join(', ')}
+                    Open Installments: {simulatorClassResult.unpaidInstallments.join(', ')}
                   </p>
                 )}
               </div>

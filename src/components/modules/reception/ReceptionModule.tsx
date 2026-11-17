@@ -71,7 +71,7 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
   const [selectedReceipt, setSelectedReceipt] = useState<PaymentReceipt | null>(null);
   const [isReceiptModalOpen, setIsReceiptModalOpen] = useState<boolean>(false);
 
-  // Provisional Receipt Modal State (Pré-Registro de Pagamento)
+  // Provisional Receipt Modal State (Payment Pre-Registration)
   const [selectedProvisionalPayment, setSelectedProvisionalPayment] = useState<PendingPayment | null>(null);
   const [isProvisionalModalOpen, setIsProvisionalModalOpen] = useState<boolean>(false);
 
@@ -158,13 +158,13 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
         totalInstallments: charge.totalInstallments,
         amount: paymentAmount,
         paymentMethod,
-        receptionNotes: paymentNotes || 'Recebido no balcão da Recepção (dinheiro físico guardado na gaveta).',
+        receptionNotes: paymentNotes || 'Received at the Reception counter (cash kept in the drawer).',
       });
 
       setSelectedProvisionalPayment(pendingPayment);
       setIsProvisionalModalOpen(true);
       setPaymentSuccessMsg(
-        `Pré-Registro ${pendingPayment.protocolNumber} enviado com sucesso! Comprovante Provisório emitido. Aguardando conferência e aprovação da Tesouraria.`
+        `Pre-Registration ${pendingPayment.protocolNumber} sent successfully! Provisional Receipt issued. Awaiting verification and approval by the Treasury.`
       );
 
       // Reset form
@@ -173,12 +173,12 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
       setPaymentNotes('');
     } catch (err) {
       console.error(err);
-      alert('Erro ao processar pré-registro de pagamento.');
+      alert('Error processing the payment pre-registration.');
     }
   };
 
   // =========================================================================
-  // 2. NEW STUDENT REGISTRATION (PRÉ-CADASTRO SEM GERAR ID)
+  // 2. NEW STUDENT REGISTRATION (PRE-REGISTRATION WITHOUT GENERATING AN ID)
   // =========================================================================
   const [newStudentForm, setNewStudentForm] = useState<{
     name: string;
@@ -291,12 +291,12 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
     e.preventDefault();
 
     if (!newStudentForm.name.trim() || !newStudentForm.phone.trim()) {
-      alert('Por favor, preencha os campos obrigatórios (Nome e Telefone).');
+      alert('Please fill in the required fields (Name and Phone).');
       return;
     }
 
     if (newStudentForm.hasDiscount && !newStudentForm.discountReason.trim()) {
-      alert('Por favor, preencha a Observação / Motivo do Desconto. Ela é obrigatória para a Secretaria analisar.');
+      alert('Please fill in the Discount Note / Reason. It is required so the Registrar\'s Office can review it.');
       return;
     }
 
@@ -315,9 +315,9 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
       notes: newStudentForm.notes,
       documentPhotoUrl: newStudentForm.documentPhotoUrl,
       courseId: newStudentForm.courseId,
-      courseName: selectedCourseForForm ? selectedCourseForForm.name : 'Curso',
+      courseName: selectedCourseForForm ? selectedCourseForForm.name : 'Course',
       classId: selectedClass ? selectedClass.id : '',
-      className: selectedClass ? selectedClass.name : 'Turma Geral',
+      className: selectedClass ? selectedClass.name : 'General Class',
       englishLevel: isEngSelected ? newStudentForm.englishLevel : undefined,
       totalCourseAmount: calculatedBaseTotal,
       monthlyFee: calculatedInstallmentValue,
@@ -393,7 +393,7 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
   }, [state.receipts, receiptSearch]);
 
   // =========================================================================
-  // 4. DAILY REPORT TAB (Conferência Física Balcão vs Caixa Rony)
+  // 4. DAILY REPORT TAB (Physical Reconciliation Counter vs Rony's Cashier)
   // =========================================================================
   const todayStr = new Date().toISOString().split('T')[0];
   const [reportDate, setReportDate] = useState(todayStr);
@@ -403,7 +403,7 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
     return (state.pendingPayments || []).filter((p) => p.registeredAt.startsWith(reportDate));
   }, [state.pendingPayments, reportDate]);
 
-  // Physical cash received in reception drawer today (Precisa bater com o dinheiro que o Rony recebe)
+  // Physical cash received in reception drawer today (must match the money Rony receives)
   const dailyReceptionPhysicalCash = useMemo(() => {
     return dailyPendingPayments
       .filter((p) => p.paymentMethod === 'DINHEIRO')
@@ -441,14 +441,14 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
               <div>
                 <div className="flex items-center gap-2">
                   <h1 className="text-base font-black text-slate-900 tracking-tight">
-                    PAINEL DA RECEPÇÃO
+                    RECEPTION DASHBOARD
                   </h1>
                   <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
-                    Balcão & Caixa
+                    Counter & Cashier
                   </span>
                 </div>
                 <p className="text-[11px] text-slate-500 hidden sm:block">
-                  Atendimento presencial, recebimentos, pré-cadastros e relatórios diários
+                  In-person service, payments, pre-registrations and daily reports
                 </p>
               </div>
             </div>
@@ -466,7 +466,7 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
               <button
                 onClick={logout}
                 className="p-2 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
-                title="Sair"
+                title="Sign out"
               >
                 <LogOut className="w-4 h-4" />
               </button>
@@ -484,7 +484,7 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
               }`}
             >
               <DollarSign className="w-4 h-4" />
-              <span>Lançar Pagamento (Pré-Registro)</span>
+              <span>Record Payment (Pre-Registration)</span>
             </button>
 
             <button
@@ -496,7 +496,7 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
               }`}
             >
               <UserPlus className="w-4 h-4" />
-              <span>Novo Aluno (Pré-Cadastro)</span>
+              <span>New Student (Pre-Registration)</span>
             </button>
 
             <button
@@ -508,7 +508,7 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
               }`}
             >
               <Receipt className="w-4 h-4" />
-              <span>Recibos & Comprovantes</span>
+              <span>Receipts & Proofs</span>
             </button>
 
             <button
@@ -520,7 +520,7 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
               }`}
             >
               <Calendar className="w-4 h-4" />
-              <span>Relatório Diário</span>
+              <span>Daily Report</span>
             </button>
           </nav>
         </div>
@@ -530,23 +530,23 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
         {/* =================================================================== */}
         {/* =================================================================== */}
-        {/* TAB 1: LANÇAR PAGAMENTO (PRÉ-REGISTRO PENDENTE)                     */}
+        {/* TAB 1: RECORD PAYMENT (PENDING PRE-REGISTRATION)                   */}
         {/* =================================================================== */}
         {activeTab === 'payment' && (
           <div className="space-y-6">
-            {/* Banner Explicativo - Pré-registro de pagamento */}
+            {/* Explanatory Banner - Payment pre-registration */}
             <div className="bg-emerald-50/80 border border-emerald-200 p-4 sm:p-5 rounded-2xl flex items-start gap-3">
               <Sparkles className="w-5 h-5 text-emerald-700 flex-shrink-0 mt-0.5" />
               <div className="text-xs text-emerald-950 space-y-1">
                 <p className="font-black text-sm text-emerald-900">
-                  Pré-Registro de Pagamento (Balcão de Atendimento)
+                  Payment Pre-Registration (Service Counter)
                 </p>
                 <p>
-                  Assim como no cadastro de novos alunos, todo pagamento recebido aqui é lançado como{' '}
-                  <strong>PRÉ-REGISTRO PENDENTE</strong>. O sistema emite um{' '}
-                  <strong>Comprovante Provisório de Pré-Registro</strong> para o aluno e o valor é
-                  enviado para a fila da <strong>Tesouraria</strong> para conferência física do dinheiro na
-                  gaveta e aprovação final pelo <strong>Rony</strong>.
+                  Just like new student registrations, every payment received here is recorded as a{' '}
+                  <strong>PENDING PRE-REGISTRATION</strong>. The system issues a{' '}
+                  <strong>Provisional Pre-Registration Receipt</strong> for the student and the amount is
+                  sent to the <strong>Treasury</strong> queue for physical verification of the cash in the
+                  drawer and final approval by <strong>Rony</strong>.
                 </p>
               </div>
             </div>
@@ -563,7 +563,7 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
                     onClick={() => setIsProvisionalModalOpen(true)}
                     className="px-3.5 py-1.5 bg-[#075e38] text-white font-bold rounded-xl hover:bg-emerald-800 transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs"
                   >
-                    <Eye className="w-3.5 h-3.5" /> Ver Comprovante Provisório
+                    <Eye className="w-3.5 h-3.5" /> View Provisional Receipt
                   </button>
                 )}
               </div>
@@ -576,10 +576,10 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
                   <div className="border-b border-slate-100 pb-3">
                     <h2 className="text-sm font-black text-slate-900 flex items-center gap-2">
                       <User className="w-4 h-4 text-[#075e38]" />
-                      1. Localizar Estudante
+                      1. Find Student
                     </h2>
                     <p className="text-[11px] text-slate-500">
-                      Busque por nome, ID ou telefone para carregar os débitos
+                      Search by name, ID or phone to load outstanding balances
                     </p>
                   </div>
 
@@ -589,7 +589,7 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
                       <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
                       <input
                         type="text"
-                        placeholder="Ex: nome do aluno, STU00001, ou telefone..."
+                        placeholder="E.g.: student name, STU00001, or phone..."
                         value={searchStudentQuery}
                         onChange={(e) => setSearchStudentQuery(e.target.value)}
                         className="w-full pl-9 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:bg-white focus:ring-2 focus:ring-[#075e38] focus:border-transparent outline-hidden transition-all"
@@ -611,7 +611,7 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
                                 <span className="font-mono font-bold text-emerald-700">{s.studentId}</span> • {s.phone}
                               </p>
                             </div>
-                            <span className="text-[11px] text-[#075e38] font-bold">Selecionar →</span>
+                            <span className="text-[11px] text-[#075e38] font-bold">Select →</span>
                           </div>
                         ))}
                       </div>
@@ -634,11 +634,11 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
                       </div>
                       <div className="pt-2 border-t border-emerald-100 grid grid-cols-2 gap-2 text-[11px] text-slate-600">
                         <div>
-                          <span className="text-slate-400 block text-[10px]">Contato:</span>
+                          <span className="text-slate-400 block text-[10px]">Contact:</span>
                           <strong>{selectedStudent.phone || 'N/A'}</strong>
                         </div>
                         <div>
-                          <span className="text-slate-400 block text-[10px]">Cidade:</span>
+                          <span className="text-slate-400 block text-[10px]">City:</span>
                           <strong>{selectedStudent.city || 'Cairo'}</strong>
                         </div>
                       </div>
@@ -646,7 +646,7 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
                   ) : (
                     <div className="p-6 text-center border-2 border-dashed border-slate-200 rounded-xl">
                       <p className="text-xs text-slate-400 font-medium">
-                        Nenhum aluno selecionado. Use o campo acima para buscar ou selecione na lista rápida abaixo.
+                        No student selected. Use the field above to search, or choose from the quick list below.
                       </p>
                     </div>
                   )}
@@ -654,7 +654,7 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
                   {/* Quick student picker list */}
                   <div className="space-y-1.5 pt-2">
                     <p className="text-[11px] font-black text-slate-400 uppercase">
-                      Alunos com débitos em aberto:
+                      Students with open balances:
                     </p>
                     <div className="max-h-48 overflow-y-auto space-y-1">
                       {state.students.slice(0, 6).map((s) => {
@@ -674,7 +674,7 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
                           >
                             <span className="truncate">{s.name}</span>
                             <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-md bg-white border border-slate-200 text-slate-600">
-                              {openCount} parcela(s)
+                              {openCount} installment(s)
                             </span>
                           </button>
                         );
@@ -693,26 +693,26 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
                   <div className="border-b border-slate-100 pb-3">
                     <h2 className="text-sm font-black text-slate-900 flex items-center gap-2">
                       <DollarSign className="w-4 h-4 text-[#075e38]" />
-                      2. Selecionar Parcela & Forma de Pagamento
+                      2. Select Installment & Payment Method
                     </h2>
                     <p className="text-[11px] text-slate-500">
-                      Lance o valor recebido no balcão e emita o comprovante provisório para aprovação da Tesouraria
+                      Record the amount received at the counter and issue the provisional receipt for Treasury approval
                     </p>
                   </div>
 
                   {/* Charges List for this student */}
                   <div>
                     <label className="block text-xs font-bold text-slate-700 mb-2">
-                      Parcelas em Aberto do Aluno:
+                      Student's Open Installments:
                     </label>
 
                     {!selectedStudent ? (
                       <p className="text-xs text-slate-400 italic">
-                        Localize o aluno à esquerda para visualizar suas parcelas.
+                        Find the student on the left to view their installments.
                       </p>
                     ) : pendingStudentCharges.length === 0 ? (
                       <div className="p-4 bg-emerald-50/60 border border-emerald-200 rounded-xl text-xs text-emerald-900 font-medium">
-                        ✨ Este aluno não possui parcelas pendentes no momento!
+                        ✨ This student has no pending installments at the moment!
                       </div>
                     ) : (
                       <div className="space-y-2">
@@ -728,10 +728,10 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
                           >
                             <div>
                               <p className="text-xs font-black text-slate-900">
-                                {c.courseName} • Parcela {c.installmentNumber}/{c.totalInstallments}
+                                {c.courseName} • Installment {c.installmentNumber}/{c.totalInstallments}
                               </p>
                               <p className="text-[11px] text-slate-500 mt-0.5">
-                                Vencimento: <span className="font-semibold">{c.dueDate}</span>
+                                Due date: <span className="font-semibold">{c.dueDate}</span>
                                 {c.notes && ` • ${c.notes}`}
                               </p>
                             </div>
@@ -753,7 +753,7 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-slate-100">
                     <div>
                       <label className="block text-xs font-bold text-slate-700 mb-1">
-                        Valor Recebido no Balcão (EGP) *
+                        Amount Received at Counter (EGP) *
                       </label>
                       <input
                         type="number"
@@ -768,25 +768,25 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
 
                     <div>
                       <label className="block text-xs font-bold text-slate-700 mb-1">
-                        Forma de Pagamento *
+                        Payment Method *
                       </label>
                       <select
                         value={paymentMethod}
                         onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)}
                         className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold text-slate-800 focus:bg-white focus:ring-2 focus:ring-[#075e38] outline-hidden"
                       >
-                        <option value="DINHEIRO">💵 Dinheiro Físico (Balcão / Caixa)</option>
-                        <option value="TRANSFERENCIA">🏦 Transferência Bancária</option>
+                        <option value="DINHEIRO">💵 Cash (Counter / Cashier)</option>
+                        <option value="TRANSFERENCIA">🏦 Bank Transfer</option>
                       </select>
                     </div>
 
                     <div className="sm:col-span-2">
                       <label className="block text-xs font-bold text-slate-700 mb-1">
-                        Observações no Comprovante Provisório (Opcional)
+                        Notes on the Provisional Receipt (Optional)
                       </label>
                       <input
                         type="text"
-                        placeholder="Ex: Pago pelo pai em dinheiro no balcão; cédulas guardadas na gaveta da recepção..."
+                        placeholder="E.g.: Paid by the father in cash at the counter; bills kept in the reception drawer..."
                         value={paymentNotes}
                         onChange={(e) => setPaymentNotes(e.target.value)}
                         className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-800 focus:bg-white focus:ring-2 focus:ring-[#075e38] outline-hidden"
@@ -802,50 +802,50 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
                       className="w-full py-3.5 bg-[#075e38] hover:bg-[#064e2e] disabled:opacity-50 text-white font-black text-sm rounded-xl shadow-md flex items-center justify-center gap-2 transition-all cursor-pointer"
                     >
                       <Receipt className="w-5 h-5" />
-                      <span>Salvar Pré-Registro de Pagamento & Emitir Comprovante</span>
+                      <span>Save Payment Pre-Registration & Issue Receipt</span>
                     </button>
                     <p className="text-[11px] text-slate-400 text-center mt-2">
-                      Ao registrar, o pagamento ficará com status <strong>PENDENTE</strong> para a <strong>Tesouraria (Rony)</strong> aprovar após conferência do dinheiro físico.
+                      When recorded, the payment will have <strong>PENDING</strong> status for the <strong>Treasury (Rony)</strong> to approve after verifying the physical cash.
                     </p>
                   </div>
                 </form>
               </div>
             </div>
 
-            {/* Sub-section: Fila Recente de Pré-Registros de Pagamento */}
+            {/* Sub-section: Recent Payment Pre-Registration Queue */}
             <div className="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-2xs space-y-4">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
                 <div>
                   <h3 className="text-sm font-black text-slate-900 flex items-center gap-2">
                     <Clock className="w-4 h-4 text-[#075e38]" />
-                    Fila de Pré-Registros de Pagamento (Recepção ⇄ Tesouraria)
+                    Payment Pre-Registration Queue (Reception ⇄ Treasury)
                   </h3>
                   <p className="text-[11px] text-slate-500">
-                    Acompanhe os pagamentos lançados no balcão e a aprovação pela Tesouraria
+                    Track payments recorded at the counter and their approval by the Treasury
                   </p>
                 </div>
                 <span className="text-xs font-bold text-slate-500">
-                  Total na Fila: {(state.pendingPayments || []).length}
+                  Total in Queue: {(state.pendingPayments || []).length}
                 </span>
               </div>
 
               {(state.pendingPayments || []).length === 0 ? (
                 <div className="p-8 text-center bg-slate-50 rounded-xl border border-slate-200">
-                  <p className="text-xs text-slate-400 font-medium">Nenhum pré-registro de pagamento lançado ainda.</p>
+                  <p className="text-xs text-slate-400 font-medium">No payment pre-registrations recorded yet.</p>
                 </div>
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-xs">
                     <thead className="bg-slate-50 text-slate-500 font-black uppercase text-[10px] border-b border-slate-100">
                       <tr>
-                        <th className="py-2.5 px-3">Protocolo</th>
-                        <th className="py-2.5 px-3">Data/Hora</th>
-                        <th className="py-2.5 px-3">Aluno</th>
-                        <th className="py-2.5 px-3">Curso / Parcela</th>
-                        <th className="py-2.5 px-3">Meio</th>
-                        <th className="py-2.5 px-3 text-right">Valor</th>
+                        <th className="py-2.5 px-3">Protocol</th>
+                        <th className="py-2.5 px-3">Date/Time</th>
+                        <th className="py-2.5 px-3">Student</th>
+                        <th className="py-2.5 px-3">Course / Installment</th>
+                        <th className="py-2.5 px-3">Method</th>
+                        <th className="py-2.5 px-3 text-right">Amount</th>
                         <th className="py-2.5 px-3 text-center">Status</th>
-                        <th className="py-2.5 px-3 text-right">Ação</th>
+                        <th className="py-2.5 px-3 text-right">Action</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
@@ -869,11 +869,11 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
                               </span>
                             </td>
                             <td className="py-2.5 px-3 text-slate-600 text-[11px]">
-                              {p.courseName} (Parc. {p.installmentNumber}/{p.totalInstallments})
+                              {p.courseName} (Install. {p.installmentNumber}/{p.totalInstallments})
                             </td>
                             <td className="py-2.5 px-3">
                               <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700">
-                                {p.paymentMethod === 'TRANSFERENCIA' ? '🏦 Transferência' : '💵 Dinheiro Físico'}
+                                {p.paymentMethod === 'TRANSFERENCIA' ? '🏦 Transfer' : '💵 Cash'}
                               </span>
                             </td>
                             <td className="py-2.5 px-3 text-right font-mono font-black text-emerald-800">
@@ -890,10 +890,10 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
                                 }`}
                               >
                                 {isApproved
-                                  ? '✓ APROVADO'
+                                  ? '✓ APPROVED'
                                   : isRejected
-                                  ? '✕ RECUSADO'
-                                  : '⏳ PENDENTE'}
+                                  ? '✕ REJECTED'
+                                  : '⏳ PENDING'}
                               </span>
                             </td>
                             <td className="py-2.5 px-3 text-right whitespace-nowrap">
@@ -905,7 +905,7 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
                                 }}
                                 className="px-2.5 py-1 bg-emerald-50 text-emerald-800 hover:bg-[#075e38] hover:text-white rounded-lg text-xs font-bold transition-colors inline-flex items-center gap-1 cursor-pointer"
                               >
-                                <Eye className="w-3.5 h-3.5" /> Comprovante
+                                <Eye className="w-3.5 h-3.5" /> Receipt
                               </button>
                             </td>
                           </tr>
@@ -920,30 +920,30 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
         )}
 
         {/* =================================================================== */}
-        {/* TAB 2: NOVO ALUNO (PRÉ-CADASTRO SEM GERAR ID)                      */}
+        {/* TAB 2: NEW STUDENT (PRE-REGISTRATION WITHOUT GENERATING AN ID)      */}
         {/* =================================================================== */}
         {activeTab === 'new_student' && (
           <div className="max-w-4xl mx-auto space-y-6">
-            {/* Banner explicativo simples */}
+            {/* Simple explanatory banner */}
             <div className="bg-emerald-50/80 border border-emerald-200 p-4 sm:p-5 rounded-2xl flex items-start gap-3">
               <Sparkles className="w-5 h-5 text-emerald-700 flex-shrink-0 mt-0.5" />
               <div className="text-xs text-emerald-950 space-y-1">
                 <p className="font-black text-sm text-emerald-900">
-                  Pré-Cadastro de Novo Aluno (Recepção)
+                  New Student Pre-Registration (Reception)
                 </p>
                 <p>
-                  Preencha os dados do estudante e o curso desejado. Conforme a regra do centro,{' '}
-                  <strong>o ID permanente (STU00000) NÃO é gerado agora</strong>. O cadastro será
-                  enviado como <strong>PENDENTE</strong> para a fila de homologação e aprovação da{' '}
-                  <strong>Secretaria</strong>.
+                  Fill in the student's details and desired course. As per the center's policy,{' '}
+                  <strong>the permanent ID (STU00000) is NOT generated now</strong>. The registration will be
+                  sent as <strong>PENDING</strong> to the approval and validation queue of the{' '}
+                  <strong>Registrar's Office</strong>.
                 </p>
                 <p className="font-semibold text-emerald-800">
-                  Caso seja aplicado desconto, informe a porcentagem/valor e a justificativa clara no campo abaixo.
+                  If a discount applies, enter the percentage/amount and a clear justification in the field below.
                 </p>
               </div>
             </div>
 
-            {/* Sucesso pré-cadastro */}
+            {/* Pre-registration success */}
             {preRegistrationSuccess && (
               <div className="p-6 bg-white border border-emerald-300 rounded-2xl shadow-sm text-center space-y-3 animate-in fade-in">
                 <div className="w-12 h-12 rounded-full bg-emerald-100 text-[#075e38] flex items-center justify-center mx-auto">
@@ -951,17 +951,17 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
                 </div>
                 <div>
                   <span className="text-[11px] font-black uppercase text-emerald-700 tracking-wider">
-                    Pré-Cadastro Enviado com Sucesso!
+                    Pre-Registration Sent Successfully!
                   </span>
                   <h3 className="text-lg font-black text-slate-900 mt-0.5">
                     {preRegistrationSuccess.name}
                   </h3>
                   <p className="text-xs font-mono font-bold text-[#075e38] mt-1">
-                    Protocolo: {preRegistrationSuccess.protocol}
+                    Protocol: {preRegistrationSuccess.protocol}
                   </p>
                   <p className="text-xs text-slate-500 mt-1">
-                    {preRegistrationSuccess.courseName} • Total do Plano: {formatCurrency(preRegistrationSuccess.total, 'EGP')}
-                    {preRegistrationSuccess.discountNote && ` (Desconto: ${preRegistrationSuccess.discountNote})`}
+                    {preRegistrationSuccess.courseName} • Plan Total: {formatCurrency(preRegistrationSuccess.total, 'EGP')}
+                    {preRegistrationSuccess.discountNote && ` (Discount: ${preRegistrationSuccess.discountNote})`}
                   </p>
                 </div>
                 <div className="pt-2">
@@ -969,7 +969,7 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
                     onClick={() => setPreRegistrationSuccess(null)}
                     className="px-4 py-2 bg-[#075e38] text-white text-xs font-bold rounded-xl hover:bg-emerald-800 transition-all cursor-pointer"
                   >
-                    Cadastrar Mais um Aluno
+                    Register Another Student
                   </button>
                 </div>
               </div>
@@ -980,24 +980,24 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
               onSubmit={handleSavePendingStudent}
               className="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-2xs space-y-6"
             >
-              {/* Bloco 1: Dados Pessoais */}
+              {/* Block 1: Personal Details */}
               <div className="space-y-4">
                 <div className="border-b border-slate-100 pb-2">
                   <h3 className="text-xs font-black uppercase text-slate-500 tracking-wider flex items-center gap-1.5">
                     <User className="w-3.5 h-3.5 text-[#075e38]" />
-                    1. Dados Pessoais do Estudante
+                    1. Student Personal Details
                   </h3>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
                   <div className="sm:col-span-2">
                     <label className="block font-bold text-slate-700 mb-1">
-                      Nome Completo do Aluno *
+                      Student's Full Name *
                     </label>
                     <input
                       type="text"
                       required
-                      placeholder="Ex: Mahmoud Ibrahim Khalil"
+                      placeholder="E.g.: Mahmoud Ibrahim Khalil"
                       value={newStudentForm.name}
                       onChange={(e) => setNewStudentForm({ ...newStudentForm, name: e.target.value })}
                       className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold focus:bg-white focus:ring-2 focus:ring-[#075e38] outline-hidden"
@@ -1006,7 +1006,7 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
 
                   <div>
                     <label className="block font-bold text-slate-700 mb-1">
-                      Data de Nascimento *
+                      Date of Birth *
                     </label>
                     <input
                       type="date"
@@ -1018,44 +1018,44 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
                   </div>
 
                   <div>
-                    <label className="block font-bold text-slate-700 mb-1">Gênero *</label>
+                    <label className="block font-bold text-slate-700 mb-1">Gender *</label>
                     <select
                       value={newStudentForm.gender}
                       onChange={(e) => setNewStudentForm({ ...newStudentForm, gender: e.target.value })}
                       className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold focus:bg-white focus:ring-2 focus:ring-[#075e38] outline-hidden"
                     >
-                      <option value="MASCULINO">Masculino</option>
-                      <option value="FEMININO">Feminino</option>
-                      <option value="OUTRO">Outro / Prefiro não informar</option>
+                      <option value="MASCULINO">Male</option>
+                      <option value="FEMININO">Female</option>
+                      <option value="OUTRO">Other / Prefer not to say</option>
                     </select>
                   </div>
 
                   <div>
                     <label className="block font-bold text-slate-700 mb-1">
-                      RG / Documento de Identidade
+                      RG / ID Document
                     </label>
                     <input
                       type="text"
-                      placeholder="12.345.678-9 ou ID Nacional"
+                      placeholder="12.345.678-9 or National ID"
                       value={newStudentForm.rg}
                       onChange={(e) => setNewStudentForm({ ...newStudentForm, rg: e.target.value })}
                       className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-mono focus:bg-white focus:ring-2 focus:ring-[#075e38] outline-hidden"
                     />
                   </div>
 
-                  {/* Foto do Documento (ID) Logo Abaixo do RG */}
+                  {/* Document Photo (ID) Right Below the RG */}
                   <div className="sm:col-span-2 p-3 bg-slate-50/90 rounded-xl border border-slate-200">
                     <DocumentPhotoCapture
                       value={newStudentForm.documentPhotoUrl}
                       onChange={(photo) => setNewStudentForm({ ...newStudentForm, documentPhotoUrl: photo })}
-                      label="Foto do Documento (RG / ID)"
-                      helperText="Não obrigatório. Anexe uma foto ou tire foto com a câmera. Ficará salva no pré-cadastro para a Secretaria validar e arquivar na ficha do aluno."
+                      label="Document Photo (RG / ID)"
+                      helperText="Not required. Attach a photo or take one with the camera. It will be saved in the pre-registration for the Registrar's Office to validate and file in the student record."
                     />
                   </div>
 
                   <div>
                     <label className="block font-bold text-slate-700 mb-1">
-                      Telefone / WhatsApp *
+                      Phone / WhatsApp *
                     </label>
                     <input
                       type="text"
@@ -1069,11 +1069,11 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
 
                   <div>
                     <label className="block font-bold text-slate-700 mb-1">
-                      Email de Contato <span className="text-slate-400 font-normal">(Opcional)</span>
+                      Contact Email <span className="text-slate-400 font-normal">(Optional)</span>
                     </label>
                     <input
                       type="email"
-                      placeholder="aluno@email.com (opcional)"
+                      placeholder="student@email.com (optional)"
                       value={newStudentForm.email}
                       onChange={(e) => setNewStudentForm({ ...newStudentForm, email: e.target.value })}
                       className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs focus:bg-white focus:ring-2 focus:ring-[#075e38] outline-hidden"
@@ -1082,11 +1082,11 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
 
                   <div className="sm:col-span-2">
                     <label className="block font-bold text-slate-700 mb-1">
-                      Nome do Responsável <span className="text-slate-400 font-normal">(se menor de idade - opcional)</span>
+                      Guardian Name <span className="text-slate-400 font-normal">(if a minor - optional)</span>
                     </label>
                     <input
                       type="text"
-                      placeholder="Nome do pai, mãe ou tutor legal"
+                      placeholder="Name of father, mother or legal guardian"
                       value={newStudentForm.guardianName}
                       onChange={(e) => setNewStudentForm({ ...newStudentForm, guardianName: e.target.value })}
                       className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs"
@@ -1095,11 +1095,11 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
 
                   <div className="sm:col-span-2">
                     <label className="block font-bold text-slate-700 mb-1">
-                      Observações Médicas / Restrições
+                      Medical Notes / Restrictions
                     </label>
                     <input
                       type="text"
-                      placeholder="Alergias, restrições para esportes ou observações gerais..."
+                      placeholder="Allergies, sports restrictions or general notes..."
                       value={newStudentForm.notes}
                       onChange={(e) => setNewStudentForm({ ...newStudentForm, notes: e.target.value })}
                       className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs"
@@ -1108,18 +1108,18 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
                 </div>
               </div>
 
-              {/* Bloco 2: Curso e Turma */}
+              {/* Block 2: Course and Class */}
               <div className="space-y-4 pt-2">
                 <div className="border-b border-slate-100 pb-2">
                   <h3 className="text-xs font-black uppercase text-slate-500 tracking-wider flex items-center gap-1.5">
                     <Layers className="w-3.5 h-3.5 text-[#075e38]" />
-                    2. Curso Desejado & Turma
+                    2. Desired Course & Class
                   </h3>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
                   <div>
-                    <label className="block font-bold text-slate-700 mb-1">Curso / Modalidade *</label>
+                    <label className="block font-bold text-slate-700 mb-1">Course / Program *</label>
                     <select
                       value={newStudentForm.courseId}
                       onChange={(e) => {
@@ -1140,7 +1140,7 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
                         const isEng = isEnglishCourseObj(c);
                         return (
                           <option key={c.id} value={c.id}>
-                            {c.name} {isEng ? '(3 Níveis Etários)' : `• ${formatCurrency(c.totalCourseAmount || c.monthlyFee * 4, 'EGP')} total`}
+                            {c.name} {isEng ? '(3 Age Groups)' : `• ${formatCurrency(c.totalCourseAmount || c.monthlyFee * 4, 'EGP')} total`}
                           </option>
                         );
                       })}
@@ -1148,7 +1148,7 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
                   </div>
 
                   <div>
-                    <label className="block font-bold text-slate-700 mb-1">Turma & Horário *</label>
+                    <label className="block font-bold text-slate-700 mb-1">Class & Schedule *</label>
                     <select
                       value={newStudentForm.classId}
                       onChange={(e) => setNewStudentForm({ ...newStudentForm, classId: e.target.value })}
@@ -1163,15 +1163,15 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
                   </div>
                 </div>
 
-                {/* Bloco 3 Níveis Etários Exclusivo para Inglês */}
+                {/* Block 3 Age Groups Exclusive to English */}
                 {isEngSelected && (
                   <div className="p-3.5 bg-purple-50 border border-purple-200 rounded-2xl space-y-2">
                     <div className="flex items-center justify-between">
                       <label className="block font-black text-purple-950 text-xs">
-                        Nível do Curso Livre de Inglês (Faixa Etária) *
+                        English Open Course Level (Age Group) *
                       </label>
                       <span className="text-[11px] text-purple-700 font-bold">
-                        Crianças: 4 parc. | Teens & Adultos: 3 parc.
+                        Children: 4 install. | Teens & Adults: 3 install.
                       </span>
                     </div>
                     <div className="grid grid-cols-3 gap-2">
@@ -1190,7 +1190,7 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
                             : 'border-purple-200 bg-white text-slate-700 hover:bg-purple-100/50'
                         }`}
                       >
-                        <p className="text-xs font-bold">🧒 Crianças</p>
+                        <p className="text-xs font-bold">🧒 Children</p>
                         <p className="text-[11px] font-mono mt-0.5">2.000 EGP (4x)</p>
                       </button>
                       <button
@@ -1208,7 +1208,7 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
                             : 'border-purple-200 bg-white text-slate-700 hover:bg-purple-100/50'
                         }`}
                       >
-                        <p className="text-xs font-bold">🎒 Adolescentes</p>
+                        <p className="text-xs font-bold">🎒 Teens</p>
                         <p className="text-[11px] font-mono mt-0.5">1.500 EGP (3x)</p>
                       </button>
                       <button
@@ -1226,7 +1226,7 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
                             : 'border-purple-200 bg-white text-slate-700 hover:bg-purple-100/50'
                         }`}
                       >
-                        <p className="text-xs font-bold">🧑 Adultos</p>
+                        <p className="text-xs font-bold">🧑 Adults</p>
                         <p className="text-[11px] font-mono mt-0.5">1.800 EGP (3x)</p>
                       </button>
                     </div>
@@ -1234,12 +1234,12 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
                 )}
               </div>
 
-              {/* Bloco 3: Plano Financeiro & Opção de Relatar Desconto */}
+              {/* Block 3: Payment Plan & Special Discount Option */}
               <div className="space-y-4 pt-2">
                 <div className="border-b border-slate-100 pb-2">
                   <h3 className="text-xs font-black uppercase text-slate-500 tracking-wider flex items-center gap-1.5">
                     <BadgePercent className="w-3.5 h-3.5 text-[#075e38]" />
-                    3. Plano Financeiro & Desconto Especial
+                    3. Payment Plan & Special Discount
                   </h3>
                 </div>
 
@@ -1247,12 +1247,12 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
                   <div>
                     <div className="flex items-center justify-between mb-1">
                       <label className="block font-bold text-slate-700">
-                        Número de Parcelas (Escolha Livre)
+                        Number of Installments (Your Choice)
                       </label>
                       <span className="text-[11px] text-slate-500">
                         {newStudentForm.installmentsCount === 1
-                          ? 'À vista'
-                          : `${newStudentForm.installmentsCount} parcelas`}
+                          ? 'Pay in full'
+                          : `${newStudentForm.installmentsCount} installments`}
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
@@ -1270,7 +1270,7 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
                                 : 'bg-slate-100 border border-slate-300 text-slate-700'
                             }`}
                           >
-                            {num === 1 ? '1x à vista' : `${num}x`}
+                            {num === 1 ? '1x upfront' : `${num}x`}
                           </button>
                         ))}
                       </div>
@@ -1301,23 +1301,23 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
                         className="w-4 h-4 rounded text-[#075e38] focus:ring-[#075e38] cursor-pointer"
                       />
                       <span className="font-bold text-xs text-slate-800">
-                        Conceder / Propor Desconto nesta matrícula
+                        Grant / Propose Discount for this Enrollment
                       </span>
                     </label>
                   </div>
                 </div>
 
-                {/* Sub-bloco Desconto quando ativado */}
+                {/* Discount sub-block when enabled */}
                 {newStudentForm.hasDiscount && (
                   <div className="p-4 bg-amber-50/70 border border-amber-200 rounded-2xl space-y-4 text-xs animate-in fade-in">
                     <div className="flex items-center gap-2 text-amber-900 font-bold">
                       <BadgePercent className="w-4 h-4 text-amber-600" />
-                      <span>Configuração do Desconto Proposto:</span>
+                      <span>Proposed Discount Settings:</span>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
-                        <label className="block font-bold text-slate-700 mb-1">Tipo de Desconto</label>
+                        <label className="block font-bold text-slate-700 mb-1">Discount Type</label>
                         <div className="flex gap-2">
                           <button
                             type="button"
@@ -1328,7 +1328,7 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
                                 : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'
                             }`}
                           >
-                            Porcentagem (%)
+                            Percentage (%)
                           </button>
                           <button
                             type="button"
@@ -1339,14 +1339,14 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
                                 : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'
                             }`}
                           >
-                            Valor Fixo (EGP)
+                            Fixed Amount (EGP)
                           </button>
                         </div>
                       </div>
 
                       <div>
                         <label className="block font-bold text-slate-700 mb-1">
-                          Valor do Desconto ({newStudentForm.discountType === 'PERCENT' ? '%' : 'EGP'}) *
+                          Discount Amount ({newStudentForm.discountType === 'PERCENT' ? '%' : 'EGP'}) *
                         </label>
                         <input
                           type="number"
@@ -1365,12 +1365,12 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
 
                       <div className="sm:col-span-2">
                         <label className="block font-black text-amber-950 mb-1">
-                          Observação / Motivo do Desconto (OBRIGATÓRIO para a Secretaria) *
+                          Note / Reason for Discount (REQUIRED for the Registrar's Office) *
                         </label>
                         <textarea
                           rows={2}
                           required={newStudentForm.hasDiscount}
-                          placeholder="Ex: Irmão gêmeo já estuda no English Class (desconto familiar de 15%); Convênio com clube local; Autorizado pelo Coordenador..."
+                          placeholder="Ex: Twin sibling already studies at English Class (15% family discount); Partnership with a local club; Authorized by the Coordinator..."
                           value={newStudentForm.discountReason}
                           onChange={(e) =>
                             setNewStudentForm({ ...newStudentForm, discountReason: e.target.value })
@@ -1378,48 +1378,48 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
                           className="w-full p-2.5 bg-white border border-amber-300 rounded-xl text-xs text-slate-900 font-medium focus:ring-2 focus:ring-amber-500 outline-hidden"
                         />
                         <p className="text-[11px] text-amber-800 mt-1">
-                          Esta observação será exibida em destaque no painel da Secretaria para justificar a aprovação do valor com desconto.
+                          This note will be highlighted in the Registrar's Office panel to justify approval of the discounted amount.
                         </p>
                       </div>
                     </div>
                   </div>
                 )}
 
-                {/* Resumo dos Valores Calculados */}
+                {/* Summary of Calculated Amounts */}
                 <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
                   <div>
-                    <span className="text-slate-500 block">Valor Base do Curso:</span>
+                    <span className="text-slate-500 block">Course Base Amount:</span>
                     <strong className="text-slate-700">
-                      {formatCurrency(calculatedBaseTotal, 'EGP')} ({newStudentForm.installmentsCount}x de{' '}
+                      {formatCurrency(calculatedBaseTotal, 'EGP')} ({newStudentForm.installmentsCount}x of{' '}
                       {formatCurrency(calculatedBaseTotal / newStudentForm.installmentsCount, 'EGP')})
                     </strong>
                     {newStudentForm.hasDiscount && calculatedDiscountAmount > 0 && (
                       <span className="block text-amber-700 font-bold mt-0.5">
-                        Desconto Proposto: -{formatCurrency(calculatedDiscountAmount, 'EGP')}
+                        Proposed Discount: -{formatCurrency(calculatedDiscountAmount, 'EGP')}
                       </span>
                     )}
                   </div>
 
                   <div className="text-left sm:text-right">
-                    <span className="text-slate-500 block text-[11px]">Total Final do Plano:</span>
+                    <span className="text-slate-500 block text-[11px]">Plan Final Total:</span>
                     <span className="font-mono font-black text-lg text-emerald-800">
                       {formatCurrency(calculatedFinalTotal, 'EGP')}
                     </span>
                     <span className="block text-[11px] font-bold text-slate-600">
-                      ({newStudentForm.installmentsCount}x de {formatCurrency(calculatedInstallmentValue, 'EGP')})
+                      ({newStudentForm.installmentsCount}x of {formatCurrency(calculatedInstallmentValue, 'EGP')})
                     </span>
                   </div>
                 </div>
               </div>
 
-              {/* Botão de Envio */}
+              {/* Submit Button */}
               <div className="pt-2 flex justify-end">
                 <button
                   type="submit"
                   className="px-8 py-3.5 bg-[#075e38] hover:bg-[#064e2e] text-white font-black text-xs rounded-xl shadow-sm flex items-center gap-2 transition-all cursor-pointer"
                 >
                   <CheckCircle className="w-4 h-4" />
-                  <span>Salvar Pré-Cadastro e Enviar para Aprovação da Secretaria</span>
+                  <span>Save Pre-Registration and Send for Registrar's Office Approval</span>
                 </button>
               </div>
             </form>
@@ -1427,7 +1427,7 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
         )}
 
         {/* =================================================================== */}
-        {/* TAB 3: RECIBOS & COMPROVANTES                                       */}
+        {/* TAB 3: RECEIPTS & PROOF OF PAYMENT                                  */}
         {/* =================================================================== */}
         {activeTab === 'receipts' && (
           <div className="space-y-4">
@@ -1435,10 +1435,10 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
               <div>
                 <h2 className="text-sm font-black text-slate-900 flex items-center gap-2">
                   <Receipt className="w-4 h-4 text-[#075e38]" />
-                  Recibos & Comprovantes Emitidos
+                  Issued Receipts & Proof of Payment
                 </h2>
                 <p className="text-[11px] text-slate-500">
-                  Consulte comprovantes provisórios de pré-registro e recibos oficiais homologados
+                  View provisional pre-registration proof of payment and approved official receipts
                 </p>
               </div>
 
@@ -1454,7 +1454,7 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
                         : 'text-slate-600 hover:text-slate-900'
                     }`}
                   >
-                    1. Comprovantes Provisórios ({(state.pendingPayments || []).length})
+                    1. Provisional Proof of Payment ({(state.pendingPayments || []).length})
                   </button>
                   <button
                     type="button"
@@ -1465,7 +1465,7 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
                         : 'text-slate-600 hover:text-slate-900'
                     }`}
                   >
-                    2. Recibos Oficiais ({state.receipts.length})
+                    2. Official Receipts ({state.receipts.length})
                   </button>
                 </div>
 
@@ -1473,7 +1473,7 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
                   <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
                   <input
                     type="text"
-                    placeholder="Buscar por número, aluno..."
+                    placeholder="Search by number, student..."
                     value={receiptSearch}
                     onChange={(e) => setReceiptSearch(e.target.value)}
                     className="w-full pl-9 pr-4 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:bg-white focus:ring-2 focus:ring-[#075e38] outline-hidden"
@@ -1482,32 +1482,32 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
               </div>
             </div>
 
-            {/* VIEW 1: COMPROVANTES PROVISÓRIOS */}
+            {/* VIEW 1: PROVISIONAL PROOF OF PAYMENT */}
             {receiptViewMode === 'provisional' && (
               <div className="bg-white rounded-2xl border border-slate-200 shadow-2xs overflow-hidden">
                 <div className="p-3.5 bg-amber-50/70 border-b border-amber-200 flex items-center justify-between text-xs text-amber-950 font-bold">
-                  <span>Comprovantes Provisórios Emitidos pela Recepção (Aguardando ou Aprovados pela Tesouraria)</span>
-                  <span className="font-mono text-amber-800">{filteredProvisionalReceipts.length} comprovante(s)</span>
+                  <span>Provisional Proof of Payment Issued by Reception (Pending or Approved by Treasury)</span>
+                  <span className="font-mono text-amber-800">{filteredProvisionalReceipts.length} document(s)</span>
                 </div>
 
                 {filteredProvisionalReceipts.length === 0 ? (
                   <div className="p-8 text-center">
                     <Receipt className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-                    <p className="text-xs text-slate-500 font-medium">Nenhum comprovante provisório encontrado.</p>
+                    <p className="text-xs text-slate-500 font-medium">No provisional proof of payment found.</p>
                   </div>
                 ) : (
                   <div className="overflow-x-auto">
                     <table className="w-full text-left text-xs">
                       <thead className="bg-slate-50 text-slate-500 font-black uppercase text-[10px] border-b border-slate-100">
                         <tr>
-                          <th className="py-3 px-4">Comprovante / Protocolo</th>
-                          <th className="py-3 px-4">Data / Hora</th>
-                          <th className="py-3 px-4">Aluno</th>
-                          <th className="py-3 px-4">Curso / Parcela</th>
-                          <th className="py-3 px-4">Forma</th>
-                          <th className="py-3 px-4 text-right">Valor</th>
-                          <th className="py-3 px-4 text-center">Status Tesouraria</th>
-                          <th className="py-3 px-4 text-center">Ação</th>
+                          <th className="py-3 px-4">Proof of Payment / Protocol</th>
+                          <th className="py-3 px-4">Date / Time</th>
+                          <th className="py-3 px-4">Student</th>
+                          <th className="py-3 px-4">Course / Installment</th>
+                          <th className="py-3 px-4">Method</th>
+                          <th className="py-3 px-4 text-right">Amount</th>
+                          <th className="py-3 px-4 text-center">Treasury Status</th>
+                          <th className="py-3 px-4 text-center">Action</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-100">
@@ -1536,11 +1536,11 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
                                 </span>
                               </td>
                               <td className="py-3 px-4 text-slate-600 text-[11px]">
-                                {p.courseName} (Parc. {p.installmentNumber}/{p.totalInstallments})
+                                {p.courseName} (Install. {p.installmentNumber}/{p.totalInstallments})
                               </td>
                               <td className="py-3 px-4">
                                 <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700">
-                                  {p.paymentMethod === 'TRANSFERENCIA' ? '🏦 Transferência' : '💵 Dinheiro Físico'}
+                                  {p.paymentMethod === 'TRANSFERENCIA' ? '🏦 Transfer' : '💵 Cash'}
                                 </span>
                               </td>
                               <td className="py-3 px-4 text-right font-mono font-black text-emerald-800">
@@ -1557,10 +1557,10 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
                                   }`}
                                 >
                                   {isApproved
-                                    ? '✓ APROVADO'
+                                    ? '✓ APPROVED'
                                     : isRejected
-                                    ? '✕ RECUSADO'
-                                    : '⏳ PENDENTE'}
+                                    ? '✕ REJECTED'
+                                    : '⏳ PENDING'}
                                 </span>
                               </td>
                               <td className="py-3 px-4 text-center">
@@ -1572,7 +1572,7 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
                                   }}
                                   className="px-2.5 py-1 bg-emerald-50 text-emerald-800 hover:bg-[#075e38] hover:text-white rounded-lg text-xs font-bold transition-colors inline-flex items-center gap-1 cursor-pointer"
                                 >
-                                  <Eye className="w-3.5 h-3.5" /> Ver Comprovante
+                                  <Eye className="w-3.5 h-3.5" /> View Proof of Payment
                                 </button>
                               </td>
                             </tr>
@@ -1585,31 +1585,31 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
               </div>
             )}
 
-            {/* VIEW 2: RECIBOS OFICIAIS */}
+            {/* VIEW 2: OFFICIAL RECEIPTS */}
             {receiptViewMode === 'official' && (
               <div className="bg-white rounded-2xl border border-slate-200 shadow-2xs overflow-hidden">
                 <div className="p-3.5 bg-emerald-50/70 border-b border-emerald-200 flex items-center justify-between text-xs text-emerald-950 font-bold">
-                  <span>Recibos Fiscais Oficiais Emitidos e Homologados</span>
-                  <span className="font-mono text-emerald-800">{filteredReceipts.length} recibo(s)</span>
+                  <span>Official Fiscal Receipts Issued and Approved</span>
+                  <span className="font-mono text-emerald-800">{filteredReceipts.length} receipt(s)</span>
                 </div>
 
                 {filteredReceipts.length === 0 ? (
                   <div className="p-8 text-center">
                     <Receipt className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-                    <p className="text-xs text-slate-500 font-medium">Nenhum recibo oficial encontrado.</p>
+                    <p className="text-xs text-slate-500 font-medium">No official receipt found.</p>
                   </div>
                 ) : (
                   <div className="overflow-x-auto">
                     <table className="w-full text-left text-xs">
                       <thead className="bg-slate-50 text-slate-500 font-black uppercase text-[10px] border-b border-slate-100">
                         <tr>
-                          <th className="py-3 px-4">Recibo Nº</th>
-                          <th className="py-3 px-4">Data / Hora</th>
-                          <th className="py-3 px-4">Aluno</th>
-                          <th className="py-3 px-4">Curso / Parcela</th>
-                          <th className="py-3 px-4">Forma</th>
-                          <th className="py-3 px-4 text-right">Valor</th>
-                          <th className="py-3 px-4 text-center">Ação</th>
+                          <th className="py-3 px-4">Receipt No.</th>
+                          <th className="py-3 px-4">Date / Time</th>
+                          <th className="py-3 px-4">Student</th>
+                          <th className="py-3 px-4">Course / Installment</th>
+                          <th className="py-3 px-4">Method</th>
+                          <th className="py-3 px-4 text-right">Amount</th>
+                          <th className="py-3 px-4 text-center">Action</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-100">
@@ -1632,7 +1632,7 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
                             </td>
                             <td className="py-3 px-4">
                               <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700">
-                                {r.paymentMethod === 'TRANSFERENCIA' ? '🏦 Transferência' : '💵 Dinheiro Físico'}
+                                {r.paymentMethod === 'TRANSFERENCIA' ? '🏦 Bank Transfer' : '💵 Physical Cash'}
                               </span>
                             </td>
                             <td className="py-3 px-4 text-right font-mono font-black text-emerald-800">
@@ -1647,7 +1647,7 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
                                 }}
                                 className="px-2.5 py-1 bg-emerald-50 text-emerald-800 hover:bg-[#075e38] hover:text-white rounded-lg text-xs font-bold transition-colors inline-flex items-center gap-1 cursor-pointer"
                               >
-                                <Eye className="w-3.5 h-3.5" /> Visualizar Recibo
+                                <Eye className="w-3.5 h-3.5" /> View Receipt
                               </button>
                             </td>
                           </tr>
@@ -1662,7 +1662,7 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
         )}
 
         {/* =================================================================== */}
-        {/* TAB 4: RELATÓRIO DIÁRIO (CONFERÊNCIA FÍSICA COM O RONY)            */}
+        {/* TAB 4: DAILY REPORT (PHYSICAL RECONCILIATION WITH RONY)            */}
         {/* =================================================================== */}
         {activeTab === 'daily_report' && (
           <div className="space-y-6">
@@ -1671,16 +1671,16 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
               <div>
                 <h2 className="text-sm font-black text-slate-900 flex items-center gap-2">
                   <Calendar className="w-4 h-4 text-[#075e38]" />
-                  Relatório Diário de Pagamentos Recebidos
+                  Daily Report of Received Payments
                 </h2>
                 <p className="text-[11px] text-slate-500">
-                  Fechamento financeiro do balcão para bater o dinheiro físico com o Rony (Tesouraria)
+                  End-of-day financial reconciliation at the counter to match physical cash with Rony (Treasury)
                 </p>
               </div>
 
               <div className="flex items-center gap-3">
                 <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs">
-                  <span className="text-slate-500 font-bold">Data:</span>
+                  <span className="text-slate-500 font-bold">Date:</span>
                   <input
                     type="date"
                     value={reportDate}
@@ -1694,7 +1694,7 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
                   onClick={() => window.print()}
                   className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
                 >
-                  <Printer className="w-3.5 h-3.5" /> Imprimir Relatório
+                  <Printer className="w-3.5 h-3.5" /> Print Report
                 </button>
               </div>
             </div>
@@ -1704,12 +1704,12 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
               <Banknote className="w-5 h-5 text-[#075e38] flex-shrink-0 mt-0.5" />
               <div className="text-xs text-emerald-950 space-y-1">
                 <p className="font-black text-sm text-emerald-900">
-                  Conferência Física Diária do Balcão (Recepção ⇄ Rony)
+                  Daily Physical Reconciliation at the Counter (Reception ⇄ Rony)
                 </p>
                 <p>
-                  O dinheiro em espécie arrecadado no atendimento presencial deve bater exatamente com os valores
-                  entregues ao <strong>Rony</strong> no encerramento do turno. A Tesouraria valida cada pré-registro
-                  para quitação final.
+                  The cash collected during in-person service must match exactly the amounts
+                  handed to <strong>Rony</strong> at the end of the shift. The Treasury validates each pre-registration
+                  for final settlement.
                 </p>
               </div>
             </div>
@@ -1718,49 +1718,49 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="p-4 bg-white rounded-2xl border border-slate-200 shadow-2xs">
                 <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider block">
-                  Dinheiro Físico no Balcão
+                  Physical Cash at the Counter
                 </span>
                 <p className="text-2xl font-mono font-black text-emerald-800 mt-1">
                   {formatCurrency(dailyReceptionPhysicalCash, 'EGP')}
                 </p>
                 <p className="text-[11px] text-slate-500 mt-0.5">
-                  Gaveteiro da Recepção (a entregar ao Rony)
+                  Reception Cash Drawer (to be handed to Rony)
                 </p>
               </div>
 
               <div className="p-4 bg-white rounded-2xl border border-slate-200 shadow-2xs">
                 <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider block">
-                  Pré-Registros Pendentes
+                  Pending Pre-Registrations
                 </span>
                 <p className="text-2xl font-mono font-black text-amber-600 mt-1">
                   {dailyPendingApproval.length}
                 </p>
                 <p className="text-[11px] text-amber-700 font-semibold mt-0.5">
-                  {formatCurrency(dailyPendingApproval.reduce((s, p) => s + p.amount, 0), 'EGP')} aguardando validação
+                  {formatCurrency(dailyPendingApproval.reduce((s, p) => s + p.amount, 0), 'EGP')} awaiting validation
                 </p>
               </div>
 
               <div className="p-4 bg-white rounded-2xl border border-slate-200 shadow-2xs">
                 <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider block">
-                  Aprovados pela Tesouraria
+                  Approved by Treasury
                 </span>
                 <p className="text-2xl font-mono font-black text-[#075e38] mt-1">
                   {dailyApprovedByTreasury.length}
                 </p>
                 <p className="text-[11px] text-emerald-700 font-semibold mt-0.5">
-                  {formatCurrency(dailyApprovedByTreasury.reduce((s, p) => s + p.amount, 0), 'EGP')} homologados
+                  {formatCurrency(dailyApprovedByTreasury.reduce((s, p) => s + p.amount, 0), 'EGP')} approved
                 </p>
               </div>
 
               <div className="p-4 bg-white rounded-2xl border border-slate-200 shadow-2xs">
                 <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider block">
-                  Total Geral do Dia
+                  Day's Grand Total
                 </span>
                 <p className="text-2xl font-mono font-black text-slate-900 mt-1">
                   {formatCurrency(dailyReceptionTotal, 'EGP')}
                 </p>
                 <p className="text-[11px] text-slate-500 mt-0.5">
-                  {dailyPendingPayments.length} lançamento(s) na recepção
+                  {dailyPendingPayments.length} entry(ies) at reception
                 </p>
               </div>
             </div>
@@ -1769,10 +1769,10 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
             <div className="bg-white rounded-2xl border border-slate-200 shadow-2xs overflow-hidden">
               <div className="p-4 border-b border-slate-100 flex items-center justify-between">
                 <h3 className="text-xs font-black text-slate-800 uppercase tracking-wider">
-                  Detalhamento de Pagamentos do Dia ({reportDate})
+                  Breakdown of the Day's Payments ({reportDate})
                 </h3>
                 <span className="text-xs font-bold text-slate-500">
-                  Total Lançado: {formatCurrency(dailyReceptionTotal, 'EGP')}
+                  Total Recorded: {formatCurrency(dailyReceptionTotal, 'EGP')}
                 </span>
               </div>
 
@@ -1780,7 +1780,7 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
                 <div className="p-8 text-center">
                   <Clock className="w-8 h-8 text-slate-300 mx-auto mb-2" />
                   <p className="text-xs text-slate-500 font-medium">
-                    Nenhum pagamento pré-registrado nesta data ({reportDate}).
+                    No payment pre-registered on this date ({reportDate}).
                   </p>
                 </div>
               ) : (
@@ -1788,14 +1788,14 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
                   <table className="w-full text-left text-xs">
                     <thead className="bg-slate-50 text-slate-500 font-black uppercase text-[10px] border-b border-slate-100">
                       <tr>
-                        <th className="py-3 px-4">Hora</th>
-                        <th className="py-3 px-4">Protocolo / Comprovante</th>
-                        <th className="py-3 px-4">Estudante</th>
-                        <th className="py-3 px-4">Descrição</th>
-                        <th className="py-3 px-4">Forma</th>
-                        <th className="py-3 px-4 text-right">Valor</th>
-                        <th className="py-3 px-4 text-center">Status Tesouraria</th>
-                        <th className="py-3 px-4 text-center">Comprovante</th>
+                        <th className="py-3 px-4">Time</th>
+                        <th className="py-3 px-4">Protocol / Proof of Payment</th>
+                        <th className="py-3 px-4">Student</th>
+                        <th className="py-3 px-4">Description</th>
+                        <th className="py-3 px-4">Method</th>
+                        <th className="py-3 px-4 text-right">Amount</th>
+                        <th className="py-3 px-4 text-center">Treasury Status</th>
+                        <th className="py-3 px-4 text-center">Proof of Payment</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
@@ -1819,11 +1819,11 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
                             </span>
                           </td>
                           <td className="py-3 px-4 text-slate-600 text-[11px]">
-                            {p.courseName} (Parc. {p.installmentNumber}/{p.totalInstallments})
+                            {p.courseName} (Install. {p.installmentNumber}/{p.totalInstallments})
                           </td>
                           <td className="py-3 px-4">
                             <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700">
-                              {p.paymentMethod === 'TRANSFERENCIA' ? '🏦 Transferência' : '💵 Dinheiro Físico'}
+                              {p.paymentMethod === 'TRANSFERENCIA' ? '🏦 Bank Transfer' : '💵 Physical Cash'}
                             </span>
                           </td>
                           <td className="py-3 px-4 text-right font-mono font-black text-emerald-800">
@@ -1840,10 +1840,10 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
                               }`}
                             >
                               {p.status === 'APROVADO'
-                                ? '✓ APROVADO'
+                                ? '✓ APPROVED'
                                 : p.status === 'REPROVADO'
-                                ? '✕ RECUSADO'
-                                : '⏳ PENDENTE'}
+                                ? '✕ REJECTED'
+                                : '⏳ PENDING'}
                             </span>
                           </td>
                           <td className="py-3 px-4 text-center">
@@ -1855,7 +1855,7 @@ export const ReceptionModule: React.FC<ReceptionModuleProps> = ({
                               }}
                               className="px-2.5 py-1 bg-emerald-50 text-emerald-800 hover:bg-[#075e38] hover:text-white rounded-lg text-xs font-bold transition-colors inline-flex items-center gap-1 cursor-pointer"
                             >
-                              <Eye className="w-3 h-3" /> Ver
+                              <Eye className="w-3 h-3" /> View
                             </button>
                           </td>
                         </tr>

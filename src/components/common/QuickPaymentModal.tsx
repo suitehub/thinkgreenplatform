@@ -28,7 +28,7 @@ export const QuickPaymentModal: React.FC<QuickPaymentModalProps> = ({
   React.useEffect(() => {
     if (charge) {
       setAmount(charge.amount);
-      setNotes(`Recebido em espécie no balcão da secretaria - Parcela ${charge.installmentNumber}/${charge.totalInstallments} de ${charge.courseName}`);
+      setNotes(`Received in cash at the Registrar's Office counter - Installment ${charge.installmentNumber}/${charge.totalInstallments} of ${charge.courseName}`);
     }
   }, [charge]);
 
@@ -53,8 +53,8 @@ export const QuickPaymentModal: React.FC<QuickPaymentModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       size="md"
-      title="Registrar Recebimento Físico no Caixa"
-      subtitle="Recebimento em dinheiro em espécie no balcão da Secretaria / Tesouraria"
+      title="Record Physical Payment at the Cashier"
+      subtitle="Cash payment received at the Registrar's Office / Treasury counter"
       footer={
         <div className="flex items-center justify-end gap-2.5 w-full">
           <button
@@ -62,7 +62,7 @@ export const QuickPaymentModal: React.FC<QuickPaymentModalProps> = ({
             onClick={onClose}
             className="px-4 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-300 rounded-xl hover:bg-slate-50 transition-colors cursor-pointer"
           >
-            Cancelar
+            Cancel
           </button>
           <button
             type="button"
@@ -71,7 +71,7 @@ export const QuickPaymentModal: React.FC<QuickPaymentModalProps> = ({
             className="px-5 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl transition-all shadow-sm flex items-center gap-1.5 disabled:opacity-50 cursor-pointer"
           >
             <Check className="w-4 h-4" />
-            Confirmar Recebimento Físico & Emitir Recibo
+            Confirm Physical Payment & Issue Receipt
           </button>
         </div>
       }
@@ -81,7 +81,7 @@ export const QuickPaymentModal: React.FC<QuickPaymentModalProps> = ({
         <div className="p-3 bg-emerald-50/90 rounded-2xl border border-emerald-200/80 flex items-start gap-2.5">
           <MapPin className="w-4 h-4 text-emerald-700 flex-shrink-0 mt-0.5" />
           <div className="text-[11px] text-emerald-900 leading-relaxed">
-            <strong>Norma Institucional:</strong> Os recebimentos são realizados <strong>exclusivamente via Dinheiro Físico ou Transferência Bancária</strong> na tesouraria do Think Green Community Center.
+            <strong>Institutional Policy:</strong> Payments are received <strong>exclusively in Cash or by Bank Transfer</strong> at the Think Green Community Center treasury.
           </div>
         </div>
 
@@ -89,20 +89,20 @@ export const QuickPaymentModal: React.FC<QuickPaymentModalProps> = ({
         <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200/80 space-y-2">
           <div className="flex justify-between items-start">
             <div>
-              <span className="text-slate-400 font-medium">Aluno:</span>
+              <span className="text-slate-400 font-medium">Student:</span>
               <p className="text-sm font-bold text-slate-900">{charge.studentName}</p>
               <p className="font-mono text-purple-700 font-bold">{charge.studentId}</p>
             </div>
             <div className="text-right">
-              <span className="text-slate-400 font-medium">Curso / Parcela:</span>
+              <span className="text-slate-400 font-medium">Course / Installment:</span>
               <p className="text-xs font-bold text-slate-800">{charge.courseName}</p>
               <p className="text-slate-500">
-                Parcela {charge.installmentNumber} de {charge.totalInstallments}
+                Installment {charge.installmentNumber} of {charge.totalInstallments}
               </p>
             </div>
           </div>
           <div className="border-t border-slate-200/60 pt-2 flex justify-between items-center">
-            <span className="text-slate-500 font-medium">Vencimento:</span>
+            <span className="text-slate-500 font-medium">Due date:</span>
             <span className="font-semibold text-slate-800">{charge.dueDate}</span>
           </div>
         </div>
@@ -110,7 +110,7 @@ export const QuickPaymentModal: React.FC<QuickPaymentModalProps> = ({
         {/* Payment Amount Input */}
         <div>
           <label className="block text-slate-700 font-bold mb-1">
-            Valor Recebido (EGP - Libras Egípcias)
+            Amount Received (EGP - Egyptian Pounds)
           </label>
           <div className="relative">
             <input
@@ -127,9 +127,9 @@ export const QuickPaymentModal: React.FC<QuickPaymentModalProps> = ({
           </div>
         </div>
 
-        {/* Payment Method Selector (Only Dinheiro Físico or Transferência Bancária) */}
+        {/* Payment Method Selector (Only Physical Cash or Bank Transfer) */}
         <div>
-          <label className="block text-slate-700 font-bold mb-1.5">Forma de Recebimento</label>
+          <label className="block text-slate-700 font-bold mb-1.5">Payment Method</label>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <button
               type="button"
@@ -149,8 +149,8 @@ export const QuickPaymentModal: React.FC<QuickPaymentModalProps> = ({
                   <Banknote className="w-5 h-5" />
                 </div>
                 <div>
-                  <p className="font-bold text-xs">Dinheiro Físico</p>
-                  <p className="text-[10px] text-slate-500">Balcão / Caixa</p>
+                  <p className="font-bold text-xs">Cash</p>
+                  <p className="text-[10px] text-slate-500">Counter / Cashier</p>
                 </div>
               </div>
               {method === 'DINHEIRO' && <Check className="w-4 h-4 text-emerald-600 flex-shrink-0" />}
@@ -174,8 +174,8 @@ export const QuickPaymentModal: React.FC<QuickPaymentModalProps> = ({
                   <Building2 className="w-5 h-5" />
                 </div>
                 <div>
-                  <p className="font-bold text-xs">Transferência Bancária</p>
-                  <p className="text-[10px] text-slate-500">Depósito em conta</p>
+                  <p className="font-bold text-xs">Bank Transfer</p>
+                  <p className="text-[10px] text-slate-500">Account deposit</p>
                 </div>
               </div>
               {method === 'TRANSFERENCIA' && <Check className="w-4 h-4 text-emerald-600 flex-shrink-0" />}
@@ -186,13 +186,13 @@ export const QuickPaymentModal: React.FC<QuickPaymentModalProps> = ({
         {/* Observations / Notes */}
         <div>
           <label className="block text-slate-700 font-medium mb-1">
-            Observações do Lançamento
+            Entry Notes
           </label>
           <input
             type="text"
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            placeholder="Ex: Recebido em dinheiro no balcão da secretaria"
+            placeholder="E.g.: Received in cash at the Registrar's Office counter"
             className="w-full px-3.5 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
           />
         </div>
@@ -201,7 +201,7 @@ export const QuickPaymentModal: React.FC<QuickPaymentModalProps> = ({
         <div className="p-3 bg-emerald-50/80 rounded-2xl border border-emerald-200/80 flex items-start gap-2.5">
           <ShieldCheck className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
           <p className="text-[11px] text-emerald-800 leading-relaxed">
-            <strong>Impacto em Tempo Real:</strong> A confirmação adiciona a entrada física ao Caixa Diário (PDV), gera o recibo impresso oficial, atualiza o livro contábil e libera automaticamente aulas e avaliações do aluno.
+            <strong>Real-Time Impact:</strong> Confirming adds the physical entry to the Daily Cash Register (POS), generates the official printed receipt, updates the accounting ledger and automatically unlocks the student's classes and assessments.
           </p>
         </div>
       </form>

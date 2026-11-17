@@ -32,15 +32,15 @@ export const FinanceOverdueTab: React.FC<FinanceOverdueTabProps> = ({
         <div>
           <h2 className="text-base font-bold text-rose-700 flex items-center gap-2">
             <ShieldAlert className="w-5 h-5 text-rose-600" />
-            Inadimplência & Regras de Acesso Acadêmico
+            Overdue & Academic Access Rules
           </h2>
           <p className="text-xs text-slate-400">
-            Parcelas vencidas com bloqueio automático de avaliações e emissão de certificados
+            Overdue installments with automatic blocking of assessments and certificate issuance
           </p>
         </div>
 
         <div className="text-right bg-rose-50 px-4 py-2 rounded-xl border border-rose-200">
-          <span className="text-[10px] text-rose-600 font-bold uppercase block">Total Vencido</span>
+          <span className="text-[10px] text-rose-600 font-bold uppercase block">Total Overdue</span>
           <p className="text-xl font-black font-mono text-rose-700 leading-tight">
             {formatCurrency(totalOverdueAmount, 'EGP')}
           </p>
@@ -52,7 +52,7 @@ export const FinanceOverdueTab: React.FC<FinanceOverdueTabProps> = ({
         <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
         <input
           type="text"
-          placeholder="Buscar inadimplente por nome ou ID STU..."
+          placeholder="Search overdue student by name or STU ID..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="w-full pl-9 pr-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white transition-colors"
@@ -73,14 +73,14 @@ export const FinanceOverdueTab: React.FC<FinanceOverdueTabProps> = ({
                   {chg.studentId}
                 </span>
                 <span className="text-[10.5px] font-bold text-rose-800 bg-rose-100 px-2 py-0.5 rounded-full">
-                  Vencido em {chg.dueDate}
+                  Due since {chg.dueDate}
                 </span>
               </div>
               <p className="text-slate-700 mt-1 font-medium">
-                Curso: {chg.courseName} • Parcela {chg.installmentNumber} de {chg.totalInstallments}
+                Course: {chg.courseName} • Installment {chg.installmentNumber} of {chg.totalInstallments}
               </p>
               <p className="text-rose-700 font-semibold text-[11px] mt-0.5 flex items-center gap-1">
-                <Lock className="w-3 h-3" /> Acesso à avaliação final bloqueado pelo sistema
+                <Lock className="w-3 h-3" /> Final assessment access blocked by the system
               </p>
             </div>
 
@@ -92,7 +92,7 @@ export const FinanceOverdueTab: React.FC<FinanceOverdueTabProps> = ({
                 onClick={() => onOpenQuickPaymentModal(chg)}
                 className="px-4 py-2 bg-[#075e38] hover:bg-emerald-800 text-white rounded-xl font-bold text-xs transition-colors shadow-2xs cursor-pointer flex items-center gap-1.5"
               >
-                <DollarSign className="w-3.5 h-3.5" /> Receber & Desbloquear
+                <DollarSign className="w-3.5 h-3.5" /> Receive & Unlock
               </button>
             </div>
           </div>
@@ -101,9 +101,9 @@ export const FinanceOverdueTab: React.FC<FinanceOverdueTabProps> = ({
         {overdueCharges.length === 0 && (
           <div className="p-8 bg-emerald-50/50 border border-emerald-200 rounded-2xl text-center space-y-2">
             <CheckCircle2 className="w-8 h-8 text-emerald-600 mx-auto" />
-            <h3 className="text-sm font-bold text-slate-900">Nenhuma parcela em atraso!</h3>
+            <h3 className="text-sm font-bold text-slate-900">No overdue installments!</h3>
             <p className="text-xs text-slate-500">
-              Todos os alunos estão em dia com seus pagamentos.
+              All students are up to date with their payments.
             </p>
           </div>
         )}

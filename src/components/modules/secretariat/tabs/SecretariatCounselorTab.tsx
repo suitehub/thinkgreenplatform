@@ -47,7 +47,7 @@ export const SecretariatCounselorTab: React.FC = () => {
   // Sub-tabs navigation
   const [activeSubTab, setActiveSubTab] = useState<CounselorSubTab>('professores');
 
-  // Teacher Drilldown state (Visão por Professor)
+  // Teacher Drilldown state (Teacher View)
   const [selectedTeacherId, setSelectedTeacherId] = useState<string | null>(null);
   const [teacherSearchQuery, setTeacherSearchQuery] = useState('');
 
@@ -59,7 +59,7 @@ export const SecretariatCounselorTab: React.FC = () => {
   const [classSearchQuery, setClassSearchQuery] = useState('');
   const [selectedCourseFilter, setSelectedCourseFilter] = useState<string>('ALL');
 
-  // Weight editing modal state for Orientador
+  // Weight editing modal state for Counselor
   const [editingClassWeight, setEditingClassWeight] = useState<ClassRoom | null>(null);
   const [editTemplateLevel, setEditTemplateLevel] = useState<AssessmentTemplateLevel>('ADULT_A1');
   const [editAssessmentItems, setEditAssessmentItems] = useState<ClassAssessmentItem[]>([]);
@@ -103,7 +103,7 @@ export const SecretariatCounselorTab: React.FC = () => {
     });
   }, [availableTeachers, teacherSearchQuery]);
 
-  // Filtered classes list for "Todas as Turmas" tab
+  // Filtered classes list for "All Classes" tab
   const filteredClasses = useMemo(() => {
     return state.classes.filter((cls) => {
       const q = classSearchQuery.toLowerCase();
@@ -133,7 +133,7 @@ export const SecretariatCounselorTab: React.FC = () => {
     );
   };
 
-  // Save weights adjusted by Orientador
+  // Save weights adjusted by the Counselor
   const handleSaveWeights = (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingClassWeight) return;
@@ -181,18 +181,18 @@ export const SecretariatCounselorTab: React.FC = () => {
           <div className="flex flex-wrap items-center gap-2 mb-3">
             <span className="px-3 py-1 rounded-full text-xs font-black bg-amber-400 text-slate-950 uppercase tracking-wide flex items-center gap-1.5 shadow-xs">
               <Compass className="w-3.5 h-3.5" />
-              Orientador Educacional
+              Educational Counselor
             </span>
             <span className="px-3 py-1 rounded-full text-xs font-bold bg-white/15 text-emerald-100 backdrop-blur-xs">
-              Supervisão Pedagógica, Docentes & Pesos de Notas
+              Academic Supervision, Teachers & Grade Weights
             </span>
           </div>
 
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-white">
-            Central do Orientador Educacional
+            Educational Counselor Hub
           </h1>
           <p className="mt-2 text-sm sm:text-base text-emerald-100/90 leading-relaxed max-w-3xl">
-            Acompanhe o desempenho de cada professor, acesse todas as suas turmas com a visão completa do docente e gerencie os pesos e critérios oficiais das avaliações (A1, A2, B1, B2, Teenagers e Kids).
+            Track each teacher's performance, open all of their classes with the full teacher view and manage the official assessment weights and criteria (A1, A2, B1, B2, Teenagers and Kids).
           </p>
         </div>
 
@@ -205,13 +205,13 @@ export const SecretariatCounselorTab: React.FC = () => {
         <div className="p-4 bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-2xl text-xs font-bold flex items-center justify-between shadow-xs animate-in fade-in">
           <div className="flex items-center gap-2">
             <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0" />
-            <span>Critérios e pesos das avaliações atualizados com sucesso pelo Orientador Educacional!</span>
+            <span>Assessment criteria and weights successfully updated by the Educational Counselor!</span>
           </div>
           <button
             onClick={() => setSavedSuccessToast(false)}
             className="text-emerald-700 hover:text-emerald-900 text-xs cursor-pointer"
           >
-            Dispensar
+            Dismiss
           </button>
         </div>
       )}
@@ -223,7 +223,7 @@ export const SecretariatCounselorTab: React.FC = () => {
             <User className="w-5 h-5" />
           </div>
           <p className="text-xl sm:text-2xl font-black text-slate-900 leading-tight">{totalTeachersCount}</p>
-          <p className="text-xs font-bold text-slate-500 mt-0.5">Professores Cadastrados</p>
+          <p className="text-xs font-bold text-slate-500 mt-0.5">Registered Teachers</p>
         </div>
 
         <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs">
@@ -231,7 +231,7 @@ export const SecretariatCounselorTab: React.FC = () => {
             <GraduationCap className="w-5 h-5" />
           </div>
           <p className="text-xl sm:text-2xl font-black text-slate-900 leading-tight">{totalClasses}</p>
-          <p className="text-xs font-bold text-slate-500 mt-0.5">Turmas Ativas</p>
+          <p className="text-xs font-bold text-slate-500 mt-0.5">Active Classes</p>
         </div>
 
         <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs">
@@ -239,7 +239,7 @@ export const SecretariatCounselorTab: React.FC = () => {
             <Users className="w-5 h-5" />
           </div>
           <p className="text-xl sm:text-2xl font-black text-slate-900 leading-tight">{activeEnrollmentsCount}</p>
-          <p className="text-xs font-bold text-slate-500 mt-0.5">Alunos Matriculados</p>
+          <p className="text-xs font-bold text-slate-500 mt-0.5">Enrolled Students</p>
         </div>
 
         <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs">
@@ -247,11 +247,11 @@ export const SecretariatCounselorTab: React.FC = () => {
             <Award className="w-5 h-5" />
           </div>
           <p className="text-xl sm:text-2xl font-black text-slate-900 leading-tight">{totalAssessmentsCount}</p>
-          <p className="text-xs font-bold text-slate-500 mt-0.5">Provas & Exames Registrados</p>
+          <p className="text-xs font-bold text-slate-500 mt-0.5">Registered Tests & Exams</p>
         </div>
       </div>
 
-      {/* 3. Sub-Tabs Navigation for Orientador Educacional */}
+      {/* 3. Sub-Tabs Navigation for Educational Counselor */}
       <div className="flex items-center gap-2 border-b border-slate-200 pb-3">
         <button
           onClick={() => {
@@ -265,7 +265,7 @@ export const SecretariatCounselorTab: React.FC = () => {
           }`}
         >
           <User className="w-4 h-4" />
-          <span>Visão por Professor ({availableTeachers.length})</span>
+          <span>Teacher View ({availableTeachers.length})</span>
         </button>
 
         <button
@@ -277,7 +277,7 @@ export const SecretariatCounselorTab: React.FC = () => {
           }`}
         >
           <Layers className="w-4 h-4" />
-          <span>Todas as Turmas ({state.classes.length})</span>
+          <span>All Classes ({state.classes.length})</span>
         </button>
 
         <button
@@ -289,12 +289,12 @@ export const SecretariatCounselorTab: React.FC = () => {
           }`}
         >
           <Percent className="w-4 h-4" />
-          <span>Pesos & Critérios de Avaliações</span>
+          <span>Assessment Weights & Criteria</span>
         </button>
       </div>
 
       {/* ========================================================================= */}
-      {/* SUB-TAB 1: VISÃO POR PROFESSOR (SEPARAÇÃO POR PROFESSOR & SUAS TURMAS)    */}
+      {/* SUB-TAB 1: TEACHER VIEW (BREAKDOWN BY TEACHER AND THEIR CLASSES)         */}
       {/* ========================================================================= */}
       {activeSubTab === 'professores' && (
         <div className="space-y-6">
@@ -308,13 +308,13 @@ export const SecretariatCounselorTab: React.FC = () => {
                     type="text"
                     value={teacherSearchQuery}
                     onChange={(e) => setTeacherSearchQuery(e.target.value)}
-                    placeholder="Buscar docente por nome, departamento ou e-mail..."
+                    placeholder="Search teacher by name, department or email..."
                     className="w-full pl-9 pr-4 py-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-[#075e38] focus:bg-white transition-all"
                   />
                 </div>
 
                 <div className="text-xs text-slate-500 font-semibold">
-                  Clique em um professor para ver <strong className="text-slate-900">todas as suas turmas</strong> e acessar o painel docente.
+                  Click a teacher to see <strong className="text-slate-900">all their classes</strong> and open the teacher panel.
                 </div>
               </div>
 
@@ -363,7 +363,7 @@ export const SecretariatCounselorTab: React.FC = () => {
                               {teacher.name}
                             </h3>
                             <p className="text-xs text-slate-500 font-medium truncate mt-0.5">
-                              {teacher.department || 'Corpo Docente Think Green'}
+                              {teacher.department || 'Think Green Teaching Staff'}
                             </p>
                             <span className="inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-600">
                               {teacher.email}
@@ -375,25 +375,25 @@ export const SecretariatCounselorTab: React.FC = () => {
                         <div className="grid grid-cols-3 gap-2 pt-2 border-t border-slate-100 text-center">
                           <div className="p-2 rounded-xl bg-slate-50 border border-slate-100">
                             <p className="text-sm font-black text-slate-900">{teacherClassesList.length}</p>
-                            <p className="text-[10px] text-slate-400 font-bold">Turmas</p>
+                            <p className="text-[10px] text-slate-400 font-bold">Classes</p>
                           </div>
                           <div className="p-2 rounded-xl bg-slate-50 border border-slate-100">
                             <p className="text-sm font-black text-slate-900">{enrolledCount}</p>
-                            <p className="text-[10px] text-slate-400 font-bold">Alunos</p>
+                            <p className="text-[10px] text-slate-400 font-bold">Students</p>
                           </div>
                           <div className="p-2 rounded-xl bg-slate-50 border border-slate-100">
                             <p className="text-sm font-black text-slate-900">{examsCount}</p>
-                            <p className="text-[10px] text-slate-400 font-bold">Provas</p>
+                            <p className="text-[10px] text-slate-400 font-bold">Tests</p>
                           </div>
                         </div>
 
-                        {/* List of Turmas Mini Preview */}
+                        {/* List of Classes Mini Preview */}
                         <div className="space-y-1.5 pt-1">
                           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-                            Turmas sob responsabilidade:
+                            Classes under their responsibility:
                           </span>
                           {teacherClassesList.length === 0 ? (
-                            <p className="text-xs text-slate-400 italic">Nenhuma turma vinculada a este docente no momento.</p>
+                            <p className="text-xs text-slate-400 italic">No classes assigned to this teacher at the moment.</p>
                           ) : (
                             <div className="flex flex-wrap gap-1.5">
                               {teacherClassesList.map((c) => (
@@ -410,7 +410,7 @@ export const SecretariatCounselorTab: React.FC = () => {
                       </div>
 
                       <div className="mt-5 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-black text-[#075e38] group-hover:translate-x-1 transition-transform">
-                        <span>Ver todas as turmas do professor</span>
+                        <span>View all the teacher's classes</span>
                         <ArrowRight className="w-4 h-4" />
                       </div>
                     </div>
@@ -419,7 +419,7 @@ export const SecretariatCounselorTab: React.FC = () => {
               </div>
             </div>
           ) : (
-            /* Teacher Selected: Detailed Turmas Drilldown */
+            /* Teacher Selected: Detailed Class Drilldown */
             <div className="space-y-6 animate-in fade-in duration-150">
               {/* Back Breadcrumb Bar */}
               <div className="flex items-center justify-between bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs">
@@ -428,11 +428,11 @@ export const SecretariatCounselorTab: React.FC = () => {
                   className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold flex items-center gap-2 transition-all cursor-pointer"
                 >
                   <ArrowLeft className="w-4 h-4" />
-                  <span>Voltar à Lista de Professores</span>
+                  <span>Back to Teacher List</span>
                 </button>
 
                 <div className="text-xs text-slate-500 font-medium">
-                  Visualizando turmas atribuídas a:{' '}
+                  Viewing classes assigned to:{' '}
                   <strong className="text-slate-900 font-black">{activeTeacher.name}</strong>
                 </div>
               </div>
@@ -449,11 +449,11 @@ export const SecretariatCounselorTab: React.FC = () => {
                   </div>
                   <div>
                     <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-amber-400 text-slate-950 uppercase tracking-wide">
-                      Docente Responsável
+                      Lead Teacher
                     </span>
                     <h2 className="text-xl sm:text-2xl font-black text-white mt-1">{activeTeacher.name}</h2>
                     <p className="text-xs text-slate-300 mt-0.5">
-                      {activeTeacher.email} • {activeTeacher.department || 'Corpo Docente Think Green'}
+                      {activeTeacher.email} • {activeTeacher.department || 'Think Green Teaching Staff'}
                     </p>
                   </div>
                 </div>
@@ -461,7 +461,7 @@ export const SecretariatCounselorTab: React.FC = () => {
                 <div className="flex items-center gap-3 bg-white/10 px-4 py-2.5 rounded-2xl backdrop-blur-xs border border-white/15">
                   <div className="text-center px-3 border-r border-white/20">
                     <p className="text-xl font-black text-amber-400">{activeTeacherClasses.length}</p>
-                    <p className="text-[10px] font-bold text-slate-300 uppercase">Turmas</p>
+                    <p className="text-[10px] font-bold text-slate-300 uppercase">Classes</p>
                   </div>
                   <div className="text-center px-3">
                     <p className="text-xl font-black text-emerald-400">
@@ -470,7 +470,7 @@ export const SecretariatCounselorTab: React.FC = () => {
                           activeTeacherClasses.some((c) => c.id === e.classId) && e.status === 'ATIVA'
                       ).length}
                     </p>
-                    <p className="text-[10px] font-bold text-slate-300 uppercase">Alunos Ativos</p>
+                    <p className="text-[10px] font-bold text-slate-300 uppercase">Active Students</p>
                   </div>
                 </div>
               </div>
@@ -479,9 +479,9 @@ export const SecretariatCounselorTab: React.FC = () => {
               {activeTeacherClasses.length === 0 ? (
                 <div className="bg-white p-12 rounded-3xl border border-slate-200/80 text-center space-y-3">
                   <BookOpen className="w-12 h-12 text-slate-300 mx-auto" />
-                  <h3 className="text-base font-bold text-slate-800">Nenhuma turma atribuída a este professor</h3>
+                  <h3 className="text-base font-bold text-slate-800">No classes assigned to this teacher</h3>
                   <p className="text-xs text-slate-500 max-w-sm mx-auto">
-                    Vincule este professor a uma turma na aba "Turmas" da Secretaria para acompanhar seus diários e provas.
+                    Assign this teacher to a class in the Registrar's Office "Classes" tab to track their records and tests.
                   </p>
                 </div>
               ) : (
@@ -508,7 +508,7 @@ export const SecretariatCounselorTab: React.FC = () => {
                               {cls.code}
                             </span>
                             <span className="px-2.5 py-1 rounded-lg bg-purple-50 border border-purple-200 text-purple-700 text-[10px] font-bold">
-                              Nível: {templateInfo?.name || 'A1'}
+                              Level: {templateInfo?.name || 'A1'}
                             </span>
                           </div>
 
@@ -519,7 +519,7 @@ export const SecretariatCounselorTab: React.FC = () => {
                             </h3>
                             <p className="text-xs text-slate-500 font-semibold mt-1 flex items-center gap-1.5">
                               <GraduationCap className="w-3.5 h-3.5 text-[#075e38]" />
-                              <span>{cls.courseName || 'Curso Think Green'}</span>
+                              <span>{cls.courseName || 'Think Green Course'}</span>
                             </p>
                           </div>
 
@@ -527,18 +527,18 @@ export const SecretariatCounselorTab: React.FC = () => {
                           <div className="space-y-1.5 pt-2 border-t border-slate-100 text-xs">
                             <div className="flex items-center gap-2 text-slate-700">
                               <Clock className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
-                              <span className="text-slate-500 font-medium">Horário:</span>
+                              <span className="text-slate-500 font-medium">Schedule:</span>
                               <strong className="text-slate-800 font-semibold">{cls.schedule}</strong>
                             </div>
                             <div className="flex items-center gap-2 text-slate-700">
                               <MapPin className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
-                              <span className="text-slate-500 font-medium">Local:</span>
+                              <span className="text-slate-500 font-medium">Location:</span>
                               <strong className="text-slate-800 font-semibold">{cls.room}</strong>
                             </div>
                             <div className="flex items-center gap-2 text-slate-700">
                               <Users className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
-                              <span className="text-slate-500 font-medium">Matriculados:</span>
-                              <strong className="text-slate-900 font-black">{enrollments.length} alunos</strong>
+                              <span className="text-slate-500 font-medium">Enrolled:</span>
+                              <strong className="text-slate-900 font-black">{enrollments.length} students</strong>
                             </div>
                           </div>
 
@@ -546,13 +546,13 @@ export const SecretariatCounselorTab: React.FC = () => {
                           <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200/70 space-y-1.5">
                             <div className="flex items-center justify-between text-[11px] font-bold text-slate-700">
                               <span className="flex items-center gap-1 text-slate-800">
-                                <Percent className="w-3 h-3 text-purple-600" /> Critérios & Pesos:
+                                <Percent className="w-3 h-3 text-purple-600" /> Criteria & Weights:
                               </span>
                               <button
                                 onClick={() => handleOpenWeightEditor(cls)}
                                 className="text-[10px] text-purple-700 hover:text-purple-900 hover:underline cursor-pointer flex items-center gap-0.5"
                               >
-                                <Edit3 className="w-2.5 h-2.5" /> Editar Pesos
+                                <Edit3 className="w-2.5 h-2.5" /> Edit Weights
                               </button>
                             </div>
                             <div className="flex flex-wrap gap-1">
@@ -571,15 +571,15 @@ export const SecretariatCounselorTab: React.FC = () => {
                           <div className="grid grid-cols-3 gap-2 pt-1 text-center">
                             <div className="p-2 rounded-xl bg-slate-50 border border-slate-100">
                               <p className="text-xs font-black text-slate-800">{classAttendance.length}</p>
-                              <p className="text-[10px] text-slate-400 font-bold">Chamadas</p>
+                              <p className="text-[10px] text-slate-400 font-bold">Attendance</p>
                             </div>
                             <div className="p-2 rounded-xl bg-slate-50 border border-slate-100">
                               <p className="text-xs font-black text-slate-800">{classAssessments.length}</p>
-                              <p className="text-[10px] text-slate-400 font-bold">Provas</p>
+                              <p className="text-[10px] text-slate-400 font-bold">Tests</p>
                             </div>
                             <div className="p-2 rounded-xl bg-slate-50 border border-slate-100">
                               <p className="text-xs font-black text-slate-800">{classLessons.length}</p>
-                              <p className="text-[10px] text-slate-400 font-bold">Aulas</p>
+                              <p className="text-[10px] text-slate-400 font-bold">Lessons</p>
                             </div>
                           </div>
                         </div>
@@ -593,7 +593,7 @@ export const SecretariatCounselorTab: React.FC = () => {
                             }}
                             className="w-full py-2.5 px-4 rounded-xl bg-[#075e38] hover:bg-[#064e2e] text-white text-xs font-black flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs active:scale-98"
                           >
-                            <span>Acessar Turma (Visão do Professor)</span>
+                            <span>Open Class (Teacher View)</span>
                             <ArrowRight className="w-3.5 h-3.5" />
                           </button>
 
@@ -605,7 +605,7 @@ export const SecretariatCounselorTab: React.FC = () => {
                               }}
                               className="py-1.5 px-1 bg-white hover:bg-emerald-50 hover:border-emerald-200 border border-slate-200 text-slate-700 hover:text-[#075e38] text-[10px] font-bold rounded-lg transition-colors cursor-pointer text-center"
                             >
-                              Chamada
+                              Attendance
                             </button>
                             <button
                               onClick={() => {
@@ -614,7 +614,7 @@ export const SecretariatCounselorTab: React.FC = () => {
                               }}
                               className="py-1.5 px-1 bg-white hover:bg-emerald-50 hover:border-emerald-200 border border-slate-200 text-slate-700 hover:text-[#075e38] text-[10px] font-bold rounded-lg transition-colors cursor-pointer text-center"
                             >
-                              Notas
+                              Grades
                             </button>
                             <button
                               onClick={() => {
@@ -623,7 +623,7 @@ export const SecretariatCounselorTab: React.FC = () => {
                               }}
                               className="py-1.5 px-1 bg-white hover:bg-emerald-50 hover:border-emerald-200 border border-slate-200 text-slate-700 hover:text-[#075e38] text-[10px] font-bold rounded-lg transition-colors cursor-pointer text-center"
                             >
-                              Provas
+                              Tests
                             </button>
                             <button
                               onClick={() => {
@@ -632,7 +632,7 @@ export const SecretariatCounselorTab: React.FC = () => {
                               }}
                               className="py-1.5 px-1 bg-white hover:bg-emerald-50 hover:border-emerald-200 border border-slate-200 text-slate-700 hover:text-[#075e38] text-[10px] font-bold rounded-lg transition-colors cursor-pointer text-center"
                             >
-                              Aulas
+                              Lessons
                             </button>
                           </div>
                         </div>
@@ -647,7 +647,7 @@ export const SecretariatCounselorTab: React.FC = () => {
       )}
 
       {/* ========================================================================= */}
-      {/* SUB-TAB 2: TODAS AS TURMAS (CATÁLOGO GERAL DE TURMAS DA INSTITUIÇÃO)      */}
+      {/* SUB-TAB 2: ALL CLASSES (GENERAL CATALOG OF INSTITUTION CLASSES)        */}
       {/* ========================================================================= */}
       {activeSubTab === 'turmas' && (
         <div className="space-y-6">
@@ -660,14 +660,14 @@ export const SecretariatCounselorTab: React.FC = () => {
                   type="text"
                   value={classSearchQuery}
                   onChange={(e) => setClassSearchQuery(e.target.value)}
-                  placeholder="Buscar turma por nome, código, professor ou sala..."
+                  placeholder="Search classes by name, code, teacher, or room..."
                   className="w-full pl-9 pr-4 py-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-[#075e38] focus:bg-white transition-all"
                 />
               </div>
 
               <div className="text-xs text-slate-500 font-semibold self-start sm:self-auto">
-                Mostrando <span className="text-[#075e38] font-bold">{filteredClasses.length}</span> de{' '}
-                <span className="font-bold">{state.classes.length}</span> turmas
+                Showing <span className="text-[#075e38] font-bold">{filteredClasses.length}</span> of{' '}
+                <span className="font-bold">{state.classes.length}</span> classes
               </div>
             </div>
 
@@ -675,7 +675,7 @@ export const SecretariatCounselorTab: React.FC = () => {
             <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar pt-1 border-t border-slate-100">
               <span className="text-xs font-bold text-slate-400 mr-1 flex items-center gap-1">
                 <Filter className="w-3.5 h-3.5" />
-                Cursos:
+                Courses:
               </span>
               <button
                 onClick={() => setSelectedCourseFilter('ALL')}
@@ -685,7 +685,7 @@ export const SecretariatCounselorTab: React.FC = () => {
                     : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                 }`}
               >
-                Todos os Cursos
+                All Courses
               </button>
               {state.courses.map((course) => (
                 <button
@@ -726,7 +726,7 @@ export const SecretariatCounselorTab: React.FC = () => {
                         {cls.code}
                       </span>
                       <span className="px-2.5 py-1 rounded-lg bg-purple-50 text-purple-700 text-[10px] font-bold border border-purple-200">
-                        Nível: {templateInfo?.name || 'A1'}
+                        Level: {templateInfo?.name || 'A1'}
                       </span>
                     </div>
 
@@ -736,33 +736,33 @@ export const SecretariatCounselorTab: React.FC = () => {
                       </h3>
                       <p className="text-xs font-bold text-slate-500 mt-1 flex items-center gap-1.5">
                         <GraduationCap className="w-3.5 h-3.5 text-[#075e38]" />
-                        <span>{cls.courseName || 'Curso Think Green'}</span>
+                        <span>{cls.courseName || 'Think Green Course'}</span>
                       </p>
                     </div>
 
                     <div className="space-y-2 pt-2 border-t border-slate-100 text-xs">
                       <div className="flex items-center gap-2 text-slate-700">
                         <User className="w-4 h-4 text-slate-400 flex-shrink-0" />
-                        <span className="text-slate-500 font-medium">Professor:</span>
-                        <strong className="text-slate-900 font-semibold">{cls.teacherName || 'Docente Responsável'}</strong>
+                        <span className="text-slate-500 font-medium">Teacher:</span>
+                        <strong className="text-slate-900 font-semibold">{cls.teacherName || 'Lead Teacher'}</strong>
                       </div>
 
                       <div className="flex items-center gap-2 text-slate-700">
                         <Clock className="w-4 h-4 text-slate-400 flex-shrink-0" />
-                        <span className="text-slate-500 font-medium">Horário:</span>
+                        <span className="text-slate-500 font-medium">Schedule:</span>
                         <strong className="text-slate-800 font-semibold">{cls.schedule}</strong>
                       </div>
 
                       <div className="flex items-center gap-2 text-slate-700">
                         <MapPin className="w-4 h-4 text-slate-400 flex-shrink-0" />
-                        <span className="text-slate-500 font-medium">Local:</span>
+                        <span className="text-slate-500 font-medium">Location:</span>
                         <strong className="text-slate-800 font-semibold">{cls.room}</strong>
                       </div>
 
                       <div className="flex items-center gap-2 text-slate-700">
                         <Users className="w-4 h-4 text-slate-400 flex-shrink-0" />
-                        <span className="text-slate-500 font-medium">Matriculados:</span>
-                        <strong className="text-slate-900 font-bold">{enrollments.length} alunos</strong>
+                        <span className="text-slate-500 font-medium">Enrolled:</span>
+                        <strong className="text-slate-900 font-bold">{enrollments.length} students</strong>
                       </div>
                     </div>
 
@@ -770,13 +770,13 @@ export const SecretariatCounselorTab: React.FC = () => {
                     <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200/70 space-y-1 text-xs">
                       <div className="flex items-center justify-between text-[11px] font-bold text-slate-700">
                         <span className="flex items-center gap-1 text-slate-800">
-                          <Percent className="w-3 h-3 text-purple-600" /> Critérios & Pesos:
+                          <Percent className="w-3 h-3 text-purple-600" /> Criteria & Weights:
                         </span>
                         <button
                           onClick={() => handleOpenWeightEditor(cls)}
                           className="text-[10px] text-purple-700 hover:text-purple-900 font-bold hover:underline cursor-pointer"
                         >
-                          Editar Pesos
+                          Edit Weights
                         </button>
                       </div>
                       <div className="flex flex-wrap gap-1">
@@ -794,15 +794,15 @@ export const SecretariatCounselorTab: React.FC = () => {
                     <div className="grid grid-cols-3 gap-2 pt-1 text-center">
                       <div className="p-2 rounded-xl bg-slate-50 border border-slate-100">
                         <p className="text-xs font-black text-slate-800">{classAttendance.length}</p>
-                        <p className="text-[10px] text-slate-400 font-bold">Chamadas</p>
+                        <p className="text-[10px] text-slate-400 font-bold">Attendance</p>
                       </div>
                       <div className="p-2 rounded-xl bg-slate-50 border border-slate-100">
                         <p className="text-xs font-black text-slate-800">{classAssessments.length}</p>
-                        <p className="text-[10px] text-slate-400 font-bold">Provas</p>
+                        <p className="text-[10px] text-slate-400 font-bold">Tests</p>
                       </div>
                       <div className="p-2 rounded-xl bg-slate-50 border border-slate-100">
                         <p className="text-xs font-black text-slate-800">{classLessons.length}</p>
-                        <p className="text-[10px] text-slate-400 font-bold">Aulas</p>
+                        <p className="text-[10px] text-slate-400 font-bold">Lessons</p>
                       </div>
                     </div>
                   </div>
@@ -815,7 +815,7 @@ export const SecretariatCounselorTab: React.FC = () => {
                       }}
                       className="w-full py-2.5 px-4 rounded-xl bg-[#075e38] hover:bg-[#064e2e] text-white text-xs font-black flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs active:scale-98"
                     >
-                      <span>Entrar na Turma (Visão do Professor)</span>
+                      <span>Open Class (Teacher View)</span>
                       <ArrowRight className="w-3.5 h-3.5" />
                     </button>
 
@@ -827,7 +827,7 @@ export const SecretariatCounselorTab: React.FC = () => {
                         }}
                         className="py-1.5 px-1 bg-white hover:bg-emerald-50 hover:border-emerald-200 border border-slate-200 text-slate-700 hover:text-[#075e38] text-[10px] font-bold rounded-lg transition-colors cursor-pointer text-center"
                       >
-                        Chamada
+                        Attendance
                       </button>
                       <button
                         onClick={() => {
@@ -836,7 +836,7 @@ export const SecretariatCounselorTab: React.FC = () => {
                         }}
                         className="py-1.5 px-1 bg-white hover:bg-emerald-50 hover:border-emerald-200 border border-slate-200 text-slate-700 hover:text-[#075e38] text-[10px] font-bold rounded-lg transition-colors cursor-pointer text-center"
                       >
-                        Notas
+                        Grades
                       </button>
                       <button
                         onClick={() => {
@@ -845,7 +845,7 @@ export const SecretariatCounselorTab: React.FC = () => {
                         }}
                         className="py-1.5 px-1 bg-white hover:bg-emerald-50 hover:border-emerald-200 border border-slate-200 text-slate-700 hover:text-[#075e38] text-[10px] font-bold rounded-lg transition-colors cursor-pointer text-center"
                       >
-                        Provas
+                        Tests
                       </button>
                       <button
                         onClick={() => {
@@ -854,7 +854,7 @@ export const SecretariatCounselorTab: React.FC = () => {
                         }}
                         className="py-1.5 px-1 bg-white hover:bg-emerald-50 hover:border-emerald-200 border border-slate-200 text-slate-700 hover:text-[#075e38] text-[10px] font-bold rounded-lg transition-colors cursor-pointer text-center"
                       >
-                        Aulas
+                        Lessons
                       </button>
                     </div>
                   </div>
@@ -866,7 +866,7 @@ export const SecretariatCounselorTab: React.FC = () => {
       )}
 
       {/* ========================================================================= */}
-      {/* SUB-TAB 3: PESOS & CRITÉRIOS DE AVALIAÇÕES (MATRIZ OFICIAL THINK GREEN)   */}
+      {/* SUB-TAB 3: ASSESSMENT WEIGHTS & CRITERIA (OFFICIAL THINK GREEN MATRIX)   */}
       {/* ========================================================================= */}
       {activeSubTab === 'avaliacoes' && (
         <div className="space-y-6">
@@ -875,13 +875,13 @@ export const SecretariatCounselorTab: React.FC = () => {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
                 <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-purple-50 text-purple-700 border border-purple-200">
-                  Matriz Pedagógica de Avaliação Oficial
+                  Official Assessment Matrix
                 </span>
                 <h2 className="text-xl font-bold text-slate-900 mt-1">
-                  Modelos de Avaliação & Distribuição de Pesos
+                  Assessment Models & Weight Distribution
                 </h2>
                 <p className="text-xs text-slate-500">
-                  Tabela oficial de composição de notas por nível acadêmico. O Orientador Educacional define e ajusta os percentuais de cada avaliação para cada turma.
+                  Official table of grade composition by academic level. The Educational Counselor defines and adjusts the percentage of each assessment for every class.
                 </p>
               </div>
             </div>
@@ -922,15 +922,15 @@ export const SecretariatCounselorTab: React.FC = () => {
             <div className="p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
                 <h3 className="font-bold text-slate-900 text-base">
-                  Turmas Ativas & Pesos Vinculados
+                  Active Classes & Linked Weights
                 </h3>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  Clique em "Editar Pesos" para ajustar os percentuais de notas atribuídos a qualquer turma.
+                  Click "Edit Weights" to adjust the grade percentages assigned to any class.
                 </p>
               </div>
 
               <span className="text-xs font-semibold text-slate-400">
-                {state.classes.length} turmas configuradas
+                {state.classes.length} classes configured
               </span>
             </div>
 
@@ -938,12 +938,12 @@ export const SecretariatCounselorTab: React.FC = () => {
               <table className="w-full text-left text-xs">
                 <thead className="bg-slate-50 text-slate-500 font-semibold uppercase border-b border-slate-200">
                   <tr>
-                    <th className="px-4 py-3">Código & Turma</th>
-                    <th className="px-4 py-3">Professor</th>
-                    <th className="px-4 py-3">Modelo Aplicado</th>
-                    <th className="px-4 py-3">Composição dos Pesos (%)</th>
-                    <th className="px-4 py-3 text-center">Soma Total</th>
-                    <th className="px-4 py-3 text-right">Ação do Orientador</th>
+                    <th className="px-4 py-3">Code & Class</th>
+                    <th className="px-4 py-3">Teacher</th>
+                    <th className="px-4 py-3">Applied Model</th>
+                    <th className="px-4 py-3">Weight Composition (%)</th>
+                    <th className="px-4 py-3 text-center">Total Sum</th>
+                    <th className="px-4 py-3 text-right">Counselor Action</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -965,8 +965,8 @@ export const SecretariatCounselorTab: React.FC = () => {
                         </td>
 
                         <td className="px-4 py-3.5">
-                          <span className="font-semibold text-slate-800">{cls.teacherName || 'Docente Responsável'}</span>
-                          <p className="text-[11px] text-slate-400">{cls.courseName || 'Curso Think Green'}</p>
+                          <span className="font-semibold text-slate-800">{cls.teacherName || 'Lead Teacher'}</span>
+                          <p className="text-[11px] text-slate-400">{cls.courseName || 'Think Green Course'}</p>
                         </td>
 
                         <td className="px-4 py-3.5">
@@ -1005,7 +1005,7 @@ export const SecretariatCounselorTab: React.FC = () => {
                             onClick={() => handleOpenWeightEditor(cls)}
                             className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-bold text-xs transition-colors cursor-pointer flex items-center gap-1.5 ml-auto shadow-2xs"
                           >
-                            <Sliders className="w-3.5 h-3.5" /> Editar Pesos
+                            <Sliders className="w-3.5 h-3.5" /> Edit Weights
                           </button>
                         </td>
                       </tr>
@@ -1019,19 +1019,19 @@ export const SecretariatCounselorTab: React.FC = () => {
       )}
 
       {/* ========================================================================= */}
-      {/* MODAL: EDITAR PESOS DAS AVALIAÇÕES DA TURMA PELO ORIENTADOR               */}
+      {/* MODAL: COUNSELOR EDITS CLASS ASSESSMENT WEIGHTS                           */}
       {/* ========================================================================= */}
       {editingClassWeight && (
         <Modal
           isOpen={!!editingClassWeight}
           onClose={() => setEditingClassWeight(null)}
-          title={`Editar Pesos de Avaliações • ${editingClassWeight.name}`}
-          subtitle={`Código: ${editingClassWeight.code} • Professor: ${editingClassWeight.teacherName}`}
+          title={`Edit Assessment Weights • ${editingClassWeight.name}`}
+          subtitle={`Code: ${editingClassWeight.code} • Teacher: ${editingClassWeight.teacherName}`}
         >
           <form onSubmit={handleSaveWeights} className="space-y-4 text-xs">
             <div>
               <label className="block font-bold text-slate-800 mb-1">
-                Modelo de Nível Acadêmico (Matriz Oficial Think Green) *
+                Academic Level Model (Official Think Green Matrix) *
               </label>
               <select
                 value={editTemplateLevel}
@@ -1053,7 +1053,7 @@ export const SecretariatCounselorTab: React.FC = () => {
             <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200 space-y-2.5">
               <div className="flex items-center justify-between">
                 <span className="font-bold text-slate-800 text-xs">
-                  Ajuste das Porcentagens de cada Avaliação:
+                  Adjust the Percentages of Each Assessment:
                 </span>
                 <span
                   className={`font-black font-mono text-xs ${
@@ -1062,12 +1062,12 @@ export const SecretariatCounselorTab: React.FC = () => {
                       : 'text-amber-700'
                   }`}
                 >
-                  Soma Total: {calculateTotalWeight(editAssessmentItems)}%
+                  Total Sum: {calculateTotalWeight(editAssessmentItems)}%
                 </span>
               </div>
 
               <p className="text-[11px] text-slate-500">
-                O professor desta turma só poderá vincular novas avaliações a estes critérios, com os pesos definidos aqui.
+                The teacher of this class can only link new assessments to these criteria, with the weights defined here.
               </p>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
@@ -1112,13 +1112,13 @@ export const SecretariatCounselorTab: React.FC = () => {
                 onClick={() => setEditingClassWeight(null)}
                 className="px-4 py-2 border border-slate-300 rounded-xl font-semibold text-slate-700 hover:bg-slate-50 cursor-pointer"
               >
-                Cancelar
+                Cancel
               </button>
               <button
                 type="submit"
                 className="px-5 py-2 bg-[#075e38] hover:bg-[#064e2e] text-white rounded-xl font-bold cursor-pointer shadow-2xs flex items-center gap-1.5"
               >
-                <Save className="w-4 h-4" /> Salvar Pesos das Avaliações
+                <Save className="w-4 h-4" /> Save Assessment Weights
               </button>
             </div>
           </form>

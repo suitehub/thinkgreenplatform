@@ -306,22 +306,22 @@ export const StudentDossierModal: React.FC<StudentDossierModalProps> = ({
                     {activeStudent.studentId}
                   </span>
                   <span className="text-xs text-slate-500">
-                    Cadastrado em {activeStudent.createdAt}
+                    Registered on {activeStudent.createdAt}
                   </span>
                 </div>
                 <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight mt-1">
                   {activeStudent.name}
                 </h2>
                 <div className="flex items-center gap-2 mt-2 flex-wrap">
-                  {/* Status Cadastral Selector: apenas ATIVO e INATIVO */}
+                  {/* Registration Status Selector: ATIVO and INATIVO only */}
                   <select
                     value={activeStudent.status === 'INATIVO' ? 'INATIVO' : 'ATIVO'}
                     onChange={(e) => handleChangeStatus(e.target.value as Student['status'])}
                     className="bg-white hover:bg-slate-50 text-slate-700 text-xs font-medium px-2.5 py-1 rounded-lg border border-slate-200 shadow-2xs focus:outline-hidden cursor-pointer"
-                    title="Status do Cadastro do Aluno"
+                    title="Student Registration Status"
                   >
-                    <option value="ATIVO">🟢 Cadastro Ativo</option>
-                    <option value="INATIVO">🟡 Cadastro Inativo</option>
+                    <option value="ATIVO">🟢 Active Registration</option>
+                    <option value="INATIVO">🟡 Inactive Registration</option>
                   </select>
 
                   {/* Financial Status Pill */}
@@ -335,7 +335,7 @@ export const StudentDossierModal: React.FC<StudentDossierModalProps> = ({
                     }`}
                   >
                     <DollarSign className="w-3.5 h-3.5" />
-                    Finanças: {financialStatus}
+                    Finances: {financialStatus}
                   </span>
 
                   {/* Selectable System Access (Liberado / Bloqueado) */}
@@ -348,10 +348,10 @@ export const StudentDossierModal: React.FC<StudentDossierModalProps> = ({
                           ? 'bg-rose-50 text-rose-700 border-rose-300 hover:bg-rose-100'
                           : 'bg-emerald-50 text-emerald-700 border-emerald-300 hover:bg-emerald-100'
                       }`}
-                      title="Definir se o aluno tem acesso liberado ou bloqueado ao sistema"
+                      title="Set whether the student has system access allowed or blocked"
                     >
-                      <option value="LIBERADO">🔓 Acesso: Liberado</option>
-                      <option value="BLOQUEADO">🔒 Acesso: Bloqueado</option>
+                      <option value="LIBERADO">🔓 Access: Allowed</option>
+                      <option value="BLOQUEADO">🔒 Access: Blocked</option>
                     </select>
                   </div>
                 </div>
@@ -363,27 +363,27 @@ export const StudentDossierModal: React.FC<StudentDossierModalProps> = ({
               <button
                 onClick={handlePrintDossier}
                 className="px-3.5 py-2 bg-white hover:bg-slate-50 text-slate-700 rounded-xl text-xs font-semibold transition-colors flex items-center gap-1.5 border border-slate-200 shadow-2xs cursor-pointer"
-                title="Imprimir Ficha Completa 360°"
+                title="Print Full 360° Dossier"
               >
                 <Printer className="w-3.5 h-3.5 text-slate-500" />
-                <span className="hidden sm:inline">Imprimir Ficha</span>
+                <span className="hidden sm:inline">Print Dossier</span>
               </button>
 
               {onOpenExtraEnrollment && (
                 <button
                   onClick={() => onOpenExtraEnrollment(student)}
                   className="px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-semibold transition-colors flex items-center gap-1.5 shadow-2xs cursor-pointer"
-                  title="Matricular este aluno em um novo curso"
+                  title="Enroll this student in a new course"
                 >
                   <Plus className="w-3.5 h-3.5" />
-                  <span>Novo Curso</span>
+                  <span>New Course</span>
                 </button>
               )}
 
               <button
                 onClick={onClose}
                 className="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
-                title="Fechar Ficha"
+                title="Close Dossier"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -393,28 +393,28 @@ export const StudentDossierModal: React.FC<StudentDossierModalProps> = ({
           {/* Quick Metrics Ribbon */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-5 pt-5 border-t border-slate-100 text-xs">
             <div className="bg-slate-50/70 rounded-xl p-3 border border-slate-200/60">
-              <span className="text-slate-500 text-[11px] font-medium block">Matrículas Ativas</span>
+              <span className="text-slate-500 text-[11px] font-medium block">Active Enrollments</span>
               <p className="text-base font-bold text-slate-900 mt-0.5">
-                {studentEnrollments.length} {studentEnrollments.length === 1 ? 'Curso' : 'Cursos'}
+                {studentEnrollments.length} {studentEnrollments.length === 1 ? 'Course' : 'Courses'}
               </p>
             </div>
 
             <div className="bg-slate-50/70 rounded-xl p-3 border border-slate-200/60">
-              <span className="text-slate-500 text-[11px] font-medium block">Investimento Liquidado</span>
+              <span className="text-slate-500 text-[11px] font-medium block">Paid Investment</span>
               <p className="text-base font-bold text-slate-900 mt-0.5">
                 EGP {totalAmountPaid.toLocaleString()} <span className="text-xs text-slate-400 font-normal">/ {totalAmountContracted.toLocaleString()}</span>
               </p>
             </div>
 
             <div className="bg-slate-50/70 rounded-xl p-3 border border-slate-200/60">
-              <span className="text-slate-500 text-[11px] font-medium block">Média Acadêmica</span>
+              <span className="text-slate-500 text-[11px] font-medium block">Academic Average</span>
               <p className="text-base font-bold text-slate-900 mt-0.5">
                 {overallAvg} <span className="text-xs text-slate-400 font-normal">/ 10.0</span>
               </p>
             </div>
 
             <div className="bg-slate-50/70 rounded-xl p-3 border border-slate-200/60">
-              <span className="text-slate-500 text-[11px] font-medium block">Frequência Escolar</span>
+              <span className="text-slate-500 text-[11px] font-medium block">School Attendance</span>
               <p className="text-base font-bold text-slate-900 mt-0.5">
                 {attendancePercent}% <span className="text-xs text-slate-400 font-normal">({totalPresentCount}/{totalClassesRecorded})</span>
               </p>
@@ -433,7 +433,7 @@ export const StudentDossierModal: React.FC<StudentDossierModalProps> = ({
             }`}
           >
             <User className="w-4 h-4" />
-            <span>1. Dados Pessoais & Prontuário</span>
+            <span>1. Personal Data & Dossier</span>
           </button>
 
           <button
@@ -445,7 +445,7 @@ export const StudentDossierModal: React.FC<StudentDossierModalProps> = ({
             }`}
           >
             <GraduationCap className="w-4 h-4" />
-            <span>2. Vida Acadêmica ({studentEnrollments.length})</span>
+            <span>2. Academic Life ({studentEnrollments.length})</span>
           </button>
 
           <button
@@ -457,7 +457,7 @@ export const StudentDossierModal: React.FC<StudentDossierModalProps> = ({
             }`}
           >
             <DollarSign className="w-4 h-4" />
-            <span>3. Financeiro & Carnê ({studentCharges.length})</span>
+            <span>3. Financial & Installment Book ({studentCharges.length})</span>
             {hasOverdueCharges && (
               <span className="w-2 h-2 rounded-full bg-rose-500"></span>
             )}
@@ -472,7 +472,7 @@ export const StudentDossierModal: React.FC<StudentDossierModalProps> = ({
             }`}
           >
             <FileText className="w-4 h-4" />
-            <span>4. Documentos & Arquivos ({student.documents?.length || 0})</span>
+            <span>4. Documents & Files ({student.documents?.length || 0})</span>
           </button>
 
           <button
@@ -484,64 +484,64 @@ export const StudentDossierModal: React.FC<StudentDossierModalProps> = ({
             }`}
           >
             <Users className="w-4 h-4" />
-            <span>5. Comunidade & Linha do Tempo</span>
+            <span>5. Community & Timeline</span>
           </button>
         </div>
 
         {/* MODAL BODY CONTENT */}
         <div className="p-4 sm:p-6 overflow-y-auto flex-1 bg-slate-50/50 space-y-6 text-xs">
           {/* ========================================================= */}
-          {/* TAB 1: DADOS PESSOAIS, FAMILIARES & PRONTUÁRIO */}
+          {/* TAB 1: PERSONAL, FAMILY DATA & DOSSIER */}
           {/* ========================================================= */}
           {activeTab === 'personal' && (
             <div className="space-y-6">
-              {/* Section 1: Informações de Identificação Civil */}
+              {/* Section 1: Civil Identification Information */}
               <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs">
                 <h3 className="font-bold text-slate-900 text-sm mb-4 flex items-center gap-2">
                   <User className="w-4 h-4 text-slate-700" />
-                  Identificação Civil & Registro Pessoal
+                  Civil Identification & Personal Record
                 </h3>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                   <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
-                    <span className="text-slate-400 text-[11px] block">Nome Completo</span>
+                    <span className="text-slate-400 text-[11px] block">Full Name</span>
                     <p className="font-bold text-slate-900 text-sm mt-0.5">{student.name}</p>
                   </div>
 
                   <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
-                    <span className="text-slate-400 text-[11px] block">ID Único do Aluno</span>
+                    <span className="text-slate-400 text-[11px] block">Unique Student ID</span>
                     <p className="font-mono font-bold text-slate-800 text-sm mt-0.5">{student.studentId}</p>
                   </div>
 
                   <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
-                    <span className="text-slate-400 text-[11px] block">Nível Acadêmico (Level)</span>
-                    <p className="font-bold text-purple-700 text-sm mt-0.5">{student.level || 'Geral / Padrão'}</p>
+                    <span className="text-slate-400 text-[11px] block">Academic Level</span>
+                    <p className="font-bold text-purple-700 text-sm mt-0.5">{student.level || 'General / Standard'}</p>
                   </div>
 
                   <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
-                    <span className="text-slate-400 text-[11px] block">Data de Início (Start Date)</span>
+                    <span className="text-slate-400 text-[11px] block">Start Date</span>
                     <p className="font-mono font-bold text-slate-900 text-sm mt-0.5">{student.startDate || '01/08/2026'}</p>
                   </div>
 
                   <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
-                    <span className="text-slate-400 text-[11px] block">RG (Registro Geral / Identidade)</span>
-                    <p className="font-mono font-bold text-slate-900 text-sm mt-0.5">{student.rg || student.nationalId || 'Não informado'}</p>
+                    <span className="text-slate-400 text-[11px] block">ID Number (National ID / Passport)</span>
+                    <p className="font-mono font-bold text-slate-900 text-sm mt-0.5">{student.rg || student.nationalId || 'Not provided'}</p>
                   </div>
 
                   <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
-                    <span className="text-slate-400 text-[11px] block">Data de Nascimento & Idade</span>
+                    <span className="text-slate-400 text-[11px] block">Birth Date & Age</span>
                     <p className="font-bold text-slate-900 text-sm mt-0.5">
-                      {student.birthDate || 'Não informada'}
+                      {student.birthDate || 'Not provided'}
                       {(student.age || studentAge !== null) && (
-                        <span className="text-slate-500 font-normal ml-1">({student.age || studentAge} anos)</span>
+                        <span className="text-slate-500 font-normal ml-1">({student.age || studentAge} years old)</span>
                       )}
                     </p>
                   </div>
 
                   <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
-                    <span className="text-slate-400 text-[11px] block">Gênero</span>
+                    <span className="text-slate-400 text-[11px] block">Gender</span>
                     <p className="font-bold text-slate-900 text-sm mt-0.5 capitalize">
-                      {student.gender ? student.gender.toLowerCase() : 'Não informado'}
+                      {student.gender ? student.gender.toLowerCase() : 'Not provided'}
                     </p>
                   </div>
                 </div>
@@ -554,13 +554,13 @@ export const StudentDossierModal: React.FC<StudentDossierModalProps> = ({
                     <KeyRound className="w-4 h-4" />
                   </div>
                   <div>
-                    <h3 className="font-bold text-slate-900 text-sm">Acesso do Aluno (Portal do Aluno)</h3>
+                    <h3 className="font-bold text-slate-900 text-sm">Student Access (Student Portal)</h3>
                     <p className="text-[11px] text-slate-600 mt-0.5 leading-relaxed">
-                      Sem senha. O aluno entra com o ID{' '}
-                      <strong className="font-mono text-slate-900">{student.studentId}</strong> e a
-                      data de nascimento{' '}
+                      No password. The student signs in with the ID{' '}
+                      <strong className="font-mono text-slate-900">{student.studentId}</strong> and the
+                      birth date{' '}
                       <strong className="text-slate-900">
-                        {student.birthDate || 'não cadastrada'}
+                        {student.birthDate || 'not registered'}
                       </strong>
                       .
                     </p>
@@ -571,27 +571,27 @@ export const StudentDossierModal: React.FC<StudentDossierModalProps> = ({
                   onClick={() => {
                     navigator.clipboard
                       .writeText(
-                        `Portal do Aluno Think Green\nID Student: ${student.studentId}\nData de nascimento: ${student.birthDate || 'não cadastrada'}`
+                        `Think Green Student Portal\nStudent ID: ${student.studentId}\nBirth date: ${student.birthDate || 'not registered'}`
                       )
                       .catch(() => {});
                   }}
                   className="px-3 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-[11px] font-bold rounded-xl border border-emerald-200 transition-colors flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap"
                 >
-                  <Copy className="w-3.5 h-3.5" /> Copiar dados
+                  <Copy className="w-3.5 h-3.5" /> Copy data
                 </button>
               </div>
 
-              {/* Section 2: Contatos & Localização */}
+              {/* Section 2: Contacts & Location */}
               <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs">
                 <h3 className="font-bold text-slate-900 text-sm mb-4 flex items-center gap-2">
                   <Phone className="w-4 h-4 text-slate-700" />
-                  Canais de Contato & Localização Geográfica
+                  Contact Channels & Geographic Location
                 </h3>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                   <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between">
                     <div>
-                      <span className="text-slate-400 text-[11px] block">Telefone Principal</span>
+                      <span className="text-slate-400 text-[11px] block">Primary Phone</span>
                       <p className="font-bold text-slate-900 text-sm mt-0.5">{student.phone}</p>
                     </div>
                     {student.phone && (
@@ -600,7 +600,7 @@ export const StudentDossierModal: React.FC<StudentDossierModalProps> = ({
                         target="_blank"
                         rel="noreferrer"
                         className="px-2.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-lg text-xs font-semibold flex items-center gap-1 border border-emerald-200 transition-colors"
-                        title="Conversar via WhatsApp"
+                        title="Chat via WhatsApp"
                       >
                         <MessageCircle className="w-3.5 h-3.5" /> WhatsApp
                       </a>
@@ -609,14 +609,14 @@ export const StudentDossierModal: React.FC<StudentDossierModalProps> = ({
 
                   <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between">
                     <div>
-                      <span className="text-slate-400 text-[11px] block">Endereço de E-mail</span>
+                      <span className="text-slate-400 text-[11px] block">Email Address</span>
                       <p className="font-bold text-slate-900 text-sm mt-0.5 truncate max-w-[170px]">{student.email}</p>
                     </div>
                     {student.email && (
                       <a
                         href={`mailto:${student.email}`}
                         className="p-1.5 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-lg transition-colors border border-slate-200"
-                        title="Enviar E-mail"
+                        title="Send Email"
                       >
                         <Mail className="w-4 h-4" />
                       </a>
@@ -624,49 +624,49 @@ export const StudentDossierModal: React.FC<StudentDossierModalProps> = ({
                   </div>
 
                   <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
-                    <span className="text-slate-400 text-[11px] block">Cidade / Província</span>
+                    <span className="text-slate-400 text-[11px] block">City / Province</span>
                     <p className="font-bold text-slate-900 text-sm mt-0.5 flex items-center gap-1">
                       <MapPin className="w-3.5 h-3.5 text-slate-400" />
-                      {student.city} (Egito)
+                      {student.city} (Egypt)
                     </p>
                   </div>
 
                   <div className="sm:col-span-2 md:col-span-3 p-3 bg-slate-50 rounded-xl border border-slate-100">
-                    <span className="text-slate-400 text-[11px] block">Endereço Residencial Completo</span>
+                    <span className="text-slate-400 text-[11px] block">Full Residential Address</span>
                     <p className="font-medium text-slate-800 mt-0.5">
-                      {student.address || `${student.city}, República Árabe do Egito`}
+                      {student.address || `${student.city}, Arab Republic of Egypt`}
                     </p>
                   </div>
                 </div>
               </div>
 
-              {/* Section 3: Responsáveis Legais & Contatos de Emergência */}
+              {/* Section 3: Legal Guardians & Emergency Contacts */}
               <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs">
                 <h3 className="font-bold text-slate-900 text-sm mb-4 flex items-center gap-2">
                   <HeartHandshake className="w-4 h-4 text-slate-700" />
-                  Filiação, Responsáveis Legais & Contatos de Emergência
+                  Parentage, Legal Guardians & Emergency Contacts
                 </h3>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
-                    <span className="text-slate-400 text-[11px] block">Nome do Responsável Legal</span>
+                    <span className="text-slate-400 text-[11px] block">Legal Guardian Name</span>
                     <p className="font-bold text-slate-900 text-sm mt-0.5">
-                      {student.guardianName || 'Próprio Aluno / Maior de Idade'}
+                      {student.guardianName || 'Student Themself / Adult'}
                     </p>
                   </div>
 
                   <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between">
                     <div>
-                      <span className="text-slate-400 text-[11px] block">Telefone de Emergência</span>
+                      <span className="text-slate-400 text-[11px] block">Emergency Phone</span>
                       <p className="font-bold text-slate-900 text-sm mt-0.5">
-                        {student.guardianPhone || student.phone || 'Não informado'}
+                        {student.guardianPhone || student.phone || 'Not provided'}
                       </p>
                     </div>
                     {student.guardianPhone && (
                       <a
                         href={`tel:${student.guardianPhone}`}
                         className="p-1.5 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-lg transition-colors border border-slate-200"
-                        title="Ligar para Responsável"
+                        title="Call Guardian"
                       >
                         <Phone className="w-4 h-4" />
                       </a>
@@ -674,27 +674,27 @@ export const StudentDossierModal: React.FC<StudentDossierModalProps> = ({
                   </div>
 
                   <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
-                    <span className="text-slate-400 text-[11px] block">Grau de Parentesco</span>
+                    <span className="text-slate-400 text-[11px] block">Relationship</span>
                     <p className="font-bold text-slate-900 text-sm mt-0.5">
-                      {student.guardianName ? 'Pai / Mãe / Tutor Legal' : 'Titular Independente'}
+                      {student.guardianName ? 'Parent / Legal Guardian' : 'Independent'}
                     </p>
                   </div>
                 </div>
               </div>
 
-              {/* Section 4: Prontuário Interno & Observações da Secretaria */}
+              {/* Section 4: Internal Record & Registrar's Office Notes */}
               <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs">
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="font-bold text-slate-900 text-sm flex items-center gap-2">
                     <FileText className="w-4 h-4 text-slate-700" />
-                    Prontuário Médico, Restrições & Observações da Secretaria
+                    Medical Record, Restrictions & Registrar's Office Notes
                   </h3>
                   {!isEditingNotes ? (
                     <button
                       onClick={() => setIsEditingNotes(true)}
                       className="text-xs font-semibold text-slate-700 hover:text-slate-900 cursor-pointer"
                     >
-                      Editar Anotações
+                      Edit Notes
                     </button>
                   ) : (
                     <div className="flex items-center gap-2">
@@ -702,14 +702,14 @@ export const StudentDossierModal: React.FC<StudentDossierModalProps> = ({
                         onClick={() => setIsEditingNotes(false)}
                         className="px-2.5 py-1 text-slate-500 hover:text-slate-700 font-semibold text-xs"
                       >
-                        Cancelar
+                        Cancel
                       </button>
                       <button
                         onClick={handleSaveNotes}
                         disabled={isSavingNotes}
                         className="px-3 py-1 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs rounded-lg transition-colors shadow-2xs cursor-pointer"
                       >
-                        {isSavingNotes ? 'Salvando...' : 'Salvar'}
+                        {isSavingNotes ? 'Saving...' : 'Save'}
                       </button>
                     </div>
                   )}
@@ -720,7 +720,7 @@ export const StudentDossierModal: React.FC<StudentDossierModalProps> = ({
                     rows={4}
                     value={internalNotes}
                     onChange={(e) => setInternalNotes(e.target.value)}
-                    placeholder="Adicione observações médicas, restrições físicas para futebol, necessidades pedagógicas ou notas de atendimento..."
+                    placeholder="Add medical notes, physical restrictions for sports, pedagogical needs or service notes..."
                     className="w-full p-3 bg-slate-50 border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-slate-400 focus:outline-hidden"
                   />
                 ) : (
@@ -728,7 +728,7 @@ export const StudentDossierModal: React.FC<StudentDossierModalProps> = ({
                     <p className="text-slate-700 whitespace-pre-wrap leading-relaxed">
                       {student.notes || (
                         <span className="text-slate-400 italic">
-                          Nenhuma observação especial ou restrição médica registrada no prontuário deste aluno.
+                          No special notes or medical restrictions recorded in this student's dossier.
                         </span>
                       )}
                     </p>
@@ -739,15 +739,15 @@ export const StudentDossierModal: React.FC<StudentDossierModalProps> = ({
           )}
 
           {/* ========================================================= */}
-          {/* TAB 2: VIDA ACADÊMICA & PEDAGÓGICA */}
+          {/* TAB 2: ACADEMIC & PEDAGOGICAL LIFE */}
           {/* ========================================================= */}
           {activeTab === 'academic' && (
             <div className="space-y-6">
-              {/* Gate Access Diagnostic Alert */}
+              {/* Front Desk & Room Access Diagnostic */}
               <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs">
                 <h3 className="font-bold text-slate-900 text-sm mb-3 flex items-center gap-2">
                   <ShieldCheck className="w-4 h-4 text-slate-700" />
-                  Diagnóstico de Portaria & Acesso às Salas / Campos
+                  Front Desk & Room / Field Access Diagnostic
                 </h3>
 
                 <div className="space-y-2">
@@ -772,7 +772,7 @@ export const StudentDossierModal: React.FC<StudentDossierModalProps> = ({
                           <p className="font-bold text-xs">{enrollment.courseName} — {enrollment.className}</p>
                           <p className="text-xs text-slate-500 mt-0.5">
                             {access.allowed
-                              ? 'Acesso autorizado à sala de aula, treinos e materiais no AVA.'
+                              ? 'Authorized access to the classroom, practices and materials in the LMS.'
                               : access.reason}
                           </p>
                         </div>
@@ -783,26 +783,26 @@ export const StudentDossierModal: React.FC<StudentDossierModalProps> = ({
                           access.allowed ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-rose-100 text-rose-700 border-rose-300'
                         }`}
                       >
-                        {access.allowed ? 'LIBERADO' : 'BLOQUEADO'}
+                        {access.allowed ? 'ALLOWED' : 'BLOCKED'}
                       </span>
                     </div>
                   ))}
                 </div>
               </div>
 
-              {/* Matrículas & Turmas */}
+              {/* Enrollments & Classes */}
               <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="font-bold text-slate-900 text-sm flex items-center gap-2">
                     <BookOpen className="w-4 h-4 text-slate-700" />
-                    Cursos & Turmas Matriculadas ({studentEnrollments.length})
+                    Enrolled Courses & Classes ({studentEnrollments.length})
                   </h3>
                   {onOpenExtraEnrollment && (
                     <button
                       onClick={() => onOpenExtraEnrollment(student)}
                       className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs rounded-lg transition-colors flex items-center gap-1 border border-slate-200 cursor-pointer"
                     >
-                      <Plus className="w-3.5 h-3.5" /> Adicionar Matrícula
+                      <Plus className="w-3.5 h-3.5" /> Add Enrollment
                     </button>
                   )}
                 </div>
@@ -831,26 +831,26 @@ export const StudentDossierModal: React.FC<StudentDossierModalProps> = ({
                           <div className="mt-3 pt-3 border-t border-slate-200/80 space-y-1 text-[11px] text-slate-600">
                             <p className="flex items-center gap-1.5">
                               <UserCheck className="w-3.5 h-3.5 text-slate-400" />
-                              Professor: <strong className="text-slate-800">{cl?.teacherName || 'Docente Think Green'}</strong>
+                              Teacher: <strong className="text-slate-800">{cl?.teacherName || 'Think Green Instructor'}</strong>
                             </p>
                             <p className="flex items-center gap-1.5">
                               <Clock className="w-3.5 h-3.5 text-slate-400" />
-                              Horário: <span className="text-slate-800">{cl?.schedule || 'Seg e Qua 18h'}</span>
+                              Schedule: <span className="text-slate-800">{cl?.schedule || 'Mon and Wed 6 PM'}</span>
                             </p>
                             <p className="flex items-center gap-1.5">
                               <Building className="w-3.5 h-3.5 text-slate-400" />
-                              Local: <span className="text-slate-800">{cl?.room || 'Sala 102 - Bloco A'}</span>
+                              Location: <span className="text-slate-800">{cl?.room || 'Room 102 - Block A'}</span>
                             </p>
                             <p className="flex items-center gap-1.5">
                               <Calendar className="w-3.5 h-3.5 text-slate-400" />
-                              Matrícula realizada em: <span className="text-slate-800">{enr.enrollmentDate}</span>
+                              Enrolled on: <span className="text-slate-800">{enr.enrollmentDate}</span>
                             </p>
                           </div>
                         </div>
 
                         <div className="pt-2 border-t border-slate-200/80 flex items-center justify-between">
                           <span className="text-[11px] text-slate-500 font-medium">
-                            Plano: {enr.paymentPlan.installmentsCount}x de EGP {enr.paymentPlan.installmentAmount}
+                            Plan: {enr.paymentPlan.installmentsCount}x of EGP {enr.paymentPlan.installmentAmount}
                           </span>
                           <button
                             onClick={() =>
@@ -865,7 +865,7 @@ export const StudentDossierModal: React.FC<StudentDossierModalProps> = ({
                                 : 'text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border-emerald-200'
                             }`}
                           >
-                            {enr.status === 'ATIVA' ? 'Suspender Vínculo' : 'Reativar Matrícula'}
+                            {enr.status === 'ATIVA' ? 'Suspend Enrollment' : 'Reactivate Enrollment'}
                           </button>
                         </div>
                       </div>
@@ -874,33 +874,33 @@ export const StudentDossierModal: React.FC<StudentDossierModalProps> = ({
                 </div>
               </div>
 
-              {/* Boletim de Avaliações & Notas */}
+              {/* Assessment & Grade Report */}
               <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="font-bold text-slate-900 text-sm flex items-center gap-2">
                     <Award className="w-4 h-4 text-slate-700" />
-                    Boletim de Avaliações, Provas & Rendimento
+                    Assessment Report, Exams & Performance
                   </h3>
                   <div className="px-3 py-1 bg-slate-100 text-slate-800 rounded-lg font-bold text-xs border border-slate-200">
-                    Média: {overallAvg} / 10.0
+                    Average: {overallAvg} / 10.0
                   </div>
                 </div>
 
                 {state.assessments.length === 0 ? (
                   <p className="p-4 text-center text-slate-400 bg-slate-50 rounded-xl">
-                    Nenhuma avaliação cadastrada no calendário pedagógico.
+                    No assessments registered in the pedagogical calendar.
                   </p>
                 ) : (
                   <div className="overflow-x-auto">
                     <table className="w-full text-left text-xs">
                       <thead className="bg-slate-50 text-slate-500 font-bold uppercase tracking-wider border-b border-slate-200">
                         <tr>
-                          <th className="px-4 py-2.5">Avaliação</th>
-                          <th className="px-4 py-2.5">Turma</th>
-                          <th className="px-4 py-2.5">Tipo</th>
-                          <th className="px-4 py-2.5">Status Prova</th>
-                          <th className="px-4 py-2.5">Nota Obtida</th>
-                          <th className="px-4 py-2.5">Feedback Docente</th>
+                          <th className="px-4 py-2.5">Assessment</th>
+                          <th className="px-4 py-2.5">Class</th>
+                          <th className="px-4 py-2.5">Type</th>
+                          <th className="px-4 py-2.5">Exam Status</th>
+                          <th className="px-4 py-2.5">Score</th>
+                          <th className="px-4 py-2.5">Teacher Feedback</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-100">
@@ -923,11 +923,11 @@ export const StudentDossierModal: React.FC<StudentDossierModalProps> = ({
                                 <td className="px-4 py-3">
                                   {examGate.allowed ? (
                                     <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 inline-flex items-center gap-1">
-                                      <Check className="w-3 h-3" /> Liberada
+                                      <Check className="w-3 h-3" /> Released
                                     </span>
                                   ) : (
                                     <span className="text-[10px] font-semibold text-rose-700 bg-rose-50 px-2 py-0.5 rounded border border-rose-200 inline-flex items-center gap-1" title={examGate.reason}>
-                                      <Lock className="w-3 h-3" /> Bloqueada
+                                      <Lock className="w-3 h-3" /> Blocked
                                     </span>
                                   )}
                                 </td>
@@ -945,7 +945,7 @@ export const StudentDossierModal: React.FC<StudentDossierModalProps> = ({
                                       {grade.score} / {grade.maxScore} ({percent}%)
                                     </span>
                                   ) : (
-                                    <span className="text-slate-400 font-normal italic">Aguardando aplicação</span>
+                                    <span className="text-slate-400 font-normal italic">Awaiting administration</span>
                                   )}
                                 </td>
                                 <td className="px-4 py-3 text-slate-600 italic">
@@ -960,26 +960,26 @@ export const StudentDossierModal: React.FC<StudentDossierModalProps> = ({
                 )}
               </div>
 
-              {/* Diário de Frequência */}
+              {/* Attendance Log */}
               <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="font-bold text-slate-900 text-sm flex items-center gap-2">
                     <Activity className="w-4 h-4 text-slate-700" />
-                    Diário de Chamada & Histórico de Presenças
+                    Attendance Log & Presence History
                   </h3>
                   <div className="flex items-center gap-3">
                     <span className="text-emerald-700 font-semibold text-xs flex items-center gap-1">
-                      <CheckCircle2 className="w-3.5 h-3.5" /> {totalPresentCount} Presenças
+                      <CheckCircle2 className="w-3.5 h-3.5" /> {totalPresentCount} Attendances
                     </span>
                     <span className="text-slate-500 font-semibold text-xs flex items-center gap-1">
-                      <AlertCircle className="w-3.5 h-3.5 text-rose-500" /> {totalClassesRecorded - totalPresentCount} Faltas
+                      <AlertCircle className="w-3.5 h-3.5 text-rose-500" /> {totalClassesRecorded - totalPresentCount} Absences
                     </span>
                   </div>
                 </div>
 
                 {studentAttendanceHistory.length === 0 ? (
                   <p className="p-4 text-center text-slate-400 bg-slate-50 rounded-xl">
-                    Nenhum diário de frequência registrado para as turmas deste aluno até o momento.
+                    No attendance log recorded for this student's classes so far.
                   </p>
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 max-h-60 overflow-y-auto">
@@ -1002,7 +1002,7 @@ export const StudentDossierModal: React.FC<StudentDossierModalProps> = ({
                             att.present ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-rose-50 text-rose-700 border-rose-200'
                           }`}
                         >
-                          {att.present ? 'PRESENTE' : 'FALTA'}
+                          {att.present ? 'PRESENT' : 'ABSENT'}
                         </span>
                       </div>
                     ))}
@@ -1013,46 +1013,46 @@ export const StudentDossierModal: React.FC<StudentDossierModalProps> = ({
           )}
 
           {/* ========================================================= */}
-          {/* TAB 3: FINANCEIRO & TESOURARIA (BALCÃO FÍSICO) */}
+          {/* TAB 3: FINANCIAL & TREASURY (PHYSICAL FRONT DESK) */}
           {/* ========================================================= */}
           {activeTab === 'financial' && (
             <div className="space-y-6">
               {/* Financial Status Summary Cards */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <div className="p-4 bg-white rounded-2xl border border-slate-200 shadow-2xs">
-                  <span className="text-slate-400 text-[11px] block">Total Contratado</span>
+                  <span className="text-slate-400 text-[11px] block">Total Contracted</span>
                   <p className="text-lg font-bold text-slate-900 mt-0.5">EGP {totalAmountContracted.toLocaleString()}</p>
-                  <span className="text-[10px] text-slate-400">{studentCharges.length} parcelas</span>
+                  <span className="text-[10px] text-slate-400">{studentCharges.length} installments</span>
                 </div>
 
                 <div className="p-4 bg-white rounded-2xl border border-slate-200 shadow-2xs">
-                  <span className="text-emerald-700 text-[11px] block font-semibold">Total Já Liquidado</span>
+                  <span className="text-emerald-700 text-[11px] block font-semibold">Total Paid</span>
                   <p className="text-lg font-bold text-emerald-700 mt-0.5">EGP {totalAmountPaid.toLocaleString()}</p>
-                  <span className="text-[10px] text-slate-400">Quitações confirmadas</span>
+                  <span className="text-[10px] text-slate-400">Confirmed payments</span>
                 </div>
 
                 <div className="p-4 bg-white rounded-2xl border border-slate-200 shadow-2xs">
-                  <span className="text-amber-700 text-[11px] block font-semibold">Saldo a Vencer</span>
+                  <span className="text-amber-700 text-[11px] block font-semibold">Balance Due</span>
                   <p className="text-lg font-bold text-amber-700 mt-0.5">EGP {totalAmountPending.toLocaleString()}</p>
-                  <span className="text-[10px] text-slate-400">Em aberto no plano</span>
+                  <span className="text-[10px] text-slate-400">Open in the plan</span>
                 </div>
 
                 <div className="p-4 bg-white rounded-2xl border border-slate-200 shadow-2xs">
-                  <span className="text-rose-700 text-[11px] block font-semibold">Total em Atraso</span>
+                  <span className="text-rose-700 text-[11px] block font-semibold">Total Overdue</span>
                   <p className="text-lg font-bold text-rose-700 mt-0.5">EGP {totalAmountOverdue.toLocaleString()}</p>
-                  <span className="text-[10px] text-slate-400">Vencidas sem quitação</span>
+                  <span className="text-[10px] text-slate-400">Past due and unpaid</span>
                 </div>
               </div>
 
-              {/* Carnê de Parcelas Completo */}
+              {/* Full Installment Book */}
               <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="font-bold text-slate-900 text-sm flex items-center gap-2">
                     <Receipt className="w-4 h-4 text-slate-700" />
-                    Carnê de Cobranças & Parcelas (Processamento pela Tesouraria)
+                    Charge & Installment Book (Processed by the Treasury)
                   </h3>
                   <span className="text-[11px] text-slate-500">
-                    Regra: Pagamentos e emissão de recibos são processados exclusivamente pelo Setor Financeiro / Tesouraria
+                    Rule: payments and receipt issuance are processed exclusively by the Finance Department / Treasury
                   </span>
                 </div>
 
@@ -1060,20 +1060,20 @@ export const StudentDossierModal: React.FC<StudentDossierModalProps> = ({
                   <table className="w-full text-left text-xs">
                     <thead className="bg-slate-50 text-slate-500 font-bold uppercase tracking-wider border-b border-slate-200">
                       <tr>
-                        <th className="px-4 py-2.5">Parcela</th>
-                        <th className="px-4 py-2.5">Curso</th>
-                        <th className="px-4 py-2.5">Vencimento</th>
-                        <th className="px-4 py-2.5">Valor (EGP)</th>
+                        <th className="px-4 py-2.5">Installment</th>
+                        <th className="px-4 py-2.5">Course</th>
+                        <th className="px-4 py-2.5">Due Date</th>
+                        <th className="px-4 py-2.5">Amount (EGP)</th>
                         <th className="px-4 py-2.5">Status</th>
-                        <th className="px-4 py-2.5">Data Baixa</th>
-                        <th className="px-4 py-2.5 text-right">Situação Financeira</th>
+                        <th className="px-4 py-2.5">Payment Date</th>
+                        <th className="px-4 py-2.5 text-right">Financial Status</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
                       {studentCharges.map((chg) => (
                         <tr key={chg.id} className="hover:bg-slate-50/70">
                           <td className="px-4 py-3 font-bold font-mono text-slate-900">
-                            {chg.installmentNumber}ª Parcela
+                            Installment {chg.installmentNumber}
                           </td>
                           <td className="px-4 py-3 text-slate-700 font-medium">{chg.courseName}</td>
                           <td className="px-4 py-3 font-mono text-slate-600">{chg.dueDate}</td>
@@ -1093,11 +1093,11 @@ export const StudentDossierModal: React.FC<StudentDossierModalProps> = ({
                           <td className="px-4 py-3 text-right">
                             {chg.status === 'PAGO' ? (
                               <span className="text-emerald-700 font-semibold text-xs inline-flex items-center gap-1">
-                                <CheckCircle2 className="w-3.5 h-3.5" /> Quitado
+                                <CheckCircle2 className="w-3.5 h-3.5" /> Paid
                               </span>
                             ) : (
                               <span className="text-slate-500 bg-slate-100 border border-slate-200 px-2.5 py-1 rounded-lg text-[11px] font-medium inline-flex items-center gap-1">
-                                Aguardando Tesouraria
+                                Awaiting Treasury
                               </span>
                             )}
                           </td>
@@ -1108,16 +1108,16 @@ export const StudentDossierModal: React.FC<StudentDossierModalProps> = ({
                 </div>
               </div>
 
-              {/* Recibos Físicos Emitidos */}
+              {/* Physical Receipts Issued */}
               <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs">
                 <h3 className="font-bold text-slate-900 text-sm mb-4 flex items-center gap-2">
                   <FileText className="w-4 h-4 text-slate-700" />
-                  Recibos Físicos Emitidos pela Tesouraria ({studentReceipts.length})
+                  Physical Receipts Issued by the Treasury ({studentReceipts.length})
                 </h3>
 
                 {studentReceipts.length === 0 ? (
                   <p className="p-4 text-center text-slate-400 bg-slate-50 rounded-xl">
-                    Nenhum recibo físico emitido ainda para este aluno.
+                    No physical receipt issued for this student yet.
                   </p>
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
@@ -1136,15 +1136,15 @@ export const StudentDossierModal: React.FC<StudentDossierModalProps> = ({
                             </span>
                           </div>
                           <p className="font-bold text-slate-800 text-xs mt-2">{rec.installmentDescription}</p>
-                          <p className="text-[11px] text-slate-500 mt-0.5">Emitido em: {rec.date}</p>
-                          <p className="text-[10px] text-slate-400">Operador: {rec.issuedBy}</p>
+                          <p className="text-[11px] text-slate-500 mt-0.5">Issued on: {rec.date}</p>
+                          <p className="text-[10px] text-slate-400">Operator: {rec.issuedBy}</p>
                         </div>
 
                         <button
                           onClick={() => setSelectedReceipt(rec)}
                           className="w-full py-1.5 bg-white hover:bg-slate-100 text-slate-700 font-semibold text-xs rounded-lg border border-slate-200 transition-colors flex items-center justify-center gap-1 cursor-pointer shadow-2xs"
                         >
-                          <EyeIcon className="w-3.5 h-3.5" /> Ver Recibo Térmico/A4
+                          <EyeIcon className="w-3.5 h-3.5" /> View Thermal/A4 Receipt
                         </button>
                       </div>
                     ))}
@@ -1155,7 +1155,7 @@ export const StudentDossierModal: React.FC<StudentDossierModalProps> = ({
           )}
 
           {/* ========================================================= */}
-          {/* TAB 4: DOCUMENTOS & ARQUIVOS ANEXADOS */}
+          {/* TAB 4: DOCUMENTS & ATTACHED FILES */}
           {/* ========================================================= */}
           {activeTab === 'documents' && (
             <div className="space-y-6">
@@ -1165,10 +1165,10 @@ export const StudentDossierModal: React.FC<StudentDossierModalProps> = ({
                   <div>
                     <h3 className="font-bold text-slate-900 text-sm flex items-center gap-2">
                       <FileText className="w-4 h-4 text-slate-700" />
-                      Prontuário de Arquivos & Documentos Físicos Digitalizados
+                      File Record & Digitized Physical Documents
                     </h3>
                     <p className="text-slate-500 text-xs mt-0.5">
-                      Arquivos obrigatórios: Documento de Identidade, Ficha de Matrícula, Atestado Médico de Aptidão.
+                      Required files: Identity Document, Enrollment Form, Medical Fitness Certificate.
                     </p>
                   </div>
 
@@ -1177,7 +1177,7 @@ export const StudentDossierModal: React.FC<StudentDossierModalProps> = ({
                     className="px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs rounded-xl transition-colors flex items-center gap-1.5 shadow-2xs cursor-pointer"
                   >
                     <Upload className="w-3.5 h-3.5" />
-                    <span>{showUploadForm ? 'Fechar Envio' : 'Anexar Documento'}</span>
+                    <span>{showUploadForm ? 'Close Upload' : 'Attach Document'}</span>
                   </button>
                 </div>
 
@@ -1187,32 +1187,32 @@ export const StudentDossierModal: React.FC<StudentDossierModalProps> = ({
                     onSubmit={handleAddDocSubmit}
                     className="p-4 bg-slate-50 rounded-2xl border border-slate-200 mb-5 space-y-3"
                   >
-                    <h4 className="font-bold text-slate-900 text-xs">Novo Documento para o Prontuário</h4>
+                    <h4 className="font-bold text-slate-900 text-xs">New Document for the Dossier</h4>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-[11px] font-bold text-slate-700 mb-1">Título do Arquivo</label>
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">File Title</label>
                         <input
                           type="text"
                           required
                           value={newDocTitle}
                           onChange={(e) => setNewDocTitle(e.target.value)}
-                          placeholder="Ex: Atestado Médico de Aptidão Física.pdf"
+                          placeholder="Ex: Physical Fitness Medical Certificate.pdf"
                           className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-[11px] font-bold text-slate-700 mb-1">Tipo de Documento</label>
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">Document Type</label>
                         <select
                           value={newDocType}
                           onChange={(e) => setNewDocType(e.target.value as StudentDocument['type'])}
                           className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs"
                         >
-                          <option value="ID_CARD">Documento de Identidade (RG/Passaporte)</option>
-                          <option value="REGISTRATION_FORM">Ficha de Inscrição & Termo Assinado</option>
-                          <option value="MEDICAL">Atestado Médico / Aptidão Esportiva</option>
-                          <option value="PAYMENT_PROOF">Comprovante de Pagamento Bancário</option>
-                          <option value="OTHER">Outros Documentos Complementares</option>
+                          <option value="ID_CARD">Identity Document (ID/Passport)</option>
+                          <option value="REGISTRATION_FORM">Registration Form & Signed Agreement</option>
+                          <option value="MEDICAL">Medical Certificate / Sports Fitness</option>
+                          <option value="PAYMENT_PROOF">Bank Payment Receipt</option>
+                          <option value="OTHER">Other Supplementary Documents</option>
                         </select>
                       </div>
                     </div>
@@ -1223,13 +1223,13 @@ export const StudentDossierModal: React.FC<StudentDossierModalProps> = ({
                         onClick={() => setShowUploadForm(false)}
                         className="px-3 py-1 text-slate-500 font-semibold text-xs hover:text-slate-800"
                       >
-                        Cancelar
+                        Cancel
                       </button>
                       <button
                         type="submit"
                         className="px-4 py-1.5 bg-slate-900 text-white font-semibold text-xs rounded-lg hover:bg-slate-800 transition-colors cursor-pointer"
                       >
-                        Salvar no Prontuário
+                        Save to Dossier
                       </button>
                     </div>
                   </form>
@@ -1239,9 +1239,9 @@ export const StudentDossierModal: React.FC<StudentDossierModalProps> = ({
                 {!student.documents || student.documents.length === 0 ? (
                   <div className="p-8 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-300">
                     <FileText className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-                    <p className="font-bold text-slate-700">Nenhum documento anexado ao prontuário.</p>
+                    <p className="font-bold text-slate-700">No documents attached to the dossier.</p>
                     <p className="text-slate-400 text-xs mt-1">
-                      Clique no botão "Anexar Documento" acima para fazer o upload de cópias digitalizadas.
+                      Click the "Attach Document" button above to upload digitized copies.
                     </p>
                   </div>
                 ) : (
@@ -1259,7 +1259,7 @@ export const StudentDossierModal: React.FC<StudentDossierModalProps> = ({
                                 type="button"
                                 onClick={() => setPreviewDocPhoto({ title: doc.title, url: doc.url })}
                                 className="w-12 h-12 rounded-xl overflow-hidden border border-slate-200 flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity bg-slate-100 flex items-center justify-center shadow-2xs"
-                                title="Clique para ampliar imagem do documento"
+                                title="Click to enlarge the document image"
                               >
                                 <img
                                   src={doc.url}
@@ -1290,7 +1290,7 @@ export const StudentDossierModal: React.FC<StudentDossierModalProps> = ({
                                 type="button"
                                 onClick={() => setPreviewDocPhoto({ title: doc.title, url: doc.url })}
                                 className="p-1.5 text-emerald-700 hover:text-emerald-900 hover:bg-emerald-50 rounded-lg transition-colors border border-transparent hover:border-emerald-200 cursor-pointer"
-                                title="Visualizar Imagem Ampliada"
+                                title="View Enlarged Image"
                               >
                                 <Eye className="w-4 h-4" />
                               </button>
@@ -1300,19 +1300,19 @@ export const StudentDossierModal: React.FC<StudentDossierModalProps> = ({
                                 target="_blank"
                                 rel="noreferrer"
                                 className="p-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors border border-transparent hover:border-slate-200"
-                                title="Baixar / Visualizar Documento"
+                                title="Download / View Document"
                               >
                                 <Download className="w-4 h-4" />
                               </a>
                             )}
                             <button
                               onClick={() => {
-                                if (confirm(`Deseja remover o documento "${doc.title}" do prontuário?`)) {
+                                if (confirm(`Remove the document "${doc.title}" from the dossier?`)) {
                                   deleteStudentDocument(student.studentId, doc.id);
                                 }
                               }}
                               className="p-1.5 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
-                              title="Excluir Documento"
+                              title="Delete Document"
                             >
                               <Trash2 className="w-4 h-4" />
                             </button>
@@ -1327,17 +1327,17 @@ export const StudentDossierModal: React.FC<StudentDossierModalProps> = ({
           )}
 
           {/* ========================================================= */}
-          {/* TAB 5: COMUNIDADE & LINHA DO TEMPO (O PLURAL) */}
+          {/* TAB 5: COMMUNITY & TIMELINE (THE PLURAL) */}
           {/* ========================================================= */}
           {activeTab === 'plural_timeline' && (
             <div className="space-y-6">
-              {/* Professores & Colegas de Turma */}
+              {/* Teachers & Classmates */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Professores */}
+                {/* Teachers */}
                 <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs">
                   <h3 className="font-bold text-slate-900 text-sm mb-3 flex items-center gap-2">
                     <UserCheck className="w-4 h-4 text-slate-700" />
-                    Corpo Docente Responsável
+                    Responsible Teaching Staff
                   </h3>
 
                   <div className="space-y-2.5">
@@ -1353,15 +1353,15 @@ export const StudentDossierModal: React.FC<StudentDossierModalProps> = ({
                   </div>
                 </div>
 
-                {/* Colegas de Turma */}
+                {/* Classmates */}
                 <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs">
                   <h3 className="font-bold text-slate-900 text-sm mb-3 flex items-center gap-2">
                     <Users className="w-4 h-4 text-slate-700" />
-                    Comunidade & Colegas de Turma ({classmates.length})
+                    Community & Classmates ({classmates.length})
                   </h3>
 
                   {classmates.length === 0 ? (
-                    <p className="text-slate-400 text-xs italic">Nenhum colega encontrado na mesma turma.</p>
+                    <p className="text-slate-400 text-xs italic">No classmates found in the same class.</p>
                   ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto">
                       {classmates.map((cm, idx) => (
@@ -1380,16 +1380,16 @@ export const StudentDossierModal: React.FC<StudentDossierModalProps> = ({
                 </div>
               </div>
 
-              {/* Linha do Tempo de Auditoria e Ocorrências */}
+              {/* Audit Timeline & Incidents */}
               <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs">
                 <h3 className="font-bold text-slate-900 text-sm mb-4 flex items-center gap-2">
                   <History className="w-4 h-4 text-slate-700" />
-                  Linha do Tempo & Registro de Ocorrências Institucionais
+                  Timeline & Institutional Incident Log
                 </h3>
 
                 {studentLogs.length === 0 ? (
                   <p className="p-4 text-center text-slate-400 bg-slate-50 rounded-xl">
-                    Nenhum registro de log arquivado para este aluno até o momento.
+                    No log records filed for this student so far.
                   </p>
                 ) : (
                   <div className="relative pl-6 space-y-4 before:absolute before:left-2.5 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200">
@@ -1408,10 +1408,10 @@ export const StudentDossierModal: React.FC<StudentDossierModalProps> = ({
                               ? log.newValue
                               : typeof log.details === 'object' && log.details !== null
                               ? JSON.stringify(log.details)
-                              : 'Ação registrada no sistema.'}
+                              : 'Action recorded in the system.'}
                           </p>
                           <span className="text-[9px] text-slate-400 mt-1 block">
-                            Módulo: {log.module} • Operador: {log.userName}
+                            Module: {log.module} • Operator: {log.userName}
                           </span>
                         </div>
                       </div>
@@ -1426,7 +1426,7 @@ export const StudentDossierModal: React.FC<StudentDossierModalProps> = ({
         {/* MODAL FOOTER */}
         <div className="bg-white p-4 sm:px-6 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3 flex-shrink-0">
           <div className="text-slate-500 text-[11px]">
-            Ficha Unificada 360° • Think Green Community Center (Cairo, Egito)
+            Unified 360° Dossier • Think Green Community Center (Cairo, Egypt)
           </div>
 
           <div className="flex items-center gap-2">
@@ -1435,14 +1435,14 @@ export const StudentDossierModal: React.FC<StudentDossierModalProps> = ({
               className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer"
             >
               <Printer className="w-3.5 h-3.5" />
-              <span>Imprimir Ficha</span>
+              <span>Print Dossier</span>
             </button>
 
             <button
               onClick={onClose}
               className="px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl transition-colors cursor-pointer"
             >
-              Fechar
+              Close
             </button>
           </div>
         </div>
@@ -1470,7 +1470,7 @@ export const StudentDossierModal: React.FC<StudentDossierModalProps> = ({
             <div className="flex items-center justify-between border-b border-slate-100 pb-2">
               <div>
                 <h4 className="font-black text-slate-900 text-sm">{previewDocPhoto.title}</h4>
-                <p className="text-[11px] text-slate-500">Prontuário de {student.name} ({student.studentId})</p>
+                <p className="text-[11px] text-slate-500">Dossier of {student.name} ({student.studentId})</p>
               </div>
               <button
                 type="button"
@@ -1493,7 +1493,7 @@ export const StudentDossierModal: React.FC<StudentDossierModalProps> = ({
                 onClick={() => setPreviewDocPhoto(null)}
                 className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl cursor-pointer"
               >
-                Fechar Visualização
+                Close Preview
               </button>
             </div>
           </div>

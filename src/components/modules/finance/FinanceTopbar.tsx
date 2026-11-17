@@ -45,10 +45,10 @@ export const FinanceTopbar: React.FC<FinanceTopbarProps> = ({
         {/* Title & Subtitle */}
         <div>
           <h1 className="text-base sm:text-lg font-black tracking-tight text-slate-900 leading-tight">
-            PAINEL FINANCEIRO
+            FINANCE DASHBOARD
           </h1>
           <p className="text-[11px] sm:text-xs text-slate-400 font-medium">
-            Gestão financeira completa e inteligente
+            Complete, intelligent financial management
           </p>
         </div>
       </div>
@@ -64,7 +64,7 @@ export const FinanceTopbar: React.FC<FinanceTopbarProps> = ({
               setIsProfileMenuOpen(false);
             }}
             className="p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors relative cursor-pointer"
-            title="Notificações do Financeiro"
+            title="Finance Notifications"
           >
             <Bell className="w-5 h-5" />
             {unreadNotifications.length > 0 && (
@@ -78,17 +78,17 @@ export const FinanceTopbar: React.FC<FinanceTopbarProps> = ({
           {isNotifOpen && (
             <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-2xl shadow-xl border border-slate-200 p-4 z-50 animate-in fade-in">
               <div className="flex items-center justify-between border-b border-slate-100 pb-2 mb-3">
-                <h3 className="font-bold text-xs text-slate-900">Notificações Financeiras</h3>
+                <h3 className="font-bold text-xs text-slate-900">Finance Notifications</h3>
                 <span className="text-[10px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full">
                   {unreadNotifications.length > 0
-                    ? `${unreadNotifications.length} nova(s)`
-                    : 'Nenhuma nova'}
+                    ? `${unreadNotifications.length} new`
+                    : 'No new items'}
                 </span>
               </div>
               <div className="space-y-2 max-h-64 overflow-y-auto text-xs">
                 {unreadNotifications.length === 0 ? (
                   <p className="py-6 text-center text-slate-400">
-                    Nenhuma notificação financeira no momento.
+                    No finance notifications at the moment.
                   </p>
                 ) : (
                   unreadNotifications.map((notification) => (
@@ -135,10 +135,10 @@ export const FinanceTopbar: React.FC<FinanceTopbarProps> = ({
             <div className="text-left hidden sm:block">
               <span className="text-[10px] font-bold text-slate-400 block leading-tight">
                 {currentUser.role === 'SECRETARIAT'
-                  ? 'Secretária'
+                  ? 'Secretary'
                   : currentUser.role === 'FINANCE'
-                  ? 'Financeiro'
-                  : 'Gestor Financeiro'}
+                  ? 'Finance'
+                  : 'Finance Manager'}
               </span>
               <span className="text-xs font-bold text-slate-800 leading-tight">
                 {currentUser.name}
@@ -163,7 +163,7 @@ export const FinanceTopbar: React.FC<FinanceTopbarProps> = ({
                   }}
                   className="w-full text-left px-3 py-1.5 hover:bg-rose-50 text-rose-600 rounded-lg font-bold flex items-center gap-2 cursor-pointer"
                 >
-                  <LogOut className="w-3.5 h-3.5" /> Sair do Sistema
+                  <LogOut className="w-3.5 h-3.5" /> Log Out
                 </button>
               </div>
             </div>

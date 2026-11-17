@@ -141,7 +141,7 @@ interface AppContextType {
     notes?: string
   ) => PaymentReceipt;
 
-  // Pending Payments (Recepção -> Aprovação da Tesouraria / Rony)
+  // Pending Payments (Reception -> Treasury / Rony approval)
   createPendingPayment: (
     data: Omit<PendingPayment, 'id' | 'protocolNumber' | 'provisionalReceiptNumber' | 'status' | 'registeredAt' | 'registeredBy'>
   ) => PendingPayment;
@@ -253,7 +253,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const previous = previousStateRef.current;
     previousStateRef.current = state;
     syncStateDiff(previous, state).catch((err) => {
-      console.warn('[AppContext] Falha ao persistir alterações no Firestore.', err);
+      console.warn('[AppContext] Failed to persist changes to Firestore.', err);
     });
   }, [state]);
 
@@ -309,7 +309,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         id: `user_${student.id}`,
         name: student.name,
         email: student.email || `${studentId.toLowerCase()}@student.thinkgreen.org`,
-        department: 'Aluno Think Green',
+        department: 'Think Green Student',
         status: 'ACTIVE',
         permissions: ['access_lms_student', 'submit_assignment', 'view_own_financials'],
         createdAt: student.createdAt,
@@ -354,7 +354,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     // A student session replaces any employee Firebase session on this device.
     void signOutFromGoogle().catch((error) => {
-      console.warn('[auth] Falha ao encerrar a sessão do Firebase.', error);
+      console.warn('[auth] Failed to end the Firebase session.', error);
     });
 
     startSession(sessionUser);
@@ -362,7 +362,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return {
       success: true,
       user: sessionUser,
-      message: `Bem-vindo(a), ${result.student.name}!`,
+      message: `Welcome, ${result.student.name}!`,
     };
   };
 
@@ -378,7 +378,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   ): { user?: User; message?: string } => {
     const email = (firebaseUser.email || '').trim().toLowerCase();
     if (!email) {
-      return { message: 'A conta autenticada não retornou um e-mail válido.' };
+      return { message: 'The authenticated account did not return a valid e-mail.' };
     }
 
     const isOwner = OWNER_EMAILS.includes(email);
@@ -394,7 +394,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       if (!options?.register && !isOwner) {
         return {
           message:
-            'Este e-mail ainda não está cadastrado. Solicite o link de registro geral à administração.',
+            'This e-mail is not registered yet. Request the general registration link from the administration.',
         };
       }
 
@@ -409,7 +409,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         permissions: isOwner ? ['*'] : [],
         createdAt: new Date().toISOString().split('T')[0],
         avatarUrl: firebaseUser.photoURL || undefined,
-        department: isOwner ? 'Diretoria Executiva & Gestão Geral' : 'Aguardando definição',
+        department: isOwner ? 'Executive Board & General Management' : 'Awaiting assignment',
       };
 
       setState((prev) => ({
@@ -486,7 +486,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return {
         success: false,
         message:
-          'Sua conta está inativa. Procure a administração para reativar o acesso.',
+          'Your account is inactive. Contact the administration to restore access.',
       };
     }
 
@@ -502,8 +502,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       pending,
       user: buildSessionUser(resolved.user),
       message: pending
-        ? 'Cadastro recebido. Aguarde a definição da sua função pela administração.'
-        : `Bem-vindo(a), ${resolved.user.name}!`,
+        ? 'Registration received. Wait for the administration to assign your role.'
+        : `Welcome, ${resolved.user.name}!`,
     };
   };
 
@@ -546,14 +546,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     email: string
   ): Promise<{ success: boolean; message: string }> => {
     if (!email.trim()) {
-      return { success: false, message: 'Informe seu e-mail para recuperar a senha.' };
+      return { success: false, message: 'Enter your e-mail to reset your password.' };
     }
 
     try {
       await requestPasswordReset(email);
       return {
         success: true,
-        message: 'Enviamos um link de redefinição para o seu e-mail. Confira a caixa de entrada.',
+        message: 'We sent a reset link to your e-mail. Check your inbox.',
       };
     } catch (error) {
       return { success: false, message: describeAuthError(error) };
@@ -571,7 +571,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return {
         success: false,
         pending: true,
-        message: 'Sessão expirada. Entre novamente.',
+        message: 'Session expired. Sign in again.',
       };
     }
 
@@ -593,7 +593,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         return {
           success: false,
           pending: true,
-          message: 'Seu cadastro ainda não foi localizado no banco de dados.',
+          message: 'Your registration could not be found in the database yet.',
         };
       }
 
@@ -601,18 +601,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         return {
           success: false,
           pending: false,
-          message: 'Sua conta está inativa. Procure a administração.',
+          message: 'Your account is inactive. Contact the administration.',
         };
       }
 
       startSession(found);
       return { success: true, pending: isPendingUser(found) };
     } catch (error) {
-      console.warn('[auth] Falha ao atualizar o usuário atual.', error);
+      console.warn('[auth] Failed to refresh the current user.', error);
       return {
         success: false,
         pending: true,
-        message: 'Não foi possível consultar o banco de dados agora. Tente novamente.',
+        message: 'Unable to query the database right now. Please try again.',
       };
     }
   };
@@ -622,7 +622,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     clearStudentSession();
     setIsAuthenticated(false);
     void signOutFromGoogle().catch((error) => {
-      console.warn('[auth] Falha ao encerrar a sessão do Firebase.', error);
+      console.warn('[auth] Failed to end the Firebase session.', error);
     });
   };
 
@@ -780,7 +780,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (studentData.documentPhotoUrl) {
       initialDocs.push({
         id: `doc_rg_${Date.now()}`,
-        title: 'Foto do Documento de Identidade (RG/ID)',
+        title: 'Identity Document Photo (ID)',
         type: 'ID_CARD',
         url: studentData.documentPhotoUrl,
         uploadedAt: nowStr,
@@ -792,7 +792,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const newStudent: Student = {
       id: internalId,
       studentId: generatedStuId,
-      name: studentData.name || 'Novo Aluno',
+      name: studentData.name || 'New Student',
       email: studentData.email || `${generatedStuId.toLowerCase()}@student.thinkgreen.org`,
       phone: studentData.phone || '',
       rg: studentData.rg || studentData.nationalId || '',
@@ -818,7 +818,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       email: newStudent.email,
       studentId: generatedStuId,
       role: 'STUDENT',
-      department: 'Aluno Think Green',
+      department: 'Think Green Student',
       status: 'ACTIVE',
       permissions: ['access_lms_student', 'submit_assignment', 'view_own_financials'],
       createdAt: nowStr,
@@ -846,9 +846,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       studentInternalId: internalId,
       studentName: newStudent.name,
       courseId: courseId,
-      courseName: course ? course.name : 'Curso Livre',
+      courseName: course ? course.name : 'General Course',
       classId: classId,
-      className: classRoom ? classRoom.name : 'Turma Principal',
+      className: classRoom ? classRoom.name : 'Main Class',
       enrollmentDate: nowStr,
       status: 'ATIVA',
       paymentPlan: {
@@ -867,7 +867,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     // Auto-generate Charges for all installments with discount note
     const newCharges: Charge[] = [];
     const discountNote = negotiationData?.discountReason
-      ? ` [Negociação: ${negotiationData.discountReason}]`
+      ? ` [Negotiation: ${negotiationData.discountReason}]`
       : '';
 
     for (let i = 1; i <= installmentsCount; i++) {
@@ -886,7 +886,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         amount: installmentAmount,
         dueDate: dueDate.toISOString().split('T')[0],
         status: i === 1 ? 'PENDENTE' : 'REGULAR',
-        notes: `Parcela ${i}/${installmentsCount} gerada na matrícula inicial.${discountNote}`,
+        notes: `Installment ${i}/${installmentsCount} generated at initial enrollment.${discountNote}`,
       });
     }
 
@@ -904,13 +904,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       'Student',
       generatedStuId,
       undefined,
-      `${newStudent.name} (${generatedStuId}) matriculado em ${newEnrollment.courseName}`,
-      `ID ${generatedStuId} gerado. Usuário criado e ${installmentsCount} parcelas financeiras registradas automaticamente.`
+      `${newStudent.name} (${generatedStuId}) enrolled in ${newEnrollment.courseName}`,
+      `ID ${generatedStuId} generated. User created and ${installmentsCount} financial installments registered automatically.`
     );
 
     addNotification(
-      'Novo Aluno Cadastrado!',
-      `${newStudent.name} (${generatedStuId}) foi matriculado com sucesso na turma ${newEnrollment.className}.`,
+      'New Student Registered!',
+      `${newStudent.name} (${generatedStuId}) was successfully enrolled in class ${newEnrollment.className}.`,
       'SUCCESS',
       'ALL'
     );
@@ -919,7 +919,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   /**
-   * 1.1 CREATE PENDING REGISTRATION (Recepção / Pré-cadastro sem gerar ID)
+   * 1.1 CREATE PENDING REGISTRATION (Reception / Pre-registration without generating an ID)
    */
   const createPendingRegistration = (
     data: Omit<PendingRegistration, 'id' | 'protocolNumber' | 'status' | 'createdAt' | 'createdByName' | 'createdByRole'>
@@ -935,7 +935,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       protocolNumber,
       status: 'PENDENTE',
       createdByRole: currentUser.role === 'RECEPTION' ? 'RECEPTION' : 'SECRETARIAT',
-      createdByName: `${currentUser.name} (${currentUser.role === 'RECEPTION' ? 'Recepção' : 'Secretaria'})`,
+      createdByName: `${currentUser.name} (${currentUser.role === 'RECEPTION' ? 'Reception' : 'Secretariat'})`,
       createdAt: nowTimestamp,
     };
 
@@ -951,14 +951,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       'PendingRegistration',
       protocolNumber,
       undefined,
-      `Pré-cadastro ${protocolNumber} registrado por ${currentUser.name} para ${data.name} (${data.courseName})`,
-      data.discountReason ? `Desconto relatado: ${data.discountValue}${data.discountType === 'PERCENT' ? '%' : ' EGP'}. Motivo: ${data.discountReason}` : 'Sem desconto.'
+      `Pre-registration ${protocolNumber} registered by ${currentUser.name} for ${data.name} (${data.courseName})`,
+      data.discountReason ? `Reported discount: ${data.discountValue}${data.discountType === 'PERCENT' ? '%' : ' EGP'}. Reason: ${data.discountReason}` : 'No discount.'
     );
 
     // Notify Secretariat
     addNotification(
-      'Novo Cadastro Pendente da Recepção!',
-      `${data.name} (${data.courseName}) foi registrado pela recepção (Protocolo ${protocolNumber}) e aguarda homologação da secretaria.`,
+      'New Pending Registration from Reception!',
+      `${data.name} (${data.courseName}) was registered by reception (Protocol ${protocolNumber}) and is awaiting secretariat approval.`,
       'INFO',
       'SECRETARIAT'
     );
@@ -967,14 +967,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   /**
-   * 1.2 APPROVE PENDING REGISTRATION (Secretaria aprova e gera STU ID oficial)
+   * 1.2 APPROVE PENDING REGISTRATION (Secretariat approves and generates the official STU ID)
    */
   const approvePendingRegistration = (
     pendingId: string,
     adjustedData?: Partial<PendingRegistration>
   ): { student: Student; enrollment: Enrollment } => {
     const pending = (state.pendingRegistrations || []).find((p) => p.id === pendingId);
-    if (!pending) throw new Error('Cadastro pendente não encontrado');
+    if (!pending) throw new Error('Pending registration not found');
 
     const merged = { ...pending, ...(adjustedData || {}) };
     const course = state.courses.find((c) => c.id === merged.courseId);
@@ -990,11 +990,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (merged.documentPhotoUrl) {
       initialDocs.push({
         id: `doc_rg_${Date.now()}`,
-        title: 'Foto do Documento de Identidade (RG/ID)',
+        title: 'Identity Document Photo (ID)',
         type: 'ID_CARD',
         url: merged.documentPhotoUrl,
         uploadedAt: nowStr,
-        uploadedBy: `${currentUser.name} (Secretaria)`,
+        uploadedBy: `${currentUser.name} (Secretariat)`,
         size: '1.2 MB',
       });
     }
@@ -1014,7 +1014,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       address: merged.address || '',
       city: merged.city || 'Cairo',
       status: 'ATIVO',
-      notes: merged.notes ? `${merged.notes} | Aprovado pela Secretaria: ${currentUser.name}` : `Aprovado pela Secretaria: ${currentUser.name}`,
+      notes: merged.notes ? `${merged.notes} | Approved by the Secretariat: ${currentUser.name}` : `Approved by the Secretariat: ${currentUser.name}`,
       createdAt: nowStr,
       avatarUrl: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
       documentPhotoUrl: merged.documentPhotoUrl,
@@ -1027,7 +1027,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       email: newStudent.email,
       studentId: generatedStuId,
       role: 'STUDENT',
-      department: 'Aluno Think Green',
+      department: 'Think Green Student',
       status: 'ACTIVE',
       permissions: ['access_lms_student', 'submit_assignment', 'view_own_financials'],
       createdAt: nowStr,
@@ -1078,7 +1078,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       dueDate.setDate(5);
 
       const discountNote = merged.discountReason
-        ? ` [Desconto: ${discountAmount > 0 ? `${discountAmount} EGP abatidos` : ''} - Motivo: ${merged.discountReason}]`
+        ? ` [Discount: ${discountAmount > 0 ? `${discountAmount} EGP deducted` : ''} - Reason: ${merged.discountReason}]`
         : '';
 
       newCharges.push({
@@ -1092,7 +1092,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         amount: installmentAmount,
         dueDate: dueDate.toISOString().split('T')[0],
         status: i === 1 ? 'PENDENTE' : 'REGULAR',
-        notes: `Parcela ${i}/${merged.installmentsCount} gerada a partir do pré-cadastro ${merged.protocolNumber}.${discountNote}`,
+        notes: `Installment ${i}/${merged.installmentsCount} generated from pre-registration ${merged.protocolNumber}.${discountNote}`,
       });
     }
 
@@ -1132,14 +1132,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       'APROVAÇÃO_MATRICULA_PENDENTE',
       'Student',
       generatedStuId,
-      `Protocolo: ${merged.protocolNumber}`,
-      `STU ID ${generatedStuId} gerado oficialmente para ${newStudent.name}`,
-      `Cadastro aprovado pela secretaria (${currentUser.name}). Plano de ${merged.installmentsCount}x de ${installmentAmount} EGP ativado.`
+      `Protocol: ${merged.protocolNumber}`,
+      `STU ID ${generatedStuId} officially generated for ${newStudent.name}`,
+      `Registration approved by the secretariat (${currentUser.name}). Plan of ${merged.installmentsCount}x of ${installmentAmount} EGP activated.`
     );
 
     addNotification(
-      'Pré-Matrícula Aprovada!',
-      `${newStudent.name} foi homologado com sucesso. ID gerado: ${generatedStuId}.`,
+      'Pre-Enrollment Approved!',
+      `${newStudent.name} was successfully approved. Generated ID: ${generatedStuId}.`,
       'SUCCESS',
       'ALL'
     );
@@ -1176,12 +1176,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       pending?.protocolNumber || pendingId,
       'PENDENTE',
       'REPROVADO',
-      `Pré-cadastro de ${pending?.name} reprovado por ${currentUser.name}. Motivo: ${reason}`
+      `Pre-registration of ${pending?.name} rejected by ${currentUser.name}. Reason: ${reason}`
     );
 
     addNotification(
-      'Pré-Cadastro Reprovado',
-      `O pré-cadastro de ${pending?.name} (${pending?.protocolNumber}) foi reprovado pela secretaria: ${reason}`,
+      'Pre-Registration Rejected',
+      `The pre-registration of ${pending?.name} (${pending?.protocolNumber}) was rejected by the secretariat: ${reason}`,
       'WARNING',
       'SECRETARIAT'
     );
@@ -1210,7 +1210,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   /**
-   * 1.6 CREATE PENDING PAYMENT (Recepção / Pré-registro de pagamento)
+   * 1.6 CREATE PENDING PAYMENT (Reception / Payment pre-registration)
    */
   const createPendingPayment = (
     data: Omit<PendingPayment, 'id' | 'protocolNumber' | 'provisionalReceiptNumber' | 'status' | 'registeredAt' | 'registeredBy'>
@@ -1227,7 +1227,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       protocolNumber,
       provisionalReceiptNumber,
       status: 'PENDENTE',
-      registeredBy: `${currentUser.name} (${currentUser.role === 'RECEPTION' ? 'Recepção' : currentUser.role})`,
+      registeredBy: `${currentUser.name} (${currentUser.role === 'RECEPTION' ? 'Reception' : currentUser.role})`,
       registeredAt: nowTimestamp,
     };
 
@@ -1242,13 +1242,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       'PendingPayment',
       protocolNumber,
       undefined,
-      `Pré-registro de pagamento ${protocolNumber} recebido no balcão da Recepção por ${currentUser.name}: ${data.amount} EGP (${data.studentName} - ${data.courseName})`,
-      `Forma: ${data.paymentMethod}. Aguarda validação física e conciliação do caixa pelo Rony / Tesouraria.`
+      `Payment pre-registration ${protocolNumber} received at the Reception counter by ${currentUser.name}: ${data.amount} EGP (${data.studentName} - ${data.courseName})`,
+      `Method: ${data.paymentMethod}. Awaiting physical validation and cash reconciliation by Rony / Treasury.`
     );
 
     addNotification(
-      'Novo Pagamento Pendente da Recepção!',
-      `${data.studentName} realizou pré-registro de pagamento de ${data.amount} EGP no balcão (${protocolNumber}). Aguarda conferência do dinheiro físico pela Tesouraria.`,
+      'New Pending Payment from Reception!',
+      `${data.studentName} pre-registered a payment of ${data.amount} EGP at the counter (${protocolNumber}). Awaiting physical cash verification by the Treasury.`,
       'INFO',
       'FINANCE'
     );
@@ -1257,20 +1257,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   /**
-   * 1.7 APPROVE PENDING PAYMENT (Tesouraria / Rony confere dinheiro físico e homologa)
+   * 1.7 APPROVE PENDING PAYMENT (Treasury / Rony verifies the physical cash and approves)
    */
   const approvePendingPayment = (
     pendingPaymentId: string,
     reviewNotes?: string
   ): { paymentReceipt: PaymentReceipt; pendingPayment: PendingPayment } => {
     const pending = (state.pendingPayments || []).find((p) => p.id === pendingPaymentId);
-    if (!pending) throw new Error('Pré-registro de pagamento não encontrado');
+    if (!pending) throw new Error('Payment pre-registration not found');
 
     const officialReceipt = registerPayment(
       pending.chargeId,
       pending.amount,
       pending.paymentMethod,
-      reviewNotes || `Pagamento aprovado e dinheiro físico conferido na Tesouraria (Rony). Ref. Pré-Registro ${pending.protocolNumber}. ${pending.receptionNotes || ''}`.trim()
+      reviewNotes || `Payment approved and physical cash verified at the Treasury (Rony). Ref. Pre-Registration ${pending.protocolNumber}. ${pending.receptionNotes || ''}`.trim()
     );
 
     const nowTimestamp = new Date().toISOString().replace('T', ' ').substring(0, 16);
@@ -1278,9 +1278,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const updatedPending: PendingPayment = {
       ...pending,
       status: 'APROVADO',
-      reviewedBy: `${currentUser.name} (Tesouraria)`,
+      reviewedBy: `${currentUser.name} (Treasury)`,
       reviewedAt: nowTimestamp,
-      reviewNotes: reviewNotes || 'Conferido com o dinheiro físico recebido no caixa.',
+      reviewNotes: reviewNotes || 'Verified against the physical cash received at the counter.',
       officialReceiptNumber: officialReceipt.receiptNumber,
       officialReceiptId: officialReceipt.id,
     };
@@ -1298,13 +1298,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       'PendingPayment',
       pending.protocolNumber,
       'PENDENTE',
-      `APROVADO -> Recibo Oficial ${officialReceipt.receiptNumber}`,
-      `Pagamento de ${pending.amount} EGP homologado pela tesouraria (${currentUser.name}). Dinheiro físico conciliado.`
+      `APPROVED -> Official Receipt ${officialReceipt.receiptNumber}`,
+      `Payment of ${pending.amount} EGP approved by the treasury (${currentUser.name}). Physical cash reconciled.`
     );
 
     addNotification(
-      'Pagamento Homologado pela Tesouraria!',
-      `O pré-registro ${pending.protocolNumber} de ${pending.studentName} (${pending.amount} EGP) foi aprovado e o recibo oficial ${officialReceipt.receiptNumber} foi emitido.`,
+      'Payment Approved by the Treasury!',
+      `Pre-registration ${pending.protocolNumber} from ${pending.studentName} (${pending.amount} EGP) was approved and official receipt ${officialReceipt.receiptNumber} was issued.`,
       'SUCCESS',
       'ALL'
     );
@@ -1313,7 +1313,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   /**
-   * 1.8 REJECT PENDING PAYMENT (Tesouraria rejeita com motivo)
+   * 1.8 REJECT PENDING PAYMENT (Treasury rejects with a reason)
    */
   const rejectPendingPayment = (pendingPaymentId: string, reason: string) => {
     const nowTimestamp = new Date().toISOString().replace('T', ' ').substring(0, 16);
@@ -1326,7 +1326,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           ? {
               ...p,
               status: 'REPROVADO',
-              reviewedBy: `${currentUser.name} (Tesouraria)`,
+              reviewedBy: `${currentUser.name} (Treasury)`,
               reviewedAt: nowTimestamp,
               reviewNotes: reason,
             }
@@ -1341,12 +1341,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       pending?.protocolNumber || pendingPaymentId,
       'PENDENTE',
       'REPROVADO',
-      `Pré-registro de pagamento ${pending?.protocolNumber} de ${pending?.studentName} reprovado pela tesouraria. Motivo: ${reason}`
+      `Payment pre-registration ${pending?.protocolNumber} from ${pending?.studentName} rejected by the treasury. Reason: ${reason}`
     );
 
     addNotification(
-      'Pré-Registro de Pagamento Reprovado',
-      `O pagamento de ${pending?.studentName} (${pending?.protocolNumber}) foi recusado pela tesouraria: ${reason}`,
+      'Payment Pre-Registration Rejected',
+      `The payment from ${pending?.studentName} (${pending?.protocolNumber}) was refused by the treasury: ${reason}`,
       'WARNING',
       'RECEPTION'
     );
@@ -1375,11 +1375,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       });
       return { ...prev, students: updatedStudents };
     });
-    logAudit('SECRETARIAT', 'ATUALIZAR_ALUNO', 'Student', studentId, 'Dados Anteriores', JSON.stringify(data));
+    logAudit('SECRETARIAT', 'ATUALIZAR_ALUNO', 'Student', studentId, 'Previous Data', JSON.stringify(data));
   };
 
   /**
-   * 3. ADD EXTRA ENROLLMENT TO EXISTING STUDENT (1 Aluno -> N Matrículas)
+   * 3. ADD EXTRA ENROLLMENT TO EXISTING STUDENT (1 Student -> N Enrollments)
    */
   const addEnrollmentToStudent = (
     studentId: string,
@@ -1389,7 +1389,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     negotiationData?: PlanNegotiationInput
   ) => {
     const student = state.students.find((s) => s.studentId === studentId || s.id === studentId);
-    if (!student) throw new Error('Aluno não encontrado');
+    if (!student) throw new Error('Student not found');
 
     const course = state.courses.find((c) => c.id === courseId);
     const classRoom = state.classes.find((cl) => cl.id === classId);
@@ -1416,9 +1416,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       studentInternalId: student.id,
       studentName: student.name,
       courseId,
-      courseName: course ? course.name : 'Curso',
+      courseName: course ? course.name : 'Course',
       classId,
-      className: classRoom ? classRoom.name : 'Turma',
+      className: classRoom ? classRoom.name : 'Class',
       enrollmentDate: nowStr,
       status: 'ATIVA',
       paymentPlan: {
@@ -1436,7 +1436,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     const newCharges: Charge[] = [];
     const discountNote = negotiationData?.discountReason
-      ? ` [Negociação: ${negotiationData.discountReason}]`
+      ? ` [Negotiation: ${negotiationData.discountReason}]`
       : '';
 
     for (let i = 1; i <= installmentsCount; i++) {
@@ -1455,7 +1455,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         amount: installmentAmount,
         dueDate: dueDate.toISOString().split('T')[0],
         status: i === 1 ? 'PENDENTE' : 'REGULAR',
-        notes: `Parcela ${i}/${installmentsCount} gerada para ${newEnrollment.courseName}.${discountNote}`,
+        notes: `Installment ${i}/${installmentsCount} generated for ${newEnrollment.courseName}.${discountNote}`,
       });
     }
 
@@ -1471,8 +1471,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       'Enrollment',
       newEnrollment.id,
       undefined,
-      `${student.name} (${student.studentId}) adicionou ${newEnrollment.courseName}`,
-      `Nova matrícula vinculada com plano de ${installmentsCount} parcelas (Total: ${finalTotal} EGP).`
+      `${student.name} (${student.studentId}) added ${newEnrollment.courseName}`,
+      `New enrollment linked with a ${installmentsCount}-installment plan (Total: ${finalTotal} EGP).`
     );
 
     return newEnrollment;
@@ -1538,8 +1538,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         updatedCharges = prev.charges.map((chg) => {
           if (chg.enrollmentId === enrollmentId && (chg.status === 'PENDENTE' || chg.status === 'REGULAR')) {
             const discountNote = negotiationData.discountReason
-              ? ` [Negociação: ${negotiationData.discountReason}]`
-              : ' [Plano Renegociado]';
+              ? ` [Negotiation: ${negotiationData.discountReason}]`
+              : ' [Plan Renegotiated]';
             return {
               ...chg,
               amount: perUnpaidAmount,
@@ -1564,12 +1564,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       enrollmentId,
       `${enrollment.paymentPlan.totalAmount} EGP`,
       `${negotiationData.newTotalAmount} EGP`,
-      `Plano da matrícula de ${enrollment.studentName} renegociado. Novo total: ${negotiationData.newTotalAmount} EGP em ${negotiationData.installmentsCount}x de ${calculatedInstallment} EGP. Motivo: ${negotiationData.discountReason || 'Acordo de balcão'}`
+      `Enrollment plan of ${enrollment.studentName} renegotiated. New total: ${negotiationData.newTotalAmount} EGP in ${negotiationData.installmentsCount}x of ${calculatedInstallment} EGP. Reason: ${negotiationData.discountReason || 'Counter agreement'}`
     );
 
     addNotification(
-      'Plano Renegociado!',
-      `O plano de ${enrollment.studentName} foi ajustado para ${negotiationData.newTotalAmount} EGP (${negotiationData.installmentsCount}x de ${calculatedInstallment} EGP).`,
+      'Plan Renegotiated!',
+      `The plan of ${enrollment.studentName} was adjusted to ${negotiationData.newTotalAmount} EGP (${negotiationData.installmentsCount}x of ${calculatedInstallment} EGP).`,
       'SUCCESS',
       'ALL'
     );
@@ -1610,7 +1610,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       newDoc.id,
       undefined,
       `${newDoc.title} (${newDoc.type})`,
-      `Documento anexado ao prontuário do aluno ID ${studentId}`
+      `Document attached to the student record ${studentId}`
     );
 
     return newDoc;
@@ -1633,7 +1633,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       docId,
       undefined,
       undefined,
-      `Documento ${docId} removido do prontuário do aluno ID ${studentId}`
+      `Document ${docId} removed from the student record ${studentId}`
     );
   };
 
@@ -1647,7 +1647,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     notes?: string
   ): PaymentReceipt => {
     const charge = state.charges.find((c) => c.id === chargeId);
-    if (!charge) throw new Error('Cobrança não encontrada');
+    if (!charge) throw new Error('Charge not found');
 
     const receiptNumber = generateNextReceiptNumber(state.receipts);
     const nowTimestamp = new Date().toISOString().replace('T', ' ').substring(0, 16);
@@ -1662,10 +1662,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       courseName: charge.courseName,
       amount: paidAmount,
       paymentMethod,
-      installmentDescription: `Parcela ${charge.installmentNumber}/${charge.totalInstallments} - ${charge.courseName}`,
+      installmentDescription: `Installment ${charge.installmentNumber}/${charge.totalInstallments} - ${charge.courseName}`,
       date: nowTimestamp,
       issuedBy: `${currentUser.name} (${currentUser.role})`,
-      notes: notes || 'Pagamento confirmado e processado pela tesouraria do Centro.',
+      notes: notes || 'Payment confirmed and processed by the Center treasury.',
     };
 
     // Update active Cash Register if open and cash/instapay
@@ -1678,9 +1678,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         id: `mov_${Date.now()}_${uniqueRand}`,
         cashRegisterId: activeRegister.id,
         type: 'ENTRADA',
-        category: 'Recebimento de Mensalidade (Balcão Físico)',
+        category: 'Tuition Payment (Physical Counter)',
         amount: paidAmount,
-        description: `Recebimento em dinheiro físico de ${charge.studentName} (${charge.studentId}) - ${charge.courseName}`,
+        description: `Physical cash payment from ${charge.studentName} (${charge.studentId}) - ${charge.courseName}`,
         relatedPaymentReceipt: receiptNumber,
         timestamp: nowTimestamp,
         operatorName: currentUser.name,
@@ -1704,9 +1704,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       type: 'RECEITA',
       amount: paidAmount,
       date: nowTimestamp.split(' ')[0],
-      category: `Mensalidades - ${charge.courseName}`,
-      costCenter: 'Receitas Operacionais do Centro',
-      description: `Pagamento da Parcela ${charge.installmentNumber}/${charge.totalInstallments} de ${charge.studentName} (${charge.studentId})`,
+      category: `Tuition - ${charge.courseName}`,
+      costCenter: 'Center Operational Revenue',
+      description: `Payment of Installment ${charge.installmentNumber}/${charge.totalInstallments} by ${charge.studentName} (${charge.studentId})`,
       relatedReceiptId: receiptNumber,
       status: 'CONCILIADO',
       registeredBy: currentUser.name,
@@ -1751,16 +1751,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       'REGISTRO_PAGAMENTO',
       'PaymentReceipt',
       receiptNumber,
-      `Pendente: ${charge.amount} EGP`,
-      `Pago: ${paidAmount} EGP em Dinheiro Físico (Balcão)`,
-      `Recibo ${receiptNumber} emitido para ${charge.studentName} (${charge.studentId}). Provas e aulas reavaliadas.`
+      `Pending: ${charge.amount} EGP`,
+      `Paid: ${paidAmount} EGP in Physical Cash (Counter)`,
+      `Receipt ${receiptNumber} issued to ${charge.studentName} (${charge.studentId}). Exams and classes re-evaluated.`
     );
 
     // Notify Student
     const studentUser = state.users.find((u) => u.studentId === charge.studentId);
     addNotification(
-      'Pagamento Confirmado & Recibo Emitido!',
-      `Seu pagamento de ${paidAmount} EGP (${charge.courseName} - Parcela ${charge.installmentNumber}) foi confirmado. Recibo ${receiptNumber} disponível!`,
+      'Payment Confirmed & Receipt Issued!',
+      `Your payment of ${paidAmount} EGP (${charge.courseName} - Installment ${charge.installmentNumber}) was confirmed. Receipt ${receiptNumber} available!`,
       'SUCCESS',
       'STUDENT',
       studentUser?.id
@@ -1770,7 +1770,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   /**
-   * 5. CASH REGISTER OPERATIONS (Abertura / Fechamento de Caixa com conferência de diferenças)
+   * 5. CASH REGISTER OPERATIONS (Opening / Closing with variance reconciliation)
    */
   const openCashRegister = (initialBalance: number, notes?: string): CashRegister => {
     const nowTimestamp = new Date().toISOString().replace('T', ' ').substring(0, 16);
@@ -1784,7 +1784,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       totalOut: 0,
       expectedBalance: initialBalance,
       status: 'ABERTO',
-      notes: notes || 'Caixa aberto para a jornada de atendimento.',
+      notes: notes || 'Cash register opened for the service shift.',
     };
 
     setState((prev) => ({
@@ -1792,13 +1792,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       cashRegisters: [newReg, ...prev.cashRegisters],
     }));
 
-    logAudit('FINANCE', 'ABERTURA_CAIXA', 'CashRegister', newReg.id, undefined, `Saldo Inicial: ${initialBalance} EGP`);
+    logAudit('FINANCE', 'ABERTURA_CAIXA', 'CashRegister', newReg.id, undefined, `Opening Balance: ${initialBalance} EGP`);
     return newReg;
   };
 
   const closeCashRegister = (countedBalance: number, notes?: string): CashRegister => {
     const active = state.cashRegisters.find((cr) => cr.status === 'ABERTO');
-    if (!active) throw new Error('Não há caixa aberto para fechamento.');
+    if (!active) throw new Error('There is no open cash register to close.');
 
     const nowTimestamp = new Date().toISOString().replace('T', ' ').substring(0, 16);
     const difference = countedBalance - active.expectedBalance;
@@ -1809,7 +1809,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       countedBalance,
       difference,
       status: 'FECHADO',
-      notes: notes || (difference === 0 ? 'Fechamento perfeito sem divergência.' : `Divergência apurada: ${difference} EGP`),
+      notes: notes || (difference === 0 ? 'Perfect closing with no discrepancy.' : `Discrepancy found: ${difference} EGP`),
     };
 
     setState((prev) => ({
@@ -1822,8 +1822,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       'FECHAMENTO_CAIXA',
       'CashRegister',
       active.id,
-      `Esperado: ${active.expectedBalance} EGP`,
-      `Contado: ${countedBalance} EGP | Diferença: ${difference} EGP`,
+      `Expected: ${active.expectedBalance} EGP`,
+      `Counted: ${countedBalance} EGP | Difference: ${difference} EGP`,
       closedReg.notes
     );
 
@@ -1877,7 +1877,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const newRecord: AttendanceRecord = {
       id: `att_${Date.now()}`,
       classId,
-      className: classRoom ? classRoom.name : 'Turma',
+      className: classRoom ? classRoom.name : 'Class',
       date,
       teacherId: currentUser.id,
       teacherName: currentUser.name,
@@ -1897,7 +1897,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       'AttendanceRecord',
       newRecord.id,
       undefined,
-      `${records.filter((r) => r.present).length}/${records.length} Presentes na turma ${newRecord.className}`
+      `${records.filter((r) => r.present).length}/${records.length} Present in class ${newRecord.className}`
     );
   };
 
@@ -1910,10 +1910,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const newGrade: Grade = {
       id: `grd_${Date.now()}`,
       assessmentId,
-      assessmentTitle: assessment ? assessment.title : 'Avaliação',
+      assessmentTitle: assessment ? assessment.title : 'Assessment',
       classId: assessment ? assessment.classId : '',
       studentId,
-      studentName: student ? student.name : 'Aluno',
+      studentName: student ? student.name : 'Student',
       score,
       maxScore,
       percentage,
@@ -1933,14 +1933,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       'Grade',
       newGrade.id,
       undefined,
-      `${newGrade.studentName} (${studentId}) -> ${score}/${maxScore} (${percentage}%) em ${newGrade.assessmentTitle}`,
+      `${newGrade.studentName} (${studentId}) -> ${score}/${maxScore} (${percentage}%) in ${newGrade.assessmentTitle}`,
       feedback
     );
 
     const studentUser = state.users.find((u) => u.studentId === studentId);
     addNotification(
-      'Nova Nota Lançada!',
-      `Sua nota na avaliação "${newGrade.assessmentTitle}" foi publicada: ${score}/${maxScore} pontos.`,
+      'New Grade Published!',
+      `Your grade in the assessment "${newGrade.assessmentTitle}" was published: ${score}/${maxScore} points.`,
       'INFO',
       'STUDENT',
       studentUser?.id
@@ -1965,10 +1965,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         const gradeObj: Grade = {
           id: existingIdx >= 0 ? newGradesList[existingIdx].id : `grd_${Date.now()}_${studentId}`,
           assessmentId,
-          assessmentTitle: assessment ? assessment.title : 'Avaliação',
+          assessmentTitle: assessment ? assessment.title : 'Assessment',
           classId: assessment ? assessment.classId : '',
           studentId,
-          studentName: student ? student.name : 'Aluno',
+          studentName: student ? student.name : 'Student',
           score,
           maxScore,
           percentage,
@@ -1990,7 +1990,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       };
     });
 
-    logAudit('ACADEMIC', 'LANCAMENTO_NOTAS_LOTE', 'Assessment', assessmentId, undefined, `${batchGrades.length} notas lançadas para "${assessment?.title}"`);
+    logAudit('ACADEMIC', 'LANCAMENTO_NOTAS_LOTE', 'Assessment', assessmentId, undefined, `${batchGrades.length} grades published for "${assessment?.title}"`);
   };
 
   const createAssessment = (data: Omit<Assessment, 'id'>): Assessment => {
@@ -1999,11 +1999,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       id: `asm_${Date.now()}`,
     };
     setState((prev) => ({ ...prev, assessments: [newAsm, ...prev.assessments] }));
-    logAudit('ACADEMIC', 'CRIAR_AVALIACAO', 'Assessment', newAsm.id, undefined, `${newAsm.title} (Máx: ${newAsm.maxScore})`);
+    logAudit('ACADEMIC', 'CRIAR_AVALIACAO', 'Assessment', newAsm.id, undefined, `${newAsm.title} (Max: ${newAsm.maxScore})`);
 
     addNotification(
-      'Nova Prova / Avaliação Agendada!',
-      `A avaliação "${newAsm.title}" foi cadastrada para a turma ${newAsm.className}.`,
+      'New Exam / Assessment Scheduled!',
+      `The assessment "${newAsm.title}" was created for class ${newAsm.className}.`,
       'INFO',
       'STUDENT'
     );
@@ -2016,7 +2016,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       assessments: prev.assessments.filter((a) => a.id !== assessmentId),
       grades: prev.grades.filter((g) => g.assessmentId !== assessmentId),
     }));
-    logAudit('ACADEMIC', 'EXCLUIR_AVALIACAO', 'Assessment', assessmentId, undefined, undefined, `Avaliação ${assessmentId} excluída`);
+    logAudit('ACADEMIC', 'EXCLUIR_AVALIACAO', 'Assessment', assessmentId, undefined, undefined, `Assessment ${assessmentId} deleted`);
   };
 
   const updateAssessment = (assessmentId: string, data: Partial<Assessment>) => {
@@ -2024,7 +2024,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       ...prev,
       assessments: prev.assessments.map((a) => (a.id === assessmentId ? { ...a, ...data } : a)),
     }));
-    logAudit('ACADEMIC', 'EDITAR_AVALIACAO', 'Assessment', assessmentId, undefined, undefined, `Avaliação ${assessmentId} atualizada.`);
+    logAudit('ACADEMIC', 'EDITAR_AVALIACAO', 'Assessment', assessmentId, undefined, undefined, `Assessment ${assessmentId} updated.`);
   };
 
   const createClass = (data: Omit<ClassRoom, 'id'>): ClassRoom => {
@@ -2033,12 +2033,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       id: `class_${Date.now()}`,
     };
     setState((prev) => ({ ...prev, classes: [newCls, ...prev.classes] }));
-    logAudit('SECRETARIAT', 'CRIAR_TURMA', 'ClassRoom', newCls.id, undefined, `${newCls.name} (${newCls.code})`, `Docente: ${newCls.teacherName || 'Sem professor'}`);
+    logAudit('SECRETARIAT', 'CRIAR_TURMA', 'ClassRoom', newCls.id, undefined, `${newCls.name} (${newCls.code})`, `Teacher: ${newCls.teacherName || 'No teacher'}`);
 
     if (newCls.teacherId) {
       addNotification(
-        'Nova Turma Aberta & Atribuída!',
-        `Você foi vinculado à turma "${newCls.name}" (${newCls.code}).`,
+        'New Class Opened & Assigned!',
+        `You were linked to the class "${newCls.name}" (${newCls.code}).`,
         'INFO',
         'TEACHER',
         newCls.teacherId
@@ -2074,7 +2074,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       data.id,
       undefined,
       `${data.name} (${data.code})`,
-      'Curso base vinculado automaticamente ao cadastrar uma turma.'
+      'Base course automatically linked when a class is created.'
     );
 
     return data;
@@ -2127,13 +2127,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       classId,
       `${existing.name} (${existing.code}) - ${existing.teacherName}`,
       `${data.name || existing.name} (${data.code || existing.code}) - ${data.teacherName || existing.teacherName}`,
-      `Turma ${existing.code} atualizada pela Secretaria.`
+      `Class ${existing.code} updated by the Secretariat.`
     );
 
     if (data.teacherId && data.teacherId !== existing.teacherId) {
       addNotification(
-        'Turma Vinculada!',
-        `Você foi vinculado como professor responsável da turma "${data.name || existing.name}".`,
+        'Class Assigned!',
+        `You were linked as the responsible teacher for the class "${data.name || existing.name}".`,
         'INFO',
         'TEACHER',
         data.teacherId
@@ -2162,14 +2162,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       'EXCLUIR_TURMA',
       'ClassRoom',
       classId,
-      `${existing.name} (${existing.code}) - Docente: ${existing.teacherName}`,
+      `${existing.name} (${existing.code}) - Teacher: ${existing.teacherName}`,
       undefined,
-      `Turma excluída com ${enrolledCount} matrículas vinculadas canceladas.`
+      `Class deleted with ${enrolledCount} linked enrollments canceled.`
     );
 
     addNotification(
-      'Turma Removida',
-      `A turma "${existing.name}" foi excluída do sistema acadêmico.`,
+      'Class Removed',
+      `The class "${existing.name}" was deleted from the academic system.`,
       'WARNING',
       'ALL'
     );
@@ -2185,14 +2185,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         return { ...cls, isFinalGradeReleased: nextVal };
       }),
     }));
-    logAudit('ACADEMIC', 'LIBERACAO_MEDIA_FINAL', 'ClassRoom', classId, undefined, undefined, `Controle de liberação da média final atualizado.`);
+    logAudit('ACADEMIC', 'LIBERACAO_MEDIA_FINAL', 'ClassRoom', classId, undefined, undefined, `Final grade release control updated.`);
   };
 
   const assignTeacherToClass = (classId: string, teacherId: string, teacherName: string) => {
     const existing = state.classes.find((c) => c.id === classId);
     if (!existing) return;
 
-    const prevTeacher = existing.teacherName || 'Sem professor vinculado';
+    const prevTeacher = existing.teacherName || 'No teacher assigned';
 
     setState((prev) => ({
       ...prev,
@@ -2208,13 +2208,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       classId,
       prevTeacher,
       teacherName,
-      `Docente ${teacherName} vinculado à turma ${existing.name} (${existing.code}).`
+      `Teacher ${teacherName} linked to class ${existing.name} (${existing.code}).`
     );
 
     if (teacherId) {
       addNotification(
-        'Turma Vinculada!',
-        `Você foi vinculado à turma "${existing.name}" (${existing.code}) pela Secretaria.`,
+        'Class Assigned!',
+        `You were linked to the class "${existing.name}" (${existing.code}) by the Secretariat.`,
         'SUCCESS',
         'TEACHER',
         teacherId
@@ -2232,7 +2232,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setState((prev) => ({
       ...prev,
       classes: prev.classes.map((c) =>
-        c.id === classId ? { ...c, teacherId: '', teacherName: 'Sem professor vinculado' } : c
+        c.id === classId ? { ...c, teacherId: '', teacherName: 'No teacher assigned' } : c
       ),
     }));
 
@@ -2242,14 +2242,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       'ClassRoom',
       classId,
       prevTeacher,
-      'Sem professor vinculado',
-      `Professor ${prevTeacher} desvinculado da turma ${existing.name}.`
+      'No teacher assigned',
+      `Teacher ${prevTeacher} unlinked from class ${existing.name}.`
     );
 
     if (prevTeacherId) {
       addNotification(
-        'Turma Desvinculada',
-        `Você foi desvinculado da turma "${existing.name}".`,
+        'Class Unassigned',
+        `You were unlinked from the class "${existing.name}".`,
         'INFO',
         'TEACHER',
         prevTeacherId
@@ -2273,7 +2273,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       courseId,
       `${existing.name} (${existing.monthlyFee} EGP)`,
       `${data.name || existing.name} (${data.monthlyFee ?? existing.monthlyFee} EGP)`,
-      `Dados do curso ${existing.code} atualizados pela Secretaria.`
+      `Course data ${existing.code} updated by the Secretariat.`
     );
   };
 
@@ -2320,7 +2320,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             return {
               ...chg,
               amount: newMonthlyFee,
-              notes: `${chg.notes || ''} [Reajuste: ${oldFee} -> ${newMonthlyFee} EGP]`.trim(),
+              notes: `${chg.notes || ''} [Adjustment: ${oldFee} -> ${newMonthlyFee} EGP]`.trim(),
             };
           }
           return chg;
@@ -2357,14 +2357,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       courseId,
       `${oldFee} EGP`,
       `${newMonthlyFee} EGP`,
-      `Mensalidade do curso ${existing.name} alterada de ${oldFee} EGP para ${newMonthlyFee} EGP (Total: ${newTotalAmount} EGP) pela Secretaria.${
-        updateUnpaidCharges ? ' (Aplicado a cobranças pendentes futuras)' : ' (Aplicado a novas matrículas)'
+      `Tuition for course ${existing.name} changed from ${oldFee} EGP to ${newMonthlyFee} EGP (Total: ${newTotalAmount} EGP) by the Secretariat.${
+        updateUnpaidCharges ? ' (Applied to future pending charges)' : ' (Applied to new enrollments)'
       }`
     );
 
     addNotification(
-      'Mensalidade Atualizada!',
-      `O valor do curso "${existing.name}" foi atualizado (Total: ${newTotalAmount} EGP, ${newMonthlyFee} EGP/parcela).`,
+      'Tuition Updated!',
+      `The price of the course "${existing.name}" was updated (Total: ${newTotalAmount} EGP, ${newMonthlyFee} EGP/installment).`,
       'SUCCESS',
       'ALL'
     );
@@ -2382,8 +2382,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     logAudit('LMS', 'PUBLICAR_AULA', 'Lesson', newLesson.id, undefined, newLesson.title);
 
     addNotification(
-      'Nova Aula Publicada!',
-      `A aula "${newLesson.title}" foi disponibilizada para a turma ${newLesson.className}.`,
+      'New Lesson Published!',
+      `The lesson "${newLesson.title}" was made available for class ${newLesson.className}.`,
       'INFO',
       'STUDENT'
     );
@@ -2395,7 +2395,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       ...prev,
       lessons: prev.lessons.filter((l) => l.id !== lessonId),
     }));
-    logAudit('LMS', 'EXCLUIR_AULA', 'Lesson', lessonId, undefined, undefined, `Aula ${lessonId} excluída`);
+    logAudit('LMS', 'EXCLUIR_AULA', 'Lesson', lessonId, undefined, undefined, `Lesson ${lessonId} deleted`);
   };
 
   const createAssignment = (data: Omit<Assignment, 'id'>): Assignment => {
@@ -2407,8 +2407,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     logAudit('LMS', 'CRIAR_ATIVIDADE', 'Assignment', newAsg.id, undefined, newAsg.title);
 
     addNotification(
-      'Nova Atividade Publicada!',
-      `A atividade "${newAsg.title}" foi publicada para a turma ${newAsg.className}. Prazo: ${newAsg.dueDate}`,
+      'New Assignment Published!',
+      `The assignment "${newAsg.title}" was published for class ${newAsg.className}. Due date: ${newAsg.dueDate}`,
       'INFO',
       'STUDENT'
     );
@@ -2421,7 +2421,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       assignments: prev.assignments.filter((a) => a.id !== assignmentId),
       submissions: prev.submissions.filter((s) => s.assignmentId !== assignmentId),
     }));
-    logAudit('LMS', 'EXCLUIR_ATIVIDADE', 'Assignment', assignmentId, undefined, undefined, `Atividade ${assignmentId} excluída`);
+    logAudit('LMS', 'EXCLUIR_ATIVIDADE', 'Assignment', assignmentId, undefined, undefined, `Assignment ${assignmentId} deleted`);
   };
 
   const updateAssignment = (assignmentId: string, data: Partial<Assignment>) => {
@@ -2429,7 +2429,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       ...prev,
       assignments: prev.assignments.map((asg) => (asg.id === assignmentId ? { ...asg, ...data } : asg)),
     }));
-    logAudit('LMS', 'EDITAR_ATIVIDADE', 'Assignment', assignmentId, undefined, undefined, `Atividade ${assignmentId} atualizada.`);
+    logAudit('LMS', 'EDITAR_ATIVIDADE', 'Assignment', assignmentId, undefined, undefined, `Assignment ${assignmentId} updated.`);
   };
 
   const submitAssignment = (
@@ -2444,9 +2444,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const newSub: Submission = {
       id: `sub_${Date.now()}`,
       assignmentId,
-      assignmentTitle: assignment ? assignment.title : 'Tarefa',
+      assignmentTitle: assignment ? assignment.title : 'Assignment',
       studentId,
-      studentName: student ? student.name : 'Aluno',
+      studentName: student ? student.name : 'Student',
       submissionText,
       attachmentName,
       submittedAt: new Date().toISOString().replace('T', ' ').substring(0, 16),
@@ -2458,7 +2458,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       submissions: [newSub, ...prev.submissions.filter((s) => !(s.assignmentId === assignmentId && s.studentId === studentId))],
     }));
 
-    logAudit('LMS', 'SUBMISSAO_TRABALHO', 'Submission', newSub.id, undefined, `${newSub.studentName} enviou "${newSub.assignmentTitle}"`);
+    logAudit('LMS', 'SUBMISSAO_TRABALHO', 'Submission', newSub.id, undefined, `${newSub.studentName} submitted "${newSub.assignmentTitle}"`);
     return newSub;
   };
 
@@ -2478,7 +2478,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       );
       return { ...prev, submissions: updatedSubs };
     });
-    logAudit('LMS', 'CORRECAO_TRABALHO', 'Submission', submissionId, undefined, `Nota: ${score} | ${feedback}`);
+    logAudit('LMS', 'CORRECAO_TRABALHO', 'Submission', submissionId, undefined, `Grade: ${score} | ${feedback}`);
   };
 
   const markSubmissionSeen = (submissionId: string, feedback?: string, score?: number) => {
@@ -2489,7 +2489,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
               ...s,
               status: 'VISTO' as const,
               score: score !== undefined ? score : s.score,
-              feedback: feedback !== undefined ? feedback : s.feedback || 'Atividade visualizada e validada pelo professor.',
+              feedback: feedback !== undefined ? feedback : s.feedback || 'Assignment viewed and validated by the teacher.',
               gradedAt: new Date().toISOString().replace('T', ' ').substring(0, 16),
               gradedBy: currentUser.name,
             }
@@ -2497,7 +2497,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       );
       return { ...prev, submissions: updatedSubs };
     });
-    logAudit('LMS', 'VISTO_ATIVIDADE', 'Submission', submissionId, undefined, `Visto atribuído por ${currentUser.name} | Feedback: ${feedback || 'Visto'}`);
+    logAudit('LMS', 'VISTO_ATIVIDADE', 'Submission', submissionId, undefined, `Seen marked by ${currentUser.name} | Feedback: ${feedback || 'Seen'}`);
   };
 
   const markManualStudentSubmission = (
@@ -2513,15 +2513,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const newSub: Submission = {
       id: `sub_manual_${Date.now()}_${studentId}`,
       assignmentId,
-      assignmentTitle: assignment ? assignment.title : 'Atividade',
+      assignmentTitle: assignment ? assignment.title : 'Assignment',
       studentId,
-      studentName: student ? student.name : 'Aluno',
-      submissionText: 'Entrega presencial/em sala validada pelo docente.',
+      studentName: student ? student.name : 'Student',
+      submissionText: 'In-person/in-class submission validated by the teacher.',
       submittedAt: new Date().toISOString().replace('T', ' ').substring(0, 16),
       status: isSeen ? 'VISTO' : 'AVALIADO',
       score: score !== undefined ? score : (assignment?.maxScore || 100),
       maxScore: assignment?.maxScore || 100,
-      feedback: feedback || 'Visto atribuído em aula pelo professor.',
+      feedback: feedback || 'Seen marked in class by the teacher.',
       gradedAt: new Date().toISOString().replace('T', ' ').substring(0, 16),
       gradedBy: currentUser.name,
       deliveryMethod: 'PRESENCIAL',
@@ -2532,7 +2532,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       submissions: [newSub, ...prev.submissions.filter((s) => !(s.assignmentId === assignmentId && s.studentId === studentId))],
     }));
 
-    logAudit('LMS', 'VISTO_PRESENCIAL', 'Submission', newSub.id, undefined, `Visto presencial para ${newSub.studentName} em "${newSub.assignmentTitle}"`);
+    logAudit('LMS', 'VISTO_PRESENCIAL', 'Submission', newSub.id, undefined, `In-person check-in for ${newSub.studentName} in "${newSub.assignmentTitle}"`);
     return newSub;
   };
 
@@ -2551,7 +2551,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       ...prev,
       accountingTransactions: deduplicateById([newTx, ...prev.accountingTransactions]),
     }));
-    logAudit('ACCOUNTING', 'NOVO_LANCAMENTO_CONTABIL', 'AccountingTransaction', newTx.id, undefined, `${newTx.type} de ${newTx.amount} EGP - ${newTx.category}`);
+    logAudit('ACCOUNTING', 'NOVO_LANCAMENTO_CONTABIL', 'AccountingTransaction', newTx.id, undefined, `${newTx.type} of ${newTx.amount} EGP - ${newTx.category}`);
   };
 
   const createUser = (data: Omit<User, 'id' | 'createdAt'>): User => {
@@ -2635,7 +2635,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       ...prev,
       users: prev.users.filter((u) => u.id !== userId),
     }));
-    logAudit('ADMIN', 'EXCLUIR_USUARIO', 'User', userId, undefined, `Usuário ${userId} removido`);
+    logAudit('ADMIN', 'EXCLUIR_USUARIO', 'User', userId, undefined, `User ${userId} removed`);
   };
 
   const toggleUserStatus = (userId: string) => {
@@ -2676,8 +2676,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   /**
    * 9. SPREADSHEET MIGRATION TOOL (Google Sheets / Excel Import)
-   * Suporta a Ordem Oficial de Colunas:
-   * STUDENT ID | NAME | LEVEL | TELEPHONE | START DATE | AGE | Agu | Set | Oct | Nov | D/J | Feb | Mar | Apr | May | Jun | July | Total
+   * Supports the Official Column Order:
+   * STUDENT ID | NAME | LEVEL | TELEPHONE | START DATE | AGE | Aug | Sep | Oct | Nov | D/J | Feb | Mar | Apr | May | Jun | July | Total
    */
   const importStudentsBatch = (rows: any[]): number => {
     let count = 0;
@@ -2712,7 +2712,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const student: Student = {
         id: internalId,
         studentId: assignedStuId,
-        name: row.name || `Aluno ${assignedStuId}`,
+        name: row.name || `Student ${assignedStuId}`,
         email: row.email || `${assignedStuId.toLowerCase()}@student.thinkgreen.org`,
         phone: row.phone || '+20 10 0000 0000',
         level: row.level || 'Beginner',
@@ -2726,7 +2726,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         guardianPhone: row.guardianPhone || undefined,
         city: row.city || 'Cairo',
         status: 'ATIVO',
-        notes: `Importado de planilha em ${nowStr}. Nível: ${row.level || 'Padrão'}. Telefone: ${row.phone || 'N/A'}. Início: ${row.startDate || '01/08/2026'}.`,
+        notes: `Imported from spreadsheet on ${nowStr}. Level: ${row.level || 'Default'}. Phone: ${row.phone || 'N/A'}. Start: ${row.startDate || '01/08/2026'}.`,
         createdAt: nowStr,
         documents: [],
       };
@@ -2740,7 +2740,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         email: student.email,
         studentId: assignedStuId,
         role: 'STUDENT',
-        department: `Aluno - ${student.level || 'Geral'}`,
+        department: `Student - ${student.level || 'General'}`,
         status: 'ACTIVE',
         permissions: ['access_lms_student', 'submit_assignment', 'view_own_financials'],
         createdAt: nowStr,
@@ -2785,7 +2785,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
       // Handle monthly charges & payments
       if (row.months && Array.isArray(row.months) && row.months.length > 0) {
-        // Official 11-month columns (Agu, Set, Oct, Nov, D/J, Feb, Mar, Apr, May, Jun, July)
+        // Official 11-month columns (Aug, Sep, Oct, Nov, D/J, Feb, Mar, Apr, May, Jun, July)
         row.months.forEach((m: any) => {
           const chargeId = `chg_${enrollment.id}_${m.installmentNumber}`;
           const isPaid = Boolean(m.isPaid);
@@ -2804,10 +2804,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
               courseName: matchedCourse.name,
               amount,
               paymentMethod: 'DINHEIRO',
-              installmentDescription: `Mensalidade ${m.label} (${m.fullName || m.label})`,
+              installmentDescription: `Tuition ${m.label} (${m.fullName || m.label})`,
               date: dueDate,
-              issuedBy: currentUser?.name || 'Sistema (Carga Inicial)',
-              notes: `Recibo migrado de planilha para o mês de ${m.label}`,
+              issuedBy: currentUser?.name || 'System (Initial Load)',
+              notes: `Receipt migrated from spreadsheet for the month of ${m.label}`,
             };
             newReceipts.push(receipt);
 
@@ -2817,12 +2817,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
               type: 'RECEITA',
               amount,
               date: dueDate,
-              category: `Mensalidades (${m.label})`,
+              category: `Tuition (${m.label})`,
               costCenter: matchedCourse.name,
-              description: `Recebimento Mensalidade ${m.label} - ${student.name} (${assignedStuId})`,
+              description: `Tuition payment ${m.label} - ${student.name} (${assignedStuId})`,
               relatedReceiptId: receipt.id,
               status: 'CONCILIADO',
-              registeredBy: currentUser?.name || 'Sistema Migração',
+              registeredBy: currentUser?.name || 'Migration System',
             };
             newAccountingTxs.push(accountingTx);
           }
@@ -2844,7 +2844,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             paidAt: isPaid ? `${dueDate} 12:00` : undefined,
             paymentMethod: isPaid ? 'DINHEIRO' : undefined,
             receiptNumber: receiptNum,
-            notes: `Mensalidade ${m.label}`,
+            notes: `Tuition ${m.label}`,
           });
         });
       } else if (!row.skipCharges) {
@@ -2890,9 +2890,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       'ADMIN',
       'IMPORTACAO_PLANILHA',
       'BatchImport',
-      `${count}_alunos`,
+      `${count}_students`,
       undefined,
-      `${count} alunos importados com ordem oficial de colunas e carnês de mensalidades gerados.`
+      `${count} students imported in the official column order with tuition installments generated.`
     );
     return count;
   };
@@ -2905,7 +2905,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (stu && stu.systemAccess === 'BLOQUEADO') {
       return {
         allowed: false,
-        reason: 'Acesso ao sistema e avaliações bloqueado pela secretaria acadêmica.',
+        reason: 'System access and assessments blocked by the academic secretariat.',
         isFinancialBlock: false,
       };
     }
@@ -2917,7 +2917,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (stu && stu.systemAccess === 'BLOQUEADO') {
       return {
         allowed: false,
-        reason: 'Acesso ao sistema e salas de aula bloqueado pela secretaria acadêmica.',
+        reason: 'System access and classrooms blocked by the academic secretariat.',
         isFinancialBlock: false,
       };
     }

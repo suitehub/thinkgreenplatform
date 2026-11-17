@@ -211,7 +211,7 @@ export const PendingRegistrationsQueue: React.FC<PendingRegistrationsQueueProps>
       }
     } catch (err) {
       console.error(err);
-      alert('Erro ao aprovar cadastro.');
+      alert('Error approving registration.');
     }
   };
 
@@ -222,7 +222,7 @@ export const PendingRegistrationsQueue: React.FC<PendingRegistrationsQueueProps>
 
     rejectPendingRegistration(
       rejectingItem.id,
-      rejectionReason.trim() || 'Desconto ou dados cadastrais não autorizados pela Secretaria.'
+      rejectionReason.trim() || "Discount or registration data not authorized by the Registrar's Office."
     );
 
     setRejectingItem(null);
@@ -240,10 +240,10 @@ export const PendingRegistrationsQueue: React.FC<PendingRegistrationsQueueProps>
             </div>
             <div>
               <h2 className="text-base sm:text-lg font-black text-slate-900 flex items-center gap-2">
-                Fila de Cadastros Pendentes da Recepção
+                Front Desk Pending Registrations Queue
               </h2>
               <p className="text-xs text-slate-500">
-                Homologação, conferência de descontos e geração oficial do ID Estudante (STU)
+                Approval, discount review and official Student ID (STU) generation
               </p>
             </div>
           </div>
@@ -254,7 +254,7 @@ export const PendingRegistrationsQueue: React.FC<PendingRegistrationsQueueProps>
             onClick={onBackToWizard}
             className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-colors cursor-pointer"
           >
-            ← Voltar ao Cadastro Direto
+            ← Back to Direct Registration
           </button>
         )}
       </div>
@@ -271,7 +271,7 @@ export const PendingRegistrationsQueue: React.FC<PendingRegistrationsQueueProps>
             }`}
           >
             <Clock className="w-3.5 h-3.5" />
-            <span>Pendentes</span>
+            <span>Pending</span>
             <span
               className={`ml-1 px-1.5 py-0.2 rounded-full text-[10px] font-black ${
                 statusFilter === 'PENDENTE' ? 'bg-amber-700 text-white' : 'bg-slate-200 text-slate-800'
@@ -290,7 +290,7 @@ export const PendingRegistrationsQueue: React.FC<PendingRegistrationsQueueProps>
             }`}
           >
             <CheckCircle className="w-3.5 h-3.5" />
-            <span>Aprovados</span>
+            <span>Approved</span>
             <span
               className={`ml-1 px-1.5 py-0.2 rounded-full text-[10px] font-black ${
                 statusFilter === 'APROVADO' ? 'bg-emerald-800 text-white' : 'bg-slate-200 text-slate-800'
@@ -309,7 +309,7 @@ export const PendingRegistrationsQueue: React.FC<PendingRegistrationsQueueProps>
             }`}
           >
             <XCircle className="w-3.5 h-3.5" />
-            <span>Reprovados</span>
+            <span>Rejected</span>
             <span
               className={`ml-1 px-1.5 py-0.2 rounded-full text-[10px] font-black ${
                 statusFilter === 'REPROVADO' ? 'bg-rose-800 text-white' : 'bg-slate-200 text-slate-800'
@@ -327,7 +327,7 @@ export const PendingRegistrationsQueue: React.FC<PendingRegistrationsQueueProps>
                 : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
             }`}
           >
-            Todos ({(state.pendingRegistrations || []).length})
+            All ({(state.pendingRegistrations || []).length})
           </button>
         </div>
 
@@ -335,7 +335,7 @@ export const PendingRegistrationsQueue: React.FC<PendingRegistrationsQueueProps>
           <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3" />
           <input
             type="text"
-            placeholder="Buscar por nome, protocolo..."
+            placeholder="Search by name, protocol..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-8 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:bg-white focus:ring-2 focus:ring-[#075e38] outline-hidden"
@@ -347,9 +347,9 @@ export const PendingRegistrationsQueue: React.FC<PendingRegistrationsQueueProps>
       {filteredList.length === 0 ? (
         <div className="p-12 text-center bg-white rounded-2xl border border-slate-200">
           <Clock className="w-10 h-10 text-slate-300 mx-auto mb-2" />
-          <p className="text-sm font-bold text-slate-700">Nenhum cadastro nesta visualização.</p>
+          <p className="text-sm font-bold text-slate-700">No registrations in this view.</p>
           <p className="text-xs text-slate-400 mt-0.5">
-            Os alunos pré-cadastrados no balcão da Recepção serão listados automaticamente aqui.
+            Students pre-registered at the Front Desk will be listed here automatically.
           </p>
         </div>
       ) : (
@@ -375,7 +375,7 @@ export const PendingRegistrationsQueue: React.FC<PendingRegistrationsQueueProps>
                       {item.protocolNumber}
                     </span>
                     <span className="text-xs text-slate-500">
-                      Cadastrado por: <strong className="text-slate-800">{item.createdByName}</strong> em {item.createdAt}
+                      Registered by: <strong className="text-slate-800">{item.createdByName}</strong> on {item.createdAt}
                     </span>
                   </div>
 
@@ -383,17 +383,17 @@ export const PendingRegistrationsQueue: React.FC<PendingRegistrationsQueueProps>
                   <div>
                     {item.status === 'PENDENTE' && (
                       <span className="px-3 py-1 rounded-full text-xs font-black bg-amber-100 text-amber-900 border border-amber-300 inline-flex items-center gap-1.5">
-                        <Clock className="w-3.5 h-3.5" /> Aguarda Aprovação
+                        <Clock className="w-3.5 h-3.5" /> Awaiting Approval
                       </span>
                     )}
                     {item.status === 'APROVADO' && (
                       <span className="px-3 py-1 rounded-full text-xs font-black bg-emerald-100 text-emerald-900 border border-emerald-300 inline-flex items-center gap-1.5">
-                        <CheckCircle className="w-3.5 h-3.5" /> Aprovado (ID: {item.generatedStudentId})
+                        <CheckCircle className="w-3.5 h-3.5" /> Approved (ID: {item.generatedStudentId})
                       </span>
                     )}
                     {item.status === 'REPROVADO' && (
                       <span className="px-3 py-1 rounded-full text-xs font-black bg-rose-100 text-rose-900 border border-rose-300 inline-flex items-center gap-1.5">
-                        <XCircle className="w-3.5 h-3.5" /> Reprovado
+                        <XCircle className="w-3.5 h-3.5" /> Rejected
                       </span>
                     )}
                   </div>
@@ -405,28 +405,28 @@ export const PendingRegistrationsQueue: React.FC<PendingRegistrationsQueueProps>
                     {/* Student Info */}
                     <div className="lg:col-span-4 space-y-2 text-xs">
                       <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">
-                        Dados do Estudante
+                        Student Data
                       </p>
                       <p className="text-sm font-black text-slate-900">{item.name}</p>
                       <div className="space-y-1 text-slate-600">
                         <p>
-                          RG / Doc:{' '}
-                          <strong className="font-mono text-slate-800">{item.rg || 'Não informado'}</strong>
+                          ID / Doc:{' '}
+                          <strong className="font-mono text-slate-800">{item.rg || 'Not provided'}</strong>
                         </p>
                         <p>
-                          Telefone:{' '}
+                          Phone:{' '}
                           <strong className="text-slate-800">{item.phone}</strong>
                         </p>
                         {item.birthDate && (
                           <p>
-                            Nascimento: <strong className="text-slate-800">{item.birthDate}</strong> ({item.gender})
+                            Birth date: <strong className="text-slate-800">{item.birthDate}</strong> ({item.gender})
                           </p>
                         )}
                         {item.guardianName && (
                           <p>
-                            Responsável:{' '}
+                            Guardian:{' '}
                             <strong className="text-slate-800">
-                              {item.guardianName} ({item.guardianPhone || 'S/ telefone'})
+                              {item.guardianName} ({item.guardianPhone || 'No phone'})
                             </strong>
                           </p>
                         )}
@@ -434,14 +434,14 @@ export const PendingRegistrationsQueue: React.FC<PendingRegistrationsQueueProps>
                           <div className="pt-2 flex items-center gap-2.5">
                             <img
                               src={item.documentPhotoUrl}
-                              alt="RG do aluno"
+                              alt="Student ID photo"
                               className="w-12 h-12 object-cover rounded-lg border border-slate-300 shadow-2xs"
                             />
                             <div>
                               <span className="text-[10px] font-black uppercase text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 inline-block">
-                                Foto do Documento (ID) Anexada
+                                Document Photo (ID) Attached
                               </span>
-                              <p className="text-[10px] text-slate-500 mt-0.5">Será vinculada direto à ficha do aluno</p>
+                              <p className="text-[10px] text-slate-500 mt-0.5">Will be linked directly to the student dossier</p>
                             </div>
                           </div>
                         )}
@@ -451,24 +451,24 @@ export const PendingRegistrationsQueue: React.FC<PendingRegistrationsQueueProps>
                     {/* Academic Enrollment Info */}
                     <div className="lg:col-span-4 space-y-2 text-xs">
                       <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">
-                        Curso & Turma Pretendida
+                        Requested Course & Class
                       </p>
                       <div className="flex items-center gap-2 flex-wrap">
                         <p className="text-sm font-bold text-slate-900">{item.courseName}</p>
                         {item.englishLevel && (
                           <span className="text-[10px] font-bold text-purple-700 bg-purple-50 border border-purple-200 px-2 py-0.5 rounded-md">
-                            {item.englishLevel === 'CRIANCAS' ? '🧒 Crianças (4x)' : item.englishLevel === 'ADOLESCENTES' ? '🎒 Adolescentes (3x)' : '🧑 Adulto (3x)'}
+                            {item.englishLevel === 'CRIANCAS' ? '🧒 Kids (4x)' : item.englishLevel === 'ADOLESCENTES' ? '🎒 Teens (3x)' : '🧑 Adults (3x)'}
                           </span>
                         )}
                       </div>
                       <p className="text-xs text-slate-600">
-                        Turma: <strong className="text-slate-800">{item.className}</strong>
+                        Class: <strong className="text-slate-800">{item.className}</strong>
                       </p>
                       <p className="text-xs text-slate-600">
-                        Valor Inteiro do Curso: <strong className="font-mono text-slate-800">{formatCurrency(item.totalCourseAmount || item.finalTotal, 'EGP')}</strong>
+                        Full Course Amount: <strong className="font-mono text-slate-800">{formatCurrency(item.totalCourseAmount || item.finalTotal, 'EGP')}</strong>
                       </p>
                       <p className="text-xs text-slate-600">
-                        Plano: <strong className="text-slate-800">{item.installmentsCount} parcelas</strong> de{' '}
+                        Plan: <strong className="text-slate-800">{item.installmentsCount} installments</strong> of{' '}
                         <strong className="font-mono text-emerald-800">
                           {formatCurrency(Math.round(item.finalTotal / Math.max(1, item.installmentsCount)), 'EGP')}
                         </strong>
@@ -478,17 +478,17 @@ export const PendingRegistrationsQueue: React.FC<PendingRegistrationsQueueProps>
                     {/* Financial & Discount Review Block */}
                     <div className="lg:col-span-4 space-y-2 text-xs">
                       <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">
-                        Condição Financeira & Desconto
+                        Financial Terms & Discount
                       </p>
                       <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
                         <div className="flex items-center justify-between">
-                          <span className="text-slate-500">Total do Plano:</span>
+                          <span className="text-slate-500">Plan Total:</span>
                           <span className="font-mono font-black text-sm text-[#075e38]">
                             {formatCurrency(item.finalTotal, 'EGP')}
                           </span>
                         </div>
                         <div className="flex items-center justify-between text-[11px] text-slate-500">
-                          <span>Parcelas:</span>
+                          <span>Installments:</span>
                           <span className="font-mono font-bold text-slate-700">
                             {item.installmentsCount}x de {formatCurrency(item.finalTotal / item.installmentsCount, 'EGP')}
                           </span>
@@ -501,20 +501,20 @@ export const PendingRegistrationsQueue: React.FC<PendingRegistrationsQueueProps>
                           <div className="flex items-center gap-1.5 font-black text-amber-950">
                             <BadgePercent className="w-4 h-4 text-amber-700" />
                             <span>
-                              Desconto Proposto: {item.discountValue}
+                              Proposed Discount: {item.discountValue}
                               {item.discountType === 'PERCENT' ? '%' : ' EGP'}
                             </span>
                           </div>
                           <div className="p-2 bg-white/80 rounded-lg border border-amber-200 text-amber-950 font-medium text-[11px] leading-relaxed">
                             <strong className="block text-[10px] uppercase text-amber-800 font-bold mb-0.5">
-                              Justificativa informada pela Recepção:
+                              Justification provided by the Front Desk:
                             </strong>
-                            "{item.discountReason || 'Nenhuma justificativa detalhada'}"
+                            "{item.discountReason || 'No detailed justification'}"
                           </div>
                         </div>
                       ) : (
                         <div className="p-2 bg-slate-100/70 rounded-lg text-[11px] text-slate-500">
-                          Sem solicitação de desconto (Valor integral da tabela).
+                          No discount requested (full list price).
                         </div>
                       )}
                     </div>
@@ -524,11 +524,11 @@ export const PendingRegistrationsQueue: React.FC<PendingRegistrationsQueueProps>
                   {item.reviewedBy && (
                     <div className="pt-2 border-t border-slate-100 text-xs text-slate-500 flex items-center justify-between">
                       <span>
-                        Avaliado por: <strong>{item.reviewedBy}</strong> em {item.reviewedAt}
+                        Reviewed by: <strong>{item.reviewedBy}</strong> on {item.reviewedAt}
                       </span>
                       {item.reviewNotes && (
                         <span className="text-rose-700 font-medium italic">
-                          Observação: {item.reviewNotes}
+                          Note: {item.reviewNotes}
                         </span>
                       )}
                     </div>
@@ -546,7 +546,7 @@ export const PendingRegistrationsQueue: React.FC<PendingRegistrationsQueueProps>
                         className="px-3.5 py-2 text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
                       >
                         <XCircle className="w-4 h-4" />
-                        <span>Reprovar</span>
+                        <span>Reject</span>
                       </button>
 
                       <button
@@ -555,7 +555,7 @@ export const PendingRegistrationsQueue: React.FC<PendingRegistrationsQueueProps>
                         className="px-3.5 py-2 text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
                       >
                         <Edit className="w-4 h-4" />
-                        <span>Editar Dados / Desconto</span>
+                        <span>Edit Data / Discount</span>
                       </button>
 
                       <button
@@ -564,7 +564,7 @@ export const PendingRegistrationsQueue: React.FC<PendingRegistrationsQueueProps>
                         className="px-5 py-2 bg-[#075e38] hover:bg-[#064e2e] text-white rounded-xl text-xs font-black shadow-sm transition-all flex items-center gap-2 cursor-pointer"
                       >
                         <CheckCircle className="w-4 h-4" />
-                        <span>Aprovar & Gerar ID Oficial</span>
+                        <span>Approve & Generate Official ID</span>
                       </button>
                     </div>
                   )}
@@ -585,35 +585,35 @@ export const PendingRegistrationsQueue: React.FC<PendingRegistrationsQueueProps>
 
             <div>
               <span className="text-[11px] font-black uppercase text-emerald-700 tracking-wider">
-                Matrícula Homologada com Sucesso!
+                Enrollment Approved Successfully!
               </span>
               <h3 className="text-xl font-black text-slate-900 mt-1">
                 {approvalResult.name}
               </h3>
               <p className="text-xs text-slate-500 mt-0.5">
-                Protocolo de Recepção: {approvalResult.protocol}
+                Front Desk Protocol: {approvalResult.protocol}
               </p>
             </div>
 
             <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-200 text-xs">
-              <span className="text-slate-500 block text-[11px]">ID Estudante Gerado Oficialmente:</span>
+              <span className="text-slate-500 block text-[11px]">Student ID Officially Generated:</span>
               <span className="font-mono font-black text-2xl text-[#075e38] tracking-wider block mt-1">
                 {approvalResult.studentId}
               </span>
               <span className="text-[11px] text-slate-600 block mt-1">
-                Curso: {approvalResult.courseName}
+                Course: {approvalResult.courseName}
               </span>
             </div>
 
             <p className="text-xs text-slate-500">
-              O aluno agora é um estudante ativo oficial. A conta de acesso ao portal e o carnê de parcelas foram ativados no sistema.
+              The student is now an official active student. The portal access account and installment booklet have been activated in the system.
             </p>
 
             <button
               onClick={() => setApprovalResult(null)}
               className="w-full py-3 bg-[#075e38] hover:bg-[#064e2e] text-white font-black text-xs rounded-xl shadow-sm transition-all cursor-pointer"
             >
-              Concluir & Fechar
+              Finish & Close
             </button>
           </div>
         </div>
@@ -626,10 +626,10 @@ export const PendingRegistrationsQueue: React.FC<PendingRegistrationsQueueProps>
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div>
                 <h3 className="text-base font-black text-slate-900">
-                  Editar Pré-Cadastro ({editingItem.protocolNumber})
+                  Edit Pre-Registration ({editingItem.protocolNumber})
                 </h3>
                 <p className="text-xs text-slate-500">
-                  Ajuste dados cadastrais ou condições de desconto antes de aprovar
+                  Adjust registration data or discount terms before approving
                 </p>
               </div>
               <button
@@ -642,7 +642,7 @@ export const PendingRegistrationsQueue: React.FC<PendingRegistrationsQueueProps>
 
             <form onSubmit={handleSaveEdit} className="space-y-4 text-xs">
               <div>
-                <label className="block font-bold text-slate-700 mb-1">Nome Completo *</label>
+                <label className="block font-bold text-slate-700 mb-1">Full Name *</label>
                 <input
                   type="text"
                   required
@@ -654,7 +654,7 @@ export const PendingRegistrationsQueue: React.FC<PendingRegistrationsQueueProps>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">Telefone *</label>
+                  <label className="block font-bold text-slate-700 mb-1">Phone *</label>
                   <input
                     type="text"
                     required
@@ -664,7 +664,7 @@ export const PendingRegistrationsQueue: React.FC<PendingRegistrationsQueueProps>
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">RG / Identidade</label>
+                  <label className="block font-bold text-slate-700 mb-1">ID / Identity</label>
                   <input
                     type="text"
                     value={editForm.rg}
@@ -676,7 +676,7 @@ export const PendingRegistrationsQueue: React.FC<PendingRegistrationsQueueProps>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">Curso</label>
+                  <label className="block font-bold text-slate-700 mb-1">Course</label>
                   <select
                     value={editForm.courseId}
                     onChange={(e) => {
@@ -702,7 +702,7 @@ export const PendingRegistrationsQueue: React.FC<PendingRegistrationsQueueProps>
                 </div>
 
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">Turma</label>
+                  <label className="block font-bold text-slate-700 mb-1">Class</label>
                   <select
                     value={editForm.classId}
                     onChange={(e) => setEditForm({ ...editForm, classId: e.target.value })}
@@ -727,7 +727,7 @@ export const PendingRegistrationsQueue: React.FC<PendingRegistrationsQueueProps>
                 return (
                   <div className="p-3 bg-purple-50 border border-purple-200 rounded-xl space-y-1.5">
                     <label className="block font-bold text-purple-950 text-xs">
-                      Nível de Inglês (Faixa Etária) *
+                      English Level (Age Group) *
                     </label>
                     <div className="grid grid-cols-3 gap-1.5">
                       <button
@@ -741,7 +741,7 @@ export const PendingRegistrationsQueue: React.FC<PendingRegistrationsQueueProps>
                             : 'border-purple-200 bg-white text-slate-700'
                         }`}
                       >
-                        <p className="text-xs">🧒 Crianças</p>
+                        <p className="text-xs">🧒 Kids</p>
                         <p className="text-[10px] font-mono mt-0.5">2.000 (4x)</p>
                       </button>
                       <button
@@ -769,7 +769,7 @@ export const PendingRegistrationsQueue: React.FC<PendingRegistrationsQueueProps>
                             : 'border-purple-200 bg-white text-slate-700'
                         }`}
                       >
-                        <p className="text-xs">🧑 Adulto</p>
+                        <p className="text-xs">🧑 Adults</p>
                         <p className="text-[10px] font-mono mt-0.5">1.800 (3x)</p>
                       </button>
                     </div>
@@ -780,12 +780,12 @@ export const PendingRegistrationsQueue: React.FC<PendingRegistrationsQueueProps>
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
                   <label className="block font-bold text-slate-700 text-xs">
-                    Quantidade de Parcelas (Escolha Livre)
+                    Number of Installments (Free Choice)
                   </label>
                   <span className="text-[11px] text-slate-500">
                     {editForm.installmentsCount === 1
-                      ? '1x À vista'
-                      : `${editForm.installmentsCount} parcelas`}
+                      ? '1x in full'
+                      : `${editForm.installmentsCount} installments`}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -801,7 +801,7 @@ export const PendingRegistrationsQueue: React.FC<PendingRegistrationsQueueProps>
                             : 'bg-slate-100 border border-slate-300 text-slate-700'
                         }`}
                       >
-                        {num === 1 ? '1x À vista' : `${num}x`}
+                        {num === 1 ? '1x in full' : `${num}x`}
                       </button>
                     ))}
                   </div>
@@ -822,7 +822,7 @@ export const PendingRegistrationsQueue: React.FC<PendingRegistrationsQueueProps>
               </div>
 
               <div>
-                <label className="block font-bold text-slate-700 mb-1">Tipo de Desconto / Negociação</label>
+                <label className="block font-bold text-slate-700 mb-1">Discount / Negotiation Type</label>
                 <select
                   value={editForm.discountType}
                   onChange={(e) =>
@@ -833,9 +833,9 @@ export const PendingRegistrationsQueue: React.FC<PendingRegistrationsQueueProps>
                   }
                   className="w-full p-2.5 border border-slate-300 rounded-xl text-xs font-bold"
                 >
-                  <option value="NONE">Sem Desconto</option>
-                  <option value="PERCENT">Percentual (%)</option>
-                  <option value="FIXED">Valor Fixo (EGP)</option>
+                  <option value="NONE">No Discount</option>
+                  <option value="PERCENT">Percentage (%)</option>
+                  <option value="FIXED">Fixed Amount (EGP)</option>
                 </select>
               </div>
 
@@ -843,7 +843,7 @@ export const PendingRegistrationsQueue: React.FC<PendingRegistrationsQueueProps>
                 <div className="p-3.5 bg-amber-50 rounded-xl border border-amber-200 space-y-3">
                   <div>
                     <label className="block font-bold text-slate-700 mb-1">
-                      Valor do Desconto ({editForm.discountType === 'PERCENT' ? '%' : 'EGP'})
+                      Discount Amount ({editForm.discountType === 'PERCENT' ? '%' : 'EGP'})
                     </label>
                     <input
                       type="number"
@@ -858,7 +858,7 @@ export const PendingRegistrationsQueue: React.FC<PendingRegistrationsQueueProps>
 
                   <div>
                     <label className="block font-bold text-slate-700 mb-1">
-                      Justificativa / Motivo do Desconto *
+                      Justification / Reason for Discount *
                     </label>
                     <textarea
                       rows={2}
@@ -890,22 +890,22 @@ export const PendingRegistrationsQueue: React.FC<PendingRegistrationsQueueProps>
                 return (
                   <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl space-y-1 text-xs">
                     <div className="flex justify-between text-slate-600">
-                      <span>Valor Inteiro Base:</span>
+                      <span>Base Full Amount:</span>
                       <span className="font-mono font-bold">{formatCurrency(baseTotal, 'EGP')}</span>
                     </div>
                     {discountAmt > 0 && (
                       <div className="flex justify-between text-amber-700">
-                        <span>Desconto:</span>
+                        <span>Discount:</span>
                         <span className="font-mono font-bold">-{formatCurrency(discountAmt, 'EGP')}</span>
                       </div>
                     )}
                     <div className="flex justify-between font-bold text-emerald-950 pt-1 border-t border-emerald-200 text-sm">
-                      <span>Total Final ({editForm.installmentsCount}x):</span>
+                      <span>Final Total ({editForm.installmentsCount}x):</span>
                       <span className="font-mono font-black">{formatCurrency(finalTot, 'EGP')}</span>
                     </div>
                     <div className="flex justify-between text-emerald-900 font-semibold text-xs">
-                      <span>Valor de cada parcela:</span>
-                      <span className="font-mono font-bold">{formatCurrency(instAmt, 'EGP')} / mês</span>
+                      <span>Amount per installment:</span>
+                      <span className="font-mono font-bold">{formatCurrency(instAmt, 'EGP')} / month</span>
                     </div>
                   </div>
                 );
@@ -917,13 +917,13 @@ export const PendingRegistrationsQueue: React.FC<PendingRegistrationsQueueProps>
                   onClick={() => setEditingItem(null)}
                   className="px-4 py-2 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-50 cursor-pointer"
                 >
-                  Cancelar
+                  Cancel
                 </button>
                 <button
                   type="submit"
                   className="px-5 py-2 bg-[#075e38] hover:bg-[#064e2e] text-white rounded-xl text-xs font-bold cursor-pointer"
                 >
-                  Salvar Alterações
+                  Save Changes
                 </button>
               </div>
             </form>
@@ -941,7 +941,7 @@ export const PendingRegistrationsQueue: React.FC<PendingRegistrationsQueueProps>
 
             <div className="text-center">
               <h3 className="text-base font-black text-slate-900">
-                Reprovar Pré-Cadastro
+                Reject Pre-Registration
               </h3>
               <p className="text-xs text-slate-500 mt-0.5">
                 {rejectingItem.name} ({rejectingItem.protocolNumber})
@@ -951,12 +951,12 @@ export const PendingRegistrationsQueue: React.FC<PendingRegistrationsQueueProps>
             <form onSubmit={handleConfirmReject} className="space-y-3 text-xs">
               <div>
                 <label className="block font-bold text-slate-700 mb-1">
-                  Motivo da Reprovação (será registrado na auditoria) *
+                  Reason for Rejection (will be logged in the audit trail) *
                 </label>
                 <textarea
                   rows={3}
                   required
-                  placeholder="Ex: Desconto de 30% não autorizado pela coordenação; falta comprovante de residência..."
+                  placeholder="Ex: 30% discount not authorized by the coordination; missing proof of residence..."
                   value={rejectionReason}
                   onChange={(e) => setRejectionReason(e.target.value)}
                   className="w-full p-2.5 border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-rose-500 outline-hidden"
@@ -969,13 +969,13 @@ export const PendingRegistrationsQueue: React.FC<PendingRegistrationsQueueProps>
                   onClick={() => setRejectingItem(null)}
                   className="flex-1 py-2.5 border border-slate-200 rounded-xl font-bold text-slate-700 hover:bg-slate-50 cursor-pointer"
                 >
-                  Voltar
+                  Back
                 </button>
                 <button
                   type="submit"
                   className="flex-1 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl shadow-xs cursor-pointer"
                 >
-                  Confirmar Reprovação
+                  Confirm Rejection
                 </button>
               </div>
             </form>

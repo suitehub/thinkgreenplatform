@@ -40,43 +40,43 @@ export const SecretariatSidebar: React.FC<SecretariatSidebarProps> = ({
   const navItems = [
     {
       id: 'sec_home',
-      label: 'Painel Geral',
+      label: 'Overview',
       icon: Home,
     },
     {
       id: 'sec_new_student',
-      label: 'Novo Aluno (Cadastro)',
+      label: 'New Student (Registration)',
       icon: UserPlus,
     },
     {
       id: 'sec_pending_queue',
-      label: 'Fila de Pendentes',
+      label: 'Pending Queue',
       icon: Clock,
       badge: pendingCount > 0 ? pendingCount : undefined,
     },
     {
       id: 'sec_students',
-      label: 'Alunos & Matrículas',
+      label: 'Students & Enrollments',
       icon: Users,
     },
     {
       id: 'sec_classes',
-      label: 'Turmas & Horários',
+      label: 'Classes & Schedules',
       icon: Calendar,
     },
     {
       id: 'sec_documents',
-      label: 'Documentos dos Alunos',
+      label: 'Student Documents',
       icon: FileText,
     },
     {
       id: 'sec_counselor',
-      label: 'Orientador Educacional',
+      label: 'Educational Counselor',
       icon: Compass,
     },
     {
       id: 'sec_import',
-      label: 'Importar Planilhas',
+      label: 'Import Spreadsheets',
       icon: Upload,
     },
   ];
@@ -118,7 +118,7 @@ export const SecretariatSidebar: React.FC<SecretariatSidebarProps> = ({
           {/* Navigation Links */}
           <nav className="p-3.5 space-y-1.5">
             <p className="px-3 py-1 text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">
-              Menu da Secretaria
+              Registrar's Office Menu
             </p>
 
             {navItems.map((item) => {
@@ -160,14 +160,14 @@ export const SecretariatSidebar: React.FC<SecretariatSidebarProps> = ({
 
         {/* Bottom Section: Support Card & Logout */}
         <div className="p-4 space-y-2.5 border-t border-slate-100 bg-white">
-          {/* Suporte Widget */}
+          {/* Support Widget */}
           <div className="bg-slate-50 rounded-xl p-3 border border-slate-200/70 space-y-1.5">
             <div className="flex items-center gap-2">
               <div className="w-6 h-6 rounded-lg bg-emerald-100 text-[#075e38] flex items-center justify-center flex-shrink-0">
                 <Headphones className="w-3.5 h-3.5" />
               </div>
               <div className="min-w-0">
-                <p className="text-xs font-bold text-slate-900 leading-none">Suporte Think Green</p>
+                <p className="text-xs font-bold text-slate-900 leading-none">Think Green Support</p>
                 <p className="text-[10px] text-slate-400 mt-0.5">(11) 97249-9370</p>
               </div>
             </div>
@@ -177,20 +177,20 @@ export const SecretariatSidebar: React.FC<SecretariatSidebarProps> = ({
               target="_blank"
               rel="noopener noreferrer"
               className="w-full text-left text-xs font-bold text-[#075e38] hover:text-emerald-800 flex items-center justify-between group pt-1 cursor-pointer"
-              title="Falar no WhatsApp (11) 97249-9370"
+              title="Chat on WhatsApp (11) 97249-9370"
             >
-              <span>Fale com o suporte</span>
+              <span>Contact support</span>
               <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
             </a>
           </div>
 
-          {/* Sair da conta */}
+          {/* Sign out */}
           <button
             onClick={onLogout}
             className="w-full flex items-center gap-2 px-3 py-2 text-xs font-bold text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors cursor-pointer"
           >
             <LogOut className="w-4 h-4" />
-            <span>Sair do Painel</span>
+            <span>Sign Out</span>
           </button>
         </div>
       </aside>

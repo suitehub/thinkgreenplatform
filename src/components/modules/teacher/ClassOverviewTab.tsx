@@ -83,11 +83,11 @@ export const ClassOverviewTab: React.FC<ClassOverviewTabProps> = ({
     const newPost: ClassAnnouncement = {
       id: `ann_${Date.now()}`,
       classId: selectedClass.id,
-      authorName: selectedClass.teacherName || 'Docente',
+      authorName: selectedClass.teacherName || 'Teacher',
       authorRole: 'Docente Titular',
       title: newNoticeTitle.trim() || undefined,
       content: newNoticeText.trim(),
-      createdAt: 'Agora mesmo',
+      createdAt: 'Just now',
       type: newNoticeType,
       pinned: false,
     };
@@ -124,9 +124,9 @@ export const ClassOverviewTab: React.FC<ClassOverviewTabProps> = ({
       items.push({
         id: a.id,
         type: 'ANNOUNCEMENT',
-        title: a.title || (a.type === 'AVISO' ? 'Aviso da Turma' : a.type === 'MATERIAL' ? 'Material Didático' : 'Comunicado Oficial'),
+        title: a.title || (a.type === 'AVISO' ? 'Class Announcement' : a.type === 'MATERIAL' ? 'Course Material' : 'Official Notice'),
         subtitle: a.content,
-        meta: `${a.authorName} (${a.authorRole})`,
+        meta: `${a.authorName} (${a.authorRole === 'Docente Titular' ? 'Lead Teacher' : a.authorRole})`,
         date: a.createdAt,
         pinned: a.pinned,
         data: a,
@@ -138,10 +138,10 @@ export const ClassOverviewTab: React.FC<ClassOverviewTabProps> = ({
       items.push({
         id: `feed_assign_${assign.id}`,
         type: 'ASSIGNMENT',
-        title: `Nova atividade publicada: ${assign.title}`,
-        subtitle: assign.instructions || 'Atividade disponível para entrega no AVA.',
-        meta: `Prazo: ${assign.dueDate} • Valor: ${assign.maxScore} pts`,
-        date: assign.createdAt || 'Postado recentemente',
+        title: `New assignment published: ${assign.title}`,
+        subtitle: assign.instructions || 'Assignment available for submission on the LMS.',
+        meta: `Due: ${assign.dueDate} • Worth: ${assign.maxScore} pts`,
+        date: assign.createdAt || 'Posted recently',
         data: assign,
       });
     });
@@ -151,10 +151,10 @@ export const ClassOverviewTab: React.FC<ClassOverviewTabProps> = ({
       items.push({
         id: `feed_lesson_${les.id}`,
         type: 'LESSON',
-        title: `Nova aula no AVA: ${les.title}`,
-        subtitle: les.description || 'Material e conteúdo de apoio disponibilizados.',
-        meta: les.materials?.length ? `📎 ${les.materials.length} anexo(s)` : 'Aula gravada e conteúdo textual',
-        date: les.date || 'Disponível no AVA',
+        title: `New lesson on the LMS: ${les.title}`,
+        subtitle: les.description || 'Support materials and content available.',
+        meta: les.materials?.length ? `📎 ${les.materials.length} attachment(s)` : 'Recorded lesson and text content',
+        date: les.date || 'Available on the LMS',
         data: les,
       });
     });
@@ -164,10 +164,10 @@ export const ClassOverviewTab: React.FC<ClassOverviewTabProps> = ({
       items.push({
         id: `feed_exam_${exam.id}`,
         type: 'EXAM',
-        title: `Avaliação agendada: ${exam.title}`,
-        subtitle: exam.description || exam.content || 'Avaliação oficial bimestral da turma.',
-        meta: `Data: ${exam.date} • Peso: ${exam.weight}% • Nota Máxima: ${exam.maxScore} pts`,
-        date: `Agendada para ${exam.date}`,
+        title: `Assessment scheduled: ${exam.title}`,
+        subtitle: exam.description || exam.content || 'Official term assessment for the class.',
+        meta: `Date: ${exam.date} • Weight: ${exam.weight}% • Maximum Grade: ${exam.maxScore} pts`,
+        date: `Scheduled for ${exam.date}`,
         data: exam,
       });
     });
@@ -177,16 +177,16 @@ export const ClassOverviewTab: React.FC<ClassOverviewTabProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* 5 Indicator Summary Cards */}
+      {/* 5 indicator summary cards */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
-        {/* Card 1: Alunos */}
+        {/* Card 1: Students */}
         <div
           onClick={() => onNavigateToTab('pessoas')}
           className="bg-white p-4 rounded-2xl border border-slate-200/70 shadow-2xs hover:border-emerald-300 transition-all cursor-pointer group"
         >
           <div className="flex items-center justify-between mb-2">
             <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-              Alunos
+              Students
             </span>
             <div className="w-8 h-8 rounded-xl bg-emerald-50 text-[#075e38] flex items-center justify-center group-hover:scale-110 transition-transform">
               <Users className="w-4 h-4" />
@@ -196,18 +196,18 @@ export const ClassOverviewTab: React.FC<ClassOverviewTabProps> = ({
             {studentsCount}
           </div>
           <p className="text-[11px] text-slate-500 font-medium mt-0.5">
-            Matrículas ativas
+            Active enrollments
           </p>
         </div>
 
-        {/* Card 2: Atividades */}
+        {/* Card 2: Assignments */}
         <div
           onClick={() => onNavigateToTab('conteudos')}
           className="bg-white p-4 rounded-2xl border border-slate-200/70 shadow-2xs hover:border-amber-300 transition-all cursor-pointer group"
         >
           <div className="flex items-center justify-between mb-2">
             <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-              Atividades
+              Assignments
             </span>
             <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center group-hover:scale-110 transition-transform">
               <ClipboardList className="w-4 h-4" />
@@ -217,18 +217,18 @@ export const ClassOverviewTab: React.FC<ClassOverviewTabProps> = ({
             {classAssignments.length}
           </div>
           <p className="text-[11px] text-amber-700 font-bold mt-0.5">
-            {pendingSubmissionsCount > 0 ? `${pendingSubmissionsCount} para corrigir` : 'Em dia'}
+            {pendingSubmissionsCount > 0 ? `${pendingSubmissionsCount} to grade` : 'Up to date'}
           </p>
         </div>
 
-        {/* Card 3: Provas */}
+        {/* Card 3: Assessments */}
         <div
           onClick={() => onNavigateToTab('conteudos')}
           className="bg-white p-4 rounded-2xl border border-slate-200/70 shadow-2xs hover:border-purple-300 transition-all cursor-pointer group"
         >
           <div className="flex items-center justify-between mb-2">
             <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-              Avaliações
+              Assessments
             </span>
             <div className="w-8 h-8 rounded-xl bg-purple-50 text-purple-700 flex items-center justify-center group-hover:scale-110 transition-transform">
               <Award className="w-4 h-4" />
@@ -238,18 +238,18 @@ export const ClassOverviewTab: React.FC<ClassOverviewTabProps> = ({
             {classAssessments.length}
           </div>
           <p className="text-[11px] text-slate-500 font-medium mt-0.5">
-            Cadastradas
+            Registered
           </p>
         </div>
 
-        {/* Card 4: Aulas */}
+        {/* Card 4: Lessons */}
         <div
           onClick={() => onNavigateToTab('conteudos')}
           className="bg-white p-4 rounded-2xl border border-slate-200/70 shadow-2xs hover:border-blue-300 transition-all cursor-pointer group"
         >
           <div className="flex items-center justify-between mb-2">
             <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-              Aulas no AVA
+              Lessons on the LMS
             </span>
             <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center group-hover:scale-110 transition-transform">
               <BookOpen className="w-4 h-4" />
@@ -259,18 +259,18 @@ export const ClassOverviewTab: React.FC<ClassOverviewTabProps> = ({
             {classLessons.length}
           </div>
           <p className="text-[11px] text-slate-500 font-medium mt-0.5">
-            Módulos liberados
+            Modules released
           </p>
         </div>
 
-        {/* Card 5: Frequência */}
+        {/* Card 5: Attendance */}
         <div
           onClick={() => onNavigateToTab('chamada')}
           className="bg-white p-4 rounded-2xl border border-slate-200/70 shadow-2xs hover:border-emerald-300 transition-all cursor-pointer group col-span-2 sm:col-span-1"
         >
           <div className="flex items-center justify-between mb-2">
             <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-              Frequência
+              Attendance
             </span>
             <div className="w-8 h-8 rounded-xl bg-emerald-100 text-[#075e38] flex items-center justify-center group-hover:scale-110 transition-transform">
               <CalendarCheck className="w-4 h-4" />
@@ -280,16 +280,16 @@ export const ClassOverviewTab: React.FC<ClassOverviewTabProps> = ({
             {attendanceRatePercent}%
           </div>
           <p className="text-[11px] text-emerald-800 font-bold mt-0.5">
-            Média da turma
+            Class average
           </p>
         </div>
       </div>
 
-      {/* Main Stream / Mural Layout (2 Columns: Left is Feed, Right is Upcoming Tasks Sidebar) */}
+      {/* Main Stream / Wall layout (2 columns: feed on the left, upcoming tasks sidebar on the right) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* LEFT COLUMN (8 cols): Mural / Stream Feed */}
+        {/* LEFT COLUMN (8 cols): Wall / Stream feed */}
         <div className="lg:col-span-8 space-y-5">
-          {/* Mural Publisher Box */}
+          {/* Wall publisher box */}
           <div className="bg-white rounded-3xl border border-slate-200/70 shadow-xs p-5 sm:p-6 space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5">
@@ -298,10 +298,10 @@ export const ClassOverviewTab: React.FC<ClassOverviewTabProps> = ({
                 </div>
                 <div>
                   <h3 className="text-sm font-bold text-slate-900">
-                    Mural da Turma
+                    Class Wall
                   </h3>
                   <p className="text-xs text-slate-500">
-                    Compartilhe avisos, novidades ou comunicados com seus alunos
+                    Share announcements, news or notices with your students
                   </p>
                 </div>
               </div>
@@ -311,7 +311,7 @@ export const ClassOverviewTab: React.FC<ClassOverviewTabProps> = ({
                   onClick={() => setIsPublishing(true)}
                   className="px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-[#075e38] text-xs font-bold transition-colors cursor-pointer"
                 >
-                  Novo Aviso
+                  New Announcement
                 </button>
               )}
             </div>
@@ -319,7 +319,7 @@ export const ClassOverviewTab: React.FC<ClassOverviewTabProps> = ({
             {isPublishing ? (
               <form onSubmit={handlePublishNotice} className="space-y-3 pt-2">
                 <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold text-slate-500">Tipo:</span>
+                  <span className="text-xs font-bold text-slate-500">Type:</span>
                   <div className="flex items-center gap-1.5">
                     {(['AVISO', 'COMUNICADO', 'MATERIAL'] as const).map((t) => (
                       <button
@@ -332,7 +332,7 @@ export const ClassOverviewTab: React.FC<ClassOverviewTabProps> = ({
                             : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                         }`}
                       >
-                        {t === 'AVISO' ? '📢 Aviso' : t === 'COMUNICADO' ? '📋 Comunicado' : '📎 Material'}
+                        {t === 'AVISO' ? '📢 Announcement' : t === 'COMUNICADO' ? '📋 Notice' : '📎 Material'}
                       </button>
                     ))}
                   </div>
@@ -340,7 +340,7 @@ export const ClassOverviewTab: React.FC<ClassOverviewTabProps> = ({
 
                 <input
                   type="text"
-                  placeholder="Título do aviso (opcional)"
+                  placeholder="Announcement title (optional)"
                   value={newNoticeTitle}
                   onChange={(e) => setNewNoticeTitle(e.target.value)}
                   className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs sm:text-sm font-semibold text-slate-900 placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-[#075e38]/20 focus:bg-white"
@@ -348,7 +348,7 @@ export const ClassOverviewTab: React.FC<ClassOverviewTabProps> = ({
 
                 <textarea
                   rows={3}
-                  placeholder="Escreva seu comunicado para os alunos desta turma..."
+                  placeholder="Write your notice to the students in this class..."
                   value={newNoticeText}
                   onChange={(e) => setNewNoticeText(e.target.value)}
                   className="w-full p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-[#075e38]/20 focus:bg-white resize-none"
@@ -365,14 +365,14 @@ export const ClassOverviewTab: React.FC<ClassOverviewTabProps> = ({
                     }}
                     className="px-3 py-1.5 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 transition-colors"
                   >
-                    Cancelar
+                    Cancel
                   </button>
                   <button
                     type="submit"
                     className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#075e38] hover:bg-[#064e2e] text-white text-xs font-bold transition-colors shadow-2xs cursor-pointer"
                   >
                     <Send className="w-3.5 h-3.5" />
-                    <span>Publicar no Mural</span>
+                    <span>Post to Wall</span>
                   </button>
                 </div>
               </form>
@@ -381,20 +381,20 @@ export const ClassOverviewTab: React.FC<ClassOverviewTabProps> = ({
                 onClick={() => setIsPublishing(true)}
                 className="w-full p-3 rounded-2xl bg-slate-50 border border-dashed border-slate-300 text-slate-400 hover:text-slate-600 hover:bg-slate-100/70 hover:border-slate-400 transition-all cursor-pointer text-xs sm:text-sm flex items-center justify-between"
               >
-                <span>Escreva um comunicado para a turma...</span>
+                <span>Write a notice for the class...</span>
                 <Send className="w-4 h-4 text-slate-400" />
               </div>
             )}
           </div>
 
-          {/* Chronological Feed Items */}
+          {/* Chronological feed items */}
           <div className="space-y-3.5">
             <div className="flex items-center justify-between px-1">
               <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                Atualizações da Turma
+                Class Updates
               </h4>
               <span className="text-xs text-slate-400">
-                {feedItems.length} registros no mural
+                {feedItems.length} entries on the wall
               </span>
             </div>
 
@@ -417,7 +417,7 @@ export const ClassOverviewTab: React.FC<ClassOverviewTabProps> = ({
                             </h4>
                             {item.pinned && (
                               <span className="flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200">
-                                <Pin className="w-2.5 h-2.5" /> Fixado
+                                <Pin className="w-2.5 h-2.5" /> Pinned
                               </span>
                             )}
                           </div>
@@ -430,7 +430,7 @@ export const ClassOverviewTab: React.FC<ClassOverviewTabProps> = ({
                       <button
                         onClick={() => handleDeleteNotice(item.id)}
                         className="text-slate-400 hover:text-rose-600 p-1.5 rounded-lg hover:bg-rose-50 transition-colors"
-                        title="Remover aviso do mural"
+                        title="Remove announcement from the wall"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -468,7 +468,7 @@ export const ClassOverviewTab: React.FC<ClassOverviewTabProps> = ({
                     </div>
 
                     <div className="flex items-center gap-2 text-xs font-bold text-slate-400 group-hover:text-amber-700">
-                      <span>Ver atividade</span>
+                      <span>View assignment</span>
                       <ChevronRight className="w-4 h-4" />
                     </div>
                   </div>
@@ -500,7 +500,7 @@ export const ClassOverviewTab: React.FC<ClassOverviewTabProps> = ({
                     </div>
 
                     <div className="flex items-center gap-2 text-xs font-bold text-slate-400 group-hover:text-blue-700">
-                      <span>Acessar aula</span>
+                      <span>Open lesson</span>
                       <ChevronRight className="w-4 h-4" />
                     </div>
                   </div>
@@ -538,7 +538,7 @@ export const ClassOverviewTab: React.FC<ClassOverviewTabProps> = ({
                   </div>
 
                   <div className="flex items-center gap-2 text-xs font-bold text-slate-400 group-hover:text-purple-700">
-                    <span>Detalhes</span>
+                    <span>Details</span>
                     <ChevronRight className="w-4 h-4" />
                   </div>
                 </div>
@@ -547,22 +547,22 @@ export const ClassOverviewTab: React.FC<ClassOverviewTabProps> = ({
           </div>
         </div>
 
-        {/* RIGHT COLUMN (4 cols): Próximas Atividades & Atalhos */}
+        {/* RIGHT COLUMN (4 cols): Upcoming assignments & shortcuts */}
         <div className="lg:col-span-4 space-y-6">
-          {/* Próximas Entregas / Prazos */}
+          {/* Upcoming submissions / due dates */}
           <div className="bg-white rounded-3xl border border-slate-200/70 shadow-xs p-6 space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Clock className="w-4 h-4 text-[#075e38]" />
                 <h3 className="text-xs sm:text-sm font-bold text-slate-900 uppercase tracking-wider">
-                  Próximas Atividades
+                  Upcoming Assignments
                 </h3>
               </div>
               <button
                 onClick={() => onNavigateToTab('conteudos')}
                 className="text-[11px] font-bold text-[#075e38] hover:underline"
               >
-                Ver todas
+                View all
               </button>
             </div>
 
@@ -582,14 +582,14 @@ export const ClassOverviewTab: React.FC<ClassOverviewTabProps> = ({
                     </span>
                   </div>
                   <p className="text-[11px] text-slate-500">
-                    Prazo de entrega: {assign.dueDate}
+                    Due date: {assign.dueDate}
                   </p>
                 </div>
               ))}
 
               {classAssignments.length === 0 && (
                 <p className="text-xs text-slate-400 text-center py-4">
-                  Nenhuma atividade com prazo próximo.
+                  No assignments due soon.
                 </p>
               )}
             </div>
@@ -599,25 +599,25 @@ export const ClassOverviewTab: React.FC<ClassOverviewTabProps> = ({
                 onClick={onOpenNewAssignment}
                 className="w-full py-2 px-3 rounded-xl bg-slate-100 hover:bg-emerald-50 text-slate-700 hover:text-[#075e38] font-bold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
               >
-                <span>+ Criar Nova Atividade</span>
+                <span>+ Create New Assignment</span>
               </button>
             )}
           </div>
 
-          {/* Próximas Provas da Turma */}
+          {/* Upcoming class assessments */}
           <div className="bg-white rounded-3xl border border-slate-200/70 shadow-xs p-6 space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Award className="w-4 h-4 text-purple-700" />
                 <h3 className="text-xs sm:text-sm font-bold text-slate-900 uppercase tracking-wider">
-                  Avaliações Agendadas
+                  Scheduled Assessments
                 </h3>
               </div>
               <button
                 onClick={() => onNavigateToTab('conteudos')}
                 className="text-[11px] font-bold text-purple-700 hover:underline"
               >
-                Gerenciar
+                Manage
               </button>
             </div>
 
@@ -636,18 +636,18 @@ export const ClassOverviewTab: React.FC<ClassOverviewTabProps> = ({
                       {exam.title}
                     </span>
                     <span className="text-[10px] font-extrabold text-purple-800 bg-purple-100/70 px-1.5 py-0.2 rounded">
-                      Peso {exam.weight}%
+                      Weight {exam.weight}%
                     </span>
                   </div>
                   <p className="text-[11px] text-slate-500">
-                    Data: {exam.date} • Nota Máx: {exam.maxScore}
+                    Date: {exam.date} • Max Grade: {exam.maxScore}
                   </p>
                 </div>
               ))}
 
               {classAssessments.length === 0 && (
                 <p className="text-xs text-slate-400 text-center py-4">
-                  Nenhuma prova agendada para esta turma.
+                  No assessments scheduled for this class.
                 </p>
               )}
             </div>
@@ -657,43 +657,43 @@ export const ClassOverviewTab: React.FC<ClassOverviewTabProps> = ({
                 onClick={onOpenNewExam}
                 className="w-full py-2 px-3 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-800 font-bold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
               >
-                <span>+ Agendar Nova Prova</span>
+                <span>+ Schedule New Assessment</span>
               </button>
             )}
           </div>
 
-          {/* Card: Plano de Aula (Lesson Plan) */}
+          {/* Card: Lesson Plan */}
           <div className="bg-gradient-to-br from-[#2e1065] via-[#3b0764] to-[#4c1d95] text-white rounded-3xl p-6 space-y-3.5 shadow-md border border-purple-800 relative overflow-hidden">
             <div className="flex items-center justify-between">
               <span className="text-[10px] font-black uppercase tracking-wider bg-white/20 px-2.5 py-0.5 rounded-full text-purple-100 border border-white/20">
-                Planejamento Pedagógico
+                Academic Planning
               </span>
               <FileSpreadsheet className="w-5 h-5 text-purple-300" />
             </div>
             <div>
               <h4 className="font-extrabold text-base leading-snug">
-                Plano de Aula (Lesson Plan)
+                Lesson Plan
               </h4>
               <p className="text-xs text-purple-200/90 leading-relaxed mt-1">
-                Acesse o planejamento detalhado por aula com as 8 dimensões oficiais (Unit Content, Handwriting, Reading, Writing, Speaking, Homework e Materiais).
+                Open the detailed lesson-by-lesson plan with the official 8 dimensions (Unit Content, Handwriting, Reading, Writing, Speaking, Homework and Materials).
               </p>
             </div>
             <button
               onClick={() => onNavigateToTab('plano_aula')}
               className="w-full py-2.5 px-3 rounded-xl bg-white hover:bg-purple-50 text-[#533499] font-black text-xs transition-all flex items-center justify-center gap-2 cursor-pointer shadow-xs active:scale-98"
             >
-              <span>Abrir Plano de Aula</span>
+              <span>Open Lesson Plan</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </div>
 
-          {/* Critérios & Pesos de Notas da Turma (Matriz Oficial) */}
+          {/* Class grading criteria & weights (official matrix) */}
           <div className="bg-white rounded-3xl border border-slate-200/70 shadow-xs p-6 space-y-3.5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Percent className="w-4 h-4 text-purple-700" />
                 <h3 className="text-xs sm:text-sm font-bold text-slate-900 uppercase tracking-wider">
-                  Critérios de Notas & Pesos
+                  Grading Criteria & Weights
                 </h3>
               </div>
               <span className="text-[10px] font-bold text-purple-700 bg-purple-50 border border-purple-200 px-2 py-0.5 rounded-full">
@@ -702,7 +702,7 @@ export const ClassOverviewTab: React.FC<ClassOverviewTabProps> = ({
             </div>
 
             <p className="text-[11px] text-slate-500 leading-relaxed">
-              Distribuição oficial de pesos definida pela Orientação Educacional para compor a média dos alunos:
+              Official weight distribution set by the Academic Office to calculate student averages:
             </p>
 
             <div className="space-y-2 pt-1">

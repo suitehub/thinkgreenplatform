@@ -1,12 +1,12 @@
 /**
  * Think Green Platform - Spreadsheet Migration & Parser
- * Ordem Oficial das Colunas do Centro Comunitário Think Green (Cairo):
- * STUDENT ID | NAME | LEVEL | TELEPHONE | START DATE | AGE | [BLANK] | Agu | Set | Oct | Nov | D/J | Feb | Mar | Apr | May | Jun | July | Total
+ * Official Column Order for Think Green Community Center (Cairo):
+ * STUDENT ID | NAME | LEVEL | TELEPHONE | START DATE | AGE | [BLANK] | Aug | Sep | Oct | Nov | D/J | Feb | Mar | Apr | May | Jun | July | Total
  */
 
 export interface MonthPaymentDef {
   key: string;
-  label: string; // Ex: Agu, Set, Oct, Nov, D/J, Feb, Mar, Apr, May, Jun, July
+  label: string; // e.g. Aug, Sep, Oct, Nov, D/J, Feb, Mar, Apr, May, Jun, Jul
   fullName: string;
   installmentNumber: number;
   dueDate: string;
@@ -14,17 +14,17 @@ export interface MonthPaymentDef {
 }
 
 export const ACADEMIC_MONTHS_MAP: MonthPaymentDef[] = [
-  { key: 'agu', label: 'Agu', fullName: 'Agosto (1ª Mensalidade)', installmentNumber: 1, dueDate: '2026-08-10', defaultFee: 500 },
-  { key: 'set', label: 'Set', fullName: 'Setembro (2ª Mensalidade)', installmentNumber: 2, dueDate: '2026-09-10', defaultFee: 500 },
-  { key: 'oct', label: 'Oct', fullName: 'Outubro (3ª Mensalidade)', installmentNumber: 3, dueDate: '2026-10-10', defaultFee: 500 },
-  { key: 'nov', label: 'Nov', fullName: 'Novembro (4ª Mensalidade)', installmentNumber: 4, dueDate: '2026-11-10', defaultFee: 500 },
-  { key: 'dj', label: 'D/J', fullName: 'Dezembro / Janeiro (5ª Mensalidade)', installmentNumber: 5, dueDate: '2026-12-10', defaultFee: 500 },
-  { key: 'feb', label: 'Feb', fullName: 'Fevereiro (6ª Mensalidade)', installmentNumber: 6, dueDate: '2027-02-10', defaultFee: 500 },
-  { key: 'mar', label: 'Mar', fullName: 'Março (7ª Mensalidade)', installmentNumber: 7, dueDate: '2027-03-10', defaultFee: 500 },
-  { key: 'apr', label: 'Apr', fullName: 'Abril (8ª Mensalidade)', installmentNumber: 8, dueDate: '2027-04-10', defaultFee: 500 },
-  { key: 'may', label: 'May', fullName: 'Maio (9ª Mensalidade)', installmentNumber: 9, dueDate: '2027-05-10', defaultFee: 500 },
-  { key: 'jun', label: 'Jun', fullName: 'Junho (10ª Mensalidade)', installmentNumber: 10, dueDate: '2027-06-10', defaultFee: 500 },
-  { key: 'july', label: 'July', fullName: 'Julho (11ª Mensalidade)', installmentNumber: 11, dueDate: '2027-07-10', defaultFee: 500 },
+  { key: 'agu', label: 'Aug', fullName: 'August (1st Installment)', installmentNumber: 1, dueDate: '2026-08-10', defaultFee: 500 },
+  { key: 'set', label: 'Sep', fullName: 'September (2nd Installment)', installmentNumber: 2, dueDate: '2026-09-10', defaultFee: 500 },
+  { key: 'oct', label: 'Oct', fullName: 'October (3rd Installment)', installmentNumber: 3, dueDate: '2026-10-10', defaultFee: 500 },
+  { key: 'nov', label: 'Nov', fullName: 'November (4th Installment)', installmentNumber: 4, dueDate: '2026-11-10', defaultFee: 500 },
+  { key: 'dj', label: 'Dec/Jan', fullName: 'December / January (5th Installment)', installmentNumber: 5, dueDate: '2026-12-10', defaultFee: 500 },
+  { key: 'feb', label: 'Feb', fullName: 'February (6th Installment)', installmentNumber: 6, dueDate: '2027-02-10', defaultFee: 500 },
+  { key: 'mar', label: 'Mar', fullName: 'March (7th Installment)', installmentNumber: 7, dueDate: '2027-03-10', defaultFee: 500 },
+  { key: 'apr', label: 'Apr', fullName: 'April (8th Installment)', installmentNumber: 8, dueDate: '2027-04-10', defaultFee: 500 },
+  { key: 'may', label: 'May', fullName: 'May (9th Installment)', installmentNumber: 9, dueDate: '2027-05-10', defaultFee: 500 },
+  { key: 'jun', label: 'Jun', fullName: 'June (10th Installment)', installmentNumber: 10, dueDate: '2027-06-10', defaultFee: 500 },
+  { key: 'july', label: 'Jul', fullName: 'July (11th Installment)', installmentNumber: 11, dueDate: '2027-07-10', defaultFee: 500 },
 ];
 
 export interface MonthPaymentStatus {
@@ -39,13 +39,13 @@ export interface MonthPaymentStatus {
 }
 
 export interface ParsedSpreadsheetStudent {
-  studentId?: string; // STU00000 informado na planilha
+  studentId?: string; // STU00000 provided in the spreadsheet
   name: string;
-  level: string; // Ex: Beginner, Level 1, Intermediate
-  className?: string; // Turma resolvida automaticamente pelo nível
+  level: string; // e.g. Beginner, Level 1, Intermediate
+  className?: string; // Class automatically resolved by level
   phone: string;
-  startDate: string; // Ex: 01/08/2026
-  age?: number; // Idade
+  startDate: string; // e.g. 01/08/2026
+  age?: number; // Age
   email?: string;
   city?: string;
   birthDate?: string; // YYYY-MM-DD
@@ -53,7 +53,7 @@ export interface ParsedSpreadsheetStudent {
   nationalId?: string;
   guardianName?: string;
   guardianPhone?: string;
-  skipCharges?: boolean; // Layout de cadastro (sem colunas de mensalidades)
+  skipCharges?: boolean; // Registration layout (no tuition columns)
   months: MonthPaymentStatus[];
   declaredTotal?: number;
   computedTotalPaid: number;
@@ -63,7 +63,7 @@ export interface ParsedSpreadsheetStudent {
 }
 
 /**
- * Detecta se o valor de uma célula de mês representa pagamento efetuado
+ * Detects whether a month cell value represents a completed payment
  */
 export const evaluateCellPayment = (val: string, defaultAmount: number = 500): { isPaid: boolean; amount: number } => {
   if (!val) return { isPaid: false, amount: defaultAmount };
@@ -84,7 +84,7 @@ export const evaluateCellPayment = (val: string, defaultAmount: number = 500): {
     return { isPaid: false, amount: defaultAmount };
   }
 
-  // Se for texto afirmativo (pago, paid, ok, sim, v, check, x)
+  // If it is an affirmative text (pago, paid, ok, sim, v, check, x)
   if (
     clean === 'pago' ||
     clean === 'paid' ||
@@ -99,7 +99,7 @@ export const evaluateCellPayment = (val: string, defaultAmount: number = 500): {
     return { isPaid: true, amount: defaultAmount };
   }
 
-  // Se for número
+  // If it is a number
   const num = parseFloat(clean.replace(/[^\d.,]/g, '').replace(',', '.'));
   if (!isNaN(num) && num > 0) {
     return { isPaid: true, amount: num };
@@ -109,7 +109,7 @@ export const evaluateCellPayment = (val: string, defaultAmount: number = 500): {
 };
 
 /**
- * Extrai o nível de um nome de turma: "A2+ (B) | Nov. to Feb. 2027" -> "A2+"
+ * Extracts the level from a class name: "A2+ (B) | Nov. to Feb. 2027" -> "A2+"
  */
 export const extractClassLevel = (className: string): string =>
   className
@@ -120,9 +120,9 @@ export const extractClassLevel = (className: string): string =>
     .replace(/\s+/g, '');
 
 /**
- * Encontra a turma cujo nível bate com o nível do aluno.
- * Quando há mais de uma turma do mesmo nível (ex.: A2 (A) e A2 (B)),
- * escolhe a que tem menos alunos matriculados, equilibrando as turmas.
+ * Finds the class whose level matches the student's level.
+ * When there is more than one class at the same level (e.g. A2 (A) and A2 (B)),
+ * picks the one with the fewest enrolled students, balancing the classes.
  */
 export const resolveClassByLevel = <T extends { id: string; name: string; courseId?: string }>(
   level: string,
@@ -204,7 +204,7 @@ const parseStudentRegistrySpreadsheet = (
       const sep = line.includes('\t') ? '\t' : line.includes(';') ? ';' : ',';
       const p = line.split(sep).map((cell) => cell.trim());
 
-      // Ignora cabeçalho
+      // Skip header
       if (
         REGISTRY_HEADER_TOKENS.includes((p[0] || '').toLowerCase()) ||
         REGISTRY_HEADER_TOKENS.includes((p[1] || '').toLowerCase())
@@ -245,7 +245,7 @@ const parseStudentRegistrySpreadsheet = (
 
       students.push({
         studentId,
-        name: name || `Aluno ${studentId}`,
+        name: name || `Student ${studentId}`,
         level: p[14] || '',
         phone,
         startDate: (p[0] || '').split(' ')[0],
@@ -270,8 +270,8 @@ const parseStudentRegistrySpreadsheet = (
 };
 
 /**
- * Processa texto colado do Google Sheets / Excel / CSV na ordem oficial solicitada:
- * STUDENT ID | NAME | LEVEL | TELEPHONE | START DATE | AGE | [BLANK] | Agu | Set | Oct | Nov | D/J | Feb | Mar | Apr | May | Jun | July | Total
+ * Processes text pasted from Google Sheets / Excel / CSV in the official requested order:
+ * STUDENT ID | NAME | LEVEL | TELEPHONE | START DATE | AGE | [BLANK] | Aug | Sep | Oct | Nov | D/J | Feb | Mar | Apr | May | Jun | July | Total
  */
 export const parseOfficialSpreadsheet = (
   text: string,
@@ -281,7 +281,7 @@ export const parseOfficialSpreadsheet = (
 ): ParsedSpreadsheetStudent[] => {
   if (!text || !text.trim()) return [];
 
-  // Novo layout (Student Management): cadastro com Level na última coluna
+  // New layout (Student Management): registration with Level in the last column
   if (isRegistryLayout(text)) {
     return parseStudentRegistrySpreadsheet(text, defaultCourseId, defaultClassId);
   }
@@ -360,10 +360,10 @@ export const parseOfficialSpreadsheet = (
     }
 
     if (!name && !studentId) continue;
-    if (!name && studentId) name = `Aluno ${studentId}`;
+    if (!name && studentId) name = `Student ${studentId}`;
 
     // Look for monthly payment columns
-    // Check if there is an empty column gap between AGE and Agu
+    // Check if there is an empty column gap between AGE and August
     let monthStartIndex = colOffset;
     if (parts[monthStartIndex] === '' || parts[monthStartIndex] === undefined) {
       // Skip empty column (the blank tab after AGE)

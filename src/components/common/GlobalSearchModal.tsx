@@ -100,7 +100,7 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Buscar por ID Student (STU00000), nome, turma, recibo ou aula..."
+            placeholder="Search by Student ID (STU00000), name, class, receipt or lesson..."
             autoFocus
             className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:outline-hidden focus:ring-2 focus:ring-purple-500 focus:bg-white transition-all font-medium"
           />
@@ -115,9 +115,9 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
                   <Smartphone className="w-5 h-5" />
                 </div>
                 <div>
-                  <p className="text-sm font-bold text-emerald-900">Baixar o aplicativo Think Green</p>
+                  <p className="text-sm font-bold text-emerald-900">Download the Think Green app</p>
                   <p className="text-[11px] text-emerald-800">
-                    Instale no celular ou computador e abra direto pela tela inicial, como um app.
+                    Install it on your phone or computer and open it straight from the home screen, like an app.
                   </p>
                 </div>
               </div>
@@ -126,19 +126,19 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
                 className="shrink-0 inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-[#075e38] hover:bg-[#064a2c] text-white text-xs font-bold transition-colors cursor-pointer"
               >
                 <Download className="w-3.5 h-3.5" />
-                Baixar app
+                Download app
               </button>
             </div>
 
             {showIosHelp && (
               <div className="mt-3 pt-3 border-t border-emerald-200 text-[11px] text-emerald-900 space-y-1">
                 <p className="font-bold flex items-center gap-1.5">
-                  <Share className="w-3.5 h-3.5" /> No iPhone/iPad (Safari):
+                  <Share className="w-3.5 h-3.5" /> On iPhone/iPad (Safari):
                 </p>
-                <p>1. Toque em <strong>Compartilhar</strong> (ícone de quadrado com seta).</p>
-                <p>2. Escolha <strong>Adicionar à Tela de Início</strong>.</p>
-                <p>3. Confirme em <strong>Adicionar</strong> — o ícone do Think Green aparece na tela inicial.</p>
-                <p className="pt-1 text-emerald-700">No Chrome/Edge: menu ⋮ → <strong>Instalar aplicativo</strong>.</p>
+                <p>1. Tap <strong>Share</strong> (square icon with an arrow).</p>
+                <p>2. Choose <strong>Add to Home Screen</strong>.</p>
+                <p>3. Confirm with <strong>Add</strong> — the Think Green icon appears on the home screen.</p>
+                <p className="pt-1 text-emerald-700">On Chrome/Edge: menu ⋮ → <strong>Install app</strong>.</p>
               </div>
             )}
           </div>
@@ -149,8 +149,8 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
           {query.trim() && totalResults === 0 && (
             <div className="text-center py-8 text-slate-400">
               <Search className="w-8 h-8 mx-auto text-slate-300 mb-2 stroke-1" />
-              <p className="font-semibold text-slate-600">Nenhum resultado encontrado</p>
-              <p className="text-slate-400 text-xs">Tente buscar por "STU00186", "Inglês" ou "Futebol"</p>
+              <p className="font-semibold text-slate-600">No results found</p>
+              <p className="text-slate-400 text-xs">Try searching for "STU00186", "English" or "Soccer"</p>
             </div>
           )}
 
@@ -159,7 +159,7 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
             <div>
               <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
                 <User className="w-3.5 h-3.5 text-purple-600" />
-                Alunos ({searchResults.students.length})
+                Students ({searchResults.students.length})
               </p>
               <div className="space-y-1.5">
                 {searchResults.students.map((student) => {
@@ -189,7 +189,7 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
                             </span>
                           </div>
                           <p className="text-[11px] text-slate-500">
-                            {enrollments.map((e) => e.courseName).join(' • ') || 'Sem matrícula ativa'}
+                            {enrollments.map((e) => e.courseName).join(' • ') || 'No active enrollment'}
                           </p>
                         </div>
                       </div>
@@ -206,7 +206,7 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
             <div>
               <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
                 <BookOpen className="w-3.5 h-3.5 text-emerald-600" />
-                Turmas ({searchResults.classes.length})
+                Classes ({searchResults.classes.length})
               </p>
               <div className="space-y-1.5">
                 {searchResults.classes.map((c) => (
@@ -237,7 +237,7 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
             <div>
               <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
                 <Receipt className="w-3.5 h-3.5 text-amber-600" />
-                Recibos de Pagamento ({searchResults.receipts.length})
+                Payment Receipts ({searchResults.receipts.length})
               </p>
               <div className="space-y-1.5">
                 {searchResults.receipts.map((r) => (
@@ -261,7 +261,7 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
                       </p>
                     </div>
                     <span className="text-[11px] text-purple-700 font-medium group-hover:underline">
-                      Ver Recibo →
+                      View Receipt →
                     </span>
                   </div>
                 ))}
@@ -272,7 +272,7 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
           {/* Quick shortcuts hint */}
           {!query.trim() && (
             <div className="pt-4 border-t border-slate-100 text-center text-slate-400 text-xs">
-              <p>Dica: Digite o nome do aluno ou código da turma para ver fichas, matrículas e finanças.</p>
+              <p>Tip: Type a student name or class code to see records, enrollments and finances.</p>
             </div>
           )}
         </div>

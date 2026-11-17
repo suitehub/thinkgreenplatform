@@ -53,10 +53,10 @@ export const SecretariatTopbar: React.FC<SecretariatTopbarProps> = ({
 
         <div>
           <h1 className="text-base sm:text-lg lg:text-xl font-black text-slate-900 leading-tight tracking-tight uppercase">
-            PAINEL DA SECRETARIA
+            REGISTRAR'S OFFICE PANEL
           </h1>
           <p className="text-[11px] sm:text-xs text-slate-500 font-medium mt-0.5">
-            Gestão Escolar Inteligente • Think Green Platform
+            Smart School Management • Think Green Platform
           </p>
         </div>
       </div>
@@ -72,7 +72,7 @@ export const SecretariatTopbar: React.FC<SecretariatTopbarProps> = ({
               setShowUserMenu(false);
             }}
             className="w-10 h-10 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200/70 text-slate-600 flex items-center justify-center relative transition-colors cursor-pointer"
-            title="Notificações da Secretaria"
+            title="Registrar's Office Notifications"
           >
             <Bell className="w-4 h-4" />
             {unreadCount > 0 && (
@@ -87,9 +87,9 @@ export const SecretariatTopbar: React.FC<SecretariatTopbarProps> = ({
             <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-2xl border border-slate-200 shadow-xl p-4 z-50 animate-fade-in">
               <div className="flex items-center justify-between pb-3 border-b border-slate-100">
                 <div className="flex items-center gap-2">
-                  <h3 className="text-xs font-black text-slate-900 uppercase">Notificações</h3>
+                  <h3 className="text-xs font-black text-slate-900 uppercase">Notifications</h3>
                   <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 font-bold text-[10px] rounded-full">
-                    {unreadCount} nova(s)
+                    {unreadCount} new
                   </span>
                 </div>
                 <button
@@ -99,14 +99,14 @@ export const SecretariatTopbar: React.FC<SecretariatTopbarProps> = ({
                   }}
                   className="text-[11px] font-bold text-emerald-700 hover:underline cursor-pointer"
                 >
-                  Marcar todas como lidas
+                  Mark all as read
                 </button>
               </div>
 
               <div className="divide-y divide-slate-100 max-h-80 overflow-y-auto mt-2">
                 {notifications.length === 0 ? (
                   <p className="py-6 text-center text-slate-400 text-xs font-medium">
-                    Nenhuma notificação no momento.
+                    No notifications at the moment.
                   </p>
                 ) : (
                   notifications.map((notif) => (
@@ -149,7 +149,7 @@ export const SecretariatTopbar: React.FC<SecretariatTopbarProps> = ({
 
             <div className="hidden sm:block text-left">
               <p className="text-xs font-bold text-slate-900 leading-none">
-                {currentUser.role === 'SECRETARIAT' ? 'Secretária' : 'Administrador'}
+                {currentUser.role === 'SECRETARIAT' ? 'Registrar' : 'Administrator'}
               </p>
               <p className="text-[11px] text-slate-500 font-medium mt-1">
                 {currentUser.name}
@@ -166,7 +166,7 @@ export const SecretariatTopbar: React.FC<SecretariatTopbarProps> = ({
                 <p className="font-bold text-slate-900">{currentUser.name}</p>
                 <p className="text-[11px] text-slate-500">{currentUser.email}</p>
                 <span className="inline-block mt-2 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-50 text-[#075e38] border border-emerald-200">
-                  Secretaria Ativa
+                  Registrar's Office Active
                 </span>
               </div>
 
@@ -179,7 +179,7 @@ export const SecretariatTopbar: React.FC<SecretariatTopbarProps> = ({
                   className="w-full flex items-center gap-2.5 px-3 py-2 text-slate-700 hover:bg-slate-50 rounded-xl transition-colors font-medium cursor-pointer"
                 >
                   <HelpCircle className="w-4 h-4 text-slate-400" />
-                  <span>Central de Ajuda</span>
+                  <span>Help Center</span>
                 </button>
 
                 {onLogout && (
@@ -191,7 +191,7 @@ export const SecretariatTopbar: React.FC<SecretariatTopbarProps> = ({
                     className="w-full flex items-center gap-2.5 px-3 py-2 text-rose-600 hover:bg-rose-50 rounded-xl transition-colors font-bold cursor-pointer"
                   >
                     <LogOut className="w-4 h-4" />
-                    <span>Sair do Painel</span>
+                    <span>Sign Out</span>
                   </button>
                 )}
               </div>

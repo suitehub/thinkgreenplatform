@@ -90,7 +90,7 @@ export const StatCard: React.FC<StatCardProps> = ({
               >
                 {trend.isPositive ? '↑' : '↓'} {trend.value}
               </span>
-              <span className="text-[11px] text-slate-400">vs. mês anterior</span>
+              <span className="text-[11px] text-slate-400">vs. previous month</span>
             </div>
           )}
         </div>

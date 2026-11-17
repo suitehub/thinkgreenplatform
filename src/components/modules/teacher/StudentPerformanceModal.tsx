@@ -101,13 +101,13 @@ export const StudentPerformanceModal: React.FC<StudentPerformanceModalProps> = (
   // 1. Add attendance summary item
   performanceItems.push({
     id: 'perf_att',
-    title: 'Frequência e Presença em Aula',
+    title: 'Attendance and Class Presence',
     type: 'FREQUENCIA',
-    date: `${presentDays} de ${totalClassDays || 1} dias`,
+    date: `${presentDays} of ${totalClassDays || 1} days`,
     status: attendancePercent >= 75 ? 'PRESENTE' : 'AUSENTE',
     scoreDisplay: `${attendancePercent} / 100`,
     scorePercent: attendancePercent,
-    feedback: attendancePercent >= 75 ? 'Frequência regular satisfatória' : 'Atenção aos limites de faltas',
+    feedback: attendancePercent >= 75 ? 'Attendance within the satisfactory range' : 'Watch the absence limit',
   });
 
   // 2. Add assessments
@@ -122,7 +122,7 @@ export const StudentPerformanceModal: React.FC<StudentPerformanceModalProps> = (
         status: 'AVALIADO',
         scoreDisplay: `${studentGrade.score} / ${studentGrade.maxScore}`,
         scorePercent: Math.round((studentGrade.score / studentGrade.maxScore) * 100),
-        feedback: studentGrade.feedback || 'Avaliação corrigida e pontuada.',
+        feedback: studentGrade.feedback || 'Assessment graded and scored.',
       });
     } else {
       performanceItems.push({
@@ -132,7 +132,7 @@ export const StudentPerformanceModal: React.FC<StudentPerformanceModalProps> = (
         date: exam.date,
         status: 'PENDENTE',
         scoreDisplay: `— / ${exam.maxScore}`,
-        feedback: 'Aguardando aplicação ou lançamento de notas.',
+        feedback: 'Awaiting administration or grade entry.',
       });
     }
   });
@@ -148,9 +148,9 @@ export const StudentPerformanceModal: React.FC<StudentPerformanceModalProps> = (
         type: 'ATIVIDADE',
         date: assign.dueDate,
         status: isGraded ? 'AVALIADO' : 'ENTREGUE',
-        scoreDisplay: isGraded ? `${sub.score} / ${sub.maxScore || assign.maxScore}` : 'Entregue',
+        scoreDisplay: isGraded ? `${sub.score} / ${sub.maxScore || assign.maxScore}` : 'Submitted',
         scorePercent: isGraded && sub.maxScore ? Math.round((sub.score! / sub.maxScore) * 100) : undefined,
-        feedback: sub.feedback || 'Trabalho submetido pelo estudante.',
+        feedback: sub.feedback || 'Work submitted by the student.',
       });
     } else {
       performanceItems.push({
@@ -160,7 +160,7 @@ export const StudentPerformanceModal: React.FC<StudentPerformanceModalProps> = (
         date: assign.dueDate,
         status: 'PENDENTE',
         scoreDisplay: `— / ${assign.maxScore}`,
-        feedback: 'Não entregue ou em andamento.',
+        feedback: 'Not submitted or in progress.',
       });
     }
   });
@@ -168,7 +168,7 @@ export const StudentPerformanceModal: React.FC<StudentPerformanceModalProps> = (
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in">
       <div className="bg-white rounded-3xl max-w-2xl w-full border border-slate-200 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-        {/* Modal Header */}
+        {/* Modal header */}
         <div className="p-6 bg-gradient-to-r from-[#064e2e] to-[#075e38] text-white flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div className="w-14 h-14 rounded-2xl bg-white/10 text-white flex items-center justify-center font-bold text-xl border border-white/20">
@@ -191,7 +191,7 @@ export const StudentPerformanceModal: React.FC<StudentPerformanceModalProps> = (
                 {student.name}
               </h3>
               <p className="text-xs text-emerald-100/80">
-                Acompanhamento Pedagógico Individual • Desempenho Escolar
+                Individual Academic Tracking • School Performance
               </p>
             </div>
           </div>
@@ -204,11 +204,11 @@ export const StudentPerformanceModal: React.FC<StudentPerformanceModalProps> = (
           </button>
         </div>
 
-        {/* 3 Metric Badges */}
+        {/* 3 metric badges */}
         <div className="grid grid-cols-3 gap-3 p-5 bg-slate-50 border-b border-slate-200">
           <div className="bg-white p-3.5 rounded-2xl border border-slate-200/70 shadow-2xs text-center">
             <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
-              Média Geral
+              Overall Average
             </span>
             <span
               className={`text-xl font-black block mt-0.5 ${
@@ -221,7 +221,7 @@ export const StudentPerformanceModal: React.FC<StudentPerformanceModalProps> = (
 
           <div className="bg-white p-3.5 rounded-2xl border border-slate-200/70 shadow-2xs text-center">
             <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
-              Frequência
+              Attendance
             </span>
             <span
               className={`text-xl font-black block mt-0.5 ${
@@ -234,7 +234,7 @@ export const StudentPerformanceModal: React.FC<StudentPerformanceModalProps> = (
 
           <div className="bg-white p-3.5 rounded-2xl border border-slate-200/70 shadow-2xs text-center">
             <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
-              Tarefas Entregues
+              Tasks Submitted
             </span>
             <span className="text-xl font-black text-slate-900 block mt-0.5">
               {studentSubmissions.length} / {assignments.length || 1}
@@ -242,10 +242,10 @@ export const StudentPerformanceModal: React.FC<StudentPerformanceModalProps> = (
           </div>
         </div>
 
-        {/* Academic Breakdown Table */}
+        {/* Academic breakdown table */}
         <div className="p-6 overflow-y-auto space-y-3 flex-1">
           <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-            Detalhamento de Avaliações, Trabalhos e Frequência
+            Breakdown of Assessments, Assignments and Attendance
           </h4>
 
           <div className="space-y-2.5">
@@ -276,7 +276,7 @@ export const StudentPerformanceModal: React.FC<StudentPerformanceModalProps> = (
                   <div>
                     <div className="flex items-center gap-2">
                       <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.2 rounded bg-slate-100 text-slate-600">
-                        {item.type}
+                        {item.type === 'PROVA' ? 'Exam' : item.type === 'ATIVIDADE' ? 'Assignment' : 'Attendance'}
                       </span>
                       <h5 className="text-xs sm:text-sm font-bold text-slate-900">
                         {item.title}
@@ -310,12 +310,12 @@ export const StudentPerformanceModal: React.FC<StudentPerformanceModalProps> = (
                     }`}
                   >
                     {item.status === 'AVALIADO'
-                      ? 'Avaliado'
+                      ? 'Graded'
                       : item.status === 'ENTREGUE'
-                      ? 'Entregue'
+                      ? 'Submitted'
                       : item.status === 'PRESENTE'
-                      ? 'Presente'
-                      : 'Pendente'}
+                      ? 'Present'
+                      : 'Pending'}
                   </span>
                 </div>
               </div>
@@ -323,13 +323,13 @@ export const StudentPerformanceModal: React.FC<StudentPerformanceModalProps> = (
           </div>
         </div>
 
-        {/* Modal Footer */}
+        {/* Modal footer */}
         <div className="p-4 bg-slate-50 border-t border-slate-200 flex justify-end">
           <button
             onClick={onClose}
             className="px-5 py-2 rounded-xl bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold transition-colors cursor-pointer"
           >
-            Fechar
+            Close
           </button>
         </div>
       </div>

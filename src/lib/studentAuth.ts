@@ -42,7 +42,7 @@ export interface StudentLoginCheck {
 
 /**
  * Validates the Student ID + birth date pair against the students loaded from
- * Firestore. Returns a friendly Portuguese message when access is denied.
+ * Firestore. Returns a friendly English message when access is denied.
  */
 export function validateStudentLogin(
   students: Student[],
@@ -51,12 +51,12 @@ export function validateStudentLogin(
 ): StudentLoginCheck {
   const studentId = normalizeStudentId(studentIdInput);
   if (!studentId) {
-    return { error: 'Informe seu ID Student.' };
+    return { error: 'Enter your Student ID.' };
   }
 
   const birthDate = normalizeBirthDate(birthDateInput);
   if (!birthDate) {
-    return { error: 'Informe sua data de nascimento.' };
+    return { error: 'Enter your date of birth.' };
   }
 
   const student = students.find(
@@ -65,19 +65,19 @@ export function validateStudentLogin(
 
   if (!student) {
     return {
-      error: 'ID Student não encontrado. Confira o número informado ou procure a secretaria.',
+      error: 'Student ID not found. Check the number you entered or contact the secretariat.',
     };
   }
 
   if (student.systemAccess === 'BLOQUEADO') {
     return {
-      error: 'O acesso deste aluno está bloqueado. Procure a secretaria para regularizar.',
+      error: 'Access for this student is blocked. Contact the secretariat to resolve it.',
     };
   }
 
   if (student.status !== 'ATIVO') {
     return {
-      error: 'A matrícula deste aluno não está ativa. Procure a secretaria.',
+      error: 'This student enrollment is not active. Contact the secretariat.',
     };
   }
 
@@ -85,13 +85,13 @@ export function validateStudentLogin(
   if (!registeredBirthDate) {
     return {
       error:
-        'Sua data de nascimento ainda não está cadastrada. Procure a secretaria para atualizar seu cadastro.',
+        'Your date of birth is not registered yet. Contact the secretariat to update your record.',
     };
   }
 
   if (registeredBirthDate !== birthDate) {
     return {
-      error: 'Data de nascimento não confere. Confira a data informada e tente novamente.',
+      error: 'Date of birth does not match. Check the date you entered and try again.',
     };
   }
 

@@ -78,53 +78,53 @@ export function currentFirebaseUser(): FirebaseUser | null {
   return auth.currentUser;
 }
 
-/** Friendly Portuguese messages for the most common Firebase Auth errors. */
+/** Friendly English messages for the most common Firebase Auth errors. */
 export function describeAuthError(error: unknown): string {
   const err = error as { code?: string; message?: string };
   const code = err?.code || '';
 
   if (code.includes('popup-closed-by-user')) {
-    return 'A janela de login do Google foi fechada antes de concluir. Tente novamente.';
+    return 'The Google sign-in window was closed before completion. Please try again.';
   }
   if (code.includes('popup-blocked')) {
-    return 'O navegador bloqueou a janela do Google. Permita pop-ups para este site e tente novamente.';
+    return 'The browser blocked the Google window. Allow pop-ups for this site and try again.';
   }
   if (code.includes('unauthorized-domain')) {
-    return 'Este domínio ainda não está autorizado no Firebase Authentication. Solicite à administração a inclusão do domínio.';
+    return 'This domain is not yet authorized in Firebase Authentication. Ask the administration to add the domain.';
   }
   if (code.includes('operation-not-allowed')) {
-    return 'Este método de login ainda não está habilitado no Firebase Authentication.';
+    return 'This sign-in method is not enabled in Firebase Authentication yet.';
   }
   if (code.includes('account-exists-with-different-credential')) {
-    return 'Já existe uma conta com este e-mail usando outro método de login. Entre pelo método que você já utilizava.';
+    return 'An account with this e-mail already exists using another sign-in method. Sign in with the method you already used.';
   }
   if (code.includes('invalid-email')) {
-    return 'Informe um endereço de e-mail válido.';
+    return 'Enter a valid e-mail address.';
   }
   if (code.includes('missing-password')) {
-    return 'Informe sua senha.';
+    return 'Enter your password.';
   }
   if (code.includes('weak-password')) {
-    return 'A senha precisa ter pelo menos 6 caracteres.';
+    return 'The password must be at least 6 characters long.';
   }
   if (code.includes('email-already-in-use')) {
-    return 'Este e-mail já possui uma conta. Use a opção "Já tenho conta" ou recupere sua senha.';
+    return 'This e-mail already has an account. Use the "I already have an account" option or reset your password.';
   }
   if (code.includes('user-not-found')) {
-    return 'Este e-mail ainda não está cadastrado. Use o link de registro geral enviado pela administração.';
+    return 'This e-mail is not registered yet. Use the general registration link sent by the administration.';
   }
   if (code.includes('wrong-password') || code.includes('invalid-credential')) {
-    return 'E-mail ou senha incorretos. Confira os dados ou use "Esqueci minha senha".';
+    return 'Incorrect e-mail or password. Check your details or use "Forgot my password".';
   }
   if (code.includes('user-disabled')) {
-    return 'Esta conta foi desativada. Procure a administração.';
+    return 'This account has been disabled. Contact the administration.';
   }
   if (code.includes('too-many-requests')) {
-    return 'Muitas tentativas seguidas. Aguarde alguns minutos e tente novamente.';
+    return 'Too many attempts in a row. Wait a few minutes and try again.';
   }
   if (code.includes('network-request-failed')) {
-    return 'Não foi possível conectar ao serviço de autenticação. Verifique sua internet e tente novamente.';
+    return 'Unable to connect to the authentication service. Check your internet connection and try again.';
   }
 
-  return err?.message || 'Não foi possível concluir o login com o Google.';
+  return err?.message || 'Unable to complete Google sign-in.';
 }

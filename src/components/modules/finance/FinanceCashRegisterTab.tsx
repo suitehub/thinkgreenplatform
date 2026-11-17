@@ -15,6 +15,12 @@ import { useApp } from '../../../context/AppContext';
 import { Modal } from '../../common/Modal';
 import { formatCurrency } from '../../../lib/storage';
 
+// Display labels for stored cash register status values (values themselves stay unchanged).
+const registerStatusLabels: Record<string, string> = {
+  ABERTO: 'Open',
+  FECHADO: 'Closed',
+};
+
 export const FinanceCashRegisterTab: React.FC = () => {
   const { state, openCashRegister, closeCashRegister } = useApp();
 
@@ -51,24 +57,24 @@ export const FinanceCashRegisterTab: React.FC = () => {
         <div>
           <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
             <Wallet className="w-5 h-5 text-[#075e38]" />
-            Controle de Caixa & Balcão (PDV)
+            Cash Register & Front Desk Control (POS)
           </h2>
           <p className="text-xs text-slate-400">
-            Abertura, fechamento diário, conferência física em gaveta e sangrias financeiras
+            Opening, daily closing, physical drawer reconciliation and cash withdrawals
           </p>
         </div>
 
         <div className="flex items-center gap-3">
           <div className="px-3.5 py-2 bg-slate-50 rounded-xl border border-slate-200 text-right">
             <span className="text-[10px] text-slate-400 font-bold uppercase block">
-              Status Caixa
+              Register Status
             </span>
             <span
               className={`text-xs font-bold ${
                 activeRegister?.status === 'ABERTO' ? 'text-emerald-700' : 'text-slate-600'
               }`}
             >
-              {activeRegister?.status || 'FECHADO'}
+              {registerStatusLabels[activeRegister?.status || 'FECHADO'] || activeRegister?.status}
             </span>
           </div>
 
@@ -80,14 +86,14 @@ export const FinanceCashRegisterTab: React.FC = () => {
               }}
               className="px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-bold text-xs transition-colors flex items-center gap-1.5 shadow-2xs cursor-pointer"
             >
-              <Lock className="w-4 h-4" /> Fechar Caixa & Sangria
+              <Lock className="w-4 h-4" /> Close Register & Withdraw
             </button>
           ) : (
             <button
               onClick={() => setIsOpenRegisterModal(true)}
               className="px-4 py-2.5 bg-[#075e38] hover:bg-emerald-800 text-white rounded-xl font-bold text-xs transition-colors flex items-center gap-1.5 shadow-2xs cursor-pointer"
             >
-              <Unlock className="w-4 h-4" /> Abrir Novo Caixa
+              <Unlock className="w-4 h-4" /> Open New Register
             </button>
           )}
         </div>
@@ -96,27 +102,27 @@ export const FinanceCashRegisterTab: React.FC = () => {
       {/* 3 Metric Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-1">
-          <span className="text-xs text-slate-400 font-bold uppercase">Saldo de Abertura</span>
+          <span className="text-xs text-slate-400 font-bold uppercase">Opening Balance</span>
           <p className="text-xl font-black font-mono text-slate-900">
             {formatCurrency(activeRegister?.openingBalance || 0, 'EGP')}
           </p>
-          <p className="text-[11px] text-slate-500">Operador: {activeRegister?.openedBy || 'Tesouraria'}</p>
+          <p className="text-[11px] text-slate-500">Operator: {activeRegister?.openedBy || 'Treasury'}</p>
         </div>
 
         <div className="p-4 bg-emerald-50/80 rounded-2xl border border-emerald-200 space-y-1">
-          <span className="text-xs text-emerald-800 font-bold uppercase">Entradas Físicas (Balcão)</span>
+          <span className="text-xs text-emerald-800 font-bold uppercase">Cash Inflows (Front Desk)</span>
           <p className="text-xl font-black font-mono text-emerald-950">
             +{formatCurrency(totalCollectedToday, 'EGP')}
           </p>
-          <p className="text-[11px] text-emerald-700">100% recebimentos no balcão</p>
+          <p className="text-[11px] text-emerald-700">100% front-desk collections</p>
         </div>
 
         <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-1">
-          <span className="text-xs text-slate-400 font-bold uppercase">Recibos Emitidos Hoje</span>
+          <span className="text-xs text-slate-400 font-bold uppercase">Receipts Issued Today</span>
           <p className="text-xl font-black font-mono text-slate-900">
-            {state.receipts.length} recibos
+            {state.receipts.length} receipts
           </p>
-          <p className="text-[11px] text-slate-500">Autenticados com valor fiscal</p>
+          <p className="text-[11px] text-slate-500">Authenticated with fiscal value</p>
         </div>
       </div>
 
@@ -135,10 +141,10 @@ export const FinanceCashRegisterTab: React.FC = () => {
               <Banknote className="w-5 h-5 text-amber-700 flex-shrink-0 mt-0.5" />
               <div>
                 <p className="font-black text-amber-950 text-sm">
-                  Conferência Física do Rony ({pendingCount} pré-registro(s) aguardando validação)
+                  Rony's Physical Cash Count ({pendingCount} pre-registration(s) awaiting validation)
                 </p>
                 <p className="text-amber-900 text-[11px] mt-0.5">
-                  Existe um total de <strong>{formatCurrency(pendingCash, 'EGP')}</strong> em dinheiro físico lançado pela Recepção que precisa bater com as cédulas da gaveta antes de ser somado definitivamente ao saldo do caixa.
+                  There is a total of <strong>{formatCurrency(pendingCash, 'EGP')}</strong> in physical cash entered by Reception that must match the drawer bills before being added permanently to the register balance.
                 </p>
               </div>
             </div>
@@ -149,17 +155,17 @@ export const FinanceCashRegisterTab: React.FC = () => {
       {/* Cash Movement Log Table */}
       <div className="space-y-3">
         <h3 className="font-bold text-xs text-slate-900 uppercase tracking-wider">
-          Histórico de Sessões de Caixa
+          Cash Register Session History
         </h3>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead className="bg-slate-50 text-slate-400 font-bold uppercase tracking-wider border-b border-slate-200">
               <tr>
-                <th className="px-4 py-3">Sessão ID</th>
-                <th className="px-4 py-3">Data Abertura</th>
-                <th className="px-4 py-3">Operador</th>
-                <th className="px-4 py-3">Abertura</th>
-                <th className="px-4 py-3">Saldo Atual / Fechamento</th>
+                <th className="px-4 py-3">Session ID</th>
+                <th className="px-4 py-3">Opening Date</th>
+                <th className="px-4 py-3">Operator</th>
+                <th className="px-4 py-3">Opening</th>
+                <th className="px-4 py-3">Current Balance / Closing</th>
                 <th className="px-4 py-3">Status</th>
               </tr>
             </thead>
@@ -181,7 +187,7 @@ export const FinanceCashRegisterTab: React.FC = () => {
                           : 'bg-slate-100 text-slate-600 border border-slate-200'
                       }`}
                     >
-                      {reg.status}
+                      {registerStatusLabels[reg.status] || reg.status}
                     </span>
                   </td>
                 </tr>
@@ -195,12 +201,12 @@ export const FinanceCashRegisterTab: React.FC = () => {
       <Modal
         isOpen={isOpenRegisterModal}
         onClose={() => setIsOpenRegisterModal(false)}
-        title="Abrir Novo Caixa Diário (PDV)"
+        title="Open New Daily Register (POS)"
       >
         <form onSubmit={handleOpenRegister} className="space-y-4 text-xs">
           <div>
             <label className="block font-bold text-slate-700 mb-1">
-              Fundo de Troco / Saldo Inicial em Gaveta (EGP)
+              Change Fund / Opening Balance in Drawer (EGP)
             </label>
             <input
               type="number"
@@ -217,13 +223,13 @@ export const FinanceCashRegisterTab: React.FC = () => {
               onClick={() => setIsOpenRegisterModal(false)}
               className="px-4 py-2 border border-slate-300 rounded-xl text-slate-700 font-semibold"
             >
-              Cancelar
+              Cancel
             </button>
             <button
               type="submit"
               className="px-4 py-2 bg-[#075e38] text-white rounded-xl font-bold hover:bg-emerald-800"
             >
-              Confirmar Abertura
+              Confirm Opening
             </button>
           </div>
         </form>
@@ -233,11 +239,11 @@ export const FinanceCashRegisterTab: React.FC = () => {
       <Modal
         isOpen={isCloseRegisterModal}
         onClose={() => setIsCloseRegisterModal(false)}
-        title="Fechamento & Sangria de Caixa"
+        title="Close Register & Cash Withdrawal"
       >
         <form onSubmit={handleCloseRegister} className="space-y-4 text-xs">
           <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-1">
-            <p className="text-slate-500 font-medium">Saldo Calculado pelo Sistema:</p>
+            <p className="text-slate-500 font-medium">System-Calculated Balance:</p>
             <p className="text-lg font-black font-mono text-slate-900">
               {formatCurrency(activeRegister?.currentBalance || 0, 'EGP')}
             </p>
@@ -245,7 +251,7 @@ export const FinanceCashRegisterTab: React.FC = () => {
 
           <div>
             <label className="block font-bold text-slate-700 mb-1">
-              Valor Físico em Dinheiro Conferido na Gaveta (EGP)
+              Physical Cash Counted in Drawer (EGP)
             </label>
             <input
               type="number"
@@ -263,13 +269,13 @@ export const FinanceCashRegisterTab: React.FC = () => {
               onClick={() => setIsCloseRegisterModal(false)}
               className="px-4 py-2 border border-slate-300 rounded-xl text-slate-700 font-semibold"
             >
-              Cancelar
+              Cancel
             </button>
             <button
               type="submit"
               className="px-4 py-2 bg-rose-600 text-white rounded-xl font-bold hover:bg-rose-700"
             >
-              Fechar Caixa & Emitir Sangria
+              Close Register & Issue Withdrawal
             </button>
           </div>
         </form>

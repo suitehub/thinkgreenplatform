@@ -84,16 +84,16 @@ export const ClassHeader: React.FC<ClassHeaderProps> = ({
 
   return (
     <div className="space-y-4">
-      {/* Top Breadcrumb + Quick Switcher + Return */}
+      {/* Top breadcrumb, quick class switcher and return action */}
       <div className="flex flex-wrap items-center justify-between gap-3 bg-white px-4 sm:px-5 py-3 rounded-2xl border border-slate-200/70 shadow-2xs">
         <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
           <button
             onClick={onBackToClasses}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-colors cursor-pointer"
-            title="Voltar para a lista geral de turmas"
+            title="Back to the full class list"
           >
             <ArrowLeft className="w-3.5 h-3.5 text-slate-600" />
-            <span>{counselorMode ? 'Voltar às Turmas' : 'Minhas Turmas'}</span>
+            <span>{counselorMode ? 'Back to Classes' : 'My Classes'}</span>
           </button>
 
           <span className="text-slate-300 hidden sm:inline">/</span>
@@ -101,7 +101,7 @@ export const ClassHeader: React.FC<ClassHeaderProps> = ({
           {/* Class Quick Switcher */}
           <div className="relative inline-flex items-center min-w-0 max-w-full">
             <span className="text-xs font-semibold text-slate-500 mr-2 hidden md:inline flex-shrink-0">
-              Turma Ativa:
+              Active Class:
             </span>
             <div className="relative min-w-0 max-w-[200px] sm:max-w-xs md:max-w-sm">
               <select
@@ -111,7 +111,7 @@ export const ClassHeader: React.FC<ClassHeaderProps> = ({
               >
                 {allClasses.map((c) => (
                   <option key={c.id} value={c.id} className="text-slate-900 bg-white">
-                    {c.name} ({c.code || 'Turma'})
+                    {c.name} ({c.code || 'Class'})
                   </option>
                 ))}
               </select>
@@ -120,7 +120,7 @@ export const ClassHeader: React.FC<ClassHeaderProps> = ({
           </div>
         </div>
 
-        {/* Quick Classroom Actions */}
+        {/* Quick class actions */}
         <div className="flex items-center gap-2 flex-wrap">
           <button
             onClick={() => onChangeSubTab('chamada')}
@@ -131,41 +131,41 @@ export const ClassHeader: React.FC<ClassHeaderProps> = ({
             }`}
           >
             <CalendarCheck className="w-3.5 h-3.5 text-emerald-600" />
-            <span>Fazer Chamada</span>
+            <span>Take Attendance</span>
           </button>
 
           <div className="hidden sm:flex items-center gap-1.5 border-l border-slate-200 pl-2">
             <button
               onClick={onOpenNewLesson}
               className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-semibold border border-slate-200/60 cursor-pointer transition-colors"
-              title="Publicar nova aula com materiais"
+              title="Publish a new lesson with materials"
             >
               <Plus className="w-3.5 h-3.5 text-slate-500" />
-              <span>Aula</span>
+              <span>Lesson</span>
             </button>
 
             <button
               onClick={onOpenNewAssignment}
               className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-semibold border border-slate-200/60 cursor-pointer transition-colors"
-              title="Criar nova atividade para a turma"
+              title="Create a new class assignment"
             >
               <Plus className="w-3.5 h-3.5 text-slate-500" />
-              <span>Atividade</span>
+              <span>Assignment</span>
             </button>
 
             <button
               onClick={onOpenNewExam}
               className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-semibold border border-slate-200/60 cursor-pointer transition-colors"
-              title="Cadastrar nova prova ou avaliação"
+              title="Add a new exam or assessment"
             >
               <Plus className="w-3.5 h-3.5 text-slate-500" />
-              <span>Prova</span>
+              <span>Exam</span>
             </button>
           </div>
         </div>
       </div>
 
-      {/* Main Think Green Institutional Class Header Banner */}
+      {/* Main Think Green institutional class banner */}
       <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#064e2e] via-[#075e38] to-[#0a6c42] text-white shadow-md p-6 sm:p-8">
         {/* Subtle geometric pattern / ambient decor */}
         <div className="absolute right-0 top-0 bottom-0 w-1/3 opacity-10 pointer-events-none flex items-center justify-end pr-8">
@@ -182,10 +182,10 @@ export const ClassHeader: React.FC<ClassHeaderProps> = ({
             <div className="space-y-1.5 min-w-0 flex-1 overflow-hidden">
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="text-[11px] font-extrabold tracking-wider uppercase px-2.5 py-0.5 rounded-md bg-white/20 text-emerald-100 border border-white/20 flex-shrink-0">
-                  {selectedClass.code || 'TURMA'}
+                  {selectedClass.code || 'CLASS'}
                 </span>
                 <span className="text-xs text-emerald-200 font-medium truncate">
-                  {selectedClass.courseName || 'Programa Educacional Think Green'}
+                  {selectedClass.courseName || 'Think Green Educational Program'}
                 </span>
               </div>
 
@@ -198,7 +198,7 @@ export const ClassHeader: React.FC<ClassHeaderProps> = ({
                 <div className="flex items-center gap-1.5">
                   <UserCheck className="w-3.5 h-3.5 text-emerald-300" />
                   <span>
-                    Professor: <strong className="text-white">{selectedClass.teacherName || 'Professor não atribuído'}</strong>
+                    Teacher: <strong className="text-white">{selectedClass.teacherName || 'Teacher not assigned'}</strong>
                   </span>
                 </div>
 
@@ -219,7 +219,7 @@ export const ClassHeader: React.FC<ClassHeaderProps> = ({
                 <div className="flex items-center gap-1.5">
                   <Users className="w-3.5 h-3.5 text-emerald-300" />
                   <span>
-                    <strong className="text-white">{studentsCount}</strong> alunos matriculados
+                    <strong className="text-white">{studentsCount}</strong> enrolled students
                   </span>
                 </div>
               </div>
@@ -230,18 +230,18 @@ export const ClassHeader: React.FC<ClassHeaderProps> = ({
           <div className="flex md:flex-col items-center md:items-end justify-between gap-2 border-t md:border-t-0 border-white/15 pt-4 md:pt-0">
             <div className="flex items-center gap-2 bg-black/20 backdrop-blur-xs px-3.5 py-1.5 rounded-xl border border-white/10">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="text-xs font-bold text-emerald-100">Turma Ativa • 2026</span>
+              <span className="text-xs font-bold text-emerald-100">Active Class • 2026</span>
             </div>
             <p className="text-[11px] text-emerald-200/80 font-medium text-right hidden sm:block">
-              Gestão Pedagógica Centralizada
+              Centralized Academic Management
             </p>
           </div>
         </div>
       </div>
 
-      {/* Google Classroom-Inspired Structural Navigation Bar (Think Green Styling) */}
+      {/* Google Classroom-inspired navigation bar (Think Green styling) */}
       <div className="bg-white rounded-2xl border border-slate-200/70 p-1.5 shadow-2xs flex items-center justify-between sm:justify-start gap-1 sm:gap-2 overflow-x-auto no-scrollbar">
-        {/* 1. Visão Geral (Stream / Mural) */}
+        {/* 1. Overview (Stream / Wall) */}
         <button
           onClick={() => onChangeSubTab('visao_geral')}
           className={`flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap cursor-pointer ${
@@ -251,7 +251,7 @@ export const ClassHeader: React.FC<ClassHeaderProps> = ({
           }`}
         >
           <LayoutGrid className="w-4 h-4" />
-          <span>Visão Geral</span>
+          <span>Overview</span>
           <span
             className={`text-[10px] px-1.5 py-0.2 rounded-md font-extrabold ${
               activeSubTab === 'visao_geral'
@@ -259,11 +259,11 @@ export const ClassHeader: React.FC<ClassHeaderProps> = ({
                 : 'bg-slate-100 text-slate-500'
             }`}
           >
-            Mural
+            Stream
           </span>
         </button>
 
-        {/* 2. Conteúdos (Classwork / Tópicos) */}
+        {/* 2. Content (Classwork / Topics) */}
         <button
           onClick={() => onChangeSubTab('conteudos')}
           className={`flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap cursor-pointer ${
@@ -273,7 +273,7 @@ export const ClassHeader: React.FC<ClassHeaderProps> = ({
           }`}
         >
           <BookOpen className="w-4 h-4" />
-          <span>Conteúdos</span>
+          <span>Content</span>
           <span
             className={`text-[10px] px-1.5 py-0.2 rounded-md font-extrabold ${
               activeSubTab === 'conteudos'
@@ -281,11 +281,11 @@ export const ClassHeader: React.FC<ClassHeaderProps> = ({
                 : 'bg-emerald-50 text-emerald-800'
             }`}
           >
-            Tópicos
+            Topics
           </span>
         </button>
 
-        {/* 3. Plano de Aula (Lesson Plan - Baseado no modelo Excel) */}
+        {/* 3. Lesson Plan (based on the Excel model) */}
         <button
           onClick={() => onChangeSubTab('plano_aula')}
           className={`flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap cursor-pointer ${
@@ -295,7 +295,7 @@ export const ClassHeader: React.FC<ClassHeaderProps> = ({
           }`}
         >
           <FileSpreadsheet className="w-4 h-4" />
-          <span>Plano de Aula</span>
+          <span>Lesson Plan</span>
           <span
             className={`text-[10px] px-1.5 py-0.2 rounded-md font-extrabold ${
               activeSubTab === 'plano_aula'
@@ -303,11 +303,11 @@ export const ClassHeader: React.FC<ClassHeaderProps> = ({
                 : 'bg-emerald-50 text-emerald-800'
             }`}
           >
-            Lesson Plan
+            Plan
           </span>
         </button>
 
-        {/* 4. Pessoas (People) */}
+        {/* 4. People */}
         <button
           onClick={() => onChangeSubTab('pessoas')}
           className={`flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap cursor-pointer ${
@@ -317,7 +317,7 @@ export const ClassHeader: React.FC<ClassHeaderProps> = ({
           }`}
         >
           <Users className="w-4 h-4" />
-          <span>Pessoas</span>
+          <span>People</span>
           <span
             className={`text-[10px] px-1.5 py-0.2 rounded-md font-extrabold ${
               activeSubTab === 'pessoas'
@@ -329,7 +329,7 @@ export const ClassHeader: React.FC<ClassHeaderProps> = ({
           </span>
         </button>
 
-        {/* 4. Notas (Gradebook) */}
+        {/* 4. Grades (Gradebook) */}
         <button
           onClick={() => onChangeSubTab('notas')}
           className={`flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap cursor-pointer ${
@@ -339,10 +339,10 @@ export const ClassHeader: React.FC<ClassHeaderProps> = ({
           }`}
         >
           <Star className="w-4 h-4" />
-          <span>Notas</span>
+          <span>Grades</span>
         </button>
 
-        {/* 5. Chamada (Frequência) */}
+        {/* 5. Attendance */}
         <button
           onClick={() => onChangeSubTab('chamada')}
           className={`flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap cursor-pointer ${
@@ -352,7 +352,7 @@ export const ClassHeader: React.FC<ClassHeaderProps> = ({
           }`}
         >
           <CheckCircle2 className="w-4 h-4" />
-          <span>Frequência</span>
+          <span>Attendance</span>
           <span
             className={`text-[10px] px-1.5 py-0.2 rounded-md font-extrabold ${
               activeSubTab === 'chamada'
@@ -360,7 +360,7 @@ export const ClassHeader: React.FC<ClassHeaderProps> = ({
                 : 'bg-emerald-100/70 text-[#075e38]'
             }`}
           >
-            Diário
+            Daily
           </span>
         </button>
       </div>

@@ -53,39 +53,39 @@ export const AdminUsersTab: React.FC = () => {
     phone: '+20 10 ',
     roles: ['SECRETARIAT'],
     role: 'SECRETARIAT',
-    department: 'Secretaria Acadêmica',
+    department: 'Academic Secretariat',
     status: 'ACTIVE',
     studentId: '',
   });
 
   const rolesList: { role: UserRole; label: string; icon: any; color: string }[] = [
     { role: 'SUPER_ADMIN', label: 'Super Admin', icon: Shield, color: 'bg-purple-100 text-purple-900 border-purple-300 font-bold' },
-    { role: 'TEACHER', label: 'Professor / Docente', icon: BookOpen, color: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
-    { role: 'SECRETARIAT', label: 'Secretaria', icon: Users, color: 'bg-teal-50 text-teal-700 border-teal-200' },
-    { role: 'FINANCE', label: 'Financeiro / Tesouraria', icon: CreditCard, color: 'bg-amber-50 text-amber-700 border-amber-200' },
-    { role: 'ACCOUNTING', label: 'Contabilidade', icon: BarChart3, color: 'bg-blue-50 text-blue-700 border-blue-200' },
-    { role: 'RECEPTION', label: 'Recepção / Front Desk', icon: Building2, color: 'bg-indigo-50 text-indigo-700 border-indigo-200' },
-    { role: 'STUDENT', label: 'Aluno (Estudante)', icon: GraduationCap, color: 'bg-purple-50 text-purple-700 border-purple-200' },
+    { role: 'TEACHER', label: 'Teacher / Instructor', icon: BookOpen, color: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+    { role: 'SECRETARIAT', label: 'Secretariat', icon: Users, color: 'bg-teal-50 text-teal-700 border-teal-200' },
+    { role: 'FINANCE', label: 'Finance / Treasury', icon: CreditCard, color: 'bg-amber-50 text-amber-700 border-amber-200' },
+    { role: 'ACCOUNTING', label: 'Accounting', icon: BarChart3, color: 'bg-blue-50 text-blue-700 border-blue-200' },
+    { role: 'RECEPTION', label: 'Reception / Front Desk', icon: Building2, color: 'bg-indigo-50 text-indigo-700 border-indigo-200' },
+    { role: 'STUDENT', label: 'Student', icon: GraduationCap, color: 'bg-purple-50 text-purple-700 border-purple-200' },
   ];
 
   const getRoleBadge = (role: UserRole) => {
     switch (role) {
       case 'STUDENT':
-        return <span key={role} className="px-2 py-0.5 rounded-md text-[11px] font-bold bg-purple-50 text-purple-800 border border-purple-200">Aluno</span>;
+        return <span key={role} className="px-2 py-0.5 rounded-md text-[11px] font-bold bg-purple-50 text-purple-800 border border-purple-200">Student</span>;
       case 'TEACHER':
-        return <span key={role} className="px-2 py-0.5 rounded-md text-[11px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">Professor</span>;
+        return <span key={role} className="px-2 py-0.5 rounded-md text-[11px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">Teacher</span>;
       case 'FINANCE':
-        return <span key={role} className="px-2 py-0.5 rounded-md text-[11px] font-bold bg-amber-50 text-amber-800 border border-amber-200">Financeiro</span>;
+        return <span key={role} className="px-2 py-0.5 rounded-md text-[11px] font-bold bg-amber-50 text-amber-800 border border-amber-200">Finance</span>;
       case 'SECRETARIAT':
-        return <span key={role} className="px-2 py-0.5 rounded-md text-[11px] font-bold bg-teal-50 text-teal-800 border border-teal-200">Secretaria</span>;
+        return <span key={role} className="px-2 py-0.5 rounded-md text-[11px] font-bold bg-teal-50 text-teal-800 border border-teal-200">Secretariat</span>;
       case 'ACCOUNTING':
-        return <span key={role} className="px-2 py-0.5 rounded-md text-[11px] font-bold bg-blue-50 text-blue-800 border border-blue-200">Contabilidade</span>;
+        return <span key={role} className="px-2 py-0.5 rounded-md text-[11px] font-bold bg-blue-50 text-blue-800 border border-blue-200">Accounting</span>;
       case 'RECEPTION':
-        return <span key={role} className="px-2 py-0.5 rounded-md text-[11px] font-bold bg-indigo-50 text-indigo-800 border border-indigo-200">Recepção</span>;
+        return <span key={role} className="px-2 py-0.5 rounded-md text-[11px] font-bold bg-indigo-50 text-indigo-800 border border-indigo-200">Reception</span>;
       case 'SUPER_ADMIN':
         return <span key={role} className="px-2 py-0.5 rounded-md text-[11px] font-bold bg-purple-100 text-purple-900 border border-purple-300">Super Admin</span>;
       case 'PENDING':
-        return <span key={role} className="px-2 py-0.5 rounded-md text-[11px] font-bold bg-amber-50 text-amber-800 border border-amber-300">Aguardando função</span>;
+        return <span key={role} className="px-2 py-0.5 rounded-md text-[11px] font-bold bg-amber-50 text-amber-800 border border-amber-300">Awaiting role</span>;
       default:
         return <span key={role} className="px-2 py-0.5 rounded-md text-[11px] font-bold bg-slate-100 text-slate-700">{role}</span>;
     }
@@ -155,7 +155,7 @@ export const AdminUsersTab: React.FC = () => {
       phone: '+20 10 ',
       roles: ['SECRETARIAT'],
       role: 'SECRETARIAT',
-      department: 'Secretaria Acadêmica',
+      department: 'Academic Secretariat',
       status: 'ACTIVE',
       studentId: '',
     });
@@ -230,10 +230,10 @@ export const AdminUsersTab: React.FC = () => {
         <div>
           <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
             <Users className="w-5 h-5 text-purple-700" />
-            Gestão de Usuários, Perfis e Acessos (RBAC)
+            User, Profile & Access Management (RBAC)
           </h2>
           <p className="text-xs text-slate-500 mt-0.5">
-            Gerencie operadores da secretaria, docentes, equipe financeira, administradores e alunos.
+            Manage secretariat staff, teachers, finance team, administrators and students.
           </p>
         </div>
 
@@ -242,7 +242,7 @@ export const AdminUsersTab: React.FC = () => {
           className="px-4 py-2 bg-purple-700 hover:bg-purple-800 text-white rounded-xl font-bold text-xs flex items-center gap-1.5 transition-colors shadow-2xs self-start sm:self-auto cursor-pointer"
         >
           <UserPlus className="w-4 h-4" />
-          Novo Usuário
+          New User
         </button>
       </div>
 
@@ -253,7 +253,7 @@ export const AdminUsersTab: React.FC = () => {
           <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
-            placeholder="Buscar por nome, e-mail, telefone..."
+            placeholder="Search by name, email, phone..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:bg-white transition-all"
@@ -264,22 +264,22 @@ export const AdminUsersTab: React.FC = () => {
         <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
           <div className="flex items-center gap-1.5 text-xs text-slate-500">
             <Filter className="w-3.5 h-3.5" />
-            <span>Papel:</span>
+            <span>Role:</span>
           </div>
           <select
             value={roleFilter}
             onChange={(e) => setRoleFilter(e.target.value)}
             className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-purple-500"
           >
-            <option value="ALL">Todos os Papéis ({state.users.length})</option>
-            <option value="STUDENT">Aluno</option>
-            <option value="TEACHER">Professor</option>
-            <option value="FINANCE">Financeiro</option>
-            <option value="SECRETARIAT">Secretaria</option>
-            <option value="ACCOUNTING">Contabilidade</option>
-            <option value="RECEPTION">Recepção</option>
+            <option value="ALL">All Roles ({state.users.length})</option>
+            <option value="STUDENT">Student</option>
+            <option value="TEACHER">Teacher</option>
+            <option value="FINANCE">Finance</option>
+            <option value="SECRETARIAT">Secretariat</option>
+            <option value="ACCOUNTING">Accounting</option>
+            <option value="RECEPTION">Reception</option>
             <option value="SUPER_ADMIN">Super Admin</option>
-            <option value="PENDING">Aguardando função</option>
+            <option value="PENDING">Awaiting role</option>
           </select>
 
           <select
@@ -287,9 +287,9 @@ export const AdminUsersTab: React.FC = () => {
             onChange={(e) => setStatusFilter(e.target.value)}
             className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-purple-500"
           >
-            <option value="ALL">Todos os Status</option>
-            <option value="ACTIVE">Apenas Ativos</option>
-            <option value="INACTIVE">Apenas Inativos</option>
+            <option value="ALL">All Statuses</option>
+            <option value="ACTIVE">Active Only</option>
+            <option value="INACTIVE">Inactive Only</option>
           </select>
         </div>
       </div>
@@ -300,19 +300,19 @@ export const AdminUsersTab: React.FC = () => {
           <table className="w-full text-left text-xs">
             <thead className="bg-slate-50 text-slate-500 font-bold uppercase tracking-wider border-b border-slate-200">
               <tr>
-                <th className="px-4 py-3">Usuário</th>
-                <th className="px-4 py-3">Papel / Função</th>
-                <th className="px-4 py-3">Departamento</th>
-                <th className="px-4 py-3">Contato</th>
+                <th className="px-4 py-3">User</th>
+                <th className="px-4 py-3">Role / Function</th>
+                <th className="px-4 py-3">Department</th>
+                <th className="px-4 py-3">Contact</th>
                 <th className="px-4 py-3">Status</th>
-                <th className="px-4 py-3 text-right">Ações</th>
+                <th className="px-4 py-3 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {filteredUsers.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="px-4 py-8 text-center text-slate-400">
-                    Nenhum usuário encontrado com os filtros aplicados.
+                    No users found with the applied filters.
                   </td>
                 </tr>
               ) : (
@@ -344,7 +344,7 @@ export const AdminUsersTab: React.FC = () => {
                     </td>
 
                     <td className="px-4 py-3 text-slate-600">
-                      {user.department || 'Geral'}
+                      {user.department || 'General'}
                     </td>
 
                     <td className="px-4 py-3 text-slate-600 font-mono text-[11px]">
@@ -359,17 +359,17 @@ export const AdminUsersTab: React.FC = () => {
                             ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
                             : 'bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100'
                         }`}
-                        title="Clique para alternar o status do usuário"
+                        title="Click to toggle user status"
                       >
                         {user.status === 'ACTIVE' ? (
                           <>
                             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                            Ativo
+                            Active
                           </>
                         ) : (
                           <>
                             <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
-                            Inativo
+                            Inactive
                           </>
                         )}
                       </button>
@@ -380,7 +380,7 @@ export const AdminUsersTab: React.FC = () => {
                         <button
                           onClick={() => handleOpenEditModal(user)}
                           className="p-1.5 text-slate-500 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
-                          title="Editar dados do usuário"
+                          title="Edit user data"
                         >
                           <Edit2 className="w-3.5 h-3.5" />
                         </button>
@@ -388,7 +388,7 @@ export const AdminUsersTab: React.FC = () => {
                         <button
                           onClick={() => setDeletingUser(user)}
                           className="p-1.5 text-slate-400 hover:text-rose-700 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
-                          title="Excluir usuário"
+                          title="Delete user"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
@@ -402,19 +402,19 @@ export const AdminUsersTab: React.FC = () => {
         </div>
       </div>
 
-      {/* Modal: Novo Usuário */}
+      {/* Modal: New User */}
       <Modal
         isOpen={isNewUserModalOpen}
         onClose={() => setIsNewUserModalOpen(false)}
-        title="Cadastrar Novo Usuário do Sistema"
+        title="Register New System User"
       >
         <form onSubmit={handleSaveNewUser} className="space-y-4 text-xs">
           <div>
-            <label className="block font-bold text-slate-700 mb-1">Nome Completo *</label>
+            <label className="block font-bold text-slate-700 mb-1">Full Name *</label>
             <input
               type="text"
               required
-              placeholder="Ex: Nome completo do usuário"
+              placeholder="E.g.: User's full name"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               className="w-full p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-purple-500"
@@ -423,11 +423,11 @@ export const AdminUsersTab: React.FC = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block font-bold text-slate-700 mb-1">E-mail Institucional *</label>
+              <label className="block font-bold text-slate-700 mb-1">Institutional Email *</label>
               <input
                 type="email"
                 required
-                placeholder="usuario@thinkgreen.org"
+                placeholder="user@thinkgreen.org"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 className="w-full p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-purple-500"
@@ -435,7 +435,7 @@ export const AdminUsersTab: React.FC = () => {
             </div>
 
             <div>
-              <label className="block font-bold text-slate-700 mb-1">Telefone / WhatsApp</label>
+              <label className="block font-bold text-slate-700 mb-1">Phone / WhatsApp</label>
               <input
                 type="text"
                 placeholder="+20 10 1234 5678"
@@ -449,8 +449,8 @@ export const AdminUsersTab: React.FC = () => {
           {/* Multi-role Selection */}
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <label className="block font-bold text-slate-700">Funções Vinculadas (Multi-Função) *</label>
-              <span className="text-[11px] text-slate-500">Selecione uma ou mais (ex: Super Admin + Professor)</span>
+              <label className="block font-bold text-slate-700">Linked Roles (Multi-Role) *</label>
+              <span className="text-[11px] text-slate-500">Select one or more (e.g.: Super Admin + Teacher)</span>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 bg-slate-50 p-2.5 rounded-xl border border-slate-200">
               {rolesList.map((r) => {
@@ -482,7 +482,7 @@ export const AdminUsersTab: React.FC = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block font-bold text-slate-700 mb-1">Função Ativa Inicial (Ao Efetuar Login) *</label>
+              <label className="block font-bold text-slate-700 mb-1">Initial Active Role (On Login) *</label>
               <select
                 value={formData.role}
                 onChange={(e) => setFormData({ ...formData, role: e.target.value as UserRole })}
@@ -497,10 +497,10 @@ export const AdminUsersTab: React.FC = () => {
             </div>
 
             <div>
-              <label className="block font-bold text-slate-700 mb-1">Departamento / Lotação</label>
+              <label className="block font-bold text-slate-700 mb-1">Department / Assignment</label>
               <input
                 type="text"
-                placeholder="Ex: Coordenação Geral & Docência"
+                placeholder="E.g.: General Coordination & Teaching"
                 value={formData.department}
                 onChange={(e) => setFormData({ ...formData, department: e.target.value })}
                 className="w-full p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-purple-500"
@@ -510,10 +510,10 @@ export const AdminUsersTab: React.FC = () => {
 
           {((formData.roles || []).includes('STUDENT') || formData.role === 'STUDENT') && (
             <div>
-              <label className="block font-bold text-slate-700 mb-1">Vincular ID do Aluno (STU00000)</label>
+              <label className="block font-bold text-slate-700 mb-1">Link Student ID (STU00000)</label>
               <input
                 type="text"
-                placeholder="Ex: STU00001"
+                placeholder="E.g.: STU00001"
                 value={formData.studentId}
                 onChange={(e) => setFormData({ ...formData, studentId: e.target.value })}
                 className="w-full p-2.5 font-mono border border-slate-300 rounded-xl focus:ring-2 focus:ring-purple-500"
@@ -522,14 +522,14 @@ export const AdminUsersTab: React.FC = () => {
           )}
 
           <div>
-            <label className="block font-bold text-slate-700 mb-1">Status Inicial</label>
+            <label className="block font-bold text-slate-700 mb-1">Initial Status</label>
             <select
               value={formData.status}
               onChange={(e) => setFormData({ ...formData, status: e.target.value as 'ACTIVE' | 'INACTIVE' })}
               className="w-full p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-purple-500"
             >
-              <option value="ACTIVE">Ativo (Acesso Imediato)</option>
-              <option value="INACTIVE">Inativo (Bloqueado)</option>
+              <option value="ACTIVE">Active (Immediate Access)</option>
+              <option value="INACTIVE">Inactive (Blocked)</option>
             </select>
           </div>
 
@@ -539,28 +539,28 @@ export const AdminUsersTab: React.FC = () => {
               onClick={() => setIsNewUserModalOpen(false)}
               className="px-4 py-2 border border-slate-300 rounded-xl font-semibold text-slate-700"
             >
-              Cancelar
+              Cancel
             </button>
             <button
               type="submit"
               className="px-5 py-2 bg-purple-700 hover:bg-purple-800 text-white rounded-xl font-bold shadow-2xs"
             >
-              Criar Usuário
+              Create User
             </button>
           </div>
         </form>
       </Modal>
 
-      {/* Modal: Editar Usuário */}
+      {/* Modal: Edit User */}
       {editingUser && (
         <Modal
           isOpen={true}
           onClose={() => setEditingUser(null)}
-          title={`Editar Usuário: ${editingUser.name}`}
+          title={`Edit User: ${editingUser.name}`}
         >
           <form onSubmit={handleSaveEditUser} className="space-y-4 text-xs">
             <div>
-              <label className="block font-bold text-slate-700 mb-1">Nome Completo *</label>
+              <label className="block font-bold text-slate-700 mb-1">Full Name *</label>
               <input
                 type="text"
                 required
@@ -572,7 +572,7 @@ export const AdminUsersTab: React.FC = () => {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block font-bold text-slate-700 mb-1">E-mail *</label>
+                <label className="block font-bold text-slate-700 mb-1">Email *</label>
                 <input
                   type="email"
                   required
@@ -583,7 +583,7 @@ export const AdminUsersTab: React.FC = () => {
               </div>
 
               <div>
-                <label className="block font-bold text-slate-700 mb-1">Telefone</label>
+                <label className="block font-bold text-slate-700 mb-1">Phone</label>
                 <input
                   type="text"
                   value={editingUser.phone || ''}
@@ -596,8 +596,8 @@ export const AdminUsersTab: React.FC = () => {
             {/* Multi-role Selection in Edit Modal */}
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="block font-bold text-slate-700">Funções Vinculadas (Multi-Função) *</label>
-                <span className="text-[11px] text-slate-500">As funções definem os módulos visíveis</span>
+                <label className="block font-bold text-slate-700">Linked Roles (Multi-Role) *</label>
+                <span className="text-[11px] text-slate-500">Roles define the visible modules</span>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 bg-slate-50 p-2.5 rounded-xl border border-slate-200">
                 {rolesList.map((r) => {
@@ -629,14 +629,14 @@ export const AdminUsersTab: React.FC = () => {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block font-bold text-slate-700 mb-1">Função Ativa Principal</label>
+                <label className="block font-bold text-slate-700 mb-1">Primary Active Role</label>
                 <select
                   value={editingUser.role}
                   onChange={(e) => setEditingUser({ ...editingUser, role: e.target.value as UserRole })}
                   className="w-full p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-purple-500"
                 >
                   {(editingUser.roles || []).filter((r) => r !== 'PENDING').length === 0 && (
-                    <option value="PENDING">Aguardando definição</option>
+                    <option value="PENDING">Awaiting assignment</option>
                   )}
                   {(editingUser.roles || [])
                     .filter((r) => r !== 'PENDING')
@@ -649,7 +649,7 @@ export const AdminUsersTab: React.FC = () => {
               </div>
 
               <div>
-                <label className="block font-bold text-slate-700 mb-1">Departamento</label>
+                <label className="block font-bold text-slate-700 mb-1">Department</label>
                 <input
                   type="text"
                   value={editingUser.department || ''}
@@ -660,14 +660,14 @@ export const AdminUsersTab: React.FC = () => {
             </div>
 
             <div>
-              <label className="block font-bold text-slate-700 mb-1">Status da Conta</label>
+              <label className="block font-bold text-slate-700 mb-1">Account Status</label>
               <select
                 value={editingUser.status}
                 onChange={(e) => setEditingUser({ ...editingUser, status: e.target.value as 'ACTIVE' | 'INACTIVE' })}
                 className="w-full p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-purple-500"
               >
-                <option value="ACTIVE">Ativo (Acesso Liberado)</option>
-                <option value="INACTIVE">Inativo (Acesso Bloqueado)</option>
+                <option value="ACTIVE">Active (Access Granted)</option>
+                <option value="INACTIVE">Inactive (Access Blocked)</option>
               </select>
             </div>
 
@@ -677,31 +677,31 @@ export const AdminUsersTab: React.FC = () => {
                 onClick={() => setEditingUser(null)}
                 className="px-4 py-2 border border-slate-300 rounded-xl font-semibold text-slate-700"
               >
-                Cancelar
+                Cancel
               </button>
               <button
                 type="submit"
                 className="px-5 py-2 bg-purple-700 hover:bg-purple-800 text-white rounded-xl font-bold shadow-2xs"
               >
-                Salvar Alterações
+                Save Changes
               </button>
             </div>
           </form>
         </Modal>
       )}
 
-      {/* Modal: Excluir Usuário */}
+      {/* Modal: Delete User */}
       {deletingUser && (
         <Modal
           isOpen={true}
           onClose={() => setDeletingUser(null)}
-          title="Excluir Usuário"
+          title="Delete User"
         >
           <div className="space-y-4 text-xs">
             <p className="text-slate-600">
-              Tem certeza de que deseja excluir permanentemente o usuário{' '}
+              Are you sure you want to permanently delete the user{' '}
               <strong className="text-slate-900">{deletingUser.name}</strong> ({deletingUser.email})?
-              Esta ação registrará um log na auditoria.
+              This action will record a log in the audit trail.
             </p>
 
             <div className="flex justify-end gap-2 pt-2">
@@ -709,13 +709,13 @@ export const AdminUsersTab: React.FC = () => {
                 onClick={() => setDeletingUser(null)}
                 className="px-4 py-2 border border-slate-300 rounded-xl font-semibold text-slate-700"
               >
-                Cancelar
+                Cancel
               </button>
               <button
                 onClick={handleDeleteConfirm}
                 className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-bold"
               >
-                Confirmar Exclusão
+                Confirm Deletion
               </button>
             </div>
           </div>

@@ -53,71 +53,71 @@ export const Sidebar: React.FC<SidebarProps> = ({
     switch (role) {
       case 'STUDENT':
         return [
-          { id: 'student_home', label: 'Início', icon: Home },
-          { id: 'student_courses', label: 'Minhas Matrículas', icon: BookOpen },
-          { id: 'student_lms', label: 'Ambiente AVA / Aulas', icon: BookMarked, badge: 'LMS' },
-          { id: 'student_assignments', label: 'Atividades & Trabalhos', icon: FileCheck },
-          { id: 'student_grades', label: 'Minhas Notas', icon: Award },
-          { id: 'student_attendance', label: 'Frequência & Presença', icon: CalendarCheck },
-          { id: 'student_finance', label: 'Financeiro & Recibos', icon: CreditCard },
-          { id: 'student_documents', label: 'Meus Documentos', icon: FileText },
+          { id: 'student_home', label: 'Home', icon: Home },
+          { id: 'student_courses', label: 'My Enrollments', icon: BookOpen },
+          { id: 'student_lms', label: 'LMS Environment / Classes', icon: BookMarked, badge: 'LMS' },
+          { id: 'student_assignments', label: 'Activities & Assignments', icon: FileCheck },
+          { id: 'student_grades', label: 'My Grades', icon: Award },
+          { id: 'student_attendance', label: 'Attendance & Presence', icon: CalendarCheck },
+          { id: 'student_finance', label: 'Finance & Receipts', icon: CreditCard },
+          { id: 'student_documents', label: 'My Documents', icon: FileText },
         ];
 
       case 'TEACHER':
         return [
-          { id: 'teacher_home', label: 'Painel do Professor', icon: Home },
-          { id: 'teacher_classes', label: 'Minhas Turmas', icon: BookOpen },
-          { id: 'teacher_attendance', label: 'Fazer Chamada', icon: CalendarCheck },
-          { id: 'teacher_grades', label: 'Lançar Notas', icon: Award },
-          { id: 'teacher_lessons', label: 'Aulas & Materiais (AVA)', icon: BookMarked },
-          { id: 'teacher_assignments', label: 'Corrigir Trabalhos', icon: FileCheck },
-          { id: 'acc_employee_portal', label: 'Pedir Reembolso (Gastos)', icon: Receipt },
+          { id: 'teacher_home', label: 'Teacher Dashboard', icon: Home },
+          { id: 'teacher_classes', label: 'My Classes', icon: BookOpen },
+          { id: 'teacher_attendance', label: 'Take Attendance', icon: CalendarCheck },
+          { id: 'teacher_grades', label: 'Enter Grades', icon: Award },
+          { id: 'teacher_lessons', label: 'Classes & Materials (LMS)', icon: BookMarked },
+          { id: 'teacher_assignments', label: 'Grade Assignments', icon: FileCheck },
+          { id: 'acc_employee_portal', label: 'Request Reimbursement (Expenses)', icon: Receipt },
         ];
 
       case 'SECRETARIAT':
         return [
-          { id: 'sec_home', label: 'Painel da Secretaria', icon: Home },
-          { id: 'sec_new_student', label: 'Novo Aluno (Cadastro)', icon: UserPlus, highlight: true },
-          { id: 'sec_students', label: 'Alunos & Cadastros', icon: Users },
-          { id: 'sec_enrollments', label: 'Matrículas & Cursos', icon: Layers },
-          { id: 'sec_classes', label: 'Turmas & Horários', icon: BookOpen },
-          { id: 'sec_documents', label: 'Documentos dos Alunos', icon: FileText },
-          { id: 'sec_import', label: 'Importar Planilhas', icon: Database },
-          { id: 'acc_employee_portal', label: 'Pedir Reembolso (Gastos)', icon: Receipt },
+          { id: 'sec_home', label: 'Registrar\'s Office Dashboard', icon: Home },
+          { id: 'sec_new_student', label: 'New Student (Registration)', icon: UserPlus, highlight: true },
+          { id: 'sec_students', label: 'Students & Records', icon: Users },
+          { id: 'sec_enrollments', label: 'Enrollments & Courses', icon: Layers },
+          { id: 'sec_classes', label: 'Classes & Schedules', icon: BookOpen },
+          { id: 'sec_documents', label: 'Student Documents', icon: FileText },
+          { id: 'sec_import', label: 'Import Spreadsheets', icon: Database },
+          { id: 'acc_employee_portal', label: 'Request Reimbursement (Expenses)', icon: Receipt },
         ];
 
       case 'FINANCE':
         return [
-          { id: 'fin_home', label: 'Painel Financeiro', icon: Home },
-          { id: 'fin_charges', label: 'Mensalidades & Cobrança', icon: CreditCard },
-          { id: 'fin_cash_register', label: 'Controle de Caixa (PDV)', icon: Wallet, highlight: true },
-          { id: 'fin_receipts', label: 'Recibos Emitidos', icon: Receipt },
-          { id: 'fin_inadimplencia', label: 'Inadimplência & Status', icon: ShieldAlert },
-          { id: 'fin_reports', label: 'Relatórios Financeiros', icon: PieChart },
+          { id: 'fin_home', label: 'Finance Dashboard', icon: Home },
+          { id: 'fin_charges', label: 'Tuition & Billing', icon: CreditCard },
+          { id: 'fin_cash_register', label: 'Cash Register Control (POS)', icon: Wallet, highlight: true },
+          { id: 'fin_receipts', label: 'Issued Receipts', icon: Receipt },
+          { id: 'fin_inadimplencia', label: 'Delinquency & Status', icon: ShieldAlert },
+          { id: 'fin_reports', label: 'Financial Reports', icon: PieChart },
         ];
 
       case 'ACCOUNTING':
         return [
-          { id: 'acc_home', label: 'Painel Contábil (Rony)', icon: Home },
-          { id: 'acc_revenues', label: 'Recebimentos (Entradas)', icon: CreditCard },
-          { id: 'acc_expenses', label: 'Gastos & Planilha Oficial', icon: FileSpreadsheet, highlight: true },
-          { id: 'acc_reimbursements', label: 'Pendências de Reembolso', icon: Receipt },
-          { id: 'acc_employee_portal', label: 'Portal de Reembolso (App)', icon: Smartphone },
+          { id: 'acc_home', label: 'Accounting Dashboard (Rony)', icon: Home },
+          { id: 'acc_revenues', label: 'Receipts (Inflows)', icon: CreditCard },
+          { id: 'acc_expenses', label: 'Expenses & Official Spreadsheet', icon: FileSpreadsheet, highlight: true },
+          { id: 'acc_reimbursements', label: 'Pending Reimbursements', icon: Receipt },
+          { id: 'acc_employee_portal', label: 'Reimbursement Portal (App)', icon: Smartphone },
         ];
 
       case 'SUPER_ADMIN':
         return [
-          { id: 'admin_home', label: 'Visão Geral 360°', icon: Home },
-          { id: 'admin_users', label: 'Usuários & Permissões', icon: Users },
-          { id: 'admin_registration', label: 'Registro de Funcionários', icon: UserPlus },
-          { id: 'admin_rules', label: 'Regras de Negócio (Gates)', icon: ShieldAlert, highlight: true },
-          { id: 'admin_audit', label: 'Auditoria (Audit Logs)', icon: FileText },
-          { id: 'admin_importer', label: 'Migração de Planilhas', icon: Database },
-          { id: 'admin_settings', label: 'Configurações Globais', icon: Settings },
+          { id: 'admin_home', label: '360° Overview', icon: Home },
+          { id: 'admin_users', label: 'Users & Permissions', icon: Users },
+          { id: 'admin_registration', label: 'Employee Registration', icon: UserPlus },
+          { id: 'admin_rules', label: 'Business Rules (Gates)', icon: ShieldAlert, highlight: true },
+          { id: 'admin_audit', label: 'Audit (Audit Logs)', icon: FileText },
+          { id: 'admin_importer', label: 'Spreadsheet Migration', icon: Database },
+          { id: 'admin_settings', label: 'Global Settings', icon: Settings },
         ];
 
       default:
-        return [{ id: 'general_home', label: 'Início', icon: Home }];
+        return [{ id: 'general_home', label: 'Home', icon: Home }];
     }
   };
 
@@ -132,37 +132,37 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { label: string; icon: React.ElementType; tab: string; activeClass: string }
   > = {
     STUDENT: {
-      label: 'Aluno',
+      label: 'Student',
       icon: GraduationCap,
       tab: 'student_home',
       activeClass: 'border-purple-600 bg-purple-100 text-purple-900',
     },
     TEACHER: {
-      label: 'Professor',
+      label: 'Teacher',
       icon: BookOpen,
       tab: 'teacher_home',
       activeClass: 'border-emerald-600 bg-emerald-100 text-emerald-900',
     },
     SECRETARIAT: {
-      label: 'Secretaria',
+      label: 'Registrar\'s Office',
       icon: FileText,
       tab: 'sec_home',
       activeClass: 'border-teal-600 bg-teal-100 text-teal-900',
     },
     RECEPTION: {
-      label: 'Recepção',
+      label: 'Reception',
       icon: Store,
       tab: 'rec_payment',
       activeClass: 'border-indigo-600 bg-indigo-100 text-indigo-900',
     },
     FINANCE: {
-      label: 'Financeiro',
+      label: 'Finance',
       icon: DollarSign,
       tab: 'fin_home',
       activeClass: 'border-amber-600 bg-amber-100 text-amber-900',
     },
     ACCOUNTING: {
-      label: 'Contábil',
+      label: 'Accounting',
       icon: BarChart3,
       tab: 'acc_home',
       activeClass: 'border-blue-600 bg-blue-100 text-blue-900',
@@ -226,7 +226,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {/* Dynamic Navigation Menu */}
         <div className="flex-1 overflow-y-auto px-3 py-2 space-y-1">
           <p className="px-3 pt-2 pb-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-            Navegação do Módulo
+            Module Navigation
           </p>
 
           {navItems.map((item) => {
@@ -282,7 +282,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <div className="flex items-center justify-between mb-1.5 px-1">
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
               <Shield className="w-3 h-3 text-purple-600" />
-              {assignedRoles.length > 1 ? 'Meus módulos' : 'Módulo autorizado'}
+              {assignedRoles.length > 1 ? 'My modules' : 'Authorized module'}
             </span>
           </div>
 
@@ -312,7 +312,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             })}
           </div>
 
-          {/* Sair da conta */}
+          {/* Sign out */}
           <button
             onClick={() => {
               setIsOpenMobile(false);
@@ -321,7 +321,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             className="w-full mt-2.5 flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-bold text-rose-600 hover:bg-rose-50 border border-rose-100 transition-colors cursor-pointer"
           >
             <LogOut className="w-3.5 h-3.5" />
-            <span>Sair do Sistema</span>
+            <span>Sign out</span>
           </button>
         </div>
       </aside>

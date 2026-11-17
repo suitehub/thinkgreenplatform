@@ -34,19 +34,19 @@ export const AdminModule: React.FC<AdminModuleProps> = ({ currentTab, setCurrent
   const navItems = [
     {
       id: 'admin_home',
-      label: 'Visão Geral 360°',
+      label: '360° Overview',
       icon: LayoutDashboard,
       badge: null,
     },
     {
       id: 'admin_users',
-      label: 'Usuários & Permissões',
+      label: 'Users & Permissions',
       icon: Users,
       badge: state.users?.length || 0,
     },
     {
       id: 'admin_registration',
-      label: 'Registro de Funcionários',
+      label: 'Staff Registration',
       icon: UserPlus,
       badge:
         state.users?.filter((user) => user.role === 'PENDING' || !user.roles?.length).length ||
@@ -54,25 +54,25 @@ export const AdminModule: React.FC<AdminModuleProps> = ({ currentTab, setCurrent
     },
     {
       id: 'admin_rules',
-      label: 'Regras de Negócio (Gates)',
+      label: 'Business Rules (Gates)',
       icon: ShieldAlert,
-      badge: '3 Regras',
+      badge: '3 Rules',
     },
     {
       id: 'admin_audit',
-      label: 'Auditoria (Audit Logs)',
+      label: 'Audit (Audit Logs)',
       icon: FileText,
       badge: state.auditLogs?.length || 0,
     },
     {
       id: 'admin_importer',
-      label: 'Migração de Planilhas',
+      label: 'Spreadsheet Import',
       icon: Database,
       badge: 'CSV/Excel',
     },
     {
       id: 'admin_settings',
-      label: 'Configurações Globais',
+      label: 'Global Settings',
       icon: Settings,
       badge: null,
     },

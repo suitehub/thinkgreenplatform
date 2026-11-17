@@ -8,6 +8,65 @@ interface BadgeProps {
   size?: 'sm' | 'md' | 'lg';
 }
 
+/** Stored values stay in Portuguese for Firestore compatibility; only the label is translated. */
+const STATUS_LABELS: Record<string, string> = {
+  PAGO: 'Paid',
+  PAGO_PARCIAL: 'Partially Paid',
+  ATIVO: 'Active',
+  ATIVA: 'Active',
+  INATIVO: 'Inactive',
+  INATIVA: 'Inactive',
+  BLOQUEADO: 'Blocked',
+  BLOQUEADA: 'Blocked',
+  LIBERADO: 'Released',
+  LIBERADA: 'Released',
+  CONCLUÍDA: 'Completed',
+  CONCLUIDA: 'Completed',
+  CONCILIADO: 'Reconciled',
+  AVALIADO: 'Graded',
+  VISTO: 'Approved',
+  FEITO: 'Done',
+  REGULAR: 'Regular',
+  ENTREGUE: 'Delivered',
+  PENDENTE: 'Pending',
+  PENDENTE_CORRECAO: 'Pending Correction',
+  PENDENTE_ENTREGA: 'Pending Delivery',
+  AGUARDANDO_VISTO: 'Awaiting Approval',
+  EM_ATRASO: 'Overdue',
+  EM ATRASO: 'Overdue',
+  ATRASADO: 'Overdue',
+  CANCELADO: 'Cancelled',
+  CANCELADA: 'Cancelled',
+  NAO_FEITO: 'Not Done',
+  APROVADO: 'Approved',
+  REPROVADO: 'Rejected',
+  ABERTO: 'Open',
+  FECHADO: 'Closed',
+  DINHEIRO: 'Cash',
+  PIX: 'Pix',
+  CARTAO: 'Card',
+  CARTÃO: 'Card',
+  BOLETO: 'Bank Slip',
+  TRANSFERENCIA: 'Transfer',
+  TRANSFERÊNCIA: 'Transfer',
+  MASCULINO: 'Male',
+  FEMININO: 'Female',
+  ATIVIDADE: 'Activity',
+  FREQUENCIA: 'Attendance',
+  FREQUÊNCIA: 'Attendance',
+  PROVA: 'Exam',
+  EXERCÍCIO: 'Exercise',
+  REDAÇÃO: 'Essay',
+  DIÁRIO: 'Journal',
+  PRÁTICA: 'Practice',
+  AVISO: 'Notice',
+  MINISTRADA: 'Delivered',
+  'Sem professor vinculado': 'No teacher assigned',
+};
+
+export const displayStatus = (value?: string): string =>
+  value ? STATUS_LABELS[value] || STATUS_LABELS[value.toUpperCase()] || value : '';
+
 export const Badge: React.FC<BadgeProps> = ({
   status,
   variant,
@@ -15,7 +74,7 @@ export const Badge: React.FC<BadgeProps> = ({
   className = '',
   size = 'md',
 }) => {
-  const content = children || status;
+  const content = children || displayStatus(status);
 
   // Auto-detect variant from standard status strings if not explicitly provided
   let computedVariant = variant;

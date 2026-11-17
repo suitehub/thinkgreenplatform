@@ -40,7 +40,7 @@ export const AcademicModule: React.FC<AcademicModuleProps> = ({ currentTab, setC
     const course = state.courses.find((c) => c.id === newAsmCourseId);
     createAssessment({
       courseId: newAsmCourseId,
-      courseName: course?.name || 'Curso',
+      courseName: course?.name || 'Course',
       classId: newAsmClassId,
       title: newAsmTitle,
       type: 'PROVA_FINAL',
@@ -60,15 +60,15 @@ export const AcademicModule: React.FC<AcademicModuleProps> = ({ currentTab, setC
         <div>
           <div className="flex items-center gap-2">
             <span className="text-xs font-bold text-purple-700 bg-purple-50 px-2.5 py-0.5 rounded-full border border-purple-200">
-              Diretoria Pedagógica & Acadêmica
+              Academic & Teaching Directorate
             </span>
             <span className="text-xs text-slate-400">Think Green Academic Core</span>
           </div>
           <h1 className="text-xl font-bold text-slate-900 mt-1">
-            Gestão Pedagógica, Cursos & Turmas
+            Academic Management, Courses & Classes
           </h1>
           <p className="text-xs text-slate-500">
-            Controle de matrizes curriculares, alocação de docentes, avaliações e travas pedagógicas.
+            Manage curricula, teacher assignments, assessments and academic gates.
           </p>
         </div>
 
@@ -76,37 +76,37 @@ export const AcademicModule: React.FC<AcademicModuleProps> = ({ currentTab, setC
           onClick={() => setIsAssessmentModalOpen(true)}
           className="px-4 py-2.5 bg-purple-700 hover:bg-purple-800 text-white rounded-xl font-bold text-xs transition-colors flex items-center gap-1.5 shadow-2xs"
         >
-          <Plus className="w-4 h-4" /> Nova Avaliação / Prova
+          <Plus className="w-4 h-4" /> New Assessment / Exam
         </button>
       </div>
 
       {/* 2. STATS */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
-          title="Frentes Pedagógicas"
-          value={`${state.courses.length} Cursos`}
-          subtitle="Idiomas, Infantil, Esportes"
+          title="Academic Tracks"
+          value={`${state.courses.length} Courses`}
+          subtitle="Languages, Preschool, Sports"
           icon={Layers}
           color="purple"
         />
         <StatCard
-          title="Turmas em Execução"
-          value={`${state.classes.length} Turmas`}
-          subtitle="Salas e Campos no Cairo"
+          title="Active Classes"
+          value={`${state.classes.length} Classes`}
+          subtitle="Rooms and Fields in Cairo"
           icon={BookOpen}
           color="emerald"
         />
         <StatCard
-          title="Avaliações Agendadas"
-          value={`${state.assessments.length} Provas`}
-          subtitle="Com travas de negócios"
+          title="Scheduled Assessments"
+          value={`${state.assessments.length} Exams`}
+          subtitle="With business gates"
           icon={Award}
           color="amber"
         />
         <StatCard
-          title="Total de Matrículas"
+          title="Total Enrollments"
           value={state.enrollments.length}
-          subtitle="Alunos ativos no centro"
+          subtitle="Active students at the center"
           icon={Users}
           color="sky"
         />
@@ -116,7 +116,7 @@ export const AcademicModule: React.FC<AcademicModuleProps> = ({ currentTab, setC
       <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-4">
         <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
           <Layers className="w-4 h-4 text-purple-700" />
-          Cursos e Frentes de Atuação da Think Green
+          Courses and Focus Areas at Think Green
         </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -142,15 +142,15 @@ export const AcademicModule: React.FC<AcademicModuleProps> = ({ currentTab, setC
 
                 <div className="pt-2 border-t border-slate-200/80 grid grid-cols-3 gap-2 text-xs">
                   <div>
-                    <span className="text-[10px] text-slate-400">Turmas:</span>
-                    <p className="font-bold text-slate-800">{courseClasses.length} turmas</p>
+                    <span className="text-[10px] text-slate-400">Classes:</span>
+                    <p className="font-bold text-slate-800">{courseClasses.length} classes</p>
                   </div>
                   <div>
-                    <span className="text-[10px] text-slate-400">Alunos:</span>
-                    <p className="font-bold text-slate-800">{courseEnrollments.length} matriculados</p>
+                    <span className="text-[10px] text-slate-400">Students:</span>
+                    <p className="font-bold text-slate-800">{courseEnrollments.length} enrolled</p>
                   </div>
                   <div>
-                    <span className="text-[10px] text-slate-400">Mensalidade:</span>
+                    <span className="text-[10px] text-slate-400">Tuition:</span>
                     <p className="font-mono font-bold text-emerald-700">
                       {formatCurrency(course.monthlyFee, 'EGP')}
                     </p>
@@ -166,20 +166,20 @@ export const AcademicModule: React.FC<AcademicModuleProps> = ({ currentTab, setC
       <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-4">
         <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
           <BookOpen className="w-4 h-4 text-emerald-600" />
-          Turmas, Professores & Espaços Físicos
+          Classes, Teachers & Physical Spaces
         </h2>
 
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead className="bg-slate-50 text-slate-500 font-bold uppercase tracking-wider border-b border-slate-200">
               <tr>
-                <th className="px-4 py-3">Código</th>
-                <th className="px-4 py-3">Turma</th>
-                <th className="px-4 py-3">Curso</th>
-                <th className="px-4 py-3">Professor</th>
-                <th className="px-4 py-3">Horário</th>
-                <th className="px-4 py-3">Local / Sala</th>
-                <th className="px-4 py-3 text-right">Alunos</th>
+                <th className="px-4 py-3">Code</th>
+                <th className="px-4 py-3">Class</th>
+                <th className="px-4 py-3">Course</th>
+                <th className="px-4 py-3">Teacher</th>
+                <th className="px-4 py-3">Schedule</th>
+                <th className="px-4 py-3">Location / Room</th>
+                <th className="px-4 py-3 text-right">Students</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -204,19 +204,19 @@ export const AcademicModule: React.FC<AcademicModuleProps> = ({ currentTab, setC
         </div>
       </div>
 
-      {/* Modal Criar Avaliação */}
+      {/* Create Assessment Modal */}
       <Modal
         isOpen={isAssessmentModalOpen}
         onClose={() => setIsAssessmentModalOpen(false)}
-        title="Agendar Nova Avaliação & Definir Trava Financeira"
+        title="Schedule New Assessment & Set Financial Gate"
       >
         <form onSubmit={handleCreateAssessment} className="space-y-4 text-xs">
           <div>
-            <label className="block font-bold text-slate-700 mb-1">Título da Prova / Avaliação</label>
+            <label className="block font-bold text-slate-700 mb-1">Exam / Assessment Title</label>
             <input
               type="text"
               required
-              placeholder="Ex: Exame Final Oral e Escrito - Term 1"
+              placeholder="E.g.: Final Oral and Written Exam - Term 1"
               value={newAsmTitle}
               onChange={(e) => setNewAsmTitle(e.target.value)}
               className="w-full p-2.5 border border-slate-300 rounded-xl font-semibold"
@@ -225,7 +225,7 @@ export const AcademicModule: React.FC<AcademicModuleProps> = ({ currentTab, setC
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block font-bold text-slate-700 mb-1">Curso</label>
+              <label className="block font-bold text-slate-700 mb-1">Course</label>
               <select
                 value={newAsmCourseId}
                 onChange={(e) => {
@@ -244,7 +244,7 @@ export const AcademicModule: React.FC<AcademicModuleProps> = ({ currentTab, setC
             </div>
 
             <div>
-              <label className="block font-bold text-slate-700 mb-1">Turma</label>
+              <label className="block font-bold text-slate-700 mb-1">Class</label>
               <select
                 value={newAsmClassId}
                 onChange={(e) => setNewAsmClassId(e.target.value)}
@@ -263,17 +263,17 @@ export const AcademicModule: React.FC<AcademicModuleProps> = ({ currentTab, setC
 
           <div>
             <label className="block font-bold text-slate-700 mb-1">
-              Regra de Negócio / Trava Financeira para Liberação
+              Business Rule / Financial Gate for Release
             </label>
             <select
               value={newAsmRequiredStage}
               onChange={(e: any) => setNewAsmRequiredStage(e.target.value)}
               className="w-full p-2.5 border border-slate-300 rounded-xl font-bold text-purple-800 bg-purple-50"
             >
-              <option value="NONE">Sem trava (Livre acesso a todos)</option>
-              <option value="STAGE_1_PAID">Exige Parcela 1 Paga (Prova Intermediária)</option>
-              <option value="STAGE_2_PAID">Exige Parcelas 1 e 2 Pagas</option>
-              <option value="ALL_PAID">Exige Quitação Integral de Todas as Parcelas</option>
+              <option value="NONE">No gate (open access for everyone)</option>
+              <option value="STAGE_1_PAID">Requires Installment 1 Paid (Midterm Exam)</option>
+              <option value="STAGE_2_PAID">Requires Installments 1 and 2 Paid</option>
+              <option value="ALL_PAID">Requires Full Payment of All Installments</option>
             </select>
           </div>
 
@@ -283,13 +283,13 @@ export const AcademicModule: React.FC<AcademicModuleProps> = ({ currentTab, setC
               onClick={() => setIsAssessmentModalOpen(false)}
               className="px-4 py-2 border border-slate-300 rounded-xl font-semibold text-slate-700"
             >
-              Cancelar
+              Cancel
             </button>
             <button
               type="submit"
               className="px-4 py-2 bg-purple-700 hover:bg-purple-800 text-white rounded-xl font-bold"
             >
-              Agendar Avaliação
+              Schedule Assessment
             </button>
           </div>
         </form>

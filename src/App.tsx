@@ -246,7 +246,7 @@ const AuthenticatedLayout: React.FC = () => {
     );
   }
 
-  // If logged in as TEACHER, render the dedicated Think Green Painel do Professor screen
+  // If logged in as TEACHER, render the dedicated Think Green Teacher Dashboard screen
   if (currentUser.role === 'TEACHER') {
     return (
       <div className="min-h-screen bg-[#f8f9fa] text-slate-800 font-sans antialiased selection:bg-[#075e38] selection:text-white">
@@ -255,7 +255,7 @@ const AuthenticatedLayout: React.FC = () => {
     );
   }
 
-  // If logged in as SECRETARIAT, render the dedicated Think Green Painel da Secretaria screen
+  // If logged in as SECRETARIAT, render the dedicated Think Green Secretariat Dashboard screen
   if (currentUser.role === 'SECRETARIAT') {
     return (
       <div className="min-h-screen bg-[#f8fafc] text-slate-800 font-sans antialiased selection:bg-[#075e38] selection:text-white">
@@ -269,7 +269,7 @@ const AuthenticatedLayout: React.FC = () => {
     );
   }
 
-  // If logged in as RECEPTION, render the dedicated Think Green Painel da Recepção screen
+  // If logged in as RECEPTION, render the dedicated Think Green Reception Dashboard screen
   if (currentUser.role === 'RECEPTION') {
     return (
       <div className="min-h-screen bg-[#f8fafc] text-slate-800 font-sans antialiased selection:bg-[#075e38] selection:text-white">
@@ -282,7 +282,7 @@ const AuthenticatedLayout: React.FC = () => {
     );
   }
 
-  // If logged in as FINANCE, render the dedicated Think Green Painel Financeiro screen
+  // If logged in as FINANCE, render the dedicated Think Green Finance Dashboard screen
   if (currentUser.role === 'FINANCE') {
     return (
       <div className="min-h-screen bg-[#f8fafc] text-slate-800 font-sans antialiased selection:bg-[#075e38] selection:text-white">
@@ -295,7 +295,7 @@ const AuthenticatedLayout: React.FC = () => {
     );
   }
 
-  // If logged in as ACCOUNTING, render the dedicated Think Green Painel Contábil screen
+  // If logged in as ACCOUNTING, render the dedicated Think Green Accounting Dashboard screen
   if (currentUser.role === 'ACCOUNTING') {
     return (
       <div className="min-h-screen bg-[#f8fafc] text-slate-800 font-sans antialiased selection:bg-[#075e38] selection:text-white">

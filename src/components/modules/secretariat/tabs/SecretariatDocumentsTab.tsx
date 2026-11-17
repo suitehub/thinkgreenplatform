@@ -73,15 +73,15 @@ export const SecretariatDocumentsTab: React.FC = () => {
   const getDocTypeLabel = (type: StudentDocument['type']) => {
     switch (type) {
       case 'ID_CARD':
-        return 'RG / Documento Oficial';
+        return 'ID / Official Document';
       case 'REGISTRATION_FORM':
-        return 'Ficha de Matrícula Assinada';
+        return 'Signed Enrollment Form';
       case 'PAYMENT_PROOF':
-        return 'Comprovante / Recibo';
+        return 'Payment Proof / Receipt';
       case 'MEDICAL':
-        return 'Atestado Médico';
+        return 'Medical Certificate';
       default:
-        return 'Outro Arquivo';
+        return 'Other File';
     }
   };
 
@@ -92,14 +92,14 @@ export const SecretariatDocumentsTab: React.FC = () => {
         <div>
           <div className="flex items-center gap-2">
             <span className="text-xs font-bold text-amber-700 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-200">
-              Secretaria • Prontuário Digital
+              Registrar's Office • Digital Records
             </span>
           </div>
           <h2 className="text-xl font-bold text-slate-900 mt-1">
-            Documentos & Prontuários dos Alunos
+            Student Documents & Records
           </h2>
           <p className="text-xs text-slate-500">
-            Armazenamento e auditoria de certidões, termos de compromisso, autorizações e fichas de matrícula físicas.
+            Storage and auditing of certificates, commitment terms, authorizations, and physical enrollment forms.
           </p>
         </div>
 
@@ -107,37 +107,37 @@ export const SecretariatDocumentsTab: React.FC = () => {
           onClick={() => setIsUploadModalOpen(true)}
           className="px-4 py-2.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl font-bold text-xs transition-colors shadow-2xs flex items-center gap-1.5 cursor-pointer self-start sm:self-auto"
         >
-          <Upload className="w-4 h-4" /> Anexar Documento ao Aluno
+          <Upload className="w-4 h-4" /> Attach Document to Student
         </button>
       </div>
 
       {/* Overview Metric Boxes */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs">
-          <span className="text-[11px] text-slate-400 font-bold uppercase block">Total de Documentos</span>
+          <span className="text-[11px] text-slate-400 font-bold uppercase block">Total Documents</span>
           <p className="text-xl font-bold font-mono text-slate-900 mt-1">{allDocumentsWithStudent.length}</p>
-          <span className="text-[10px] text-slate-500">Arquivos indexados</span>
+          <span className="text-[10px] text-slate-500">Indexed files</span>
         </div>
         <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs">
-          <span className="text-[11px] text-slate-400 font-bold uppercase block">Documentos Oficiais (RG/ID)</span>
+          <span className="text-[11px] text-slate-400 font-bold uppercase block">Official Documents (ID)</span>
           <p className="text-xl font-bold font-mono text-purple-700 mt-1">
             {allDocumentsWithStudent.filter((d) => d.type === 'ID_CARD').length}
           </p>
-          <span className="text-[10px] text-slate-500">Identificação confirmada</span>
+          <span className="text-[10px] text-slate-500">Identity confirmed</span>
         </div>
         <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs">
-          <span className="text-[11px] text-slate-400 font-bold uppercase block">Fichas de Matrícula</span>
+          <span className="text-[11px] text-slate-400 font-bold uppercase block">Enrollment Forms</span>
           <p className="text-xl font-bold font-mono text-emerald-700 mt-1">
             {allDocumentsWithStudent.filter((d) => d.type === 'REGISTRATION_FORM').length}
           </p>
-          <span className="text-[10px] text-slate-500">Contratos assinados</span>
+          <span className="text-[10px] text-slate-500">Signed contracts</span>
         </div>
         <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs">
-          <span className="text-[11px] text-slate-400 font-bold uppercase block">Alunos com Prontuário</span>
+          <span className="text-[11px] text-slate-400 font-bold uppercase block">Students with Records</span>
           <p className="text-xl font-bold font-mono text-sky-700 mt-1">
             {state.students.filter((s) => s.documents.length > 0).length} / {state.students.length}
           </p>
-          <span className="text-[10px] text-slate-500">Com documentação em dia</span>
+          <span className="text-[10px] text-slate-500">With documentation up to date</span>
         </div>
       </div>
 
@@ -147,10 +147,10 @@ export const SecretariatDocumentsTab: React.FC = () => {
           <div>
             <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
               <FileText className="w-4 h-4 text-amber-600" />
-              Arquivos Arquivados ({filteredDocs.length})
+              Archived Files ({filteredDocs.length})
             </h3>
             <p className="text-xs text-slate-500">
-              Listagem consolidada de anexos com data de envio e operador
+              Consolidated list of attachments with upload date and operator
             </p>
           </div>
 
@@ -159,7 +159,7 @@ export const SecretariatDocumentsTab: React.FC = () => {
               <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
               <input
                 type="text"
-                placeholder="Buscar documento ou aluno..."
+                placeholder="Search document or student..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-9 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-300 rounded-xl w-48 sm:w-56"
@@ -171,12 +171,12 @@ export const SecretariatDocumentsTab: React.FC = () => {
               onChange={(e) => setFilterType(e.target.value)}
               className="px-2.5 py-1.5 text-xs bg-slate-50 border border-slate-300 rounded-xl font-semibold"
             >
-              <option value="ALL">Todos os Tipos</option>
-              <option value="ID_CARD">RG / Documento Oficial</option>
-              <option value="REGISTRATION_FORM">Ficha de Matrícula</option>
-              <option value="PAYMENT_PROOF">Comprovante de Pagamento</option>
-              <option value="MEDICAL">Atestado Médico</option>
-              <option value="OTHER">Outros</option>
+              <option value="ALL">All Types</option>
+              <option value="ID_CARD">ID / Official Document</option>
+              <option value="REGISTRATION_FORM">Enrollment Form</option>
+              <option value="PAYMENT_PROOF">Payment Proof</option>
+              <option value="MEDICAL">Medical Certificate</option>
+              <option value="OTHER">Other</option>
             </select>
 
             <select
@@ -184,7 +184,7 @@ export const SecretariatDocumentsTab: React.FC = () => {
               onChange={(e) => setFilterStudent(e.target.value)}
               className="px-2.5 py-1.5 text-xs bg-slate-50 border border-slate-300 rounded-xl font-semibold"
             >
-              <option value="ALL">Todos os Alunos</option>
+              <option value="ALL">All Students</option>
               {state.students.map((s) => (
                 <option key={s.studentId} value={s.studentId}>
                   {s.studentId} - {s.name}
@@ -199,20 +199,20 @@ export const SecretariatDocumentsTab: React.FC = () => {
           <table className="w-full text-left text-xs">
             <thead className="bg-slate-50 text-slate-500 font-bold uppercase tracking-wider border-b border-slate-200">
               <tr>
-                <th className="px-4 py-3">Documento</th>
-                <th className="px-4 py-3">Tipo</th>
-                <th className="px-4 py-3">Aluno Vinculado</th>
-                <th className="px-4 py-3">Tamanho</th>
-                <th className="px-4 py-3">Data de Upload</th>
-                <th className="px-4 py-3">Operador</th>
-                <th className="px-4 py-3 text-right">Ações</th>
+                <th className="px-4 py-3">Document</th>
+                <th className="px-4 py-3">Type</th>
+                <th className="px-4 py-3">Linked Student</th>
+                <th className="px-4 py-3">Size</th>
+                <th className="px-4 py-3">Upload Date</th>
+                <th className="px-4 py-3">Operator</th>
+                <th className="px-4 py-3 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {filteredDocs.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="text-center py-10 text-slate-400">
-                    Nenhum documento encontrado com os filtros informados.
+                    No documents found with the selected filters.
                   </td>
                 </tr>
               ) : (
@@ -251,14 +251,14 @@ export const SecretariatDocumentsTab: React.FC = () => {
                         <button
                           onClick={() => setPreviewDoc({ doc, studentName: doc.studentName })}
                           className="p-1.5 text-slate-600 hover:text-purple-700 hover:bg-purple-50 rounded-lg transition-colors cursor-pointer"
-                          title="Visualizar Detalhes"
+                          title="View Details"
                         >
                           <Eye className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => deleteStudentDocument(doc.studentId, doc.id)}
                           className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
-                          title="Remover Documento"
+                          title="Remove Document"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -272,32 +272,32 @@ export const SecretariatDocumentsTab: React.FC = () => {
         </div>
       </div>
 
-      {/* Modal Preview Documento */}
+      {/* Document Preview Modal */}
       {previewDoc && (
         <Modal
           isOpen={!!previewDoc}
           onClose={() => setPreviewDoc(null)}
           title={previewDoc.doc.title}
-          subtitle={`Aluno: ${previewDoc.studentName} • Tipo: ${getDocTypeLabel(previewDoc.doc.type)}`}
+          subtitle={`Student: ${previewDoc.studentName} • Type: ${getDocTypeLabel(previewDoc.doc.type)}`}
         >
           <div className="space-y-4 text-xs">
             <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-2">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <span className="text-slate-400">Data de Envio:</span>
+                  <span className="text-slate-400">Upload Date:</span>
                   <p className="font-bold text-slate-900">{previewDoc.doc.uploadedAt}</p>
                 </div>
                 <div>
-                  <span className="text-slate-400">Enviado por:</span>
+                  <span className="text-slate-400">Uploaded by:</span>
                   <p className="font-bold text-slate-900">{previewDoc.doc.uploadedBy}</p>
                 </div>
                 <div>
-                  <span className="text-slate-400">Tamanho do Arquivo:</span>
+                  <span className="text-slate-400">File Size:</span>
                   <p className="font-bold text-slate-900">{previewDoc.doc.size || '1.0 MB'}</p>
                 </div>
                 <div>
-                  <span className="text-slate-400">Status no Prontuário:</span>
-                  <p className="font-bold text-emerald-700">Autenticado & Arquivado</p>
+                  <span className="text-slate-400">Record Status:</span>
+                  <p className="font-bold text-emerald-700">Authenticated & Archived</p>
                 </div>
               </div>
             </div>
@@ -306,7 +306,7 @@ export const SecretariatDocumentsTab: React.FC = () => {
               <FileText className="w-10 h-10 text-purple-600 mx-auto" />
               <p className="font-bold text-slate-800 text-sm">{previewDoc.doc.title}</p>
               <p className="text-[11px] text-slate-500">
-                Visualização do documento em alta resolução arquivado no servidor institucional.
+                High-resolution preview of the document archived on the institutional server.
               </p>
             </div>
 
@@ -315,24 +315,24 @@ export const SecretariatDocumentsTab: React.FC = () => {
                 onClick={() => setPreviewDoc(null)}
                 className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold cursor-pointer"
               >
-                Fechar
+                Close
               </button>
             </div>
           </div>
         </Modal>
       )}
 
-      {/* Modal Upload de Documento */}
+      {/* Document Upload Modal */}
       {isUploadModalOpen && (
         <Modal
           isOpen={isUploadModalOpen}
           onClose={() => setIsUploadModalOpen(false)}
-          title="Anexar Documento ao Prontuário do Aluno"
-          subtitle="Selecione o estudante e informe o tipo e título do documento"
+          title="Attach Document to Student Record"
+          subtitle="Select the student and enter the document type and title"
         >
           <form onSubmit={handleUploadSubmit} className="space-y-4 text-xs">
             <div>
-              <label className="block font-bold text-slate-700 mb-1">Selecione o Aluno *</label>
+              <label className="block font-bold text-slate-700 mb-1">Select Student *</label>
               <select
                 value={selectedStudentId}
                 onChange={(e) => setSelectedStudentId(e.target.value)}
@@ -348,11 +348,11 @@ export const SecretariatDocumentsTab: React.FC = () => {
             </div>
 
             <div>
-              <label className="block font-bold text-slate-700 mb-1">Título do Documento *</label>
+              <label className="block font-bold text-slate-700 mb-1">Document Title *</label>
               <input
                 type="text"
                 required
-                placeholder="Ex: Cópia do RG / Certidão de Nascimento"
+                placeholder="Ex: Copy of ID / Birth Certificate"
                 value={docTitle}
                 onChange={(e) => setDocTitle(e.target.value)}
                 className="w-full p-2.5 border border-slate-300 rounded-xl font-semibold"
@@ -361,22 +361,22 @@ export const SecretariatDocumentsTab: React.FC = () => {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block font-bold text-slate-700 mb-1">Tipo de Documento</label>
+                <label className="block font-bold text-slate-700 mb-1">Document Type</label>
                 <select
                   value={docType}
                   onChange={(e) => setDocType(e.target.value as any)}
                   className="w-full p-2.5 border border-slate-300 rounded-xl font-semibold"
                 >
-                  <option value="ID_CARD">RG / Documento Oficial</option>
-                  <option value="REGISTRATION_FORM">Ficha de Matrícula Assinada</option>
-                  <option value="PAYMENT_PROOF">Comprovante de Pagamento</option>
-                  <option value="MEDICAL">Atestado Médico</option>
-                  <option value="OTHER">Outros Anexos</option>
+                  <option value="ID_CARD">ID / Official Document</option>
+                  <option value="REGISTRATION_FORM">Signed Enrollment Form</option>
+                  <option value="PAYMENT_PROOF">Payment Proof</option>
+                  <option value="MEDICAL">Medical Certificate</option>
+                  <option value="OTHER">Other Attachments</option>
                 </select>
               </div>
 
               <div>
-                <label className="block font-bold text-slate-700 mb-1">Tamanho Estimado</label>
+                <label className="block font-bold text-slate-700 mb-1">Estimated Size</label>
                 <input
                   type="text"
                   value={docSize}
@@ -389,8 +389,8 @@ export const SecretariatDocumentsTab: React.FC = () => {
             {/* Fake drag and drop zone */}
             <div className="p-6 border-2 border-dashed border-slate-300 rounded-2xl text-center space-y-1 bg-slate-50">
               <Upload className="w-6 h-6 text-amber-600 mx-auto" />
-              <p className="font-bold text-slate-800 text-xs">Arraste arquivos PDF, JPG ou PNG aqui</p>
-              <p className="text-[10px] text-slate-400">Até 15MB por arquivo indexado</p>
+              <p className="font-bold text-slate-800 text-xs">Drag PDF, JPG, or PNG files here</p>
+              <p className="text-[10px] text-slate-400">Up to 15MB per indexed file</p>
             </div>
 
             <div className="flex justify-end gap-2 pt-2">
@@ -399,13 +399,13 @@ export const SecretariatDocumentsTab: React.FC = () => {
                 onClick={() => setIsUploadModalOpen(false)}
                 className="px-4 py-2 border border-slate-300 rounded-xl font-semibold text-slate-700 cursor-pointer"
               >
-                Cancelar
+                Cancel
               </button>
               <button
                 type="submit"
                 className="px-5 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl font-bold cursor-pointer"
               >
-                Anexar ao Prontuário
+                Attach to Record
               </button>
             </div>
           </form>

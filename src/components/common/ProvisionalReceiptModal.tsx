@@ -52,10 +52,10 @@ export const ProvisionalReceiptModal: React.FC<ProvisionalReceiptModalProps> = (
           </div>
           <div>
             <h3 className="text-base font-bold text-slate-900">
-              Comprovante Provisório de Pré-Registro
+              Provisional Pre-Registration Receipt
             </h3>
             <p className="text-xs font-mono text-slate-500">
-              {payment.provisionalReceiptNumber} • Protocolo: {payment.protocolNumber}
+              {payment.provisionalReceiptNumber} • Protocol: {payment.protocolNumber}
             </p>
           </div>
         </div>
@@ -64,7 +64,7 @@ export const ProvisionalReceiptModal: React.FC<ProvisionalReceiptModalProps> = (
         <div className="flex items-center justify-between w-full">
           <span className="text-xs text-slate-500 font-medium flex items-center gap-1.5">
             <ShieldAlert className="w-4 h-4 text-amber-600" />
-            Pré-Registro efetuado na Recepção do Centro
+            Pre-Registration completed at the Center's Reception
           </span>
           <div className="flex items-center gap-2">
             <button
@@ -72,13 +72,13 @@ export const ProvisionalReceiptModal: React.FC<ProvisionalReceiptModalProps> = (
               className="px-4 py-2 text-xs font-bold text-slate-700 bg-white border border-slate-300 rounded-xl hover:bg-slate-50 transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs"
             >
               <Printer className="w-3.5 h-3.5" />
-              Imprimir Comprovante
+              Print Receipt
             </button>
             <button
               onClick={onClose}
               className="px-4 py-2 text-xs font-bold text-white bg-[#075e38] rounded-xl hover:bg-emerald-900 transition-colors cursor-pointer"
             >
-              Fechar
+              Close
             </button>
           </div>
         </div>
@@ -99,10 +99,10 @@ export const ProvisionalReceiptModal: React.FC<ProvisionalReceiptModalProps> = (
               }`}
             >
               {isApproved
-                ? '✓ HOMOLOGADO PELA TESOURARIA'
+                ? '✓ APPROVED BY THE TREASURY'
                 : isRejected
-                ? '✕ REPROVADO PELA TESOURARIA'
-                : '⏳ PRÉ-REGISTRO PENDENTE DE VALIDAÇÃO'}
+                ? '✕ REJECTED BY THE TREASURY'
+                : '⏳ PRE-REGISTRATION PENDING VALIDATION'}
             </span>
             <p className="text-xs font-mono text-slate-700 mt-1.5 font-bold">
               {payment.provisionalReceiptNumber}
@@ -125,17 +125,17 @@ export const ProvisionalReceiptModal: React.FC<ProvisionalReceiptModalProps> = (
           <div className="space-y-0.5">
             <p className="font-bold">
               {isApproved
-                ? 'Pagamento Confirmado pela Tesouraria'
+                ? 'Payment Confirmed by the Treasury'
                 : isRejected
-                ? 'Pré-Registro Recusado pela Tesouraria'
-                : 'Aguardando Conferência Física do Caixa'}
+                ? 'Pre-Registration Rejected by the Treasury'
+                : 'Awaiting Physical Verification at the Cashier'}
             </p>
             <p className="text-[11px] leading-relaxed">
               {isApproved
-                ? `Este pagamento foi conferido fisicamente e aprovado pelo caixa. Recibo Oficial: ${payment.officialReceiptNumber || 'Disponível no sistema'}.`
+                ? `This payment was physically verified and approved by the cashier. Official Receipt: ${payment.officialReceiptNumber || 'Available in the system'}.`
                 : isRejected
-                ? `Motivo informado pela Tesouraria: "${payment.reviewNotes || 'Valores não conferiram'}"`
-                : 'Este comprovante provisório atesta a entrega de valores no balcão da Recepção. A homologação oficial e liberação plena ocorre após o fechamento físico com a Tesouraria (Rony).'}
+                ? `Reason provided by the Treasury: "${payment.reviewNotes || 'Amounts did not match'}"`
+                : 'This provisional receipt confirms that funds were delivered at the Reception counter. Official approval and full release occur after physical reconciliation with the Treasury (Rony).'}
             </p>
           </div>
         </div>
@@ -144,7 +144,7 @@ export const ProvisionalReceiptModal: React.FC<ProvisionalReceiptModalProps> = (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs bg-slate-50/70 p-4 rounded-xl border border-slate-100">
           <div className="space-y-1">
             <span className="text-slate-400 font-semibold block text-[10px] uppercase">
-              Estudante / Pagador:
+              Student / Payer:
             </span>
             <p className="text-sm font-black text-slate-900">{payment.studentName}</p>
             <p className="font-mono text-emerald-800 font-bold bg-emerald-100/70 px-2 py-0.5 rounded-md inline-block text-[11px]">
@@ -153,11 +153,11 @@ export const ProvisionalReceiptModal: React.FC<ProvisionalReceiptModalProps> = (
           </div>
           <div className="space-y-1 text-left sm:text-right">
             <span className="text-slate-400 font-semibold block text-[10px] uppercase">
-              Curso & Parcela:
+              Course & Installment:
             </span>
             <p className="text-sm font-bold text-slate-900">{payment.courseName}</p>
             <p className="text-slate-600 font-medium">
-              Parcela {payment.installmentNumber} de {payment.totalInstallments}
+              Installment {payment.installmentNumber} of {payment.totalInstallments}
             </p>
           </div>
         </div>
@@ -166,7 +166,7 @@ export const ProvisionalReceiptModal: React.FC<ProvisionalReceiptModalProps> = (
         <div className="bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-50 p-5 rounded-2xl border border-emerald-200 flex items-center justify-between">
           <div>
             <span className="text-xs font-bold text-emerald-800 uppercase tracking-wider block">
-              Valor Pré-Registrado
+              Pre-Registered Amount
             </span>
             <h2 className="text-3xl font-black text-emerald-950 font-mono mt-0.5">
               {formatCurrency(payment.amount, 'EGP')}
@@ -174,12 +174,12 @@ export const ProvisionalReceiptModal: React.FC<ProvisionalReceiptModalProps> = (
           </div>
           <div className="text-right">
             <span className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider block">
-              Meio Informado
+              Method Provided
             </span>
             <span className="inline-block bg-white text-emerald-900 font-bold text-xs px-3 py-1.5 rounded-lg border border-emerald-200 shadow-2xs mt-1">
               {payment.paymentMethod === 'TRANSFERENCIA'
-                ? '🏦 Transferência Bancária'
-                : '💵 Dinheiro Físico'}
+                ? '🏦 Bank Transfer'
+                : '💵 Cash'}
             </span>
           </div>
         </div>
@@ -188,19 +188,19 @@ export const ProvisionalReceiptModal: React.FC<ProvisionalReceiptModalProps> = (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs border-t border-slate-100 pt-4 text-slate-600">
           <div>
             <span className="text-slate-400 block text-[10px] uppercase font-bold">
-              Recebido no Balcão por:
+              Received at the Counter by:
             </span>
             <p className="font-bold text-slate-800">{payment.registeredBy}</p>
             {payment.receptionNotes && (
               <p className="italic text-slate-500 mt-1 text-[11px]">
-                Obs. Recepção: "{payment.receptionNotes}"
+                Reception Note: "{payment.receptionNotes}"
               </p>
             )}
           </div>
 
           <div className="text-left sm:text-right">
             <span className="text-slate-400 block text-[10px] uppercase font-bold">
-              Conferência da Tesouraria:
+              Treasury Verification:
             </span>
             {payment.reviewedBy ? (
               <>
@@ -209,7 +209,7 @@ export const ProvisionalReceiptModal: React.FC<ProvisionalReceiptModalProps> = (
               </>
             ) : (
               <p className="text-amber-700 font-bold text-[11px]">
-                Aguardando conferência física (Rony)
+                Awaiting physical verification (Rony)
               </p>
             )}
           </div>
@@ -218,10 +218,10 @@ export const ProvisionalReceiptModal: React.FC<ProvisionalReceiptModalProps> = (
         {/* Signatures Footer */}
         <div className="border-t border-dashed border-slate-200 pt-4 grid grid-cols-2 gap-6 text-[11px] text-slate-500">
           <div className="text-center pt-6 border-t border-slate-300">
-            <p className="font-medium">Assinatura do Aluno / Responsável</p>
+            <p className="font-medium">Student / Guardian Signature</p>
           </div>
           <div className="text-center pt-6 border-t border-slate-300">
-            <p className="font-medium">Carimbo do Balcão da Recepção</p>
+            <p className="font-medium">Reception Counter Stamp</p>
           </div>
         </div>
       </div>

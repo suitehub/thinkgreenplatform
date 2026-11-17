@@ -34,44 +34,44 @@ export const FinanceSidebar: React.FC<FinanceSidebarProps> = ({
   const navItems = [
     {
       id: 'fin_overview',
-      label: 'Painel Geral',
+      label: 'General Overview',
       icon: Home,
       aliases: ['fin_home', 'fin_overview', ''],
     },
     {
       id: 'fin_reception_approvals',
-      label: 'Validação da Recepção',
+      label: 'Reception Validation',
       icon: CheckSquare,
       badge: pendingReceptionCount,
       aliases: ['fin_reception_approvals'],
     },
     {
       id: 'fin_charges',
-      label: 'Mensalidades & Cobranças',
+      label: 'Tuition & Charges',
       icon: CreditCard,
       aliases: ['fin_charges'],
     },
     {
       id: 'fin_cash_register',
-      label: 'Controle de Caixa',
+      label: 'Cash Register Control',
       icon: Wallet,
       aliases: ['fin_cash_register'],
     },
     {
       id: 'fin_receipts',
-      label: 'Recibos Emitidos',
+      label: 'Issued Receipts',
       icon: Receipt,
       aliases: ['fin_receipts'],
     },
     {
       id: 'fin_inadimplencia',
-      label: 'Inadimplência & Status',
+      label: 'Overdue & Status',
       icon: Clock,
       aliases: ['fin_inadimplencia'],
     },
     {
       id: 'fin_reports',
-      label: 'Relatórios Financeiros',
+      label: 'Financial Reports',
       icon: FileSpreadsheet,
       aliases: ['fin_reports'],
     },
@@ -125,7 +125,7 @@ export const FinanceSidebar: React.FC<FinanceSidebarProps> = ({
         })}
       </nav>
 
-      {/* Bottom Section: Suporte Card & Logout */}
+      {/* Bottom Section: Support Card & Logout */}
       <div className="pt-2 space-y-2 border-t border-slate-100">
         {/* Support Card */}
         <div className="p-3 bg-slate-50/90 rounded-2xl border border-slate-200/80 space-y-2">
@@ -134,8 +134,8 @@ export const FinanceSidebar: React.FC<FinanceSidebarProps> = ({
               <Headphones className="w-3.5 h-3.5 text-[#075e38]" />
             </div>
             <div>
-              <p className="text-xs font-bold text-slate-900 leading-none">Suporte</p>
-              <p className="text-[10px] text-slate-400 mt-0.5">Precisa de ajuda?</p>
+              <p className="text-xs font-bold text-slate-900 leading-none">Support</p>
+              <p className="text-[10px] text-slate-400 mt-0.5">Need help?</p>
             </div>
           </div>
 
@@ -144,20 +144,20 @@ export const FinanceSidebar: React.FC<FinanceSidebarProps> = ({
             target="_blank"
             rel="noopener noreferrer"
             className="w-full text-left text-xs font-bold text-[#075e38] hover:text-emerald-800 flex items-center justify-between group pt-0.5 cursor-pointer"
-            title="WhatsApp Suporte: (11) 97249-9370"
+            title="WhatsApp Support: (11) 97249-9370"
           >
-            <span>Fale com o suporte</span>
+            <span>Talk to support</span>
             <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
           </a>
         </div>
 
-        {/* Sair da conta */}
+        {/* Log out of account */}
         <button
           onClick={logout}
           className="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold text-slate-600 hover:text-rose-600 hover:bg-rose-50/50 rounded-xl transition-colors cursor-pointer"
         >
           <LogOut className="w-4 h-4" />
-          <span>Sair da conta</span>
+          <span>Log out</span>
         </button>
       </div>
     </aside>

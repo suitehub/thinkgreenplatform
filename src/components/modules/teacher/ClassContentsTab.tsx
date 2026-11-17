@@ -86,6 +86,23 @@ const formatFileSize = (bytes: number) => {
   return `${bytes} B`;
 };
 
+const CATEGORY_LABELS: Record<string, string> = {
+  REDACAO: 'Essay',
+  'REDAÇÃO': 'Essay',
+  EXERCICIO: 'Exercise',
+  'EXERCÍCIO': 'Exercise',
+  PROJETO: 'Project',
+  DIARIO: 'Journal',
+  'DIÁRIO': 'Journal',
+  PRATICA: 'Practice',
+  'PRÁTICA': 'Practice',
+  TRABALHO: 'Assignment',
+  DESAFIO: 'Challenge',
+};
+
+const getCategoryLabel = (category?: string) =>
+  (category && CATEGORY_LABELS[category]) || category || 'Activity';
+
 export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
   selectedClass,
   classLessons,
@@ -228,7 +245,7 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
   };
 
   const handleDeleteTopic = (topicId: string) => {
-    if (confirm('Deseja realmente excluir este tópico? Os conteúdos serão mantidos no tópico geral.')) {
+    if (confirm('Do you really want to delete this topic? Its contents will be kept in the general topic.')) {
       const updated = topics.filter((t) => t.id !== topicId);
       setTopics(updated);
       saveStoredTopics(updated);
@@ -273,7 +290,7 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
   ) => {
     if (file.size > maxKb * 1024) {
       alert(
-        `Arquivo muito grande (${formatFileSize(file.size)}). O limite é ${maxKb} KB para armazenamento interno. Comprima o arquivo ou use um link.`
+        `File too large (${formatFileSize(file.size)}). The limit is ${maxKb} KB for internal storage. Compress the file or use a link.`
       );
       return;
     }
@@ -295,7 +312,7 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
         setQuizAudioTitle(file.name.replace(/\.[^.]+$/, ''));
       }
     } catch (error) {
-      alert(error instanceof Error ? error.message : 'Falha ao enviar o áudio.');
+      alert(error instanceof Error ? error.message : 'Failed to upload the audio.');
     } finally {
       setQuizAudioUploading(false);
       setQuizAudioProgress(0);
@@ -333,7 +350,7 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
         description: materialDesc.trim() || undefined,
         type: materialType,
         url: materialUrl.trim() || '#',
-        fileName: materialFileName.trim() || (materialType === 'PDF' ? 'Documento_Didatico.pdf' : undefined),
+        fileName: materialFileName.trim() || (materialType === 'PDF' ? 'Didactic_Document.pdf' : undefined),
         fileSize: materialFileSize.trim() || undefined,
         allowDownload: materialAllowDownload,
         teacherId: currentUser.id,
@@ -349,7 +366,7 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
   };
 
   const handleDeleteMaterial = (id: string) => {
-    if (confirm('Deseja realmente excluir este material didático?')) {
+    if (confirm('Do you really want to delete this didactic material?')) {
       const updated = didacticMaterials.filter((m) => m.id !== id);
       setDidacticMaterials(updated);
       saveStoredDidacticMaterials(updated);
@@ -426,11 +443,11 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
   const handleAddQuestionToQuiz = () => {
     const newQ: QuizQuestion = {
       id: `q_${Date.now()}_${quizQuestions.length + 1}`,
-      question: 'Nova pergunta do Quiz...',
+      question: 'New quiz question...',
       type: 'MULTIPLE_CHOICE',
       options: [
-        { id: `opt_${Date.now()}_a`, text: 'Opção A' },
-        { id: `opt_${Date.now()}_b`, text: 'Opção B' },
+        { id: `opt_${Date.now()}_a`, text: 'Option A' },
+        { id: `opt_${Date.now()}_b`, text: 'Option B' },
       ],
       correctOptionId: `opt_${Date.now()}_a`,
       points: 25,
@@ -451,7 +468,7 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
   const handleAddOptionToQuestion = (qIdx: number) => {
     const q = quizQuestions[qIdx];
     const opts = q.options || [];
-    const newOpt = { id: `opt_${Date.now()}_${opts.length + 1}`, text: `Nova Opção ${opts.length + 1}` };
+    const newOpt = { id: `opt_${Date.now()}_${opts.length + 1}`, text: `New Option ${opts.length + 1}` };
     handleUpdateQuestion(qIdx, { options: [...opts, newOpt] });
   };
 
@@ -507,7 +524,7 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
   };
 
   const handleDeleteQuiz = (id: string) => {
-    if (confirm('Deseja realmente excluir este Quiz?')) {
+    if (confirm('Do you really want to delete this quiz?')) {
       const updated = quizzes.filter((q) => q.id !== id);
       setQuizzes(updated);
       saveStoredQuizzes(updated);
@@ -625,7 +642,7 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
             className="flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-2xl bg-[#075e38] hover:bg-[#064e2e] text-white text-xs sm:text-sm font-bold shadow-xs transition-all cursor-pointer"
           >
             <Plus className="w-4 h-4" />
-            <span>Criar Conteúdo</span>
+            <span>Create Content</span>
             <ChevronDown className="w-4 h-4 text-emerald-200 ml-1" />
           </button>
 
@@ -639,31 +656,31 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
                 className="w-full text-left px-4 py-2.5 hover:bg-slate-50 text-xs font-bold text-slate-800 flex items-center gap-2.5 cursor-pointer"
               >
                 <FolderPlus className="w-4 h-4 text-[#075e38]" />
-                <span>Novo Tópico / Unidade</span>
+                <span>New Topic / Unit</span>
               </button>
               <div className="border-t border-slate-100 my-1" />
 
-              {/* Requirement 1: Inserção de materiais didáticos */}
+              {/* Requirement 1: Insert didactic materials */}
               <button
                 onClick={handleOpenNewMaterialModal}
                 className="w-full text-left px-4 py-2.5 hover:bg-emerald-50/70 text-xs font-bold text-emerald-900 flex items-center gap-2.5 cursor-pointer"
               >
                 <FileText className="w-4 h-4 text-emerald-600" />
                 <div>
-                  <span className="block">Material Didático / Apoio</span>
-                  <span className="text-[10px] text-slate-400 font-normal">PDF, Google Drive ou Vídeo</span>
+                  <span className="block">Didactic Material / Support</span>
+                  <span className="text-[10px] text-slate-400 font-normal">PDF, Google Drive or Video</span>
                 </div>
               </button>
 
-              {/* Requirement 3: Quizzes com áudio */}
+              {/* Requirement 3: Quizzes with audio */}
               <button
                 onClick={handleOpenNewQuizModal}
                 className="w-full text-left px-4 py-2.5 hover:bg-indigo-50/70 text-xs font-bold text-indigo-900 flex items-center gap-2.5 cursor-pointer"
               >
                 <Headphones className="w-4 h-4 text-indigo-600" />
                 <div>
-                  <span className="block">Quiz Interativo com Áudio</span>
-                  <span className="text-[10px] text-slate-400 font-normal">Formato D2L / Forms (Listening)</span>
+                  <span className="block">Interactive Quiz with Audio</span>
+                  <span className="text-[10px] text-slate-400 font-normal">D2L / Forms format (Listening)</span>
                 </div>
               </button>
 
@@ -674,21 +691,21 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
                 className="w-full text-left px-4 py-2.5 hover:bg-slate-50 text-xs font-bold text-slate-800 flex items-center gap-2.5 cursor-pointer"
               >
                 <ClipboardList className="w-4 h-4 text-amber-600" />
-                <span>Nova Atividade / Tarefa</span>
+                <span>New Activity / Homework</span>
               </button>
               <button
                 onClick={onOpenNewExam}
                 className="w-full text-left px-4 py-2.5 hover:bg-slate-50 text-xs font-bold text-slate-800 flex items-center gap-2.5 cursor-pointer"
               >
                 <Award className="w-4 h-4 text-purple-600" />
-                <span>Nova Avaliação / Prova</span>
+                <span>New Assessment / Exam</span>
               </button>
               <button
                 onClick={onOpenNewLesson}
                 className="w-full text-left px-4 py-2.5 hover:bg-slate-50 text-xs font-bold text-slate-800 flex items-center gap-2.5 cursor-pointer"
               >
                 <PlaySquare className="w-4 h-4 text-blue-600" />
-                <span>Nova Aula (AVA)</span>
+                <span>New Lesson (VLE)</span>
               </button>
             </div>
           )}
@@ -699,7 +716,7 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
           <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
-            placeholder="Pesquisar materiais, quizzes, aulas ou provas..."
+            placeholder="Search materials, quizzes, lessons, or exams..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs sm:text-sm font-medium text-slate-900 placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-[#075e38]/20 focus:bg-white"
@@ -717,7 +734,7 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
               : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200/70'
           }`}
         >
-          Todos os Tópicos ({classTopics.length})
+          All Topics ({classTopics.length})
         </button>
 
         {classTopics.map((topic) => (
@@ -739,7 +756,7 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
           className="flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold text-[#075e38] bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 transition-colors whitespace-nowrap cursor-pointer"
         >
           <Plus className="w-3.5 h-3.5" />
-          <span>Criar Tópico</span>
+          <span>Create Topic</span>
         </button>
       </div>
 
@@ -751,13 +768,13 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
         >
           <div className="flex items-center gap-2">
             <FolderPlus className="w-4 h-4 text-[#075e38]" />
-            <h4 className="text-xs sm:text-sm font-bold text-[#075e38]">Novo Tópico da Turma</h4>
+            <h4 className="text-xs sm:text-sm font-bold text-[#075e38]">New Class Topic</h4>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <input
               type="text"
-              placeholder="Ex: Unidade 03 — Past Continuous & Reading"
+              placeholder="e.g. Unit 03 — Past Continuous & Reading"
               value={newTopicTitle}
               onChange={(e) => setNewTopicTitle(e.target.value)}
               className="w-full px-3.5 py-2 rounded-xl bg-white border border-emerald-300 text-xs sm:text-sm font-semibold text-slate-900 placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-[#075e38]/30"
@@ -765,7 +782,7 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
             />
             <input
               type="text"
-              placeholder="Descrição ou objetivos do tópico (opcional)"
+              placeholder="Topic description or objectives (optional)"
               value={newTopicDesc}
               onChange={(e) => setNewTopicDesc(e.target.value)}
               className="w-full px-3.5 py-2 rounded-xl bg-white border border-emerald-300 text-xs sm:text-sm font-medium text-slate-900 placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-[#075e38]/30"
@@ -782,13 +799,13 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
               }}
               className="px-3 py-1.5 text-xs font-bold text-slate-600 hover:bg-slate-200/60 rounded-xl"
             >
-              Cancelar
+              Cancel
             </button>
             <button
               type="submit"
               className="px-4 py-1.5 text-xs font-bold bg-[#075e38] hover:bg-[#064e2e] text-white rounded-xl shadow-2xs cursor-pointer"
             >
-              Salvar Tópico
+              Save Topic
             </button>
           </div>
         </form>
@@ -827,7 +844,7 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
                         {topic.title}
                       </h3>
                       <span className="text-[11px] font-extrabold text-slate-500 bg-white px-2 py-0.5 rounded-md border border-slate-200">
-                        {totalCount} {totalCount === 1 ? 'item' : 'itens'}
+                        {totalCount} {totalCount === 1 ? 'item' : 'items'}
                       </span>
                     </div>
                     {topic.description && (
@@ -839,7 +856,7 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
                     <button
                       onClick={() => handleDeleteTopic(topic.id)}
                       className="text-slate-400 hover:text-rose-600 p-1.5 rounded-lg hover:bg-rose-50 transition-colors"
-                      title="Excluir tópico"
+                      title="Delete topic"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -880,9 +897,9 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
                                   : 'bg-indigo-50 text-indigo-800 border-indigo-200'
                               }`}
                             >
-                              {mat.type === 'PDF' && 'Material PDF'}
+                              {mat.type === 'PDF' && 'PDF Material'}
                               {mat.type === 'DRIVE' && 'Google Drive'}
-                              {mat.type === 'VIDEO' && 'Vídeo de Apoio'}
+                              {mat.type === 'VIDEO' && 'Support Video'}
                             </span>
                             <h4 className="text-sm font-bold text-slate-900">{mat.title}</h4>
                           </div>
@@ -892,9 +909,9 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
                           )}
 
                           <div className="flex items-center gap-3 text-[11px] text-slate-400 pt-0.5">
-                            {mat.fileName && <span>Arquivo: <strong>{mat.fileName}</strong></span>}
+                            {mat.fileName && <span>File: <strong>{mat.fileName}</strong></span>}
                             {mat.fileSize && <span>• {mat.fileSize}</span>}
-                            <span>• Postado em: {mat.createdAt}</span>
+                            <span>• Posted on: {mat.createdAt}</span>
                           </div>
                         </div>
                       </div>
@@ -906,7 +923,7 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
                           rel="noopener noreferrer"
                           className="px-3 py-1.5 rounded-xl bg-white hover:bg-slate-50 text-[#075e38] text-xs font-bold border border-slate-200 transition-colors flex items-center gap-1.5 shadow-2xs cursor-pointer"
                         >
-                          <span>{mat.type === 'DRIVE' ? 'Abrir no Drive' : mat.type === 'VIDEO' ? 'Assistir Vídeo' : 'Visualizar PDF'}</span>
+                          <span>{mat.type === 'DRIVE' ? 'Open in Drive' : mat.type === 'VIDEO' ? 'Watch Video' : 'View PDF'}</span>
                           <ExternalLink className="w-3.5 h-3.5" />
                         </a>
 
@@ -914,7 +931,7 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
                         <button
                           onClick={() => handleOpenEditMaterialModal(mat)}
                           className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
-                          title="Editar material didático"
+                          title="Edit didactic material"
                         >
                           <Edit className="w-4 h-4" />
                         </button>
@@ -922,7 +939,7 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
                         <button
                           onClick={() => handleDeleteMaterial(mat.id)}
                           className="text-slate-400 hover:text-rose-600 p-1.5 rounded-lg hover:bg-rose-50 transition-colors"
-                          title="Excluir material"
+                          title="Delete material"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -944,29 +961,29 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
                         <div className="space-y-1">
                           <div className="flex items-center gap-2 flex-wrap">
                             <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-indigo-50 text-indigo-800 border border-indigo-200">
-                              Quiz Interativo (Forms/D2L)
+                              Interactive Quiz (Forms/D2L)
                             </span>
                             {quiz.audioUrl && (
                               <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-purple-100 text-purple-900 border border-purple-200 inline-flex items-center gap-1">
                                 <Volume2 className="w-3 h-3 text-purple-700" />
-                                Áudio Listening Integrado
+                                Integrated Listening Audio
                               </span>
                             )}
                             <h4 className="text-sm font-bold text-slate-900">{quiz.title}</h4>
                           </div>
 
                           <p className="text-xs text-slate-600 line-clamp-1">
-                            {quiz.description || quiz.instructions || 'Atividade interativa de compreensão e perguntas variadas.'}
+                            {quiz.description || quiz.instructions || 'Interactive comprehension activity with varied questions.'}
                           </p>
 
                           <div className="flex items-center gap-3 text-[11px] text-slate-500 pt-0.5">
-                            <span>Perguntas: <strong>{quiz.questions?.length || 0} questões</strong></span>
+                            <span>Questions: <strong>{quiz.questions?.length || 0} questions</strong></span>
                             <span>•</span>
-                            <span>Pontuação: <strong>{quiz.totalPoints} pontos</strong></span>
+                            <span>Points: <strong>{quiz.totalPoints} points</strong></span>
                             {quiz.timeLimitMinutes && (
                               <>
                                 <span>•</span>
-                                <span>Tempo: <strong>{quiz.timeLimitMinutes} min</strong></span>
+                                <span>Time: <strong>{quiz.timeLimitMinutes} min</strong></span>
                               </>
                             )}
                           </div>
@@ -983,14 +1000,14 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
                           className="px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition-all shadow-2xs flex items-center gap-1.5 cursor-pointer"
                         >
                           <PlaySquare className="w-3.5 h-3.5" />
-                          <span>Testar / Responder</span>
+                          <span>Test / Answer</span>
                         </button>
 
                         {/* Edit Quiz (Requirement 5) */}
                         <button
                           onClick={() => handleOpenEditQuizModal(quiz)}
                           className="p-1.5 text-slate-500 hover:text-indigo-700 hover:bg-indigo-50 rounded-lg transition-colors"
-                          title="Editar Quiz e perguntas"
+                          title="Edit quiz and questions"
                         >
                           <Edit className="w-4 h-4" />
                         </button>
@@ -998,7 +1015,7 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
                         <button
                           onClick={() => handleDeleteQuiz(quiz.id)}
                           className="text-slate-400 hover:text-rose-600 p-1.5 rounded-lg hover:bg-rose-50 transition-colors"
-                          title="Excluir Quiz"
+                          title="Delete quiz"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -1006,7 +1023,7 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
                     </div>
                   ))}
 
-                  {/* 3. ASSIGNMENTS (Tarefas) with Edit */}
+                  {/* 3. ASSIGNMENTS (Homework) with Edit */}
                   {matchedAssignments.map((assign) => {
                     const assignSubmissions = submissions.filter((s) => s.assignmentId === assign.id);
                     const completedCount = assignSubmissions.filter(
@@ -1028,15 +1045,15 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
                           <div className="space-y-1">
                             <div className="flex items-center gap-2 flex-wrap">
                               <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200/60">
-                                {assign.category || 'Atividade'}
+                                {getCategoryLabel(assign.category)}
                               </span>
                               <h4 className="text-sm font-bold text-slate-900">{assign.title}</h4>
                             </div>
                             <p className="text-xs text-slate-600 line-clamp-1">{assign.instructions}</p>
                             <div className="flex items-center gap-3 text-[11px] text-slate-500 pt-0.5">
-                              <span>Prazo: <strong>{assign.dueDate}</strong></span>
+                              <span>Due: <strong>{assign.dueDate}</strong></span>
                               <span>•</span>
-                              <span>Pontuação: <strong>{assign.maxScore} pontos</strong></span>
+                              <span>Points: <strong>{assign.maxScore} points</strong></span>
                             </div>
                           </div>
                         </div>
@@ -1046,14 +1063,14 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
                             onClick={() => onReviewAssignmentSubmissions(assign)}
                             className="px-3 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 text-xs font-bold border border-amber-200 transition-colors cursor-pointer"
                           >
-                            Entregas ({assignSubmissions.length})
+                            Submissions ({assignSubmissions.length})
                           </button>
 
                           {/* Requirement 5: Edit Assignment */}
                           <button
                             onClick={() => handleOpenEditAssignment(assign)}
                             className="p-1.5 text-slate-500 hover:text-amber-700 hover:bg-amber-50 rounded-lg transition-colors"
-                            title="Editar Atividade"
+                            title="Edit activity"
                           >
                             <Edit className="w-4 h-4" />
                           </button>
@@ -1061,7 +1078,7 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
                           <button
                             onClick={() => onDeleteAssignment(assign.id)}
                             className="text-slate-400 hover:text-rose-600 p-1.5 rounded-lg hover:bg-rose-50 transition-colors"
-                            title="Excluir atividade"
+                            title="Delete activity"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
@@ -1070,7 +1087,7 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
                     );
                   })}
 
-                  {/* 4. ASSESSMENTS (Exames) with Edit */}
+                  {/* 4. ASSESSMENTS (Exams) with Edit */}
                   {matchedExams.map((exam) => (
                     <div
                       key={exam.id}
@@ -1083,19 +1100,19 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
                         <div className="space-y-1">
                           <div className="flex items-center gap-2 flex-wrap">
                             <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-purple-100 text-purple-800 border border-purple-200">
-                              Prova Oficial
+                              Official Exam
                             </span>
                             <h4 className="text-sm font-bold text-slate-900">{exam.title}</h4>
                           </div>
                           <p className="text-xs text-slate-600 line-clamp-1">
-                            {exam.content || exam.description || 'Conteúdo programático cadastrado.'}
+                            {exam.content || exam.description || 'Syllabus on file.'}
                           </p>
                           <div className="flex items-center gap-3 text-[11px] text-slate-500 pt-0.5">
-                            <span>Data: <strong>{exam.date}</strong></span>
+                            <span>Date: <strong>{exam.date}</strong></span>
                             <span>•</span>
-                            <span>Peso: <strong>{exam.weight}%</strong></span>
+                            <span>Weight: <strong>{exam.weight}%</strong></span>
                             <span>•</span>
-                            <span>Máx: <strong>{exam.maxScore} pts</strong></span>
+                            <span>Max: <strong>{exam.maxScore} pts</strong></span>
                           </div>
                         </div>
                       </div>
@@ -1105,20 +1122,20 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
                           onClick={() => onOpenExamDetails(exam)}
                           className="px-3 py-1.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold border border-slate-200 transition-colors cursor-pointer"
                         >
-                          Ver Detalhes
+                          View Details
                         </button>
                         <button
                           onClick={() => onLaunchExamGrades(exam)}
                           className="px-3 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold transition-colors cursor-pointer shadow-2xs"
                         >
-                          Lançar Notas
+                          Enter Grades
                         </button>
 
                         {/* Requirement 5: Edit Assessment */}
                         <button
                           onClick={() => handleOpenEditAssessment(exam)}
                           className="p-1.5 text-slate-500 hover:text-purple-700 hover:bg-purple-50 rounded-lg transition-colors"
-                          title="Editar Avaliação"
+                          title="Edit Assessment"
                         >
                           <Edit className="w-4 h-4" />
                         </button>
@@ -1126,7 +1143,7 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
                         <button
                           onClick={() => onDeleteAssessment(exam.id)}
                           className="text-slate-400 hover:text-rose-600 p-1.5 rounded-lg hover:bg-rose-50 transition-colors"
-                          title="Excluir prova"
+                          title="Delete exam"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -1134,7 +1151,7 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
                     </div>
                   ))}
 
-                  {/* 5. LESSONS (Aulas AVA) */}
+                  {/* 5. LESSONS (VLE Lessons) */}
                   {matchedLessons.map((lesson) => (
                     <div
                       key={lesson.id}
@@ -1147,16 +1164,16 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
                         <div className="space-y-1">
                           <div className="flex items-center gap-2 flex-wrap">
                             <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200/60">
-                              Aula AVA
+                              VLE Lesson
                             </span>
                             <h4 className="text-sm font-bold text-slate-900">{lesson.title}</h4>
                           </div>
                           <p className="text-xs text-slate-600 line-clamp-1">{lesson.description}</p>
                           <div className="flex items-center gap-3 text-[11px] text-slate-400 pt-0.5">
-                            <span>Publicada em: {lesson.date}</span>
+                            <span>Published on: {lesson.date}</span>
                             {lesson.materials && lesson.materials.length > 0 && (
                               <span className="font-semibold text-slate-600">
-                                📎 {lesson.materials.length} anexo(s) disponível(is)
+                                📎 {lesson.materials.length} attachment(s) available
                               </span>
                             )}
                           </div>
@@ -1165,12 +1182,12 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
 
                       <div className="flex items-center gap-2 self-end sm:self-center">
                         <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200/70">
-                          ✓ Disponível no AVA
+                          ✓ Available in the VLE
                         </span>
                         <button
                           onClick={() => onDeleteLesson(lesson.id)}
                           className="text-slate-400 hover:text-rose-600 p-1.5 rounded-lg hover:bg-rose-50 transition-colors"
-                          title="Excluir aula"
+                          title="Delete lesson"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -1181,9 +1198,9 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
                   {totalCount === 0 && (
                     <div className="p-8 text-center text-slate-400 space-y-2">
                       <BookOpen className="w-8 h-8 text-slate-300 mx-auto" />
-                      <p className="text-xs font-medium">Nenhum conteúdo publicado neste tópico ainda.</p>
+                      <p className="text-xs font-medium">No content published in this topic yet.</p>
                       <p className="text-[11px]">
-                        Use o botão "Criar Conteúdo" acima para adicionar materiais didáticos, quizzes, tarefas ou provas.
+                        Use the "Create Content" button above to add didactic materials, quizzes, homework, or exams.
                       </p>
                     </div>
                   )}
@@ -1194,7 +1211,7 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
       </div>
 
       {/* ========================================================================= */}
-      {/* MODAL 1: ADICIONAR / EDITAR MATERIAL DIDÁTICO (Requirement 1)             */}
+      {/* MODAL 1: ADD / EDIT DIDACTIC MATERIAL (Requirement 1)                    */}
       {/* ========================================================================= */}
       {isMaterialModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in">
@@ -1206,10 +1223,10 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
                 </div>
                 <div>
                   <h3 className="text-base font-bold text-slate-900">
-                    {editingMaterial ? 'Editar Material Didático' : 'Disponibilizar Material Didático'}
+                    {editingMaterial ? 'Edit Didactic Material' : 'Publish Didactic Material'}
                   </h3>
                   <p className="text-xs text-slate-500">
-                    PDF, Google Drive ou Vídeos para consulta dos alunos
+                    PDFs, Google Drive files, or Videos for students to review
                   </p>
                 </div>
               </div>
@@ -1225,14 +1242,14 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
               {/* Type Selection Tabs */}
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                  Tipo de Material
+                  Material Type
                 </label>
                 <div className="grid grid-cols-3 gap-2">
                   <button
                     type="button"
                     onClick={() => {
                       setMaterialType('PDF');
-                      if (!materialFileName) setMaterialFileName('Apostila_Apoio.pdf');
+                      if (!materialFileName) setMaterialFileName('Support_Handout.pdf');
                     }}
                     className={`py-2 px-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
                       materialType === 'PDF'
@@ -1241,14 +1258,14 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
                     }`}
                   >
                     <FileText className="w-4 h-4 text-rose-600" />
-                    <span>Arquivo PDF</span>
+                    <span>PDF File</span>
                   </button>
 
                   <button
                     type="button"
                     onClick={() => {
                       setMaterialType('DRIVE');
-                      if (!materialFileName) setMaterialFileName('Pasta Google Drive');
+                      if (!materialFileName) setMaterialFileName('Google Drive Folder');
                     }}
                     className={`py-2 px-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
                       materialType === 'DRIVE'
@@ -1264,7 +1281,7 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
                     type="button"
                     onClick={() => {
                       setMaterialType('VIDEO');
-                      if (!materialFileName) setMaterialFileName('Vídeo de Apoio');
+                      if (!materialFileName) setMaterialFileName('Support Video');
                     }}
                     className={`py-2 px-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
                       materialType === 'VIDEO'
@@ -1273,7 +1290,7 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
                     }`}
                   >
                     <Video className="w-4 h-4 text-indigo-600" />
-                    <span>Link de Vídeo</span>
+                    <span>Video Link</span>
                   </button>
                 </div>
               </div>
@@ -1281,12 +1298,12 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
               {/* Title */}
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">
-                  Título do Material *
+                  Material Title *
                 </label>
                 <input
                   type="text"
                   required
-                  placeholder="Ex: Apostila Oficial de Exercícios ou Pasta de Diálogos"
+                  placeholder="e.g. Official Exercise Handout or Dialogue Folder"
                   value={materialTitle}
                   onChange={(e) => setMaterialTitle(e.target.value)}
                   className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs sm:text-sm font-semibold text-slate-900 focus:ring-2 focus:ring-[#075e38]/20 focus:outline-hidden"
@@ -1296,7 +1313,7 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
               {/* Upload from the teacher's computer */}
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">
-                  Enviar arquivo do computador (PDF, DOC, PPT, imagem)
+                  Upload file from computer (PDF, DOC, PPT, image)
                 </label>
                 <input
                   type="file"
@@ -1316,7 +1333,7 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
                   className="w-full text-xs text-slate-700 file:mr-3 file:px-3 file:py-2 file:rounded-lg file:border-0 file:bg-[#075e38] file:text-white file:text-xs file:font-bold file:cursor-pointer border border-slate-300 rounded-xl p-1.5 bg-white"
                 />
                 <p className="text-[10px] text-slate-400 mt-1">
-                  O arquivo fica disponível na plataforma (limite 700 KB). Para arquivos maiores, use um link abaixo.
+                  The file becomes available on the platform (700 KB limit). For larger files, use a link below.
                 </p>
               </div>
 
@@ -1324,17 +1341,17 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">
                   {materialType === 'PDF'
-                    ? 'Link direto do PDF / Documento'
+                    ? 'Direct PDF / Document link'
                     : materialType === 'DRIVE'
-                    ? 'Link compartilhado do Google Drive'
-                    : 'Link do Vídeo (YouTube, Vimeo ou MP4)'} *
+                    ? 'Shared Google Drive link'
+                    : 'Video link (YouTube, Vimeo, or MP4)'} *
                 </label>
                 <input
                   type="text"
                   required
                   placeholder={
                     materialType === 'PDF'
-                      ? 'https://.../arquivo.pdf'
+                      ? 'https://.../file.pdf'
                       : materialType === 'DRIVE'
                       ? 'https://drive.google.com/drive/folders/...'
                       : 'https://www.youtube.com/watch?v=...'
@@ -1345,8 +1362,8 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
                 />
                 <p className="text-[10px] text-slate-400 mt-1">
                   {materialUrl.startsWith('data:')
-                    ? `Arquivo do computador anexado: ${materialFileName || 'arquivo'}`
-                    : 'Ou cole um link se o arquivo já estiver na nuvem.'}
+                    ? `File attached from computer: ${materialFileName || 'file'}`
+                    : 'Or paste a link if the file is already in the cloud.'}
                 </p>
               </div>
 
@@ -1354,11 +1371,11 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">
-                    Nome de exibição do arquivo
+                    File display name
                   </label>
                   <input
                     type="text"
-                    placeholder="Ex: Apostila_Gramatica.pdf"
+                    placeholder="e.g. Grammar_Handout.pdf"
                     value={materialFileName}
                     onChange={(e) => setMaterialFileName(e.target.value)}
                     className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs text-slate-900 focus:outline-hidden"
@@ -1366,7 +1383,7 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">
-                    Vincular ao Tópico
+                    Link to Topic
                   </label>
                   <select
                     value={materialTopicId}
@@ -1385,11 +1402,11 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
               {/* Description */}
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">
-                  Orientações para o Aluno (Opcional)
+                  Student Guidelines (Optional)
                 </label>
                 <textarea
                   rows={2}
-                  placeholder="Orientações pedagógicas sobre como utilizar o material para estudar ou fazer tarefas..."
+                  placeholder="Pedagogical guidelines on how to use the material to study or complete homework..."
                   value={materialDesc}
                   onChange={(e) => setMaterialDesc(e.target.value)}
                   className="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs text-slate-900 focus:outline-hidden"
@@ -1405,9 +1422,9 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
                   className="mt-0.5 rounded text-[#075e38] focus:ring-[#075e38]"
                 />
                 <span className="text-xs font-semibold text-amber-950">
-                  Disponibilizar download para o aluno
+                  Allow download for the student
                   <span className="block text-[11px] font-normal text-amber-800/80 mt-0.5">
-                    Desmarcado, o aluno só pode visualizar o arquivo na plataforma (download bloqueado).
+                    When unchecked, the student can only view the file on the platform (download blocked).
                   </span>
                 </span>
               </label>
@@ -1418,13 +1435,13 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
                   onClick={() => setIsMaterialModalOpen(false)}
                   className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100"
                 >
-                  Cancelar
+                  Cancel
                 </button>
                 <button
                   type="submit"
                   className="px-5 py-2.5 rounded-xl bg-[#075e38] hover:bg-[#064e2e] text-white text-xs font-bold shadow-xs cursor-pointer"
                 >
-                  {editingMaterial ? 'Salvar Alterações' : 'Publicar Material'}
+                  {editingMaterial ? 'Save Changes' : 'Publish Material'}
                 </button>
               </div>
             </form>
@@ -1433,7 +1450,7 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
       )}
 
       {/* ========================================================================= */}
-      {/* MODAL 2: CRIAR / EDITAR QUIZ COM ÁUDIO (Requirement 3)                    */}
+      {/* MODAL 2: CREATE / EDIT QUIZ WITH AUDIO (Requirement 3)                    */}
       {/* ========================================================================= */}
       {isQuizModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in overflow-y-auto">
@@ -1445,10 +1462,10 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
                 </div>
                 <div>
                   <h3 className="text-base sm:text-lg font-bold text-slate-900">
-                    {editingQuiz ? 'Editar Quiz Interativo' : 'Criador de Quiz Interativo (Forms / D2L)'}
+                    {editingQuiz ? 'Edit Interactive Quiz' : 'Interactive Quiz Builder (Forms / D2L)'}
                   </h3>
                   <p className="text-xs text-slate-500">
-                    Atividades com áudio integrado para compreensão auditiva e diferentes tipos de pergunta
+                    Activities with integrated audio for listening comprehension and different question types
                   </p>
                 </div>
               </div>
@@ -1465,12 +1482,12 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">
-                    Título do Quiz *
+                    Quiz Title *
                   </label>
                   <input
                     type="text"
                     required
-                    placeholder="Ex: Listening Quiz 01 — Everyday Dialogues"
+                    placeholder="e.g. Listening Quiz 01 — Everyday Dialogues"
                     value={quizTitle}
                     onChange={(e) => setQuizTitle(e.target.value)}
                     className="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs sm:text-sm font-semibold text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-indigo-500/20"
@@ -1479,7 +1496,7 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
 
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">
-                    Vincular ao Tópico
+                    Link to Topic
                   </label>
                   <select
                     value={quizTopicId}
@@ -1498,11 +1515,11 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
               {/* Instructions */}
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">
-                  Instruções para o Estudante
+                  Student Instructions
                 </label>
                 <textarea
                   rows={2}
-                  placeholder="Ex: Ouça o áudio gravado e responda às perguntas a seguir diretamente na plataforma..."
+                  placeholder="e.g. Listen to the recorded audio and answer the following questions directly on the platform..."
                   value={quizInstructions}
                   onChange={(e) => setQuizInstructions(e.target.value)}
                   className="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs text-slate-900 focus:outline-hidden"
@@ -1515,7 +1532,7 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
                   <div className="flex items-center gap-2">
                     <Volume2 className="w-4 h-4 text-indigo-700" />
                     <span className="text-xs font-bold text-indigo-950">
-                      Áudio de Compreensão Auditiva (Listening Comprehension)
+                      Listening Comprehension Audio
                     </span>
                   </div>
                   <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-indigo-900">
@@ -1525,7 +1542,7 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
                       onChange={(e) => setQuizHasAudio(e.target.checked)}
                       className="rounded text-indigo-600 focus:ring-indigo-500"
                     />
-                    <span>Ativar faixa de áudio</span>
+                    <span>Enable audio track</span>
                   </label>
                 </div>
 
@@ -1534,11 +1551,11 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>
                         <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                          Título / Nome da Faixa de Áudio
+                          Audio Track Title / Name
                         </label>
                         <input
                           type="text"
-                          placeholder="Ex: Track 01 — Conversation at the Reception"
+                          placeholder="e.g. Track 01 — Conversation at the Reception"
                           value={quizAudioTitle}
                           onChange={(e) => setQuizAudioTitle(e.target.value)}
                           className="w-full px-3 py-1.5 rounded-xl bg-white border border-indigo-200 text-xs text-slate-900 focus:outline-hidden"
@@ -1546,7 +1563,7 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
                       </div>
                       <div className="sm:col-span-2">
                         <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                          Enviar áudio do computador (MP3, OGG, WAV, M4A)
+                          Upload audio from computer (MP3, OGG, WAV, M4A)
                         </label>
                         <input
                           type="file"
@@ -1562,13 +1579,13 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
                         />
                         <p className="text-[10px] text-slate-400 mt-1">
                           {quizAudioUploading
-                            ? `Enviando áudio... ${quizAudioProgress}%`
-                            : 'O áudio fica salvo na plataforma em partes (limite 50 MB). Para faixas maiores, use o link abaixo.'}
+                            ? `Uploading audio... ${quizAudioProgress}%`
+                            : 'The audio is saved to the platform in parts (50 MB limit). For larger tracks, use the link below.'}
                         </p>
                       </div>
                       <div className="sm:col-span-2">
                         <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                          Ou URL do Arquivo de Áudio (MP3 / OGG)
+                          Or Audio File URL (MP3 / OGG)
                         </label>
                         <input
                           type="text"
@@ -1579,7 +1596,7 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
                         />
                         {(quizAudioUrl.startsWith('data:') || isMediaRef(quizAudioUrl)) && (
                           <p className="text-[10px] text-emerald-700 mt-1 font-semibold">
-                            Arquivo de áudio do computador anexado.
+                            Audio file from computer attached.
                           </p>
                         )}
                       </div>
@@ -1590,7 +1607,7 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
                       <div className="p-3 bg-white rounded-xl border border-indigo-200 flex items-center justify-between gap-3">
                         <div className="flex items-center gap-2 text-xs font-semibold text-slate-700">
                           <Headphones className="w-4 h-4 text-indigo-600" />
-                          <span>Player de Teste:</span>
+                          <span>Test Player:</span>
                         </div>
                         <MediaAudioPlayer src={quizAudioUrl} className="h-8 max-w-xs flex-1" />
                       </div>
@@ -1604,7 +1621,7 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
                 <div className="flex items-center justify-between">
                   <h4 className="text-xs sm:text-sm font-bold text-slate-900 flex items-center gap-2">
                     <FileQuestion className="w-4 h-4 text-[#075e38]" />
-                    <span>Perguntas do Quiz ({quizQuestions.length})</span>
+                    <span>Quiz Questions ({quizQuestions.length})</span>
                   </h4>
                   <button
                     type="button"
@@ -1612,7 +1629,7 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
                     className="px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-[#075e38] text-xs font-bold border border-emerald-200 transition-colors flex items-center gap-1.5 cursor-pointer"
                   >
                     <Plus className="w-3.5 h-3.5" />
-                    <span>Adicionar Pergunta</span>
+                    <span>Add Question</span>
                   </button>
                 </div>
 
@@ -1624,7 +1641,7 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
                     >
                       <div className="flex items-center justify-between gap-2">
                         <span className="text-xs font-black text-slate-700 bg-white px-2.5 py-0.5 rounded-lg border border-slate-200">
-                          Questão #{qIdx + 1}
+                          Question #{qIdx + 1}
                         </span>
 
                         <div className="flex items-center gap-3">
@@ -1638,14 +1655,14 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
                             }
                             className="px-2.5 py-1 rounded-lg bg-white border border-slate-300 text-xs font-bold text-slate-800"
                           >
-                            <option value="MULTIPLE_CHOICE">Múltipla Escolha</option>
-                            <option value="TRUE_FALSE">Verdadeiro ou Falso</option>
-                            <option value="FILL_BLANK">Preenchimento de Lacuna</option>
-                            <option value="ESSAY">Dissertativa / Aberta</option>
+                            <option value="MULTIPLE_CHOICE">Multiple Choice</option>
+                            <option value="TRUE_FALSE">True or False</option>
+                            <option value="FILL_BLANK">Fill in the Blank</option>
+                            <option value="ESSAY">Essay / Open-Ended</option>
                           </select>
 
                           <div className="flex items-center gap-1 text-xs">
-                            <span className="text-slate-400">Pontos:</span>
+                            <span className="text-slate-400">Points:</span>
                             <input
                               type="number"
                               value={q.points}
@@ -1660,7 +1677,7 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
                             type="button"
                             onClick={() => handleRemoveQuestion(qIdx)}
                             className="text-slate-400 hover:text-rose-600 p-1"
-                            title="Remover pergunta"
+                            title="Remove question"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
@@ -1670,7 +1687,7 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
                       {/* Question Text */}
                       <input
                         type="text"
-                        placeholder="Enunciado da pergunta..."
+                        placeholder="Question prompt..."
                         value={q.question}
                         onChange={(e) => handleUpdateQuestion(qIdx, { question: e.target.value })}
                         className="w-full px-3.5 py-2 rounded-xl bg-white border border-slate-300 text-xs sm:text-sm font-semibold text-slate-900 focus:outline-hidden"
@@ -1681,7 +1698,7 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
                       {q.type === 'MULTIPLE_CHOICE' && (
                         <div className="space-y-2 pt-1 pl-2">
                           <p className="text-[11px] font-bold text-slate-500">
-                            Opções de Resposta (Marque a alternativa correta para gabarito automático):
+                            Answer Options (Check the correct choice for automatic grading):
                           </p>
                           {(q.options || []).map((opt, oIdx) => (
                             <div key={opt.id} className="flex items-center gap-2">
@@ -1709,14 +1726,14 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
                             onClick={() => handleAddOptionToQuestion(qIdx)}
                             className="text-xs font-bold text-indigo-700 hover:underline pt-1 block"
                           >
-                            + Adicionar alternativa
+                            + Add alternative
                           </button>
                         </div>
                       )}
 
                       {q.type === 'TRUE_FALSE' && (
                         <div className="flex items-center gap-4 pt-1 pl-2">
-                          <span className="text-xs font-bold text-slate-600">Gabarito correto:</span>
+                          <span className="text-xs font-bold text-slate-600">Correct answer:</span>
                           <label className="flex items-center gap-1.5 text-xs font-bold text-emerald-800 cursor-pointer">
                             <input
                               type="radio"
@@ -1724,7 +1741,7 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
                               checked={q.correctBooleanAnswer === true}
                               onChange={() => handleUpdateQuestion(qIdx, { correctBooleanAnswer: true })}
                             />
-                            <span>Verdadeiro (True)</span>
+                            <span>True</span>
                           </label>
                           <label className="flex items-center gap-1.5 text-xs font-bold text-rose-800 cursor-pointer">
                             <input
@@ -1733,7 +1750,7 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
                               checked={q.correctBooleanAnswer === false}
                               onChange={() => handleUpdateQuestion(qIdx, { correctBooleanAnswer: false })}
                             />
-                            <span>Falso (False)</span>
+                            <span>False</span>
                           </label>
                         </div>
                       )}
@@ -1741,11 +1758,11 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
                       {q.type === 'FILL_BLANK' && (
                         <div className="pt-1 pl-2">
                           <label className="block text-[11px] font-bold text-slate-500 mb-1">
-                            Palavra ou Frase Exata Esperada (Gabarito de preenchimento):
+                            Exact Word or Phrase Expected (fill-in answer key):
                           </label>
                           <input
                             type="text"
-                            placeholder="Ex: at / six / ID"
+                            placeholder="e.g. at / six / ID"
                             value={q.correctBlankAnswer || ''}
                             onChange={(e) => handleUpdateQuestion(qIdx, { correctBlankAnswer: e.target.value })}
                             className="w-full max-w-xs px-3 py-1 bg-white border border-slate-200 rounded-lg text-xs font-semibold"
@@ -1756,7 +1773,7 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
                       {q.type === 'ESSAY' && (
                         <div className="pt-1 pl-2">
                           <p className="text-[11px] text-slate-500 italic">
-                            Esta pergunta é dissertativa / aberta. O estudante responderá com um texto livre e o professor avaliará com feedback pedagógico.
+                            This is an essay / open-ended question. The student will answer with free text and the teacher will grade it with pedagogical feedback.
                           </p>
                         </div>
                       )}
@@ -1771,13 +1788,13 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
                   onClick={() => setIsQuizModalOpen(false)}
                   className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100"
                 >
-                  Cancelar
+                  Cancel
                 </button>
                 <button
                   type="submit"
                   className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-xs cursor-pointer"
                 >
-                  {editingQuiz ? 'Salvar Alterações no Quiz' : 'Publicar Quiz Interativo'}
+                  {editingQuiz ? 'Save Quiz Changes' : 'Publish Interactive Quiz'}
                 </button>
               </div>
             </form>
@@ -1786,7 +1803,7 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
       )}
 
       {/* ========================================================================= */}
-      {/* MODAL 3: PREVIEW / TESTAR QUIZ (Google Forms / D2L Interface)             */}
+      {/* MODAL 3: PREVIEW / TEST QUIZ (Google Forms / D2L Interface)              */}
       {/* ========================================================================= */}
       {previewQuiz && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in overflow-y-auto">
@@ -1799,7 +1816,7 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
                 </div>
                 <div>
                   <span className="text-[10px] font-black uppercase tracking-wider text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded">
-                    Ambiente de Resposta do Estudante (D2L / Forms)
+                    Student Answer Area (D2L / Forms)
                   </span>
                   <h3 className="text-base sm:text-lg font-bold text-slate-900 mt-0.5">
                     {previewQuiz.title}
@@ -1820,12 +1837,12 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
                 <div className="flex items-center justify-between text-xs">
                   <span className="font-bold flex items-center gap-1.5 text-indigo-200">
                     <Headphones className="w-4 h-4 text-indigo-300" />
-                    {previewQuiz.audioTitle || 'Faixa de Áudio de Compreensão'}
+                    {previewQuiz.audioTitle || 'Listening Comprehension Audio Track'}
                   </span>
                   <span className="text-[11px] text-indigo-300 font-mono">Listening Task</span>
                 </div>
                 <p className="text-xs text-indigo-100/90">
-                  Ouça a gravação de áudio com atenção antes de responder às questões.
+                  Listen to the audio recording carefully before answering the questions.
                 </p>
                 <MediaAudioPlayer src={previewQuiz.audioUrl} className="w-full mt-2" />
               </div>
@@ -1834,7 +1851,7 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
             {/* Instructions */}
             {previewQuiz.instructions && (
               <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200 text-xs text-slate-700">
-                <strong>Instruções:</strong> {previewQuiz.instructions}
+                <strong>Instructions:</strong> {previewQuiz.instructions}
               </div>
             )}
 
@@ -1847,9 +1864,9 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
                 >
                   <div className="flex items-center justify-between text-xs">
                     <span className="font-bold text-slate-900">
-                      Questão {idx + 1} de {previewQuiz.questions.length}
+                      Question {idx + 1} of {previewQuiz.questions.length}
                     </span>
-                    <span className="text-slate-400 font-semibold">{q.points} pontos</span>
+                    <span className="text-slate-400 font-semibold">{q.points} points</span>
                   </div>
 
                   <p className="text-xs sm:text-sm font-semibold text-slate-800">{q.question}</p>
@@ -1892,7 +1909,7 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
                             : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
                         }`}
                       >
-                        ✓ Verdadeiro (True)
+                        ✓ True
                       </button>
                       <button
                         type="button"
@@ -1903,7 +1920,7 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
                             : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
                         }`}
                       >
-                        ✗ Falso (False)
+                        ✗ False
                       </button>
                     </div>
                   )}
@@ -1912,7 +1929,7 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
                     <div className="pt-1">
                       <input
                         type="text"
-                        placeholder="Digite sua resposta aqui..."
+                        placeholder="Type your answer here..."
                         value={(previewAnswers[q.id] as string) || ''}
                         onChange={(e) =>
                           setPreviewAnswers({ ...previewAnswers, [q.id]: e.target.value })
@@ -1926,7 +1943,7 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
                     <div className="pt-1">
                       <textarea
                         rows={3}
-                        placeholder="Escreva sua resposta dissertativa em inglês..."
+                        placeholder="Write your essay answer in English..."
                         value={(previewAnswers[q.id] as string) || ''}
                         onChange={(e) =>
                           setPreviewAnswers({ ...previewAnswers, [q.id]: e.target.value })
@@ -1941,25 +1958,25 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
                     <div className="p-3 rounded-xl bg-slate-100 text-xs space-y-1">
                       <div className="flex items-center gap-1.5 font-bold text-slate-800">
                         <CheckCircle className="w-4 h-4 text-emerald-600" />
-                        <span>Correção da Questão:</span>
+                        <span>Question Feedback:</span>
                       </div>
                       {q.type === 'MULTIPLE_CHOICE' && (
                         <p className="text-slate-600">
-                          {previewAnswers[q.id] === q.correctOptionId ? '✓ Correto (+25 pts)' : '✗ Incorreto'}
+                          {previewAnswers[q.id] === q.correctOptionId ? '✓ Correct (+25 pts)' : '✗ Incorrect'}
                         </p>
                       )}
                       {q.type === 'TRUE_FALSE' && (
                         <p className="text-slate-600">
-                          {previewAnswers[q.id] === q.correctBooleanAnswer ? '✓ Correto (+25 pts)' : '✗ Incorreto'}
+                          {previewAnswers[q.id] === q.correctBooleanAnswer ? '✓ Correct (+25 pts)' : '✗ Incorrect'}
                         </p>
                       )}
                       {q.type === 'FILL_BLANK' && (
                         <p className="text-slate-600">
-                          Gabarito esperado: "<strong>{q.correctBlankAnswer}</strong>"
+                          Expected answer: "<strong>{q.correctBlankAnswer}</strong>"
                         </p>
                       )}
                       {q.type === 'ESSAY' && (
-                        <p className="text-slate-600">Resposta enviada para avaliação manual do docente.</p>
+                        <p className="text-slate-600">Answer submitted for manual review by the teacher.</p>
                       )}
                     </div>
                   )}
@@ -1972,7 +1989,7 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
               <div>
                 {previewSubmitted && (
                   <span className="text-xs font-black text-emerald-800 bg-emerald-50 px-3 py-1 rounded-xl border border-emerald-200">
-                    Pontuação no Teste: {previewScore} / {previewQuiz.totalPoints} pts
+                    Test Score: {previewScore} / {previewQuiz.totalPoints} pts
                   </span>
                 )}
               </div>
@@ -1983,7 +2000,7 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
                   onClick={() => setPreviewQuiz(null)}
                   className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100"
                 >
-                  Fechar
+                  Close
                 </button>
                 <button
                   type="button"
@@ -2010,7 +2027,7 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
                   }}
                   className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-xs cursor-pointer"
                 >
-                  {previewSubmitted ? 'Recalcular Gabarito' : 'Enviar Respostas (Simulação)'}
+                  {previewSubmitted ? 'Recalculate Score' : 'Submit Answers (Simulation)'}
                 </button>
               </div>
             </div>
@@ -2019,7 +2036,7 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
       )}
 
       {/* ========================================================================= */}
-      {/* MODAL 4: EDITAR ATIVIDADE / TAREFA (Requirement 5)                        */}
+      {/* MODAL 4: EDIT ACTIVITY / HOMEWORK (Requirement 5)                         */}
       {/* ========================================================================= */}
       {editingAssignment && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in">
@@ -2030,9 +2047,9 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
                   <Edit className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-slate-900">Editar Atividade Publicada</h3>
+                  <h3 className="text-base font-bold text-slate-900">Edit Published Activity</h3>
                   <p className="text-xs text-slate-500">
-                    Ajuste instruções, prazo ou critérios sem perder entregas existentes
+                    Adjust instructions, due date, or criteria without losing existing submissions
                   </p>
                 </div>
               </div>
@@ -2047,7 +2064,7 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
             <form onSubmit={handleSaveEditAssignment} className="space-y-4">
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">
-                  Título da Atividade *
+                  Activity Title *
                 </label>
                 <input
                   type="text"
@@ -2061,7 +2078,7 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">
-                    Prazo de Entrega
+                    Due Date
                   </label>
                   <input
                     type="date"
@@ -2073,7 +2090,7 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">
-                    Nota Máxima (pts)
+                    Maximum Grade (pts)
                   </label>
                   <input
                     type="number"
@@ -2087,7 +2104,7 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
 
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">
-                  Instruções e Enunciado
+                  Instructions and Prompt
                 </label>
                 <textarea
                   rows={4}
@@ -2104,13 +2121,13 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
                   onClick={() => setEditingAssignment(null)}
                   className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100"
                 >
-                  Cancelar
+                  Cancel
                 </button>
                 <button
                   type="submit"
                   className="px-5 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold shadow-xs cursor-pointer"
                 >
-                  Salvar Alterações
+                  Save Changes
                 </button>
               </div>
             </form>
@@ -2119,7 +2136,7 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
       )}
 
       {/* ========================================================================= */}
-      {/* MODAL 5: EDITAR AVALIAÇÃO / PROVA (Requirement 5)                         */}
+      {/* MODAL 5: EDIT ASSESSMENT / EXAM (Requirement 5)                           */}
       {/* ========================================================================= */}
       {editingAssessment && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in">
@@ -2130,9 +2147,9 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
                   <Edit className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-slate-900">Editar Avaliação / Prova</h3>
+                  <h3 className="text-base font-bold text-slate-900">Edit Assessment / Exam</h3>
                   <p className="text-xs text-slate-500">
-                    Ajuste datas, pesos ou conteúdo programático da avaliação
+                    Adjust dates, weights, or the assessment syllabus
                   </p>
                 </div>
               </div>
@@ -2147,7 +2164,7 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
             <form onSubmit={handleSaveEditAssessment} className="space-y-4">
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">
-                  Título da Prova *
+                  Exam Title *
                 </label>
                 <input
                   type="text"
@@ -2161,7 +2178,7 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">
-                    Data de Aplicação
+                    Exam Date
                   </label>
                   <input
                     type="date"
@@ -2173,7 +2190,7 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">
-                    Horário
+                    Time
                   </label>
                   <input
                     type="time"
@@ -2187,7 +2204,7 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">
-                    Peso na Média (%)
+                    Weight in Average (%)
                   </label>
                   <input
                     type="number"
@@ -2199,7 +2216,7 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">
-                    Nota Máxima (pts)
+                    Maximum Grade (pts)
                   </label>
                   <input
                     type="number"
@@ -2213,7 +2230,7 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
 
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">
-                  Conteúdo Programático Cobrado
+                  Syllabus Covered
                 </label>
                 <textarea
                   rows={3}
@@ -2229,13 +2246,13 @@ export const ClassContentsTab: React.FC<ClassContentsTabProps> = ({
                   onClick={() => setEditingAssessment(null)}
                   className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100"
                 >
-                  Cancelar
+                  Cancel
                 </button>
                 <button
                   type="submit"
                   className="px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold shadow-xs cursor-pointer"
                 >
-                  Salvar Alterações
+                  Save Changes
                 </button>
               </div>
             </form>

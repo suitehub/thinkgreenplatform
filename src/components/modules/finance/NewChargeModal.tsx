@@ -49,9 +49,9 @@ export const NewChargeModal: React.FC<NewChargeModalProps> = ({ isOpen, onClose 
               <PlusCircle className="w-4 h-4" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-slate-900">Gerar Nova Cobrança & Carnê</h2>
+              <h2 className="text-base font-bold text-slate-900">Create New Charge & Installment Plan</h2>
               <p className="text-xs text-slate-400">
-                Emitir plano de parcelamento para aluno matriculado
+                Issue an installment plan for an enrolled student
               </p>
             </div>
           </div>
@@ -66,23 +66,23 @@ export const NewChargeModal: React.FC<NewChargeModalProps> = ({ isOpen, onClose 
         {successMessage ? (
           <div className="p-6 bg-emerald-50 rounded-2xl border border-emerald-200 text-center space-y-2">
             <CheckCircle2 className="w-10 h-10 text-emerald-600 mx-auto" />
-            <h3 className="text-sm font-bold text-emerald-950">Cobrança e Carnê Gerados!</h3>
+            <h3 className="text-sm font-bold text-emerald-950">Charge and Installment Plan Created!</h3>
             <p className="text-xs text-emerald-800">
-              As parcelas foram registradas com sucesso no sistema financeiro.
+              The installments were successfully registered in the financial system.
             </p>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-3.5 text-xs">
             {/* Student Select */}
             <div>
-              <label className="block font-bold text-slate-700 mb-1">Selecione o Aluno (ID Student)</label>
+              <label className="block font-bold text-slate-700 mb-1">Select Student (Student ID)</label>
               <select
                 required
                 value={selectedStudentId}
                 onChange={(e) => setSelectedStudentId(e.target.value)}
                 className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-medium text-slate-900"
               >
-                <option value="">-- Selecione o Aluno --</option>
+                <option value="">-- Select Student --</option>
                 {state.students.map((s) => (
                   <option key={s.id} value={s.id}>
                     {s.name} ({s.studentId})
@@ -94,7 +94,7 @@ export const NewChargeModal: React.FC<NewChargeModalProps> = ({ isOpen, onClose 
             {/* Course & Class Select */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block font-bold text-slate-700 mb-1">Curso</label>
+                <label className="block font-bold text-slate-700 mb-1">Course</label>
                 <select
                   value={selectedCourseId}
                   onChange={(e) => setSelectedCourseId(e.target.value)}
@@ -109,7 +109,7 @@ export const NewChargeModal: React.FC<NewChargeModalProps> = ({ isOpen, onClose 
               </div>
 
               <div>
-                <label className="block font-bold text-slate-700 mb-1">Turma</label>
+                <label className="block font-bold text-slate-700 mb-1">Class</label>
                 <select
                   value={selectedClassId}
                   onChange={(e) => setSelectedClassId(e.target.value)}
@@ -126,37 +126,37 @@ export const NewChargeModal: React.FC<NewChargeModalProps> = ({ isOpen, onClose 
 
             {/* Installments count */}
             <div>
-              <label className="block font-bold text-slate-700 mb-1">Número de Parcelas</label>
+              <label className="block font-bold text-slate-700 mb-1">Number of Installments</label>
               <select
                 value={installmentsCount}
                 onChange={(e) => setInstallmentsCount(Number(e.target.value))}
                 className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-medium"
               >
-                <option value={1}>À vista (1 Parcela integral)</option>
-                <option value={2}>2 Parcelas</option>
-                <option value={3}>3 Parcelas</option>
-                <option value={4}>4 Parcelas Mensais</option>
-                <option value={6}>6 Parcelas</option>
+                <option value={1}>Paid in full (1 installment)</option>
+                <option value={2}>2 Installments</option>
+                <option value={3}>3 Installments</option>
+                <option value={4}>4 Monthly Installments</option>
+                <option value={6}>6 Installments</option>
               </select>
             </div>
 
             {/* Financial Summary Preview */}
             <div className="p-3.5 bg-emerald-50/70 rounded-2xl border border-emerald-100 space-y-1.5">
               <div className="flex justify-between text-xs">
-                <span className="text-slate-600">Valor Total do Curso:</span>
+                <span className="text-slate-600">Total Course Amount:</span>
                 <strong className="text-slate-900 font-mono">
                   {formatCurrency(totalAmount, 'EGP')}
                 </strong>
               </div>
               <div className="flex justify-between text-xs">
-                <span className="text-slate-600">Plano Selecionado:</span>
+                <span className="text-slate-600">Selected Plan:</span>
                 <strong className="text-emerald-900 font-mono">
                   {installmentsCount}x de {formatCurrency(installmentAmount, 'EGP')}
                 </strong>
               </div>
               <div className="flex justify-between text-[11px] text-slate-500 pt-1 border-t border-emerald-200/60">
-                <span>Vencimento inicial:</span>
-                <span>Dia 05 do próximo mês</span>
+                <span>Initial due date:</span>
+                <span>Day 05 of next month</span>
               </div>
             </div>
 
@@ -167,14 +167,14 @@ export const NewChargeModal: React.FC<NewChargeModalProps> = ({ isOpen, onClose 
                 onClick={onClose}
                 className="px-4 py-2 text-slate-600 hover:text-slate-900 font-semibold"
               >
-                Cancelar
+                Cancel
               </button>
               <button
                 type="submit"
                 disabled={!selectedStudentId}
                 className="px-5 py-2.5 bg-[#075e38] hover:bg-emerald-800 disabled:opacity-50 text-white font-bold rounded-xl shadow-xs transition-colors cursor-pointer"
               >
-                Gerar Carnê Financeiro
+                Generate Financial Installment Plan
               </button>
             </div>
           </form>

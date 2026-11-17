@@ -27,32 +27,32 @@ const ROLE_META: Partial<
     activeClass: 'bg-purple-50 text-purple-900',
   },
   TEACHER: {
-    label: 'Professor',
+    label: 'Teacher',
     icon: BookOpen,
     activeClass: 'bg-emerald-50 text-emerald-900',
   },
   SECRETARIAT: {
-    label: 'Secretaria',
+    label: 'Registrar\'s Office',
     icon: FileText,
     activeClass: 'bg-teal-50 text-teal-900',
   },
   RECEPTION: {
-    label: 'Recepção',
+    label: 'Reception',
     icon: Store,
     activeClass: 'bg-indigo-50 text-indigo-900',
   },
   FINANCE: {
-    label: 'Financeiro',
+    label: 'Finance',
     icon: DollarSign,
     activeClass: 'bg-amber-50 text-amber-900',
   },
   ACCOUNTING: {
-    label: 'Contábil',
+    label: 'Accounting',
     icon: BarChart3,
     activeClass: 'bg-blue-50 text-blue-900',
   },
   STUDENT: {
-    label: 'Aluno',
+    label: 'Student',
     icon: GraduationCap,
     activeClass: 'bg-purple-50 text-purple-900',
   },
@@ -93,17 +93,17 @@ export const AssignedModulesMenu: React.FC<AssignedModulesMenuProps> = ({ classN
         type="button"
         onClick={() => setIsOpen((open) => !open)}
         className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold transition-all cursor-pointer shadow-2xs"
-        title="Alternar entre os módulos autorizados para você"
+        title="Switch between the modules you are authorized to access"
       >
         <LayoutGrid className="w-3.5 h-3.5 text-[#075e38]" />
-        <span className="hidden sm:inline">Meus módulos</span>
+        <span className="hidden sm:inline">My modules</span>
         <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
       {isOpen && (
         <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-2xl border border-slate-200 shadow-xl p-1.5 z-50 animate-in fade-in">
           <p className="px-3 py-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-            Módulos autorizados
+            Authorized modules
           </p>
 
           {assignedRoles.map((role) => {
@@ -130,7 +130,7 @@ export const AssignedModulesMenu: React.FC<AssignedModulesMenuProps> = ({ classN
                 <span className="flex-1 truncate">{meta.label}</span>
                 {isActive && (
                   <span className="text-[9px] font-black uppercase tracking-wider opacity-70">
-                    Atual
+                    Current
                   </span>
                 )}
               </button>

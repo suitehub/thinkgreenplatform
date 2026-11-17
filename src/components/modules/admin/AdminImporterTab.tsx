@@ -73,7 +73,7 @@ export const AdminImporterTab: React.FC<AdminImporterTabProps> = ({ setCurrentTa
           success: true,
           count,
           totalAmount: totalPaid,
-          message: `${count} alunos importados com sucesso com STU IDs preservados/gerados, carnês de 11 mensalidades e ${totalPaid.toLocaleString()} EGP integrados à Tesouraria!`,
+          message: `${count} students imported successfully with preserved/generated STU IDs, 11-month payment books and ${totalPaid.toLocaleString()} EGP integrated into the Treasury!`,
         });
         setRawText('');
         setParsedPreview([]);
@@ -83,7 +83,7 @@ export const AdminImporterTab: React.FC<AdminImporterTabProps> = ({ setCurrentTa
           success: false,
           count: 0,
           totalAmount: 0,
-          message: `Erro durante a importação: ${err?.message || 'Verifique o formato das colunas'}`,
+          message: `Error during import: ${err?.message || 'Check the column format'}`,
         });
       }
     }, 600);
@@ -91,7 +91,7 @@ export const AdminImporterTab: React.FC<AdminImporterTabProps> = ({ setCurrentTa
 
   const handleDownloadTemplate = () => {
     const headerLine = 'Timestamp\tSTU_ID\tName\tDate of birth\tGender\tEmail\tCountry Code\tPhone number\tStudent ID\tIsParent\tResponsible Email\tResponsible ID\tFather Name\tMother Name\tLevel\n';
-    const sampleLine = '01/08/2026 10:00\tSTU00001\tNOME DO ALUNO\t07/12/2014\tFemale\taluno@thinkgreen.org\t20\t1142048695\t31401300000000\tYes\t\t\tPai do Aluno\tMãe do Aluno\tA1\n';
+    const sampleLine = '01/08/2026 10:00\tSTU00001\tSTUDENT NAME\t07/12/2014\tFemale\tstudent@thinkgreen.org\t20\t1142048695\t31401300000000\tYes\t\t\tFather of Student\tMother of Student\tA1\n';
     const content = headerLine + sampleLine;
     const blob = new Blob([content], { type: 'text/tab-separated-values;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
@@ -113,18 +113,18 @@ export const AdminImporterTab: React.FC<AdminImporterTabProps> = ({ setCurrentTa
         <div>
           <div className="flex items-center gap-2 mb-1 flex-wrap">
             <span className="text-[11px] font-bold text-purple-800 bg-purple-100 px-2 py-0.5 rounded-full border border-purple-200">
-              Super Admin • Motor de Migração Oficial
+              Super Admin • Official Migration Engine
             </span>
             <span className="text-[11px] font-semibold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-200">
-              11 Meses Acadêmicos
+              11 Academic Months
             </span>
           </div>
           <h2 className="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
             <Database className="w-5 h-5 text-purple-700" />
-            Migração de Planilhas (Google Sheets / Excel / CSV)
+            Spreadsheet Import (Google Sheets / Excel / CSV)
           </h2>
           <p className="text-xs text-slate-500 mt-0.5">
-            Layout: <span className="font-mono text-slate-700 font-semibold">Timestamp, STU_ID, Name, Date of birth, Gender, Email, Country Code, Phone number, Student ID, IsParent, Responsible Email, Responsible ID, Father Name, Mother Name, Level</span>. A turma é vinculada automaticamente pelo LEVEL.
+            Layout: <span className="font-mono text-slate-700 font-semibold">Timestamp, STU_ID, Name, Date of birth, Gender, Email, Country Code, Phone number, Student ID, IsParent, Responsible Email, Responsible ID, Father Name, Mother Name, Level</span>. The class is linked automatically by LEVEL.
           </p>
         </div>
 
@@ -134,7 +134,7 @@ export const AdminImporterTab: React.FC<AdminImporterTabProps> = ({ setCurrentTa
             className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
           >
             <Download className="w-3.5 h-3.5" />
-            Baixar Modelo TSV
+            Download TSV Template
           </button>
         </div>
       </div>
@@ -143,9 +143,9 @@ export const AdminImporterTab: React.FC<AdminImporterTabProps> = ({ setCurrentTa
       <div className="bg-slate-900 text-white p-4 rounded-2xl border border-slate-800 space-y-2">
         <div className="flex items-center justify-between">
           <span className="text-[11px] font-bold text-purple-300 uppercase tracking-wider flex items-center gap-1.5">
-            <FileSpreadsheet className="w-4 h-4 text-purple-400" /> Ordem Oficial das Colunas
+            <FileSpreadsheet className="w-4 h-4 text-purple-400" /> Official Column Order
           </span>
-          <span className="text-[10px] text-slate-400 font-mono">15 Colunas Identificadas</span>
+          <span className="text-[10px] text-slate-400 font-mono">15 Columns Identified</span>
         </div>
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-[11px] font-mono no-scrollbar">
           {['Timestamp', 'STU_ID', 'Name', 'Date of birth', 'Gender', 'Email', 'Country Code', 'Phone number', 'Student ID', 'IsParent', 'Responsible Email', 'Responsible ID', 'Father Name', 'Mother Name', 'Level'].map((label, idx) => (
@@ -186,7 +186,7 @@ export const AdminImporterTab: React.FC<AdminImporterTabProps> = ({ setCurrentTa
               onClick={() => setCurrentTab('sec_students')}
               className="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded-xl flex items-center gap-1 shrink-0 cursor-pointer"
             >
-              Ver Alunos na Secretaria
+              View Students in Secretariat
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
           )}
@@ -198,11 +198,11 @@ export const AdminImporterTab: React.FC<AdminImporterTabProps> = ({ setCurrentTa
         {/* Step 1: Parameters */}
         <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs space-y-4 text-xs">
           <h3 className="font-bold text-slate-900 text-sm border-b border-slate-100 pb-2">
-            1. Destino da Matrícula Automática
+            1. Automatic Enrollment Destination
           </h3>
 
           <div>
-            <label className="block font-bold text-slate-700 mb-1">Curso Padrão (Fallback):</label>
+            <label className="block font-bold text-slate-700 mb-1">Default Course (Fallback):</label>
             <select
               value={selectedCourseId}
               onChange={(e) => setSelectedCourseId(e.target.value)}
@@ -210,14 +210,14 @@ export const AdminImporterTab: React.FC<AdminImporterTabProps> = ({ setCurrentTa
             >
               {state.courses.map((course) => (
                 <option key={course.id} value={course.id}>
-                  {course.name} ({course.monthlyFee} EGP/mês)
+                  {course.name} ({course.monthlyFee} EGP/month)
                 </option>
               ))}
             </select>
           </div>
 
           <div>
-            <label className="block font-bold text-slate-700 mb-1">Turma Padrão:</label>
+            <label className="block font-bold text-slate-700 mb-1">Default Class:</label>
             <select
               value={selectedClassId}
               onChange={(e) => setSelectedClassId(e.target.value)}
@@ -234,10 +234,10 @@ export const AdminImporterTab: React.FC<AdminImporterTabProps> = ({ setCurrentTa
           <div className="p-3 bg-purple-50 border border-purple-100 rounded-xl text-purple-900 space-y-1">
             <p className="font-bold flex items-center gap-1.5 text-[11px]">
               <Info className="w-3.5 h-3.5 text-purple-600" />
-              Carnê Automático de 11 Meses
+              Automatic 11-Month Payment Book
             </p>
             <p className="text-[11px] text-purple-800">
-              Cada aluno terá seus 11 meses (Agosto a Julho) devidamente registrados com vencimentos e conciliações financeiras.
+              Each student will have their 11 months (August to July) properly recorded with due dates and financial reconciliations.
             </p>
           </div>
         </div>
@@ -246,19 +246,19 @@ export const AdminImporterTab: React.FC<AdminImporterTabProps> = ({ setCurrentTa
         <div className="lg:col-span-2 bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs space-y-3 text-xs flex flex-col">
           <div className="flex items-center justify-between border-b border-slate-100 pb-2">
             <div>
-              <h3 className="font-bold text-slate-900 text-sm">2. Cole os Dados da Planilha</h3>
+              <h3 className="font-bold text-slate-900 text-sm">2. Paste the Spreadsheet Data</h3>
               <p className="text-[11px] text-slate-500">
-                Copie as linhas do Google Sheets / Excel e cole aqui.
+                Copy the rows from Google Sheets / Excel and paste them here.
               </p>
             </div>
             <span className="font-mono text-[10px] text-slate-400">
-              {parsedPreview.length} linha(s) detectada(s)
+              {parsedPreview.length} row(s) detected
             </span>
           </div>
 
           <textarea
             rows={8}
-            placeholder={`Cole aqui as linhas copiadas do Google Sheets ou Excel...\nExemplo:\n01/08/2026 10:00\tSTU00001\tNOME DO ALUNO\t07/12/2014\tFemale\taluno@thinkgreen.org\t20\t1142048695\t31401300000000\tYes\t\t\tPai do Aluno\tMãe do Aluno\tA1`}
+            placeholder={`Paste the rows copied from Google Sheets or Excel here...\nExample:\n01/08/2026 10:00\tSTU00001\tSTUDENT NAME\t07/12/2014\tFemale\tstudent@thinkgreen.org\t20\t1142048695\t31401300000000\tYes\t\t\tFather of Student\tMother of Student\tA1`}
             value={rawText}
             onChange={handleTextChange}
             className="w-full p-3 font-mono text-xs border border-slate-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:outline-none flex-1 bg-slate-50/50"
@@ -272,7 +272,7 @@ export const AdminImporterTab: React.FC<AdminImporterTabProps> = ({ setCurrentTa
               }}
               className="px-3 py-1.5 text-slate-500 hover:text-slate-700 text-xs font-semibold cursor-pointer"
             >
-              Limpar Caixa
+              Clear Box
             </button>
 
             <button
@@ -282,12 +282,12 @@ export const AdminImporterTab: React.FC<AdminImporterTabProps> = ({ setCurrentTa
             >
               {isProcessing ? (
                 <>
-                  <RefreshCw className="w-4 h-4 animate-spin" /> Importando...
+                  <RefreshCw className="w-4 h-4 animate-spin" /> Importing...
                 </>
               ) : (
                 <>
                   <UploadCloud className="w-4 h-4" />
-                  Importar {parsedPreview.length} Aluno(s) com 11 Meses
+                  Import {parsedPreview.length} Student(s) with 11 Months
                 </>
               )}
             </button>
@@ -301,14 +301,14 @@ export const AdminImporterTab: React.FC<AdminImporterTabProps> = ({ setCurrentTa
           <div className="p-4 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <h4 className="font-bold text-slate-900 text-xs flex items-center gap-1.5">
               <FileSpreadsheet className="w-4 h-4 text-purple-600" />
-              Pré-visualização dos Dados ({parsedPreview.length} alunos)
+              Data Preview ({parsedPreview.length} students)
             </h4>
             <div className="flex items-center gap-4 text-xs font-mono">
               <span className="text-emerald-700 font-bold">
-                Arrecadado: {totalImportPaid.toLocaleString()} EGP
+                Collected: {totalImportPaid.toLocaleString()} EGP
               </span>
               <span className="text-amber-700 font-semibold">
-                Pendente: {totalImportPending.toLocaleString()} EGP
+                Pending: {totalImportPending.toLocaleString()} EGP
               </span>
             </div>
           </div>
@@ -321,7 +321,7 @@ export const AdminImporterTab: React.FC<AdminImporterTabProps> = ({ setCurrentTa
                   <th className="px-3 py-2.5">STUDENT ID</th>
                   <th className="px-3 py-2.5">NAME</th>
                   <th className="px-3 py-2.5">LEVEL</th>
-                  <th className="px-3 py-2.5">TURMA (AUTO)</th>
+                  <th className="px-3 py-2.5">CLASS (AUTO)</th>
                   <th className="px-3 py-2.5">TELEPHONE</th>
                   <th className="px-3 py-2.5">START DATE</th>
                   <th className="px-3 py-2.5">AGE</th>
@@ -330,7 +330,7 @@ export const AdminImporterTab: React.FC<AdminImporterTabProps> = ({ setCurrentTa
                       {m.label}
                     </th>
                   ))}
-                  <th className="px-3 py-2.5 text-right font-bold text-slate-800">Total Pago</th>
+                  <th className="px-3 py-2.5 text-right font-bold text-slate-800">Total Paid</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -338,7 +338,7 @@ export const AdminImporterTab: React.FC<AdminImporterTabProps> = ({ setCurrentTa
                   <tr key={idx} className="hover:bg-slate-50 transition-colors">
                     <td className="px-3 py-2 font-mono text-slate-400 text-[11px]">{idx + 1}</td>
                     <td className="px-3 py-2 font-mono font-bold text-purple-700">
-                      {item.studentId || <span className="text-slate-400 font-normal italic">Auto-gerar</span>}
+                      {item.studentId || <span className="text-slate-400 font-normal italic">Auto-generate</span>}
                     </td>
                     <td className="px-3 py-2 font-bold text-slate-900">{item.name}</td>
                     <td className="px-3 py-2">
@@ -352,26 +352,26 @@ export const AdminImporterTab: React.FC<AdminImporterTabProps> = ({ setCurrentTa
                           {item.className.split('|')[0].trim()}
                         </span>
                       ) : (
-                        <span className="text-[10px] text-slate-400 italic">Turma padrão</span>
+                        <span className="text-[10px] text-slate-400 italic">Default class</span>
                       )}
                     </td>
                     <td className="px-3 py-2 font-mono text-slate-600 text-[11px]">{item.phone}</td>
                     <td className="px-3 py-2 font-mono text-slate-600 text-[11px]">{item.startDate}</td>
-                    <td className="px-3 py-2 text-slate-600 text-center">{item.age ? `${item.age} anos` : '—'}</td>
+                    <td className="px-3 py-2 text-slate-600 text-center">{item.age ? `${item.age} yrs` : '—'}</td>
 
                     {item.months.map((m) => (
                       <td key={m.key} className="px-2 py-2 text-center">
                         {m.isPaid ? (
                           <span
                             className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 font-mono"
-                            title={`${m.fullName}: ${m.amount} EGP PAGO`}
+                            title={`${m.fullName}: ${m.amount} EGP PAID`}
                           >
                             {m.amount}
                           </span>
                         ) : (
                           <span
                             className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-400 font-mono"
-                            title={`${m.fullName}: Pendente`}
+                            title={`${m.fullName}: Pending`}
                           >
                             —
                           </span>

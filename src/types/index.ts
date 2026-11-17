@@ -1,6 +1,6 @@
 /**
  * Think Green Platform - Type Definitions
- * Sistema Integrado de Gestão do Think Green Community Center (Egypt)
+ * Integrated Management System for Think Green Community Center (Egypt)
  */
 
 export type UserRole =
@@ -45,23 +45,23 @@ export interface Student {
   name: string;
   email?: string;
   phone: string;
-  level?: string; // Nível acadêmico (ex: Beginner, Intermediate, Kids, Level 1)
-  age?: number; // Idade do aluno
-  startDate?: string; // Data de início / matrícula
-  rg?: string; // Registro Geral (RG) / Documento de Identidade
-  nationalId?: string; // Documento de Identidade Nacional / Passaporte
-  birthDate?: string; // Data de nascimento (YYYY-MM-DD)
-  gender?: 'MASCULINO' | 'FEMININO' | 'OUTRO' | string; // Gênero
+  level?: string; // Academic level (e.g. Beginner, Intermediate, Kids, Level 1)
+  age?: number; // Student age
+  startDate?: string; // Start date / enrollment date
+  rg?: string; // General Registry (RG) / Identity Document
+  nationalId?: string; // National Identity Document / Passport
+  birthDate?: string; // Date of birth (YYYY-MM-DD)
+  gender?: 'MASCULINO' | 'FEMININO' | 'OUTRO' | string; // Gender
   guardianName?: string;
   guardianPhone?: string;
   address?: string;
   city?: string; // e.g. Cairo, Giza, Alexandria
   status: StudentStatus;
-  systemAccess?: 'LIBERADO' | 'BLOQUEADO'; // Acesso ao sistema (Liberado / Bloqueado)
+  systemAccess?: 'LIBERADO' | 'BLOQUEADO'; // System access (Unlocked / Blocked)
   notes?: string;
   createdAt: string;
   avatarUrl?: string;
-  documentPhotoUrl?: string; // Foto anexada do RG/ID
+  documentPhotoUrl?: string; // Attached photo of the ID document
   documents: StudentDocument[];
 }
 
@@ -96,12 +96,12 @@ export interface Course {
   category: 'ENGLISH' | 'PRESCHOOL' | 'FOOTBALL' | 'WOMENS_FITNESS' | 'OTHER';
   description: string;
   color: string;
-  totalCourseAmount?: number; // Valor Inteiro do Curso
-  defaultInstallmentsCount?: number; // Quantidade de parcelas sugerida
-  monthlyFee: number; // in EGP (mensalidade base/parcela de referência)
+  totalCourseAmount?: number; // Full course amount
+  defaultInstallmentsCount?: number; // Suggested number of installments
+  monthlyFee: number; // in EGP (base monthly fee / reference installment)
   totalHours: number;
   isActive: boolean;
-  levels?: CourseLevelPricing[]; // 3 Níveis exclusivos para o Curso Livre de Inglês (Crianças, Adolescentes, Adulto)
+  levels?: CourseLevelPricing[]; // 3 exclusive levels for the General English Course (Children, Teenagers, Adults)
 }
 
 export type AssessmentTemplateLevel =
@@ -116,7 +116,7 @@ export type AssessmentTemplateLevel =
 export interface ClassAssessmentItem {
   id: string;
   name: string;
-  weight: number; // Porcentagem do peso (ex: 10, 30, 50)
+  weight: number; // Weight percentage (e.g. 10, 30, 50)
   type: string; // 'ATTENDANCE' | 'WORKBOOK' | 'HOMEWORK' | 'ORAL_EXAM' | 'UNIT_TESTS' | 'MIDTERM' | 'FINAL' | 'CUSTOM'
   description?: string;
   unitTestsCount?: number;
@@ -127,12 +127,12 @@ export interface ClassRoom {
   id: string;
   courseId: string;
   courseName?: string;
-  name: string; // e.g. "Inglês Básico - Turma A"
+  name: string; // e.g. "Basic English - Class A"
   code: string; // e.g. "ENG-101-A"
   teacherId: string;
   teacherName: string;
-  schedule: string; // e.g. "Segunda e Quarta, 18:00 - 19:30"
-  room: string; // e.g. "Sala 02 - Bloco A"
+  schedule: string; // e.g. "Monday and Wednesday, 18:00 - 19:30"
+  room: string; // e.g. "Room 02 - Block A"
   maxCapacity?: number;
   capacity?: number;
   startDate: string;
@@ -140,7 +140,7 @@ export interface ClassRoom {
   status: 'ACTIVE' | 'UPCOMING' | 'COMPLETED' | string;
   assessmentTemplate?: AssessmentTemplateLevel;
   assessmentConfig?: ClassAssessmentItem[];
-  isFinalGradeReleased?: boolean; // Controle de liberação da média final pelo professor
+  isFinalGradeReleased?: boolean; // Final grade release control by the teacher
 }
 
 export interface Enrollment {
@@ -156,9 +156,9 @@ export interface Enrollment {
   status: EnrollmentStatus;
   paymentPlan: {
     installmentsCount: number;
-    totalAmount: number; // in EGP (valor total final após negociação/desconto)
-    installmentAmount: number; // in EGP (valor de cada parcela)
-    originalTotalAmount?: number; // in EGP (valor inteiro antes do desconto)
+    totalAmount: number; // in EGP (final total after negotiation/discount)
+    installmentAmount: number; // in EGP (amount of each installment)
+    originalTotalAmount?: number; // in EGP (full amount before discount)
     englishLevel?: EnglishAudienceLevel; // 'CRIANCAS' | 'ADOLESCENTES' | 'ADULTO'
     discountType?: 'NONE' | 'PERCENT' | 'FIXED';
     discountValue?: number;
@@ -283,8 +283,8 @@ export interface Assessment {
   weight: number;
   requiredPaymentStage: 'STAGE_1_PAID' | 'STAGE_2_PAID' | 'STAGE_FINAL_PAID' | 'NONE';
   description?: string;
-  content?: string; // Conteúdo programático e tópicos cobrados
-  instructions?: string; // Instruções e critérios de avaliação
+  content?: string; // Syllabus content and topics covered
+  instructions?: string; // Instructions and assessment criteria
   status?: 'AGENDADA' | 'EM_ANDAMENTO' | 'CONCLUIDA';
 }
 
@@ -407,7 +407,7 @@ export interface PendingRegistration {
   guardianName?: string;
   guardianPhone?: string;
   notes?: string;
-  documentPhotoUrl?: string; // Foto anexada do RG/ID pela Recepção/Secretaria
+  documentPhotoUrl?: string; // ID document photo attached by Reception/Secretariat
 
   courseId: string;
   courseName: string;
@@ -491,10 +491,10 @@ export interface QuizQuestion {
   question: string;
   prompt?: string;
   type: QuizQuestionType;
-  options?: QuizQuestionOption[]; // Para MULTIPLE_CHOICE
-  correctOptionId?: string; // Para auto-correção de MULTIPLE_CHOICE
-  correctBooleanAnswer?: boolean; // Para TRUE_FALSE
-  correctBlankAnswer?: string; // Para FILL_BLANK
+  options?: QuizQuestionOption[]; // For MULTIPLE_CHOICE
+  correctOptionId?: string; // For MULTIPLE_CHOICE auto-grading
+  correctBooleanAnswer?: boolean; // For TRUE_FALSE
+  correctBlankAnswer?: string; // For FILL_BLANK
   points: number;
   explanation?: string;
 }
@@ -507,7 +507,7 @@ export interface Quiz {
   title: string;
   description?: string;
   instructions?: string;
-  audioUrl?: string; // Áudio anexado/link para listening comprehension
+  audioUrl?: string; // Attached audio / link for listening comprehension
   audioTitle?: string;
   questions: QuizQuestion[];
   totalPoints: number;
@@ -565,7 +565,7 @@ export interface GeneralAnnouncement {
 }
 
 // =========================================================================
-// PLANO DE AULA (LESSON PLAN) BASEADO NA PLANILHA EXCEL DE REFERÊNCIA
+// LESSON PLAN BASED ON THE REFERENCE EXCEL SPREADSHEET
 // =========================================================================
 export interface ClassLessonPlan {
   id: string;
@@ -573,12 +573,12 @@ export interface ClassLessonPlan {
   className?: string;
   teacherId?: string;
   teacherName?: string;
-  date: string; // e.g. "2026-08-18" ou "ago 18 (ter)"
-  dateDisplay?: string; // e.g. "ago 18 (ter)"
-  dateFormatted?: string; // e.g. "18 de Agosto de 2026 (Terça-feira)"
+  date: string; // e.g. "2026-08-18" or "Aug 18 (Tue)"
+  dateDisplay?: string; // e.g. "Aug 18 (Tue)"
+  dateFormatted?: string; // e.g. "August 18, 2026 (Tuesday)"
   
-  // 8 colunas/dimensões da planilha Excel oficial:
-  unitContent: string; // Unit Content: Describe the unit content from the book (ex: Let's Go Student Book, p. 4-6, etc.)
+  // 8 columns/dimensions of the official Excel spreadsheet:
+  unitContent: string; // Unit Content: Describe the unit content from the book (e.g. Let's Go Student Book, p. 4-6, etc.)
   handwriting: string; // Handwriting: Worksheet used in class, Handwriting Book pages (ex: Handwriting Book p.10-11.pdf)
   reading: string; // Reading: Reading text, dialogue, textbook text used in class
   writing: string; // Writing: Spelling exercises, grammar worksheet used in class
@@ -593,23 +593,23 @@ export interface ClassLessonPlan {
 }
 
 // =========================================================================
-// MÓDULO DE CONTABILIDADE & GASTOS — THINK GREEN COMMUNITY CENTER
+// ACCOUNTING & EXPENSES MODULE — THINK GREEN COMMUNITY CENTER
 // =========================================================================
 
-// As 3 Grandes Macroáreas do Rony
+// The 3 Major Macro Areas of Rony
 export type AccountingMacroArea = 'LIXO' | 'PRE_ESCOLA' | 'CENTRO_COMUNITARIO';
 
-// Subáreas / Categorias Detalhadas de Recebimento
+// Subareas / Detailed Revenue Categories
 export type RevenueSubArea =
-  | 'CURSO_INGLES' // Crianças 4 meses, Adolescentes 3 meses (2.000 EGP editável)
-  | 'PRE_ESCOLA' // Máx 2 vezes ou anual/semestral 9.000 EGP
-  | 'ACADEMIA_GINASTICA' // Academia e Aula de Ginástica (mesma categoria)
-  | 'AULAS_FUTEBOL' // Aulas de Futebol Sub-15
-  | 'CANTINA' // Vendas da cantina
-  | 'VENDA_LIXO' // Reciclagem / Venda de lixo
-  | 'ALUGUEL_CAMPO_PINGPONG' // Aluguel de campo de futebol e mesa de ping pong
-  | 'SUMMER_CAMPING' // Acampamento de verão / colônia
-  | 'OUTROS'; // Outras receitas comunitárias
+  | 'CURSO_INGLES' // Children 4 months, Teenagers 3 months (2,000 EGP editable)
+  | 'PRE_ESCOLA' // Max 2 times or annual/semester 9,000 EGP
+  | 'ACADEMIA_GINASTICA' // Gym and Gymnastics Class (same category)
+  | 'AULAS_FUTEBOL' // U-15 Football Classes
+  | 'CANTINA' // Canteen sales
+  | 'VENDA_LIXO' // Recycling / Waste sales
+  | 'ALUGUEL_CAMPO_PINGPONG' // Football field and ping pong table rental
+  | 'SUMMER_CAMPING' // Summer camp / holiday camp
+  | 'OUTROS'; // Other community revenues
 
 export interface AccountingRevenue {
   id: string;
@@ -621,9 +621,9 @@ export interface AccountingRevenue {
   subArea: RevenueSubArea;
   title: string;
   description?: string;
-  amount: number; // in EGP (editável)
+  amount: number; // in EGP (editable)
   payerName?: string;
-  installmentsInfo?: string; // ex: "Parcela 2 de 3 (Adolescente)" ou "Semestre 1 (9.000 EGP)"
+  installmentsInfo?: string; // e.g. "Installment 2 of 3 (Teenager)" or "Semester 1 (9,000 EGP)"
   paymentMethod: PaymentMethod;
   registeredBy: string;
   status: 'CONFIRMADO' | 'PENDENTE' | 'ESTORNADO';
@@ -632,10 +632,10 @@ export interface AccountingRevenue {
   updatedAt?: string;
 }
 
-// Orçamentos / Budget Menu da planilha de gastos do Rony (image_813704e7.png)
+// Budgets / Budget Menu from Rony's expense spreadsheet (image_813704e7.png)
 export type ExpenseBudget = 'General' | 'Preschool' | 'Community' | 'Recycle' | 'Outreach';
 
-// 28 Categorias de Orçamento da Planilha Oficial (image_813704e7.png)
+// 28 Budget Categories from the Official Spreadsheet (image_813704e7.png)
 export type ExpenseCategory =
   | "Translator's transportation"
   | 'ESF - AM Training'
@@ -668,49 +668,49 @@ export type ExpenseCategory =
   | 'Volunteers Outreach'
   | string;
 
-// Item individual da Planilha de Gastos Oficial do Rony (image_813704e7.png)
+// Individual item from Rony's Official Expense Spreadsheet (image_813704e7.png)
 export interface AccountingExpenseItem {
   id: string;
   receiptNumber: number; // Receipt # (1, 2, 3...)
-  date: string; // DD/MM/YYYY ou YYYY-MM-DD
-  product: string; // Descrição do produto ou serviço
+  date: string; // DD/MM/YYYY or YYYY-MM-DD
+  product: string; // Product or service description
   price: number; // Price (EGP)
   budget: ExpenseBudget; // General, Preschool, Community, Recycle, Outreach
-  category: ExpenseCategory; // Categoria da lista
-  paidTo?: string; // Beneficiário / Fornecedor / Reembolsado
-  sourceReportId?: string; // Vinculado a um Expense Report se originado de reembolso
+  category: ExpenseCategory; // Category from the list
+  paidTo?: string; // Beneficiary / Supplier / Reimbursed
+  sourceReportId?: string; // Linked to an Expense Report when originated from a reimbursement
   notes?: string;
-  receiptPhotoUrl?: string; // Comprovante / Foto anexada
+  receiptPhotoUrl?: string; // Receipt / Attached photo
   createdAt?: string;
 }
 
-// Item de linha do Expense Report Template (Expense_Report_Template_6710de3e.pdf)
+// Line item of the Expense Report Template (Expense_Report_Template_6710de3e.pdf)
 export interface ExpenseReportLineItem {
   id: string;
   category: ExpenseCategory;
   description: string;
-  date: string; // DD/MM/YYYY ou YYYY-MM-DD
+  date: string; // DD/MM/YYYY or YYYY-MM-DD
   amount: number; // in EGP
 }
 
-// Relatório de Reembolso do Funcionário / Voluntário (Expense_Report_Template_6710de3e.pdf)
+// Employee / Volunteer Reimbursement Report (Expense_Report_Template_6710de3e.pdf)
 export interface StaffExpenseReport {
   id: string;
   reportCode: string; // e.g. "EXP-2026-001"
   userId: string;
-  fullName: string; // Full name do funcionário/voluntário
+  fullName: string; // Full name of the employee/volunteer
   userEmail?: string;
-  event: string; // Event / Finalidade do gasto
-  date: string; // Data do relatório
+  event: string; // Event / Purpose of the expense
+  date: string; // Report date
   items: ExpenseReportLineItem[];
-  totalAmount: number; // Soma automática dos itens em EGP
-  receiptPhotoUrl?: string; // Foto do comprovante anexada (opção de tirar foto / upload)
+  totalAmount: number; // Automatic sum of the items in EGP
+  receiptPhotoUrl?: string; // Attached receipt photo (option to take a photo / upload)
   signatureName?: string; // Payment received / Signature
   status: 'PENDENTE' | 'APROVADO' | 'REJEITADO';
-  reviewedBy?: string; // Rony ou responsável contábil
+  reviewedBy?: string; // Rony or the accounting manager
   reviewedAt?: string;
   reviewNotes?: string;
-  assignedExpenseReceipts?: number[]; // IDs dos recibos gerados na planilha de gastos ao aprovar
+  assignedExpenseReceipts?: number[]; // IDs of the receipts generated in the expense spreadsheet upon approval
   createdAt: string;
   updatedAt?: string;
 }

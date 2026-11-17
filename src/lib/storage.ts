@@ -233,7 +233,7 @@ export const generateNextReceiptNumber = (existingReceipts: PaymentReceipt[]): s
 };
 
 /**
- * Real-time Business Rules Engine: Automatic Gates Evaluation for Exams & Classroom Entry
+ * Real-time Business Rules Engine: Extended Deadline Evaluation for Exams & Classroom Entry
  */
 export const evaluateExamAccess = (
   studentId: string,
@@ -262,13 +262,13 @@ export const evaluateExamAccess = (
   const overdueCharges = studentCharges.filter((c) => c.status === 'EM ATRASO');
   const unpaidCharges = studentCharges.filter((c) => c.status !== 'PAGO');
 
-  // General strict check: If student has ANY overdue charge (em atraso), all exams are blocked
+  // General strict check: if the student has ANY overdue charge, all exams are blocked
   if (overdueCharges.length > 0) {
     const overdueInst = overdueCharges[0];
     return {
       allowed: false,
-      reason: `Prova Bloqueada: A ${overdueInst.installmentNumber}ª parcela (${overdueInst.amount} EGP) está em atraso. Regularize na Tesouraria para liberar a avaliação.`,
-      requiredStage: `Quitação da ${overdueInst.installmentNumber}ª Parcela em atraso no balcão`,
+      reason: `Exam Blocked: Installment ${overdueInst.installmentNumber} (${overdueInst.amount} EGP) is overdue. Settle it at the Treasury to unlock the assessment.`,
+      requiredStage: `Payment of overdue Installment ${overdueInst.installmentNumber} at the counter`,
       isFinancialBlock: true,
     };
   }
@@ -278,8 +278,8 @@ export const evaluateExamAccess = (
     if (rules?.rule1_classroomRequiresFirstPayment && firstInstallment && firstInstallment.status !== 'PAGO') {
       return {
         allowed: false,
-        reason: 'Prova Bloqueada: 1ª Parcela (Matrícula) está pendente de pagamento na Tesouraria.',
-        requiredStage: 'Quitação da 1ª Parcela na recepção / financeiro em dinheiro',
+        reason: 'Exam Blocked: Installment 1 (Enrollment) is pending payment at the Treasury.',
+        requiredStage: 'Payment of Installment 1 in cash at the reception / finance desk',
         isFinancialBlock: true,
       };
     }
@@ -290,8 +290,8 @@ export const evaluateExamAccess = (
     if (rules?.rule2_exam1RequiresSecondPayment && secondInstallment && secondInstallment.status !== 'PAGO') {
       return {
         allowed: false,
-        reason: 'Esta avaliação está bloqueada: A 2ª Parcela da etapa correspondente não foi quitada.',
-        requiredStage: 'Regularização da 2ª Parcela junto à Tesouraria (Balcão)',
+        reason: 'This assessment is blocked: Installment 2 for the corresponding stage has not been paid.',
+        requiredStage: 'Payment of Installment 2 at the Treasury (Counter)',
         isFinancialBlock: true,
       };
     }
@@ -303,8 +303,8 @@ export const evaluateExamAccess = (
       const firstUnpaid = unpaidCharges[0];
       return {
         allowed: false,
-        reason: `Prova Final Bloqueada: Existem parcelas em aberto (${firstUnpaid.installmentNumber}ª parcela). É necessária a quitação integral do curso.`,
-        requiredStage: 'Quitação integral de todas as mensalidades do curso',
+        reason: `Final Exam Blocked: There are open installments (installment ${firstUnpaid.installmentNumber}). Full payment of the course is required.`,
+        requiredStage: 'Full payment of all course tuition installments',
         isFinancialBlock: true,
       };
     }
@@ -345,7 +345,7 @@ export const evaluateClassroomAccess = (
   if (!enrollment && classId !== 'ALL') {
     return {
       allowed: false,
-      reason: 'Aluno não possui vínculo ou matrícula ativa para esta turma.',
+      reason: 'Student has no active enrollment or link to this class.',
       isFinancialBlock: false,
     };
   }
@@ -353,7 +353,7 @@ export const evaluateClassroomAccess = (
   if (enrollment && enrollment.status === 'BLOQUEADA') {
     return {
       allowed: false,
-      reason: 'Matrícula bloqueada administrativamente. Dirija-se à Secretaria.',
+      reason: 'Enrollment blocked by the administration. Please go to the Secretariat.',
       isFinancialBlock: true,
     };
   }
@@ -376,23 +376,23 @@ export const evaluateClassroomAccess = (
   const overdueCharges = studentCharges.filter((c) => c.status === 'EM ATRASO');
   const unpaidCharges = studentCharges.filter((c) => c.status !== 'PAGO');
 
-  // Check 1: 1ª Parcela (Matrícula) - Rule 1
+  // Check 1: Installment 1 (Enrollment) - Rule 1
   if (rules?.rule1_classroomRequiresFirstPayment && firstInstallment && firstInstallment.status !== 'PAGO') {
     return {
       allowed: false,
-      reason: 'Entrada na Sala de Aula Bloqueada: A 1ª Parcela (Matrícula) está pendente de quitação na Tesouraria.',
+      reason: 'Classroom Entry Blocked: Installment 1 (Enrollment) is pending payment at the Treasury.',
       isFinancialBlock: true,
       overdueCount: overdueCharges.length,
       unpaidInstallments: unpaidCharges.map((c) => c.installmentNumber),
     };
   }
 
-  // Check 2: Any Overdue Installment (Em Atraso) blocks classroom entry
+  // Check 2: Any Overdue Installment blocks classroom entry
   if (overdueCharges.length > 0) {
     const overdueInst = overdueCharges[0];
     return {
       allowed: false,
-      reason: `Entrada na Sala de Aula Bloqueada: A ${overdueInst.installmentNumber}ª Parcela da etapa está em atraso (${overdueInst.amount} EGP). Dirija-se à Tesouraria para regularização imediata em dinheiro.`,
+      reason: `Classroom Entry Blocked: Installment ${overdueInst.installmentNumber} for this stage is overdue (${overdueInst.amount} EGP). Please go to the Treasury to settle it in cash immediately.`,
       isFinancialBlock: true,
       overdueCount: overdueCharges.length,
       unpaidInstallments: unpaidCharges.map((c) => c.installmentNumber),
@@ -406,7 +406,7 @@ export const evaluateClassroomAccess = (
  * Format currency in Egyptian Pounds (EGP) with configurable options
  */
 export const formatCurrency = (amount: number, currencyCode: string = 'EGP'): string => {
-  return new Intl.NumberFormat('pt-BR', {
+  return new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'EGP',
     minimumFractionDigits: 0,

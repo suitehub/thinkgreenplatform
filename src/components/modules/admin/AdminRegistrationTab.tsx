@@ -29,50 +29,50 @@ const assignableRoles: {
 }[] = [
   {
     role: 'TEACHER',
-    label: 'Professor / Docente',
-    description: 'Somente o painel do professor.',
+    label: 'Teacher / Instructor',
+    description: 'Teacher panel only.',
     icon: BookOpen,
     color: 'bg-emerald-50 text-emerald-800 border-emerald-200',
   },
   {
     role: 'FINANCE',
-    label: 'Financeiro / Tesouraria',
-    description: 'Cobranças, caixa, recibos e relatórios.',
+    label: 'Finance / Treasury',
+    description: 'Charges, cashier, receipts and reports.',
     icon: CreditCard,
     color: 'bg-amber-50 text-amber-800 border-amber-200',
   },
   {
     role: 'SECRETARIAT',
-    label: 'Secretaria',
-    description: 'Alunos, matrículas, turmas e documentos.',
+    label: 'Secretariat',
+    description: 'Students, enrollments, classes and documents.',
     icon: Users,
     color: 'bg-teal-50 text-teal-800 border-teal-200',
   },
   {
     role: 'ACCOUNTING',
-    label: 'Contabilidade',
-    description: 'Receitas, despesas, reembolsos e DRE.',
+    label: 'Accounting',
+    description: 'Revenue, expenses, refunds and P&L.',
     icon: BarChart3,
     color: 'bg-blue-50 text-blue-800 border-blue-200',
   },
   {
     role: 'RECEPTION',
-    label: 'Recepção',
-    description: 'Atendimento e pré-registro de pagamentos.',
+    label: 'Reception',
+    description: 'Front desk service and payment pre-registration.',
     icon: Building2,
     color: 'bg-indigo-50 text-indigo-800 border-indigo-200',
   },
   {
     role: 'SUPER_ADMIN',
     label: 'Super Admin',
-    description: 'Acesso total à administração da plataforma.',
+    description: 'Full access to platform administration.',
     icon: Shield,
     color: 'bg-purple-50 text-purple-800 border-purple-200',
   },
   {
     role: 'STUDENT',
-    label: 'Aluno',
-    description: 'Portal do estudante e AVA.',
+    label: 'Student',
+    description: 'Student portal and LMS.',
     icon: GraduationCap,
     color: 'bg-purple-50 text-purple-700 border-purple-200',
   },
@@ -124,22 +124,22 @@ export const AdminRegistrationTab: React.FC = () => {
       permissions: ['*'],
       status: 'ACTIVE',
     });
-    setSavedFeedback(`Função definida para ${editingPending.name}.`);
+    setSavedFeedback(`Role assigned to ${editingPending.name}.`);
     setEditingPending(null);
     window.setTimeout(() => setSavedFeedback(null), 3500);
   };
 
   const shareWhatsApp = () => {
     const message = encodeURIComponent(
-      `Olá! Crie seu acesso à Think Green Platform com Google ou e-mail e senha usando este link: ${registrationLink}`
+      `Hello! Create your Think Green Platform access with Google or email and password using this link: ${registrationLink}`
     );
     window.open(`https://wa.me/?text=${message}`, '_blank', 'noopener,noreferrer');
   };
 
   const shareEmail = () => {
-    const subject = encodeURIComponent('Registro de acesso — Think Green Platform');
+    const subject = encodeURIComponent('Access registration — Think Green Platform');
     const body = encodeURIComponent(
-      `Olá!\n\nCrie seu acesso à Think Green Platform com Google ou e-mail e senha usando o link abaixo:\n${registrationLink}\n\nApós o registro, sua função será definida pela administração.\n\nThink Green Platform`
+      `Hello!\n\nCreate your Think Green Platform access with Google or email and password using the link below:\n${registrationLink}\n\nAfter registering, your role will be assigned by administration.\n\nThink Green Platform`
     );
     window.location.href = `mailto:?subject=${subject}&body=${body}`;
   };
@@ -149,12 +149,12 @@ export const AdminRegistrationTab: React.FC = () => {
       <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
         <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
           <UserPlus className="w-5 h-5 text-purple-700" />
-          Registro Geral de Funcionários
+          General Staff Registration
         </h2>
         <p className="text-xs text-slate-500 mt-1 max-w-2xl leading-relaxed">
-          Envie este link para os funcionários. Eles criam a conta com Google ou e-mail e senha e
-          ficam aguardando a definição da função. Depois de atribuir as funções abaixo, o acesso é
-          liberado automaticamente.
+          Send this link to staff members. They create an account with Google or email and password
+          and wait for a role to be assigned. Once you assign the roles below, access is granted
+          automatically.
         </p>
       </div>
 
@@ -168,7 +168,7 @@ export const AdminRegistrationTab: React.FC = () => {
       <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs space-y-4">
         <div className="flex items-center gap-2 text-xs font-bold text-slate-700">
           <Link2 className="w-4 h-4 text-purple-600" />
-          Link de registro geral
+          General registration link
         </div>
 
         <div className="flex flex-col sm:flex-row gap-2">
@@ -184,7 +184,7 @@ export const AdminRegistrationTab: React.FC = () => {
             className="px-4 py-2.5 bg-purple-700 hover:bg-purple-800 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
           >
             {copied ? <CheckCircle2 className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-            {copied ? 'Link copiado' : 'Copiar link'}
+            {copied ? 'Link copied' : 'Copy link'}
           </button>
         </div>
 
@@ -195,7 +195,7 @@ export const AdminRegistrationTab: React.FC = () => {
             className="px-3.5 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
           >
             <MessageCircle className="w-3.5 h-3.5" />
-            Enviar por WhatsApp
+            Send via WhatsApp
           </button>
           <button
             type="button"
@@ -203,15 +203,15 @@ export const AdminRegistrationTab: React.FC = () => {
             className="px-3.5 py-2 bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
           >
             <Mail className="w-3.5 h-3.5" />
-            Enviar por e-mail
+            Send via email
           </button>
         </div>
 
         <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-[11px] text-slate-600 leading-relaxed">
-          <strong>Como funciona:</strong> o funcionário entra com Google ou cria uma conta com
-          e-mail e senha, o cadastro é criado como <em>Aguardando função</em> e ele vê uma tela de
-          espera. Assim que você definir uma ou mais funções, o acesso é liberado no próximo login
-          ou na verificação automática da tela de espera.
+          <strong>How it works:</strong> the staff member signs in with Google or creates an account
+          with email and password, the account is created as <em>Awaiting role</em> and they see a
+          waiting screen. As soon as you assign one or more roles, access is granted on the next
+          login or on the automatic check of the waiting screen.
         </div>
       </div>
 
@@ -220,20 +220,20 @@ export const AdminRegistrationTab: React.FC = () => {
           <div>
             <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
               <UserCheck className="w-4 h-4 text-amber-600" />
-              Cadastros aguardando função
+              Registrations awaiting role
             </h3>
             <p className="text-[11px] text-slate-500 mt-0.5">
-              Defina os módulos que cada funcionário poderá acessar.
+              Define which modules each staff member can access.
             </p>
           </div>
           <span className="self-start sm:self-auto px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
-            {pendingUsers.length} pendente{pendingUsers.length === 1 ? '' : 's'}
+            {pendingUsers.length} pending
           </span>
         </div>
 
         {pendingUsers.length === 0 ? (
           <div className="p-8 text-center text-xs text-slate-400">
-            Nenhum cadastro aguardando aprovação no momento.
+            No registrations awaiting approval at the moment.
           </div>
         ) : (
           <div className="divide-y divide-slate-100">
@@ -266,7 +266,7 @@ export const AdminRegistrationTab: React.FC = () => {
                   className="self-start sm:self-auto px-3.5 py-2 bg-purple-700 hover:bg-purple-800 text-white rounded-xl font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
                 >
                   <Shield className="w-3.5 h-3.5" />
-                  Definir função
+                  Assign role
                 </button>
               </div>
             ))}
@@ -278,12 +278,12 @@ export const AdminRegistrationTab: React.FC = () => {
         <Modal
           isOpen={true}
           onClose={() => setEditingPending(null)}
-          title={`Definir função de ${editingPending.name}`}
+          title={`Assign role to ${editingPending.name}`}
         >
           <div className="space-y-4 text-xs">
             <p className="text-slate-600 leading-relaxed">
-              Selecione uma ou mais funções. O funcionário poderá acessar todos os módulos
-              vinculados (por exemplo, Administração + Financeiro).
+              Select one or more roles. The staff member will be able to access all linked
+              modules (for example, Administration + Finance).
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -325,7 +325,7 @@ export const AdminRegistrationTab: React.FC = () => {
 
             {draftRoles.length === 0 && (
               <p className="text-[11px] font-semibold text-amber-700 bg-amber-50 border border-amber-200 rounded-xl p-2.5">
-                Selecione pelo menos uma função para liberar o acesso.
+                Select at least one role to grant access.
               </p>
             )}
 
@@ -335,7 +335,7 @@ export const AdminRegistrationTab: React.FC = () => {
                 onClick={() => setEditingPending(null)}
                 className="px-4 py-2 border border-slate-300 rounded-xl font-semibold text-slate-700"
               >
-                Cancelar
+                Cancel
               </button>
               <button
                 type="button"
@@ -343,7 +343,7 @@ export const AdminRegistrationTab: React.FC = () => {
                 disabled={draftRoles.length === 0}
                 className="px-5 py-2 bg-purple-700 hover:bg-purple-800 disabled:opacity-60 text-white rounded-xl font-bold"
               >
-                Liberar acesso
+                Grant access
               </button>
             </div>
           </div>

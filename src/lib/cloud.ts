@@ -98,7 +98,7 @@ export async function loadStateFromCloud(): Promise<Partial<AppState>> {
       (partial as Record<string, unknown>)[key] = result.value;
     } else {
       console.warn(
-        `[cloud] Não foi possível ler a coleção "${STATE_COLLECTIONS[key]}".`,
+        `[cloud] Unable to read the collection "${STATE_COLLECTIONS[key]}".`,
         result.reason
       );
     }
@@ -111,7 +111,7 @@ export async function loadStateFromCloud(): Promise<Partial<AppState>> {
     );
     if (settings) partial.settings = settings;
   } catch (error) {
-    console.warn(`[cloud] Não foi possível ler "${SETTINGS_COLLECTION}/${SETTINGS_DOC_ID}".`, error);
+    console.warn(`[cloud] Unable to read "${SETTINGS_COLLECTION}/${SETTINGS_DOC_ID}".`, error);
   }
 
   return partial;
@@ -168,7 +168,7 @@ export async function syncStateDiff(previous: AppState, next: AppState): Promise
       try {
         await syncCollectionDiff(STATE_COLLECTIONS[key], before, after);
       } catch (error) {
-        console.warn(`[cloud] Falha ao salvar a coleção "${STATE_COLLECTIONS[key]}".`, error);
+        console.warn(`[cloud] Failed to save the collection "${STATE_COLLECTIONS[key]}".`, error);
       }
     })
   );
@@ -180,7 +180,7 @@ export async function syncStateDiff(previous: AppState, next: AppState): Promise
         saveDocument(SETTINGS_COLLECTION, SETTINGS_DOC_ID, settings)
       );
     } catch (error) {
-      console.warn(`[cloud] Falha ao salvar "${SETTINGS_COLLECTION}/${SETTINGS_DOC_ID}".`, error);
+      console.warn(`[cloud] Failed to save "${SETTINGS_COLLECTION}/${SETTINGS_DOC_ID}".`, error);
     }
   }
 }

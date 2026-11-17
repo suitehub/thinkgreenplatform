@@ -67,7 +67,7 @@ export const Topbar: React.FC<TopbarProps> = ({
           >
             <div className="flex items-center gap-2.5">
               <Search className="w-4 h-4 text-slate-400 group-hover:text-purple-600 transition-colors" />
-              <span className="truncate">Buscar aluno (STU00000), turma, recibo...</span>
+              <span className="truncate">Search student (STU00000), class, receipt...</span>
             </div>
             <kbd className="hidden sm:inline-block px-1.5 py-0.5 text-[10px] font-bold font-mono bg-white text-slate-400 border border-slate-200 rounded">
               ⌘K
@@ -80,7 +80,7 @@ export const Topbar: React.FC<TopbarProps> = ({
           {/* Cairo Center Badge */}
           <div className="hidden md:flex items-center gap-1.5 px-3 py-1 bg-emerald-50 border border-emerald-200/70 rounded-full text-xs font-semibold text-emerald-800">
             <MapPin className="w-3.5 h-3.5 text-emerald-600" />
-            <span>Cairo, Egito (مصر)</span>
+            <span>Cairo, Egypt (مصر)</span>
           </div>
 
           {/* Notification Bell */}
@@ -103,21 +103,21 @@ export const Topbar: React.FC<TopbarProps> = ({
                 <div className="px-4 py-3 bg-slate-50/80 border-b border-slate-100 flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Bell className="w-4 h-4 text-purple-600" />
-                    <h4 className="text-xs font-bold text-slate-900">Notificações do Sistema</h4>
+                    <h4 className="text-xs font-bold text-slate-900">System Notifications</h4>
                   </div>
                   {unreadNotifs.length > 0 && (
                     <button
                       onClick={markAllNotificationsRead}
                       className="text-[11px] text-purple-600 hover:underline font-semibold"
                     >
-                      Marcar lidas
+                      Mark as read
                     </button>
                   )}
                 </div>
 
                 <div className="max-h-80 overflow-y-auto divide-y divide-slate-100 text-xs">
                   {state.notifications.length === 0 ? (
-                    <p className="p-6 text-center text-slate-400">Nenhuma notificação recente.</p>
+                    <p className="p-6 text-center text-slate-400">No recent notifications.</p>
                   ) : (
                     state.notifications.slice(0, 10).map((n) => (
                       <div
@@ -144,14 +144,14 @@ export const Topbar: React.FC<TopbarProps> = ({
             )}
           </div>
 
-          {/* Sair / Logout */}
+          {/* Sign out / Logout */}
           <button
             onClick={logout}
-            title="Sair da conta e voltar ao Login"
+            title="Sign out and return to Login"
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-rose-600 hover:bg-rose-50 border border-rose-100 transition-colors cursor-pointer"
           >
             <LogOut className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Sair</span>
+            <span className="hidden sm:inline">Sign out</span>
           </button>
         </div>
       </header>

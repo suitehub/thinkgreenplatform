@@ -29,7 +29,7 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ receipt, isOpen, onC
             <CheckCircle2 className="w-4 h-4" />
           </div>
           <div>
-            <h3 className="text-base font-bold text-slate-900">Recibo Oficial de Pagamento</h3>
+            <h3 className="text-base font-bold text-slate-900">Official Payment Receipt</h3>
             <p className="text-xs text-slate-500 font-mono">{receipt.receiptNumber}</p>
           </div>
         </div>
@@ -38,7 +38,7 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ receipt, isOpen, onC
         <div className="flex items-center justify-between w-full">
           <span className="text-xs text-slate-400 font-medium flex items-center gap-1">
             <ShieldCheck className="w-4 h-4 text-emerald-600" />
-            Autenticidade digital verificada pelo Think Green
+            Digital authenticity verified by Think Green
           </span>
           <div className="flex items-center gap-2">
             <button
@@ -46,13 +46,13 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ receipt, isOpen, onC
               className="px-4 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-300 rounded-xl hover:bg-slate-50 transition-colors flex items-center gap-1.5"
             >
               <Printer className="w-3.5 h-3.5" />
-              Imprimir Recibo
+              Print Receipt
             </button>
             <button
               onClick={onClose}
               className="px-4 py-2 text-xs font-semibold text-white bg-purple-700 rounded-xl hover:bg-purple-800 transition-colors"
             >
-              Concluir
+              Done
             </button>
           </div>
         </div>
@@ -64,7 +64,7 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ receipt, isOpen, onC
           <Logo size="md" />
           <div className="text-right">
             <span className="inline-block bg-purple-50 text-purple-700 text-xs font-bold px-2.5 py-1 rounded-full border border-purple-200">
-              DOCUMENTO OFICIAL
+              OFFICIAL DOCUMENT
             </span>
             <p className="text-xs font-mono text-slate-600 mt-1 font-semibold">{receipt.receiptNumber}</p>
             <p className="text-[11px] text-slate-400">{receipt.date}</p>
@@ -75,24 +75,24 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ receipt, isOpen, onC
         <div className="text-xs text-slate-500 bg-slate-50 p-3.5 rounded-xl border border-slate-100 flex items-center justify-between">
           <div>
             <p className="font-bold text-slate-700">Think Green Community Center</p>
-            <p>Cairo, Egito (جمهورية مصر العربية) • Setor Financeiro e Tesouraria</p>
+            <p>Cairo, Egypt (جمهورية مصر العربية) • Finance and Treasury Department</p>
           </div>
           <div className="text-right font-mono">
-            <p className="text-[11px] text-emerald-600 font-semibold">STATUS: PAGO & CONFIRMADO</p>
+            <p className="text-[11px] text-emerald-600 font-semibold">STATUS: PAID & CONFIRMED</p>
           </div>
         </div>
 
         {/* Student & Payment Details */}
         <div className="grid grid-cols-2 gap-4 text-xs">
           <div className="space-y-1">
-            <span className="text-slate-400 font-medium">Aluno / Beneficiário:</span>
+            <span className="text-slate-400 font-medium">Student / Beneficiary:</span>
             <p className="text-sm font-bold text-slate-900">{receipt.studentName}</p>
             <p className="font-mono text-purple-700 font-bold bg-purple-50 px-2 py-0.5 rounded inline-block">
-              ID Student: {receipt.studentId}
+              Student ID: {receipt.studentId}
             </p>
           </div>
           <div className="space-y-1 text-right">
-            <span className="text-slate-400 font-medium">Curso / Atividade:</span>
+            <span className="text-slate-400 font-medium">Course / Activity:</span>
             <p className="text-sm font-bold text-slate-900">{receipt.courseName}</p>
             <p className="text-slate-600">{receipt.installmentDescription}</p>
           </div>
@@ -102,7 +102,7 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ receipt, isOpen, onC
         <div className="bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-50 p-5 rounded-2xl border border-emerald-200 flex items-center justify-between">
           <div>
             <span className="text-xs font-semibold text-emerald-800 uppercase tracking-wider">
-              Valor Total Pago
+              Total Amount Paid
             </span>
             <h2 className="text-3xl font-extrabold text-emerald-950 font-mono">
               {formatCurrency(receipt.amount, 'EGP')}
@@ -110,12 +110,12 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ receipt, isOpen, onC
           </div>
           <div className="text-right">
             <span className="text-xs font-semibold text-emerald-800 uppercase tracking-wider block">
-              Forma de Pagamento
+              Payment Method
             </span>
             <span className="inline-block bg-white text-emerald-800 font-bold text-xs px-3 py-1 rounded-lg border border-emerald-200 shadow-2xs mt-1">
               {receipt.paymentMethod === 'TRANSFERENCIA'
-                ? 'Transferência Bancária'
-                : 'Dinheiro Físico'}
+                ? 'Bank Transfer'
+                : 'Cash'}
             </span>
           </div>
         </div>
@@ -123,16 +123,16 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ receipt, isOpen, onC
         {/* Metadata & Signatures */}
         <div className="border-t border-slate-100 pt-4 grid grid-cols-2 gap-4 text-xs text-slate-500">
           <div>
-            <p className="font-medium text-slate-700">Responsável pela Emissão:</p>
+            <p className="font-medium text-slate-700">Issued by:</p>
             <p>{receipt.issuedBy}</p>
             {receipt.notes && <p className="italic text-slate-400 mt-1">"{receipt.notes}"</p>}
           </div>
 
           <div className="text-right flex flex-col items-end justify-center">
             <div className="w-36 border-b border-slate-300 pb-1 text-center font-serif text-[10px] text-slate-400">
-              Assinatura / Carimbo
+              Signature / Stamp
             </div>
-            <span className="text-[10px] text-slate-400 mt-1">Think Green Center • Tesouraria</span>
+            <span className="text-[10px] text-slate-400 mt-1">Think Green Center • Treasury</span>
           </div>
         </div>
       </div>

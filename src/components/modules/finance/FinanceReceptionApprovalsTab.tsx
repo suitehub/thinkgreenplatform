@@ -86,7 +86,7 @@ export const FinanceReceptionApprovalsTab: React.FC = () => {
 
   const handleOpenApprove = (payment: PendingPayment) => {
     setApprovingPayment(payment);
-    setApprovalNotes(`Dinheiro físico conferido na gaveta e conciliado por Rony / Tesouraria.`);
+    setApprovalNotes(`Physical cash counted in the drawer and reconciled by Rony / Treasury.`);
   };
 
   const handleConfirmApproval = (e: React.FormEvent) => {
@@ -101,7 +101,7 @@ export const FinanceReceptionApprovalsTab: React.FC = () => {
       setSelectedOfficialReceipt(result.paymentReceipt);
     } catch (err) {
       console.error(err);
-      alert('Erro ao aprovar pagamento.');
+      alert('Error approving payment.');
       setIsApproving(false);
     }
   };
@@ -114,7 +114,7 @@ export const FinanceReceptionApprovalsTab: React.FC = () => {
   const handleConfirmRejection = (e: React.FormEvent) => {
     e.preventDefault();
     if (!rejectingPayment || !rejectionReason.trim()) {
-      alert('Por favor, informe a justificativa da recusa.');
+      alert('Please provide a reason for the rejection.');
       return;
     }
     setIsRejecting(true);
@@ -124,7 +124,7 @@ export const FinanceReceptionApprovalsTab: React.FC = () => {
       setRejectingPayment(null);
     } catch (err) {
       console.error(err);
-      alert('Erro ao rejeitar pagamento.');
+      alert('Error rejecting payment.');
       setIsRejecting(false);
     }
   };
@@ -135,7 +135,7 @@ export const FinanceReceptionApprovalsTab: React.FC = () => {
       if (found) {
         setSelectedOfficialReceipt(found);
       } else {
-        alert(`Recibo oficial ${payment.officialReceiptNumber} não localizado.`);
+        alert(`Official receipt ${payment.officialReceiptNumber} not found.`);
       }
     }
   };
@@ -148,14 +148,14 @@ export const FinanceReceptionApprovalsTab: React.FC = () => {
           <div className="flex items-center gap-2.5">
             <h2 className="text-base font-black text-slate-900 tracking-tight flex items-center gap-2">
               <CheckSquare className="w-5 h-5 text-[#075e38]" />
-              Validação de Pagamentos da Recepção
+              Reception Payment Validation
             </h2>
             <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-200">
-              {pendingCount} pendente(s)
+              {pendingCount} pending
             </span>
           </div>
           <p className="text-xs text-slate-500 mt-1">
-            Conferência do dinheiro físico que o Rony recebe no caixa, homologação e emissão de recibos oficiais
+            Reconciliation of the physical cash Rony receives at the counter, approval and issuance of official receipts
           </p>
         </div>
 
@@ -164,7 +164,7 @@ export const FinanceReceptionApprovalsTab: React.FC = () => {
           <Banknote className="w-5 h-5 text-[#075e38] flex-shrink-0" />
           <div>
             <span className="text-[10px] font-black uppercase text-emerald-800 tracking-wider block">
-              Dinheiro Físico a Bater com o Caixa (Rony)
+              Physical Cash to Reconcile with Register (Rony)
             </span>
             <span className="text-base font-mono font-black text-emerald-950">
               {formatCurrency(pendingCashAmount, 'EGP')}
@@ -177,42 +177,42 @@ export const FinanceReceptionApprovalsTab: React.FC = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="p-4 bg-amber-50/70 rounded-2xl border border-amber-200 space-y-1">
           <div className="flex items-center justify-between text-amber-800 text-[10px] font-black uppercase tracking-wider">
-            <span>Pré-Registros Pendentes</span>
+            <span>Pending Pre-Registrations</span>
             <Clock className="w-4 h-4 text-amber-600" />
           </div>
           <p className="text-2xl font-black font-mono text-amber-950">
             {formatCurrency(pendingAmount, 'EGP')}
           </p>
-          <p className="text-[11px] text-amber-800 font-semibold">{pendingCount} pagamento(s) na fila</p>
+          <p className="text-[11px] text-amber-800 font-semibold">{pendingCount} payment(s) in queue</p>
         </div>
 
         <div className="p-4 bg-emerald-50/70 rounded-2xl border border-emerald-200 space-y-1">
           <div className="flex items-center justify-between text-emerald-800 text-[10px] font-black uppercase tracking-wider">
-            <span>Homologados & Aprovados</span>
+            <span>Approved & Validated</span>
             <CheckCircle className="w-4 h-4 text-emerald-600" />
           </div>
           <p className="text-2xl font-black font-mono text-emerald-950">
             {formatCurrency(approvedAmount, 'EGP')}
           </p>
-          <p className="text-[11px] text-emerald-700 font-semibold">{approvedCount} recibo(s) emitidos</p>
+          <p className="text-[11px] text-emerald-700 font-semibold">{approvedCount} receipt(s) issued</p>
         </div>
 
         <div className="p-4 bg-rose-50/70 rounded-2xl border border-rose-200 space-y-1">
           <div className="flex items-center justify-between text-rose-800 text-[10px] font-black uppercase tracking-wider">
-            <span>Recusados / Devolvidos</span>
+            <span>Rejected / Returned</span>
             <XCircle className="w-4 h-4 text-rose-600" />
           </div>
           <p className="text-2xl font-black font-mono text-rose-950">{rejectedCount}</p>
-          <p className="text-[11px] text-rose-700 font-semibold">Divergências de caixa</p>
+          <p className="text-[11px] text-rose-700 font-semibold">Cash discrepancies</p>
         </div>
 
         <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-1">
           <div className="flex items-center justify-between text-slate-500 text-[10px] font-black uppercase tracking-wider">
-            <span>Responsável Tesouraria</span>
+            <span>Treasury Officer</span>
             <ShieldCheck className="w-4 h-4 text-[#075e38]" />
           </div>
-          <p className="text-sm font-black text-slate-800 mt-1">Rony / Tesouraria</p>
-          <p className="text-[11px] text-slate-500 font-medium">Controle Diário de Balcão</p>
+          <p className="text-sm font-black text-slate-800 mt-1">Rony / Treasury</p>
+          <p className="text-[11px] text-slate-500 font-medium">Daily Front Desk Control</p>
         </div>
       </div>
 
@@ -221,12 +221,12 @@ export const FinanceReceptionApprovalsTab: React.FC = () => {
         <Sparkles className="w-4 h-4 text-[#075e38] flex-shrink-0 mt-0.5" />
         <div className="space-y-1">
           <p className="font-bold text-slate-900">
-            Fluxo de Caixa Integrado Recepção ⇄ Tesouraria:
+            Integrated Cash Flow Reception ⇄ Treasury:
           </p>
           <p className="text-[11px] leading-relaxed">
-            A Recepção lança os pagamentos recebidos dos alunos no balcão e entrega um <strong>Comprovante Provisório</strong>.
-            Para que o valor entre formalmente no caixa, dê baixa na cobrança do aluno e gere o <strong>Recibo Oficial Definitivo</strong>,
-            a Tesouraria precisa conferir o dinheiro físico entregue e clicar em <strong>"Aprovar"</strong> abaixo.
+            Reception records the payments received from students at the counter and hands over a <strong>Provisional Receipt</strong>.
+            For the amount to formally enter the cash register, settle the student's charge and generate the <strong>Final Official Receipt</strong>,
+            Treasury must verify the physical cash delivered and click <strong>"Approve"</strong> below.
           </p>
         </div>
       </div>
@@ -242,7 +242,7 @@ export const FinanceReceptionApprovalsTab: React.FC = () => {
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
-            Pendentes ({pendingCount})
+            Pending ({pendingCount})
           </button>
           <button
             onClick={() => setStatusFilter('APROVADO')}
@@ -252,7 +252,7 @@ export const FinanceReceptionApprovalsTab: React.FC = () => {
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
-            Aprovados ({approvedCount})
+            Approved ({approvedCount})
           </button>
           <button
             onClick={() => setStatusFilter('REPROVADO')}
@@ -262,7 +262,7 @@ export const FinanceReceptionApprovalsTab: React.FC = () => {
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
-            Recusados ({rejectedCount})
+            Rejected ({rejectedCount})
           </button>
           <button
             onClick={() => setStatusFilter('ALL')}
@@ -272,7 +272,7 @@ export const FinanceReceptionApprovalsTab: React.FC = () => {
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
-            Todos ({pendingPayments.length})
+            All ({pendingPayments.length})
           </button>
         </div>
 
@@ -281,7 +281,7 @@ export const FinanceReceptionApprovalsTab: React.FC = () => {
           <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
           <input
             type="text"
-            placeholder="Buscar por protocolo, aluno, curso..."
+            placeholder="Search by protocol, student, course..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:bg-white focus:ring-2 focus:ring-[#075e38] outline-hidden"
@@ -293,11 +293,11 @@ export const FinanceReceptionApprovalsTab: React.FC = () => {
       {filteredPayments.length === 0 ? (
         <div className="p-12 text-center bg-slate-50/70 border border-slate-200 rounded-2xl space-y-2">
           <Clock className="w-8 h-8 text-slate-300 mx-auto" />
-          <p className="text-xs font-bold text-slate-700">Nenhum pré-registro encontrado nesta lista.</p>
+          <p className="text-xs font-bold text-slate-700">No pre-registrations found in this list.</p>
           <p className="text-[11px] text-slate-400">
             {statusFilter === 'PENDENTE'
-              ? 'Todos os pagamentos da recepção já foram conferidos e homologados.'
-              : 'Nenhum registro com o filtro atual.'}
+              ? 'All reception payments have already been checked and approved.'
+              : 'No records match the current filter.'}
           </p>
         </div>
       ) : (
@@ -306,14 +306,14 @@ export const FinanceReceptionApprovalsTab: React.FC = () => {
             <table className="w-full text-left text-xs">
               <thead className="bg-slate-50 text-slate-500 font-black uppercase text-[10px] border-b border-slate-200">
                 <tr>
-                  <th className="py-3 px-4">Protocolo / Data</th>
-                  <th className="py-3 px-4">Estudante</th>
-                  <th className="py-3 px-4">Curso / Parcela</th>
-                  <th className="py-3 px-4">Meio</th>
-                  <th className="py-3 px-4 text-right">Valor</th>
-                  <th className="py-3 px-4">Operador Balcão</th>
+                  <th className="py-3 px-4">Protocol / Date</th>
+                  <th className="py-3 px-4">Student</th>
+                  <th className="py-3 px-4">Course / Installment</th>
+                  <th className="py-3 px-4">Method</th>
+                  <th className="py-3 px-4 text-right">Amount</th>
+                  <th className="py-3 px-4">Front Desk Operator</th>
                   <th className="py-3 px-4 text-center">Status</th>
-                  <th className="py-3 px-4 text-right">Ações Tesouraria</th>
+                  <th className="py-3 px-4 text-right">Treasury Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -343,13 +343,13 @@ export const FinanceReceptionApprovalsTab: React.FC = () => {
                       <td className="py-3 px-4">
                         <span className="font-semibold text-slate-800 block">{p.courseName}</span>
                         <span className="text-[11px] text-slate-500">
-                          Parcela {p.installmentNumber}/{p.totalInstallments}
+                          Installment {p.installmentNumber}/{p.totalInstallments}
                         </span>
                       </td>
 
                       <td className="py-3 px-4 whitespace-nowrap">
                         <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700">
-                          {p.paymentMethod === 'TRANSFERENCIA' ? '🏦 Transferência Bancária' : '💵 Dinheiro Físico'}
+                          {p.paymentMethod === 'TRANSFERENCIA' ? '🏦 Bank Transfer' : '💵 Cash'}
                         </span>
                       </td>
 
@@ -377,10 +377,10 @@ export const FinanceReceptionApprovalsTab: React.FC = () => {
                           }`}
                         >
                           {isApproved
-                            ? '✓ APROVADO'
+                            ? '✓ APPROVED'
                             : isRejected
-                            ? '✕ RECUSADO'
-                            : '⏳ PENDENTE'}
+                            ? '✕ REJECTED'
+                            : '⏳ PENDING'}
                         </span>
                       </td>
 
@@ -391,10 +391,10 @@ export const FinanceReceptionApprovalsTab: React.FC = () => {
                             type="button"
                             onClick={() => setSelectedProvisionalPayment(p)}
                             className="px-2.5 py-1 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors inline-flex items-center gap-1 cursor-pointer"
-                            title="Ver Comprovante Provisório"
+                            title="View Provisional Receipt"
                           >
                             <Eye className="w-3.5 h-3.5 text-slate-500" />
-                            <span>Provisório</span>
+                            <span>Provisional</span>
                           </button>
 
                           {/* If Approved, button to view Official Receipt */}
@@ -403,10 +403,10 @@ export const FinanceReceptionApprovalsTab: React.FC = () => {
                               type="button"
                               onClick={() => handleViewOfficialReceipt(p)}
                               className="px-2.5 py-1 text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors inline-flex items-center gap-1 cursor-pointer"
-                              title="Ver Recibo Oficial"
+                              title="View Official Receipt"
                             >
                               <Receipt className="w-3.5 h-3.5 text-emerald-600" />
-                              <span>Recibo Oficial</span>
+                              <span>Official Receipt</span>
                             </button>
                           )}
 
@@ -417,20 +417,20 @@ export const FinanceReceptionApprovalsTab: React.FC = () => {
                                 type="button"
                                 onClick={() => handleOpenApprove(p)}
                                 className="px-3 py-1 text-xs font-bold text-white bg-[#075e38] hover:bg-[#064e2e] rounded-lg transition-all shadow-2xs inline-flex items-center gap-1 cursor-pointer"
-                                title="Conferir Dinheiro e Aprovar"
+                                title="Verify Cash and Approve"
                               >
                                 <CheckCircle className="w-3.5 h-3.5" />
-                                <span>Aprovar</span>
+                                <span>Approve</span>
                               </button>
 
                               <button
                                 type="button"
                                 onClick={() => handleOpenReject(p)}
                                 className="px-2.5 py-1 text-xs font-bold text-rose-700 hover:text-white hover:bg-rose-600 rounded-lg transition-all cursor-pointer"
-                                title="Recusar / Devolver"
+                                title="Reject / Return"
                               >
                                 <XCircle className="w-3.5 h-3.5" />
-                                <span>Recusar</span>
+                                <span>Reject</span>
                               </button>
                             </>
                           )}
@@ -450,8 +450,8 @@ export const FinanceReceptionApprovalsTab: React.FC = () => {
         isOpen={!!approvingPayment}
         onClose={() => setApprovingPayment(null)}
         size="md"
-        title="Confirmar Entrada de Dinheiro & Aprovar Pagamento"
-        subtitle="Conferência de dinheiro físico com a gaveta da Tesouraria (Rony)"
+        title="Confirm Cash Deposit & Approve Payment"
+        subtitle="Physical cash reconciliation against the Treasury drawer (Rony)"
         footer={
           <div className="flex items-center justify-end gap-2 w-full">
             <button
@@ -459,7 +459,7 @@ export const FinanceReceptionApprovalsTab: React.FC = () => {
               onClick={() => setApprovingPayment(null)}
               className="px-4 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-300 rounded-xl hover:bg-slate-50 transition-colors cursor-pointer"
             >
-              Cancelar
+              Cancel
             </button>
             <button
               type="button"
@@ -468,7 +468,7 @@ export const FinanceReceptionApprovalsTab: React.FC = () => {
               className="px-5 py-2 text-xs font-bold text-white bg-[#075e38] hover:bg-emerald-800 rounded-xl transition-all shadow-sm flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
             >
               <CheckCircle className="w-4 h-4" />
-              <span>{isApproving ? 'Processando...' : 'Confirmar & Emitir Recibo Oficial'}</span>
+              <span>{isApproving ? 'Processing...' : 'Confirm & Issue Official Receipt'}</span>
             </button>
           </div>
         }
@@ -479,18 +479,18 @@ export const FinanceReceptionApprovalsTab: React.FC = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <span className="text-[10px] font-black uppercase text-emerald-800 block">
-                    Protocolo: {approvingPayment.protocolNumber}
+                    Protocol: {approvingPayment.protocolNumber}
                   </span>
                   <h4 className="text-base font-black text-slate-900 mt-0.5">
                     {approvingPayment.studentName} ({approvingPayment.studentId})
                   </h4>
                   <p className="text-xs text-slate-600">
-                    {approvingPayment.courseName} • Parcela {approvingPayment.installmentNumber}/{approvingPayment.totalInstallments}
+                    {approvingPayment.courseName} • Installment {approvingPayment.installmentNumber}/{approvingPayment.totalInstallments}
                   </p>
                 </div>
                 <div className="text-right">
                   <span className="text-[10px] font-black text-slate-500 uppercase block">
-                    Valor a Conferir
+                    Amount to Verify
                   </span>
                   <span className="text-2xl font-black font-mono text-[#075e38]">
                     {formatCurrency(approvingPayment.amount, 'EGP')}
@@ -502,21 +502,21 @@ export const FinanceReceptionApprovalsTab: React.FC = () => {
             <div className="p-3.5 bg-amber-50 rounded-xl border border-amber-200 text-amber-950 text-[11px] flex items-start gap-2.5">
               <Banknote className="w-4 h-4 text-amber-700 flex-shrink-0 mt-0.5" />
               <div>
-                <strong>Atenção Rony / Caixa:</strong> Ao confirmar, o valor de{' '}
-                <strong>{formatCurrency(approvingPayment.amount, 'EGP')}</strong> será somado ao saldo em dinheiro do
-                Caixa, a parcela será marcada como <strong>PAGA</strong> e o <strong>Recibo Oficial</strong> será emitido.
+                <strong>Attention Rony / Cash Register:</strong> Upon confirmation, the amount of{' '}
+                <strong>{formatCurrency(approvingPayment.amount, 'EGP')}</strong> will be added to the register's cash balance,
+                the installment will be marked as <strong>PAID</strong> and the <strong>Official Receipt</strong> will be issued.
               </div>
             </div>
 
             <div>
               <label className="block font-bold text-slate-700 mb-1">
-                Observação de Conferência do Caixa (Opcional):
+                Cash Reconciliation Note (Optional):
               </label>
               <input
                 type="text"
                 value={approvalNotes}
                 onChange={(e) => setApprovalNotes(e.target.value)}
-                placeholder="Ex: Dinheiro físico conferido na gaveta e conciliado."
+                placeholder="E.g., Physical cash counted in the drawer and reconciled."
                 className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs focus:bg-white focus:ring-2 focus:ring-[#075e38] outline-hidden"
               />
             </div>
@@ -529,8 +529,8 @@ export const FinanceReceptionApprovalsTab: React.FC = () => {
         isOpen={!!rejectingPayment}
         onClose={() => setRejectingPayment(null)}
         size="md"
-        title="Recusar Pré-Registro de Pagamento"
-        subtitle="Informe a justificativa para que a Recepção possa corrigir ou devolver"
+        title="Reject Payment Pre-Registration"
+        subtitle="Provide the reason so Reception can correct or return it"
         footer={
           <div className="flex items-center justify-end gap-2 w-full">
             <button
@@ -538,7 +538,7 @@ export const FinanceReceptionApprovalsTab: React.FC = () => {
               onClick={() => setRejectingPayment(null)}
               className="px-4 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-300 rounded-xl hover:bg-slate-50 transition-colors cursor-pointer"
             >
-              Cancelar
+              Cancel
             </button>
             <button
               type="button"
@@ -547,7 +547,7 @@ export const FinanceReceptionApprovalsTab: React.FC = () => {
               className="px-5 py-2 text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 rounded-xl transition-all shadow-sm flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
             >
               <XCircle className="w-4 h-4" />
-              <span>{isRejecting ? 'Gravando...' : 'Confirmar Recusa'}</span>
+              <span>{isRejecting ? 'Saving...' : 'Confirm Rejection'}</span>
             </button>
           </div>
         }
@@ -556,23 +556,23 @@ export const FinanceReceptionApprovalsTab: React.FC = () => {
           <form onSubmit={handleConfirmRejection} className="space-y-4 text-xs">
             <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-950 space-y-1">
               <p className="font-bold text-xs">
-                Recusando pré-registro {rejectingPayment.protocolNumber} - {rejectingPayment.studentName}
+                Rejecting pre-registration {rejectingPayment.protocolNumber} - {rejectingPayment.studentName}
               </p>
               <p className="text-[11px]">
-                Valor: <strong>{formatCurrency(rejectingPayment.amount, 'EGP')}</strong> ({rejectingPayment.courseName})
+                Amount: <strong>{formatCurrency(rejectingPayment.amount, 'EGP')}</strong> ({rejectingPayment.courseName})
               </p>
             </div>
 
             <div>
               <label className="block font-bold text-slate-700 mb-1">
-                Motivo da Recusa / Devolução (Obrigatório) *
+                Rejection / Return Reason (Required) *
               </label>
               <textarea
                 rows={3}
                 required
                 value={rejectionReason}
                 onChange={(e) => setRejectionReason(e.target.value)}
-                placeholder="Ex: Valor físico entregue não confere com a nota; cédula suspeita; parcela informada incorreta..."
+                placeholder="E.g., Physical amount delivered does not match the note; suspect bill; incorrect installment reported..."
                 className="w-full p-2.5 bg-white border border-rose-300 rounded-xl text-xs focus:ring-2 focus:ring-rose-500 outline-hidden"
               />
             </div>

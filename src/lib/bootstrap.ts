@@ -22,7 +22,7 @@ export function bootstrapApp(): Promise<void> {
         const remote = await loadStateFromCloud();
         setHydratedState(remote);
       } catch (error) {
-        console.error('[bootstrap] Falha ao carregar o estado do Firestore.', error);
+        console.error('[bootstrap] Failed to load Firestore state.', error);
         setHydratedState(null);
       }
 
@@ -34,7 +34,7 @@ export function bootstrapApp(): Promise<void> {
         hydrateAccountingData(accounting);
         hydrateTeacherData(teacher);
       } catch (error) {
-        console.error('[bootstrap] Falha ao carregar dados auxiliares do Firestore.', error);
+        console.error('[bootstrap] Failed to load auxiliary Firestore data.', error);
       }
     })();
   }

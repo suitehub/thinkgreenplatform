@@ -113,19 +113,19 @@ export const ClassPeopleTab: React.FC<ClassPeopleTabProps> = ({
   return (
     <div className="space-y-8">
       {/* ========================================================================= */}
-      {/* 1. SEÇÃO PROFESSORES (Docentes responsáveis)                             */}
+      {/* 1. TEACHERS SECTION (Teachers responsible for the class)                 */}
       {/* ========================================================================= */}
       <div className="bg-white rounded-3xl border border-slate-200/70 shadow-xs p-6 sm:p-7 space-y-4">
         <div className="flex items-center justify-between pb-3 border-b border-slate-100">
           <div className="flex items-center gap-2">
             <UserCheck className="w-5 h-5 text-[#075e38]" />
             <h3 className="text-sm sm:text-base font-bold text-slate-900 tracking-tight">
-              Professores da Turma
+              Class Teachers
             </h3>
           </div>
 
           <span className="text-xs font-semibold text-slate-400">
-            1 Docente Titular
+            1 Lead Teacher
           </span>
         </div>
 
@@ -142,28 +142,28 @@ export const ClassPeopleTab: React.FC<ClassPeopleTabProps> = ({
             <div>
               <div className="flex items-center gap-2">
                 <h4 className="text-sm font-bold text-slate-900">
-                  {selectedClass.teacherName || 'Professor não atribuído'}
+                  {selectedClass.teacherName || 'Teacher not assigned'}
                 </h4>
                 <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-[#075e38]">
-                  Docente Titular
+                  Lead Teacher
                 </span>
               </div>
               <p className="text-xs text-slate-500 mt-0.5">
-                Coordenação Pedagógica
+                Academic Coordination
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-2 self-end sm:self-center">
             <span className="text-xs font-bold text-emerald-800 bg-emerald-50 px-3 py-1 rounded-xl border border-emerald-200/60">
-              ✓ Acesso Completo
+              ✓ Full Access
             </span>
           </div>
         </div>
       </div>
 
       {/* ========================================================================= */}
-      {/* 2. SEÇÃO ALUNOS (Lista completa, busca, ordenação e desempenho individual) */}
+      {/* 2. STUDENTS SECTION (Full roster, search, sorting and individual performance) */}
       {/* ========================================================================= */}
       <div className="bg-white rounded-3xl border border-slate-200/70 shadow-xs p-6 sm:p-7 space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
@@ -171,28 +171,28 @@ export const ClassPeopleTab: React.FC<ClassPeopleTabProps> = ({
             <div className="flex items-center gap-2">
               <Users className="w-5 h-5 text-[#075e38]" />
               <h3 className="text-sm sm:text-base font-bold text-slate-900 tracking-tight">
-                Alunos Matriculados
+                Enrolled Students
               </h3>
             </div>
             <p className="text-xs text-slate-500 mt-0.5">
-              Clique em qualquer aluno para abrir o detalhamento completo de notas, avaliações e frequência.
+              Click any student to open the full breakdown of grades, assessments and attendance.
             </p>
           </div>
 
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-xs font-extrabold text-[#075e38] bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-200">
-              {enrichedStudents.length} alunos
+              {enrichedStudents.length} students
             </span>
           </div>
         </div>
 
-        {/* Search & Sort Filters */}
+        {/* Search & sort filters */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="relative w-full sm:max-w-md">
             <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
             <input
               type="text"
-              placeholder="Buscar aluno por nome ou matrícula (ex: STU0186)..."
+              placeholder="Search student by name or ID (e.g. STU0186)..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs sm:text-sm font-medium text-slate-900 placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-[#075e38]/20 focus:bg-white"
@@ -200,21 +200,21 @@ export const ClassPeopleTab: React.FC<ClassPeopleTabProps> = ({
           </div>
 
           <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-            <span className="text-xs font-bold text-slate-500">Ordenar por:</span>
+            <span className="text-xs font-bold text-slate-500">Sort by:</span>
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as any)}
               className="px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold text-slate-700 cursor-pointer focus:outline-hidden focus:ring-2 focus:ring-[#075e38]/20"
             >
-              <option value="name">Nome (A - Z)</option>
-              <option value="id">Matrícula</option>
-              <option value="grade">Maior Média</option>
-              <option value="attendance">Maior Frequência</option>
+              <option value="name">Name (A - Z)</option>
+              <option value="id">Student ID</option>
+              <option value="grade">Highest Average</option>
+              <option value="attendance">Highest Attendance</option>
             </select>
           </div>
         </div>
 
-        {/* Students Table / List */}
+        {/* Students table / list */}
         <div className="divide-y divide-slate-100">
           {filteredStudents.map(({ student, attendancePercent, averagePercent }) => (
             <div
@@ -245,12 +245,12 @@ export const ClassPeopleTab: React.FC<ClassPeopleTabProps> = ({
                 </div>
               </div>
 
-              {/* Stats badges & Action */}
+              {/* Stats badges & action */}
               <div className="flex items-center gap-4 self-end sm:self-center">
                 {/* Attendance */}
                 <div className="text-right">
                   <span className="text-[10px] font-bold text-slate-400 block uppercase">
-                    Presença
+                    Attendance
                   </span>
                   <span
                     className={`text-xs font-bold ${
@@ -264,7 +264,7 @@ export const ClassPeopleTab: React.FC<ClassPeopleTabProps> = ({
                 {/* Grade */}
                 <div className="text-right">
                   <span className="text-[10px] font-bold text-slate-400 block uppercase">
-                    Média
+                    Average
                   </span>
                   <span
                     className={`text-xs font-black ${
@@ -278,7 +278,7 @@ export const ClassPeopleTab: React.FC<ClassPeopleTabProps> = ({
                 <div className="flex items-center gap-1.5 pl-2">
                   <span className="text-xs font-bold text-[#075e38] bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-200 group-hover:bg-[#075e38] group-hover:text-white transition-all flex items-center gap-1.5">
                     <Eye className="w-3.5 h-3.5" />
-                    <span>Ver Desempenho</span>
+                    <span>View Performance</span>
                   </span>
                 </div>
               </div>
@@ -288,7 +288,7 @@ export const ClassPeopleTab: React.FC<ClassPeopleTabProps> = ({
           {filteredStudents.length === 0 && (
             <div className="py-12 text-center text-slate-400 space-y-1">
               <Users className="w-8 h-8 text-slate-300 mx-auto" />
-              <p className="text-xs font-medium">Nenhum aluno encontrado para "{searchQuery}".</p>
+              <p className="text-xs font-medium">No student found for "{searchQuery}".</p>
             </div>
           )}
         </div>

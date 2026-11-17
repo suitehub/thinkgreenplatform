@@ -29,7 +29,7 @@ export const PendingApprovalPage: React.FC = () => {
       if (result.success && !result.pending) {
         setFeedback({
           type: 'info',
-          text: 'Função liberada! Carregando seu painel...',
+          text: 'Role granted! Loading your dashboard...',
         });
       } else if (!silent && result.message) {
         setFeedback({ type: 'error', text: result.message });
@@ -55,11 +55,11 @@ export const PendingApprovalPage: React.FC = () => {
             <Clock className="w-6 h-6" />
           </div>
           <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight">
-            Cadastro aguardando aprovação
+            Registration awaiting approval
           </h1>
           <p className="text-xs sm:text-sm text-emerald-50/90 mt-1.5 leading-relaxed">
-            Sua conta foi criada com sucesso, mas a administração ainda precisa definir sua
-            função e os módulos que você poderá acessar.
+            Your account was created successfully, but administration still needs to define your
+            role and the modules you can access.
           </p>
         </div>
 
@@ -84,18 +84,18 @@ export const PendingApprovalPage: React.FC = () => {
               </p>
             </div>
             <span className="ml-auto shrink-0 px-2 py-1 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
-              Pendente
+              Pending
             </span>
           </div>
 
           <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-2xl flex items-start gap-2.5 text-amber-900">
             <ShieldAlert className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
             <div className="leading-relaxed">
-              <p className="font-bold">O que acontece agora?</p>
+              <p className="font-bold">What happens now?</p>
               <p className="text-[11px] mt-0.5 text-amber-800">
-                Um Super Admin vai revisar seu cadastro e atribuir sua função (Professor,
-                Financeiro, Secretaria, Contabilidade, Recepção ou Administração). Você pode
-                manter esta tela aberta: ela verifica automaticamente a cada 20 segundos.
+                A Super Admin will review your registration and assign your role (Teacher,
+                Finance, Registrar's Office, Accounting, Reception or Administration). You can
+                keep this screen open: it checks automatically every 20 seconds.
               </p>
             </div>
           </div>
@@ -125,7 +125,7 @@ export const PendingApprovalPage: React.FC = () => {
               className="w-full py-3 px-5 bg-[#075e38] hover:bg-[#054a2c] disabled:opacity-70 text-white font-bold rounded-xl flex items-center justify-center gap-2 transition-colors cursor-pointer"
             >
               <RefreshCw className={`w-4 h-4 ${isChecking ? 'animate-spin' : ''}`} />
-              {isChecking ? 'Verificando...' : 'Verificar novamente'}
+              {isChecking ? 'Checking...' : 'Check again'}
             </button>
 
             <button
@@ -134,13 +134,13 @@ export const PendingApprovalPage: React.FC = () => {
               className="w-full py-2.5 px-5 border border-slate-200 text-slate-600 hover:bg-slate-50 font-bold rounded-xl flex items-center justify-center gap-2 transition-colors cursor-pointer"
             >
               <LogOut className="w-4 h-4" />
-              Sair e usar outra conta
+              Sign out and use another account
             </button>
           </div>
 
           <p className="text-center text-[11px] text-slate-400 leading-relaxed">
-            Em caso de dúvidas, procure a administração da Think Green Platform informando o
-            e-mail acima.
+            If you have any questions, contact the Think Green Platform administration and mention the
+            email above.
           </p>
         </div>
       </div>

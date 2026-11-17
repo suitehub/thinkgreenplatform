@@ -79,17 +79,17 @@ export const AdminSettingsTab: React.FC = () => {
         <div>
           <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
             <Settings className="w-5 h-5 text-purple-700" />
-            Configurações Globais & Manutenção do Sistema
+            Global Settings & System Maintenance
           </h2>
           <p className="text-xs text-slate-500 mt-0.5">
-            Gerencie dados institucionais da unidade, moeda corrente e operações de backup.
+            Manage the center's institutional data, current currency and backup operations.
           </p>
         </div>
 
         {savedSuccess && (
           <div className="px-3.5 py-1.5 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-xl text-xs font-bold flex items-center gap-1.5 animate-in fade-in">
             <CheckCircle className="w-4 h-4 text-emerald-600" />
-            Configurações salvas com sucesso!
+            Settings saved successfully!
           </div>
         )}
       </div>
@@ -100,12 +100,12 @@ export const AdminSettingsTab: React.FC = () => {
         <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs space-y-4">
           <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2 border-b border-slate-100 pb-3">
             <Building2 className="w-4 h-4 text-purple-600" />
-            Identidade Institucional & Unidade
+            Institutional Identity & Center
           </h3>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
             <div>
-              <label className="block font-bold text-slate-700 mb-1">Nome do Centro Comunitário *</label>
+              <label className="block font-bold text-slate-700 mb-1">Community Center Name *</label>
               <input
                 type="text"
                 required
@@ -116,7 +116,7 @@ export const AdminSettingsTab: React.FC = () => {
             </div>
 
             <div>
-              <label className="block font-bold text-slate-700 mb-1">Cidade / País da Unidade *</label>
+              <label className="block font-bold text-slate-700 mb-1">Center City / Country *</label>
               <input
                 type="text"
                 required
@@ -129,7 +129,7 @@ export const AdminSettingsTab: React.FC = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs pt-2">
             <div>
-              <label className="block font-bold text-slate-700 mb-1">Símbolo da Moeda (Exibição)</label>
+              <label className="block font-bold text-slate-700 mb-1">Currency Symbol (Display)</label>
               <input
                 type="text"
                 required
@@ -138,12 +138,12 @@ export const AdminSettingsTab: React.FC = () => {
                 className="w-full p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-purple-500 font-mono"
               />
               <span className="text-[11px] text-slate-400 mt-1 block">
-                Ex: EGP, E£ ou L.E. (Libra Egípcia)
+                E.g.: EGP, E£ or L.E. (Egyptian Pound)
               </span>
             </div>
 
             <div>
-              <label className="block font-bold text-slate-700 mb-1">Código ISO da Moeda</label>
+              <label className="block font-bold text-slate-700 mb-1">Currency ISO Code</label>
               <input
                 type="text"
                 required
@@ -152,7 +152,7 @@ export const AdminSettingsTab: React.FC = () => {
                 className="w-full p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-purple-500 font-mono"
               />
               <span className="text-[11px] text-slate-400 mt-1 block">
-                Padrão internacional: EGP
+                International standard: EGP
               </span>
             </div>
           </div>
@@ -162,12 +162,12 @@ export const AdminSettingsTab: React.FC = () => {
         <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs space-y-4">
           <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2 border-b border-slate-100 pb-3">
             <Award className="w-4 h-4 text-emerald-600" />
-            Parâmetros de Aprovação & Frequência
+            Passing & Attendance Parameters
           </h3>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
             <div>
-              <label className="block font-bold text-slate-700 mb-1">Nota Mínima para Aprovação (0 a 100):</label>
+              <label className="block font-bold text-slate-700 mb-1">Minimum Passing Grade (0 to 100):</label>
               <input
                 type="number"
                 min={0}
@@ -179,7 +179,7 @@ export const AdminSettingsTab: React.FC = () => {
             </div>
 
             <div>
-              <label className="block font-bold text-slate-700 mb-1">Meta de Frequência Informativa (%):</label>
+              <label className="block font-bold text-slate-700 mb-1">Informational Attendance Target (%):</label>
               <input
                 type="number"
                 min={0}
@@ -188,7 +188,7 @@ export const AdminSettingsTab: React.FC = () => {
                 onChange={(e) => setFormData({ ...formData, attendanceRequirementPercent: Number(e.target.value) })}
                 className="w-full p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-purple-500 font-bold"
               />
-              <p className="text-[11px] text-slate-500 mt-1">Apenas para monitoramento pedagógico. A aprovação do aluno não exige presença mínima.</p>
+              <p className="text-[11px] text-slate-500 mt-1">For pedagogical monitoring only. Student passing does not require minimum attendance.</p>
             </div>
           </div>
 
@@ -197,7 +197,7 @@ export const AdminSettingsTab: React.FC = () => {
               type="submit"
               className="px-6 py-2.5 bg-purple-700 hover:bg-purple-800 text-white font-bold rounded-xl text-xs shadow-2xs cursor-pointer transition-colors"
             >
-              Salvar Todas as Configurações
+              Save All Settings
             </button>
           </div>
         </div>
@@ -207,7 +207,7 @@ export const AdminSettingsTab: React.FC = () => {
       <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs space-y-4">
         <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2 border-b border-slate-100 pb-3">
           <Database className="w-4 h-4 text-sky-600" />
-          Manutenção do Banco de Dados & Backup
+          Database Maintenance & Backup
         </h3>
 
         <div className="grid grid-cols-1 gap-4 text-xs">
@@ -216,10 +216,10 @@ export const AdminSettingsTab: React.FC = () => {
             <div>
               <h4 className="font-bold text-slate-900 flex items-center gap-1.5">
                 <Download className="w-4 h-4 text-purple-600" />
-                Exportar Backup Integral (JSON)
+                Export Full Backup (JSON)
               </h4>
               <p className="text-slate-500 text-[11px] mt-1">
-                Gera um snapshot completo contendo alunos, matrículas, notas, transações contábeis e logs de auditoria.
+                Generates a complete snapshot containing students, enrollments, grades, accounting transactions and audit logs.
               </p>
             </div>
 
@@ -229,7 +229,7 @@ export const AdminSettingsTab: React.FC = () => {
               className="w-full py-2 bg-purple-50 hover:bg-purple-100 border border-purple-200 text-purple-800 font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
             >
               <Download className="w-3.5 h-3.5" />
-              Baixar Arquivo de Backup
+              Download Backup File
             </button>
           </div>
         </div>

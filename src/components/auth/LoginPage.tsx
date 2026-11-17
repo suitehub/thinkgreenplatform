@@ -77,7 +77,7 @@ export const LoginPage: React.FC = () => {
     try {
       const result = await loginWithGoogle({ register: registrationMode });
       if (!result.success) {
-        setErrorMessage(result.message || 'Não foi possível entrar com o Google.');
+        setErrorMessage(result.message || 'Could not sign in with Google.');
       }
     } finally {
       setLoadingAction(null);
@@ -91,28 +91,28 @@ export const LoginPage: React.FC = () => {
     const cleanEmail = email.trim().toLowerCase();
 
     if (!cleanEmail) {
-      setErrorMessage('Informe seu e-mail.');
+      setErrorMessage('Enter your email.');
       return;
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
-      setErrorMessage('Informe um endereço de e-mail válido.');
+      setErrorMessage('Enter a valid email address.');
       return;
     }
     if (!password) {
-      setErrorMessage('Informe sua senha.');
+      setErrorMessage('Enter your password.');
       return;
     }
     if (password.length < 6) {
-      setErrorMessage('A senha precisa ter pelo menos 6 caracteres.');
+      setErrorMessage('The password must be at least 6 characters long.');
       return;
     }
     if (registrationMode) {
       if (!name.trim()) {
-        setErrorMessage('Informe seu nome completo.');
+        setErrorMessage('Enter your full name.');
         return;
       }
       if (password !== confirmPassword) {
-        setErrorMessage('As senhas não conferem. Confira os dois campos.');
+        setErrorMessage('The passwords do not match. Check both fields.');
         return;
       }
     }
@@ -127,7 +127,7 @@ export const LoginPage: React.FC = () => {
       });
 
       if (!result.success) {
-        setErrorMessage(result.message || 'Não foi possível concluir o acesso.');
+        setErrorMessage(result.message || 'Could not complete sign in.');
       }
     } finally {
       setLoadingAction(null);
@@ -138,7 +138,7 @@ export const LoginPage: React.FC = () => {
     clearMessages();
 
     if (!email.trim()) {
-      setErrorMessage('Informe seu e-mail para receber o link de redefinição.');
+      setErrorMessage('Enter your email to receive the reset link.');
       return;
     }
 
@@ -160,11 +160,11 @@ export const LoginPage: React.FC = () => {
     clearMessages();
 
     if (!studentId.trim()) {
-      setErrorMessage('Informe seu ID Student.');
+      setErrorMessage('Enter your Student ID.');
       return;
     }
     if (!birthDate) {
-      setErrorMessage('Informe sua data de nascimento.');
+      setErrorMessage('Enter your date of birth.');
       return;
     }
 
@@ -172,7 +172,7 @@ export const LoginPage: React.FC = () => {
     try {
       const result = loginAsStudent({ studentId, birthDate });
       if (!result.success) {
-        setErrorMessage(result.message || 'Não foi possível entrar com esses dados.');
+        setErrorMessage(result.message || 'Could not sign in with the provided details.');
       }
     } finally {
       setLoadingAction(null);
@@ -180,22 +180,22 @@ export const LoginPage: React.FC = () => {
   };
 
   const heroBadge = registrationMode
-    ? 'Registro de Funcionário'
+    ? 'Employee Registration'
     : isStudentPortal
-    ? 'Portal do Aluno'
-    : 'Acesso à Plataforma';
+    ? 'Student Portal'
+    : 'Platform Sign In';
 
-  const heroTitle = registrationMode ? 'Crie seu acesso' : 'Acesse sua conta';
+  const heroTitle = registrationMode ? 'Create your account' : 'Sign in to your account';
 
   const heroDescription = registrationMode
-    ? 'Crie sua conta com Google ou e-mail e senha. A administração definirá sua função e os módulos que você poderá acessar.'
+    ? 'Create your account with Google or email and password. Administration will define your role and the modules you can access.'
     : isStudentPortal
-    ? 'Entre com seu ID Student e sua data de nascimento.'
-    : 'Entre com Google ou e-mail e senha para continuar.';
+    ? 'Sign in with your Student ID and date of birth.'
+    : 'Sign in with Google or email and password to continue.';
 
   return (
     <div className="relative min-h-screen w-full flex overflow-hidden font-sans bg-slate-950 select-none">
-      {/* Celular: preenchimento total da tela com o vídeo desfocado */}
+      {/* Mobile: full-screen background with blurred video */}
       <video
         autoPlay
         loop
@@ -208,7 +208,7 @@ export const LoginPage: React.FC = () => {
         <source src={`${import.meta.env.BASE_URL}login.mp4`} type="video/mp4" />
       </video>
 
-      {/* Celular: vídeo inteiro, centralizado e com blur leve (welcome visível sem corte) */}
+      {/* Mobile: full video, centered with slight blur (welcome visible without cropping) */}
       <video
         autoPlay
         loop
@@ -220,7 +220,7 @@ export const LoginPage: React.FC = () => {
         <source src={`${import.meta.env.BASE_URL}login.mp4`} type="video/mp4" />
       </video>
 
-      {/* Desktop: vídeo cobrindo o fundo */}
+      {/* Desktop: video covering the background */}
       <video
         autoPlay
         loop
@@ -232,7 +232,7 @@ export const LoginPage: React.FC = () => {
         <source src={`${import.meta.env.BASE_URL}login.mp4`} type="video/mp4" />
       </video>
 
-      {/* Escurecimento leve no celular para o vídeo ficar visível atrás do cartão de login */}
+      {/* Light darkening on mobile so the video stays visible behind the login card */}
       <div className="fixed inset-0 z-0 bg-slate-950/20 lg:bg-transparent pointer-events-none" />
 
       <div className="relative z-10 w-full min-h-screen grid grid-cols-1 lg:grid-cols-2">
@@ -297,7 +297,7 @@ export const LoginPage: React.FC = () => {
                   }`}
                 >
                   <GraduationCap className="w-4 h-4" />
-                  Alunos
+                  Students
                 </button>
                 <button
                   type="button"
@@ -309,7 +309,7 @@ export const LoginPage: React.FC = () => {
                   }`}
                 >
                   <Briefcase className="w-4 h-4" />
-                  Funcionários
+                  Employees
                 </button>
               </div>
             )}
@@ -318,7 +318,7 @@ export const LoginPage: React.FC = () => {
               <form onSubmit={handleStudentSubmit} className="space-y-3">
                 <div>
                   <label className="block text-[11px] font-bold text-slate-600 mb-1" htmlFor="student-id">
-                    ID Student
+                    Student ID
                   </label>
                   <div className="relative">
                     <Hash className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
@@ -339,7 +339,7 @@ export const LoginPage: React.FC = () => {
 
                 <div>
                   <label className="block text-[11px] font-bold text-slate-600 mb-1" htmlFor="student-birth-date">
-                    Data de nascimento
+                    Date of birth
                   </label>
                   <div className="relative">
                     <CalendarDays className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
@@ -361,17 +361,17 @@ export const LoginPage: React.FC = () => {
                   className="w-full py-3.5 px-6 active:scale-[0.99] disabled:opacity-75 text-white font-bold rounded-xl text-sm sm:text-base flex items-center justify-center gap-2.5 shadow-md transition-all cursor-pointer bg-[#075e38] hover:bg-[#054a2c] shadow-emerald-950/20"
                 >
                   {loadingAction === 'student' ? (
-                    <span>Verificando dados...</span>
+                    <span>Verifying details...</span>
                   ) : (
-                    <span>Entrar como aluno</span>
+                    <span>Sign in as student</span>
                   )}
                   <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
                 </button>
 
                 <div className="mt-1 p-3 bg-sky-50 border border-sky-100 rounded-xl text-[11px] text-sky-800 leading-relaxed">
-                  Use o <strong>ID Student</strong> informado pela secretaria (ex.: STU00186) e a
-                  <strong> data de nascimento</strong> registrada no seu cadastro. Se não lembrar ou
-                  seus dados estiverem incorretos, procure a secretaria.
+                  Use the <strong>Student ID</strong> provided by the Registrar's Office (e.g. STU00186) and the
+                  <strong> date of birth</strong> registered in your record. If you don't remember it or
+                  your details are incorrect, contact the Registrar's Office.
                 </div>
               </form>
             ) : (
@@ -406,7 +406,7 @@ export const LoginPage: React.FC = () => {
                     }`}
                   >
                     <Mail className="w-3.5 h-3.5" />
-                    E-mail e senha
+                    Email and password
                   </button>
                 </div>
 
@@ -424,10 +424,10 @@ export const LoginPage: React.FC = () => {
                     <Chrome className="w-5 h-5" />
                     <span>
                       {loadingAction === 'google'
-                        ? 'Conectando ao Google...'
+                        ? 'Connecting to Google...'
                         : registrationMode
-                        ? 'Registrar com Google'
-                        : 'Entrar com Google'}
+                        ? 'Register with Google'
+                        : 'Sign in with Google'}
                     </span>
                     <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
                   </button>
@@ -436,7 +436,7 @@ export const LoginPage: React.FC = () => {
                     {registrationMode && (
                       <div>
                         <label className="block text-[11px] font-bold text-slate-600 mb-1" htmlFor="login-name">
-                          Nome completo
+                          Full name
                         </label>
                         <div className="relative">
                           <User className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
@@ -445,7 +445,7 @@ export const LoginPage: React.FC = () => {
                             type="text"
                             value={name}
                             onChange={(event) => setName(event.target.value)}
-                            placeholder="Seu nome completo"
+                            placeholder="Your full name"
                             autoComplete="name"
                             disabled={isLoading}
                             className="w-full pl-10 pr-3.5 py-3 rounded-xl border border-slate-200 bg-white text-sm text-slate-900 placeholder:text-slate-400 focus:outline-hidden focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 transition-all"
@@ -456,7 +456,7 @@ export const LoginPage: React.FC = () => {
 
                     <div>
                       <label className="block text-[11px] font-bold text-slate-600 mb-1" htmlFor="login-email">
-                        E-mail
+                        Email
                       </label>
                       <div className="relative">
                         <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
@@ -465,7 +465,7 @@ export const LoginPage: React.FC = () => {
                           type="email"
                           value={email}
                           onChange={(event) => setEmail(event.target.value)}
-                          placeholder="seuemail@exemplo.com"
+                          placeholder="youremail@example.com"
                           autoComplete="email"
                           disabled={isLoading}
                           className="w-full pl-10 pr-3.5 py-3 rounded-xl border border-slate-200 bg-white text-sm text-slate-900 placeholder:text-slate-400 focus:outline-hidden focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 transition-all"
@@ -475,7 +475,7 @@ export const LoginPage: React.FC = () => {
 
                     <div>
                       <label className="block text-[11px] font-bold text-slate-600 mb-1" htmlFor="login-password">
-                        Senha
+                        Password
                       </label>
                       <div className="relative">
                         <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
@@ -484,7 +484,7 @@ export const LoginPage: React.FC = () => {
                           type={showPassword ? 'text' : 'password'}
                           value={password}
                           onChange={(event) => setPassword(event.target.value)}
-                          placeholder="Sua senha"
+                          placeholder="Your password"
                           autoComplete={registrationMode ? 'new-password' : 'current-password'}
                           disabled={isLoading}
                           className="w-full pl-10 pr-11 py-3 rounded-xl border border-slate-200 bg-white text-sm text-slate-900 placeholder:text-slate-400 focus:outline-hidden focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 transition-all"
@@ -493,7 +493,7 @@ export const LoginPage: React.FC = () => {
                           type="button"
                           onClick={() => setShowPassword((visible) => !visible)}
                           className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-700 transition-colors cursor-pointer"
-                          title={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
+                          title={showPassword ? 'Hide password' : 'Show password'}
                         >
                           {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                         </button>
@@ -503,7 +503,7 @@ export const LoginPage: React.FC = () => {
                     {registrationMode && (
                       <div>
                         <label className="block text-[11px] font-bold text-slate-600 mb-1" htmlFor="login-confirm">
-                          Confirmar senha
+                          Confirm password
                         </label>
                         <div className="relative">
                           <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
@@ -512,7 +512,7 @@ export const LoginPage: React.FC = () => {
                             type={showPassword ? 'text' : 'password'}
                             value={confirmPassword}
                             onChange={(event) => setConfirmPassword(event.target.value)}
-                            placeholder="Repita a senha"
+                            placeholder="Repeat the password"
                             autoComplete="new-password"
                             disabled={isLoading}
                             className="w-full pl-10 pr-3.5 py-3 rounded-xl border border-slate-200 bg-white text-sm text-slate-900 placeholder:text-slate-400 focus:outline-hidden focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 transition-all"
@@ -528,7 +528,7 @@ export const LoginPage: React.FC = () => {
                         disabled={isLoading}
                         className="text-[11px] font-bold text-emerald-700 hover:text-emerald-900 disabled:opacity-60 transition-colors cursor-pointer"
                       >
-                        {loadingAction === 'reset' ? 'Enviando link...' : 'Esqueci minha senha'}
+                        {loadingAction === 'reset' ? 'Sending link...' : 'Forgot my password'}
                       </button>
                     )}
 
@@ -544,10 +544,10 @@ export const LoginPage: React.FC = () => {
                       {registrationMode ? <UserPlus className="w-5 h-5" /> : <ArrowRight className="w-5 h-5" />}
                       <span>
                         {loadingAction === 'email'
-                          ? 'Processando...'
+                          ? 'Processing...'
                           : registrationMode
-                          ? 'Criar conta com e-mail'
-                          : 'Entrar com e-mail'}
+                          ? 'Create account with email'
+                          : 'Sign in with email'}
                       </span>
                     </button>
                   </form>
@@ -559,13 +559,13 @@ export const LoginPage: React.FC = () => {
               <p className="flex items-center justify-center gap-1.5 text-slate-400 font-medium">
                 <ShieldCheck className="w-3.5 h-3.5 text-[#075e38]" />
                 {isStudentPortal
-                  ? 'Acesso do aluno validado pelo cadastro da secretaria'
-                  : 'Autenticação segura via Firebase'}
+                  ? 'Student access validated against the Registrar\'s Office records'
+                  : 'Secure authentication via Firebase'}
               </p>
               {registrationMode ? (
                 <p className="text-center leading-relaxed">
-                  Após o registro, sua conta ficará <strong>aguardando aprovação</strong>. Assim que a
-                  administração definir sua função, o acesso será liberado.{' '}
+                  After registering, your account will be <strong>awaiting approval</strong>. As soon as
+                  administration assigns your role, access will be granted.{' '}
                   <button
                     type="button"
                     onClick={() => {
@@ -575,25 +575,25 @@ export const LoginPage: React.FC = () => {
                     }}
                     className="font-bold text-emerald-700 hover:text-emerald-900 cursor-pointer"
                   >
-                    Já tenho conta
+                    I already have an account
                   </button>
                 </p>
               ) : isStudentPortal ? (
                 <p className="text-center leading-relaxed">
-                  É funcionário? Use a aba <strong>Funcionários</strong> para entrar com Google ou
-                  e-mail e senha.
+                  Are you an employee? Use the <strong>Employees</strong> tab to sign in with Google or
+                  email and password.
                 </p>
               ) : (
                 <p className="text-center leading-relaxed">
-                  É funcionário e ainda não tem acesso? Solicite o{' '}
-                  <strong>link de registro geral</strong> à administração.
+                  Are you an employee without access yet? Request the{' '}
+                  <strong>general registration link</strong> from administration.
                 </p>
               )}
             </div>
 
             <div className="text-[11px] text-slate-400 text-center mt-6 space-y-0.5">
               <p>© 2026 Think Garden Platform</p>
-              <p>Todos os direitos reservados.</p>
+              <p>All rights reserved.</p>
             </div>
           </div>
         </div>

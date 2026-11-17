@@ -108,7 +108,7 @@ export function saveStoredAccountingRevenues(revenues: AccountingRevenue[]): voi
   accountingRevenuesCache = next;
   notifyAccountingStore();
   syncCollectionDiff(ACCOUNTING_REVENUES_COLLECTION, previous, next).catch((e) =>
-    console.warn('[accounting] Falha ao salvar receitas no Firestore.', e)
+    console.warn('[accounting] Failed to save revenues to Firestore.', e)
   );
 }
 
@@ -122,7 +122,7 @@ export function saveStoredAccountingExpenses(expenses: AccountingExpenseItem[]):
   accountingExpensesCache = next;
   notifyAccountingStore();
   syncCollectionDiff(ACCOUNTING_EXPENSES_COLLECTION, previous, next).catch((e) =>
-    console.warn('[accounting] Falha ao salvar despesas no Firestore.', e)
+    console.warn('[accounting] Failed to save expenses to Firestore.', e)
   );
 }
 
@@ -136,7 +136,7 @@ export function saveStoredExpenseReports(reports: StaffExpenseReport[]): void {
   expenseReportsCache = next;
   notifyAccountingStore();
   syncCollectionDiff(EXPENSE_REPORTS_COLLECTION, previous, next).catch((e) =>
-    console.warn('[accounting] Falha ao salvar reembolsos no Firestore.', e)
+    console.warn('[accounting] Failed to save reimbursements to Firestore.', e)
   );
 }
 
@@ -165,7 +165,7 @@ export function startAccountingWatch(): void {
 }
 
 /**
- * Formata qualquer data para DD/MM/YYYY padrão da Planilha de Gastos Excel
+ * Formats any date as DD/MM/YYYY, the standard of the Excel Expense Spreadsheet
  */
 export function formatDateToDDMMYYYY(dateStr?: string): string {
   if (!dateStr) {
@@ -187,8 +187,8 @@ export function formatDateToDDMMYYYY(dateStr?: string): string {
 }
 
 /**
- * Garante que todos os relatórios com status 'APROVADO' estejam lançados
- * na planilha oficial de despesas (expenses).
+ * Ensures that every report with 'APROVADO' status is posted
+ * to the official expense spreadsheet (expenses).
  */
 export function syncApprovedReportsIntoExpenses(
   currentExpenses: AccountingExpenseItem[],
@@ -204,7 +204,7 @@ export function syncApprovedReportsIntoExpenses(
   const updatedReports = reports.map((report) => {
     if (report.status !== 'APROVADO') return report;
 
-    // Verificar se já existe algum lançamento desta solicitação na planilha de gastos
+    // Check whether an entry for this request already exists in the expense spreadsheet
     const alreadyLinked = runningExpenses.some(
       (e) =>
         e.sourceReportId === report.id ||
@@ -233,14 +233,14 @@ export function syncApprovedReportsIntoExpenses(
           id: `exp_rep_${report.id}_${item.id}`,
           receiptNumber: receiptNo,
           date: formatDateToDDMMYYYY(item.date || report.date),
-          product: `${item.description} (Reembolso: ${report.fullName})`,
+          product: `${item.description} (Reimbursement: ${report.fullName})`,
           price: Number(item.amount),
           budget,
           category: item.category,
           paidTo: report.fullName,
           sourceReportId: report.id,
           receiptPhotoUrl: report.receiptPhotoUrl,
-          notes: `Aprovado a partir do Relatório ${report.reportCode} (${report.event})`,
+          notes: `Approved from Report ${report.reportCode} (${report.event})`,
           createdAt: new Date().toISOString(),
         });
       });
