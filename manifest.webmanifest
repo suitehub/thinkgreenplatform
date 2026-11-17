@@ -1,7 +1,7 @@
 {
   "name": "Think Green Platform",
   "short_name": "Think Green",
-  "description": "Sistema Integrado de Gestão do Think Green Community Center: Secretaria, Financeiro, Acadêmico, Contabilidade, AVA/LMS e Portal do Aluno.",
+  "description": "Integrated Management System for Think Green Community Center: Registrar, Finance, Academic, Accounting, VLE/LMS and Student Portal.",
   "id": "./",
   "start_url": "./",
   "scope": "./",
@@ -10,7 +10,7 @@
   "orientation": "any",
   "background_color": "#F8FAFC",
   "theme_color": "#075e38",
-  "lang": "pt-BR",
+  "lang": "en",
   "dir": "ltr",
   "categories": ["education", "productivity"],
   "icons": [
