@@ -208,16 +208,20 @@ export const LoginPage: React.FC = () => {
         loop
         muted
         playsInline
-        className="absolute inset-0 w-full h-full object-cover object-center pointer-events-none z-0"
+        preload="auto"
+        className="fixed inset-0 w-full h-full object-cover object-center pointer-events-none z-0"
       >
         <source src={`${import.meta.env.BASE_URL}login.mp4`} type="video/mp4" />
       </video>
 
+      {/* Escurecimento leve no celular para o vídeo ficar visível atrás do cartão de login */}
+      <div className="fixed inset-0 z-0 bg-slate-950/30 lg:bg-transparent pointer-events-none" />
+
       <div className="relative z-10 w-full min-h-screen grid grid-cols-1 lg:grid-cols-2">
         <div className="hidden lg:block w-full h-full" />
 
-        <div className="w-full flex items-center justify-center p-6 sm:p-10 md:p-14 bg-white/95 lg:bg-transparent min-h-screen overflow-y-auto">
-          <div className="w-full max-w-[420px] py-6 sm:py-8 flex flex-col justify-center">
+        <div className="w-full flex items-center justify-center p-4 sm:p-10 md:p-14 bg-transparent min-h-screen overflow-y-auto">
+          <div className="w-full max-w-[420px] py-6 sm:py-8 flex flex-col justify-center bg-white/95 backdrop-blur-md rounded-3xl px-5 shadow-2xl sm:px-7 lg:bg-transparent lg:backdrop-blur-none lg:rounded-none lg:px-0 lg:py-8 lg:shadow-none">
             <div
               className={`w-14 h-14 rounded-2xl flex items-center justify-center mx-auto shadow-xs mb-4 border ${
                 registrationMode
